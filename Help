@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CoopTrack — Help</title>
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --panel:#111;
+      --text:#e8e8e8;
+      --muted:#b8b8b8;
+      --line:#2a2a2a;
+      --accent:#8cff66;
+    }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      line-height:1.5;
+    }
+    header{
+      padding:28px 18px 18px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, #0f0f0f, #0b0b0b);
+    }
+    .wrap{ max-width:980px; margin:0 auto; }
+    h1{ margin:0 0 10px; font-size:28px; letter-spacing:0.5px; }
+    .lead{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+    }
+    nav{
+      padding:14px 18px;
+      border-bottom:1px solid var(--line);
+      background:var(--panel);
+    }
+    nav a{
+      color:var(--accent);
+      text-decoration:none;
+      margin-right:14px;
+      font-size:13px;
+    }
+    nav a:hover{ text-decoration:underline; }
+    main{ padding:22px 18px 40px; }
+    h2{
+      margin:26px 0 10px;
+      font-size:18px;
+      color:var(--accent);
+    }
+    h3{ margin:18px 0 8px; font-size:15px; }
+    .card{
+      border:1px solid var(--line);
+      background:var(--panel);
+      border-radius:10px;
+      padding:14px 14px 10px;
+      margin:12px 0;
+    }
+    .row{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .tag{
+      display:inline-block;
+      padding:2px 8px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+      background:#0d0d0d;
+      margin-right:8px;
+    }
+    ul{ margin:8px 0 10px 18px; }
+    li{ margin:4px 0; }
+    .muted{ color:var(--muted); }
+    footer{
+      padding:18px;
+      border-top:1px solid var(--line);
+      color:var(--muted);
+      font-size:12px;
+    }
+    .mono{ color:var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>CoopTrack — Help</h1>
+      <p class="lead">
+        CoopTrack organiza proyectos mediante un sistema de cartas que regula el acceso y la edición de documentos según los acuerdos activos entre sus participantes.
+      </p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="wrap">
+      <a href="#principios">Principios</a>
+      <a href="#ases">Ases</a>
+      <a href="#reyes">Reyes</a>
+      <a href="#jotas">Jotas</a>
+      <a href="#reinas">Reinas</a>
+      <a href="#transformaciones">Transformaciones</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="wrap">
+
+      <section id="principios">
+        <h2>Principios del juego</h2>
+        <div class="card">
+          <ul>
+            <li><span class="mono">Un mazo = un evento/proyecto</span>. Todo ocurre dentro de un mazo.</li>
+            <li><span class="mono">Las cartas determinan permisos</span>: lectura, edición y acciones posibles.</li>
+            <li><span class="mono">El A♥ se juega una sola vez</span>: crea el evento y fija su origen.</li>
+            <li><span class="mono">El acceso es contextual</span>: el usuario ve solo lo que le habilitan sus cartas activas.</li>
+            <li><span class="mono">Todo queda en historial</span>: las jugadas se registran (aceptado/rechazado/liquidado).</li>
+          </ul>
+          <p class="muted">
+            Nota: En CoopTrack el texto vive en documentos de descripción (corazones), los montos viven en documentos de dinero (diamantes) y las fechas se fijan desde el calendario del mazo (trébol).
+          </p>
+        </div>
+      </section>
+
+      <section id="ases">
+        <h2>🂡 Ases — Fundación y soberanía (uno por palo)</h2>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">A♥</span><strong>As de Corazones — Origen / Idea</strong>
+          </div>
+          <ul>
+            <li>Crea el mazo (evento/proyecto) y su identidad.</li>
+            <li>Define <span class="mono">título</span> (obligatorio), descripción principal, propósito.</li>
+            <li>El texto “madre” del evento siempre puede leerse por invitados (mínimo contexto).</li>
+            <li>Regla: <span class="mono">solo puede jugarse una vez</span> por mazo.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">A♣</span><strong>As de Trébol — Tiempo / Calendario</strong>
+          </div>
+          <ul>
+            <li>Fija fechas, duración, cronograma y vencimientos del mazo.</li>
+            <li>Todo documento puede referenciar la fecha del mazo (sin duplicarla).</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">A♦</span><strong>As de Diamantes — Valor / Moneda</strong>
+          </div>
+          <ul>
+            <li>Define la moneda del mazo (una sola moneda por evento).</li>
+            <li>Autoriza y valida operaciones económicas (montos, presupuestos, pagos).</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">A♠</span><strong>As de Picas — Ejecución / Operación</strong>
+          </div>
+          <ul>
+            <li>Autoriza y valida la ejecución de tareas y acciones.</li>
+            <li>Define el dominio operativo del mazo (qué se hace y cómo se confirma).</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="reyes">
+        <h2>👑 Reyes — Credenciales delegadas (puede haber varios)</h2>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">K♥</span><strong>Rey de Corazones — Editor</strong>
+          </div>
+          <ul>
+            <li>Puede escribir/editar documentos de descripción (bitácora, acuerdos, especificaciones).</li>
+            <li>Útil para delegar redacción sin transferir el origen (A♥).</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">K♦</span><strong>Rey de Diamantes — Operador económico</strong>
+          </div>
+          <ul>
+            <li>Puede crear/gestionar documentos de dinero dentro del mazo (según reglas del evento).</li>
+            <li>Se usa para delegar finanzas sin entregar el As de Diamantes.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">K♠</span><strong>Rey de Picas — Supervisor / Coordinador</strong>
+          </div>
+          <ul>
+            <li>Puede coordinar tareas, validar entregas y administrar flujo operativo.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">K♣</span><strong>Rey de Trébol — Socio</strong>
+          </div>
+          <ul>
+            <li>Representa pertenencia como socio dentro del mazo.</li>
+            <li>Acceso de lectura amplio (según política del mazo).</li>
+            <li><span class="mono">El porcentaje NO vive en el K♣</span>: se define en un acuerdo separado (documento ❤️) y en el registro societario del mazo.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="jotas">
+        <h2>🃏 Jotas — Jugadas (interacción y flujo)</h2>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">J♦</span><strong>Jota de Diamantes — Invitación / Puerta de entrada</strong>
+          </div>
+          <ul>
+            <li>Inicia una relación con un destinatario (invitar, proponer, contratar).</li>
+            <li>Habilita acceso mínimo y contextual al mazo (A♥ + A♣ + sus propios documentos).</li>
+            <li>El destinatario siempre puede <span class="mono">aceptar</span> o <span class="mono">rechazar</span>.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">J♠</span><strong>Jota de Picas — Tarea / Acción</strong>
+          </div>
+          <ul>
+            <li>Documento de descripción de la tarea (qué hay que hacer).</li>
+            <li>Puede estar ligado a una oferta económica (Q♥) o a un compromiso (Q♦).</li>
+            <li>En el documento de dinero no se repite descripción: solo monto y vínculo a J♠.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">J♥</span><strong>Jota de Corazones — Invitación social</strong>
+          </div>
+          <ul>
+            <li>Invitación a participar de un evento social (ocio) dentro del mazo.</li>
+            <li>Puede estar ligada a una oferta de costo (Q♥) que, al aceptar, se vuelve compromiso (Q♦).</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">J♣</span><strong>Jota de Trébol — Vinculación / Propuesta de pertenencia</strong>
+          </div>
+          <ul>
+            <li>Propuesta de incorporación o vínculo institucional inicial (según reglas del mazo).</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="reinas">
+        <h2>👸 Reinas — Valor y acuerdos</h2>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">Q♥</span><strong>Reina de Corazones — Oferta / Presupuesto</strong>
+          </div>
+          <ul>
+            <li>Propuesta económica: “esto cuesta / esto ofrezco”.</li>
+            <li>No obliga hasta ser aceptada.</li>
+            <li>Contiene monto propuesto y condiciones (según política del mazo) y referencia al documento de tarea (J♠) o invitación (J♥).</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">Q♦</span><strong>Reina de Diamantes — Compromiso / Deuda</strong>
+          </div>
+          <ul>
+            <li>Nace cuando una oferta Q♥ es aceptada.</li>
+            <li>Representa obligación económica (pago/aporte) dentro del mazo.</li>
+            <li>Puede pasar a estado <span class="mono">liquidado</span> cuando se paga.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <span class="tag">Q♠</span><strong>Reina de Picas — Derecho de cobro (opcional)</strong>
+          </div>
+          <ul>
+            <li>Si tu mazo usa simetría cobro/pago, Q♠ representa el derecho a cobrar asociado a una tarea.</li>
+            <li>Puede convivir con el modelo de ofertas Q♥ → compromiso Q♦, según tus reglas internas del mazo.</li>
+          </ul>
+          <p class="muted">
+            Si querés mantener el modelo más simple: usá siempre <span class="mono">Q♥ (oferta)</span> que al aceptar se vuelve <span class="mono">Q♦ (compromiso)</span>.
+          </p>
+        </div>
+      </section>
+
+      <section id="transformaciones">
+        <h2>🔁 Transformaciones (reglas de flujo)</h2>
+        <div class="card">
+          <h3>1) Oferta → Compromiso</h3>
+          <ul>
+            <li>Cuando una <span class="mono">Q♥</span> es aceptada por el destinatario, se transforma en <span class="mono">Q♦</span> con el mismo monto y moneda del mazo.</li>
+          </ul>
+
+          <h3>2) Paquetes (aceptación atómica)</h3>
+          <ul>
+            <li>Una invitación puede enviarse como <span class="mono">paquete</span> (ej: J♠ + Q♥).</li>
+            <li>El destinatario acepta o rechaza <span class="mono">todo el paquete</span>.</li>
+            <li>Si rechaza, pierde acceso generado por ese paquete (salvo que tenga otras cartas activas).</li>
+          </ul>
+
+          <h3>3) Copia espejo</h3>
+          <ul>
+            <li>El emisor conserva su carta original.</li>
+            <li>El destinatario conserva una <span class="mono">copia</span> con estado (aceptado/rechazado) para su historial.</li>
+          </ul>
+
+          <h3>4) Sociedad</h3>
+          <ul>
+            <li>La invitación a socio suele incluir <span class="mono">K♣</span> y un aporte propuesto vía <span class="mono">Q♥</span> (que al aceptar se convierte en <span class="mono">Q♦</span>).</li>
+            <li>Los porcentajes societarios se fijan en un <span class="mono">acuerdo ❤️</span> y en el registro societario del mazo (no en las cartas).</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="version">
+        <h2>Versión</h2>
+        <div class="card">
+          <p class="muted">Help estructural — CoopTrack v0.1</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div>© CoopTrack — Documento de ayuda. Sugerencia: guardalo como <span class="mono">help.html</span> en tu repo y enlazalo desde <span class="mono">index.html</span>.</div>
+    </div>
+  </footer>
+</body>
+</html>
