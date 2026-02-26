@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>CoopTrack</title>
+
   <style>
     :root{
       --bg:#0b0b0b;
@@ -25,7 +26,7 @@
 
     /* ===== TOP BAR (frame fijo) ===== */
     .topbar{
-      position:sticky; /* fijo arriba al scrollear */
+      position:sticky;
       top:0;
       z-index:999;
       background:linear-gradient(180deg, #0f0f0f, #0b0b0b);
@@ -40,6 +41,8 @@
       align-items:center;
       gap:10px;
     }
+
+    /* Brand (solo anónimo) */
     .brand{
       display:flex;
       align-items:center;
@@ -67,6 +70,24 @@
       margin-top:2px;
     }
 
+    /* Perfil (solo logueado) */
+    .profile{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 190px;
+    }
+    .avatar{
+      height:34px;
+      width:34px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      object-fit:cover;
+    }
+    .ptext .pname{ font-size:13px; }
+    .ptext .psub{ font-size:11px; color:var(--muted); margin-top:2px; }
+
     .toolbar{
       display:flex;
       gap:10px;
@@ -75,6 +96,7 @@
       overflow:auto;
       padding-bottom:2px;
     }
+
     .tool{
       display:flex;
       align-items:center;
@@ -87,26 +109,40 @@
       color:var(--text);
       white-space:nowrap;
       font-size:13px;
+      cursor:pointer;                 /* 👈 cursor */
+      transition: all .18s ease;      /* 👈 suavidad */
     }
     .tool:hover{
-      border-color: #3a3a3a;
+      border-color:#555;
+      background:#1a1a1a;
       transform: translateY(-1px);
     }
+
+    /* Caja del icono, para que todos alineen aunque no sean cuadrados */
     .tool .icon{
-      width:auto;
-      height:22px;
-      display:grid;
-      place-items:center;
+      height:26px;
+      min-width:26px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       border-radius:7px;
       background:#0d0d0d;
       border:1px solid var(--line);
-      color:var(--accent);
-      font-size:14px;
+      overflow:hidden;
     }
-    .tool small{
-      color:var(--muted);
-      font-size:11px;
-      margin-left:6px;
+
+    /* Iconos: alto fijo, ancho automático (no deforma) */
+    .tool .icon img{
+      height:22px;
+      width:auto;
+      display:block;
+      transition: transform .18s ease, filter .18s ease; /* 👈 hover */
+    }
+
+    /* Hover: agrandar icono sin deformar */
+    .tool:hover .icon img{
+      transform: scale(1.25);
+      filter: brightness(1.15);
     }
 
     .right{
@@ -114,6 +150,24 @@
       align-items:center;
       gap:8px;
     }
+
+    .btn{
+      cursor:pointer;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--text);
+      border-radius:10px;
+      font-family:inherit;
+      font-size:13px;
+      transition: all .18s ease;
+    }
+    .btn:hover{
+      border-color:#555;
+      background:#1a1a1a;
+      transform: translateY(-1px);
+    }
+
     .pill{
       font-size:12px;
       color:var(--muted);
@@ -148,7 +202,7 @@
     @media (max-width: 720px){
       .brand{ min-width: unset; }
       .brand .subtitle{ display:none; }
-      .right{ display:none; }
+      .pill{ display:none; } /* deja espacio a los botones */
     }
   </style>
 </head>
@@ -158,50 +212,75 @@
   <header class="topbar">
     <div class="topbar-inner">
 
-      <div class="brand">
+      <!-- SOLO ANÓNIMO -->
+      <div class="brand" data-when="guest">
         <div class="logo">CT</div>
         <div>
           <div class="title">COOPTRACK</div>
-          <div class="subtitle">Barra fija — prototipo</div>
+          <div class="subtitle">agenda + mazo</div>
+        </div>
+      </div>
+
+      <!-- SOLO LOGUEADO -->
+      <div class="profile" data-when="auth" style="display:none;">
+        <!-- Podés reemplazar esta imagen luego por la foto real del usuario -->
+        <img class="avatar" src="assets/icons/singeta120.gif" alt="Perfil">
+        <div class="ptext">
+          <div class="pname" id="userName">Usuario</div>
+          <div class="psub">en línea</div>
         </div>
       </div>
 
       <nav class="toolbar" aria-label="Barra de tareas">
-        <a class="tool" href="index.html" title="Inicio">
-          <span class="icon"><img src="assets/icons/singeta120.gif"
-       alt="Bitácora"
-       style="width:auto;height:22px;"></span> User
-        </a>
+
+        <!-- SIEMPRE -->
         <a class="tool" href="help.html" title="Help / Reglas">
-          <span class="icon"><img src="assets/icons/bastonRecortado80.gif"
-       alt="Help"
-       style="width:auto;height:22px;"></span> Help </a>
-        <a class="tool" href="bitacora.html" title="Bitácora">
-          <span class="icon"><img src="assets/icons/maquina120.gif"
-       alt="Bitácora"
-       style="width:auto;height:22px;"></span> Bitácora
+          <span class="icon">
+            <img src="assets/icons/bastonRecortado80.gif" alt="Help">
+          </span>
+          Help
         </a>
-        <a class="tool" href="caja.html" title="Caja / Diamantes">
-          <span class="icon"><img src="assets/icons/calculadora120.gif"
-       alt="Contabilidad"
-       style="width:auto;height:22px;"></span> Contabilidad
+
+        <a class="tool" href="calendar.html" title="Calendario">
+          <span class="icon">
+            <!-- Si tenés un gif de calendario, ponelo acá -->
+            <img src="assets/icons/Extra120.gif" alt="Calendario">
+          </span>
+          Calendario
         </a>
-        <a class="tool" href="contactos.html" title="Contactos">
-          <span class="icon"><img src="assets/icons/GenteGris.gif"
-       alt="Contactos"
-       style="width:auto;height:22px;"></span> Contactos
+
+        <a class="tool" href="extra.html" title="Noticias">
+          <span class="icon">
+            <img src="assets/icons/Extra120.gif" alt="Noticias">
+          </span>
+          Noticias
         </a>
-        <a class="tool" href="extra.html" title="Extra">
-          <span class="icon"><img src="assets/icons/Extra120.gif"
-       alt="Noticias"
-       style="width:auto;height:22px;"></span> Extra
+
+        <!-- SOLO LOGUEADO -->
+        <a class="tool" data-when="auth" href="bitacora.html" title="Bitácora" style="display:none;">
+          <span class="icon">
+            <img src="assets/icons/maquina120.gif" alt="Bitácora">
+          </span>
+          Bitácora
         </a>
-          
+
+        <a class="tool" data-when="auth" href="caja.html" title="Contabilidad" style="display:none;">
+          <span class="icon">
+            <img src="assets/icons/calculadora120.gif" alt="Contabilidad">
+          </span>
+          Contabilidad
+        </a>
+
       </nav>
 
       <div class="right">
-    
-        <div class="pill">Estado: <span class="mono">online</span></div>
+        <!-- SOLO ANÓNIMO -->
+        <button class="btn" data-when="guest" id="btnLogin">Login</button>
+
+        <!-- SOLO LOGUEADO -->
+        <button class="btn" data-when="auth" id="btnLogout" style="display:none;">Salir</button>
+
+        <div class="pill">Estado: online</div>
       </div>
 
     </div>
@@ -211,9 +290,39 @@
   <main>
     <div class="panel">
       <h1>Inicio</h1>
-      <p>Acá va tu portada. La barra superior queda fija mientras navegás y scrolleás.</p>
-      <p>Próximo paso: crear páginas vacías (<code>calendar.html</code>, <code>bitacora.html</code>, etc.) para que los botones funcionen.</p>
+      <p>Modo anónimo: CoopTrack + Login + Help/Calendario/Noticias.</p>
+      <p>Modo logueado: Perfil + Bitácora + Contabilidad.</p>
+      <p class="muted">Por ahora el login es una simulación (se activa con el botón). Luego lo conectamos a login real.</p>
     </div>
   </main>
+
+  <script>
+    // SIMULACIÓN DE LOGIN:
+    // Cambiá a true para arrancar ya en modo logueado.
+    let isAuthenticated = false;
+
+    function applyAuthUI() {
+      document.querySelectorAll('[data-when="guest"]').forEach(el => {
+        el.style.display = isAuthenticated ? "none" : "";
+      });
+      document.querySelectorAll('[data-when="auth"]').forEach(el => {
+        el.style.display = isAuthenticated ? "" : "none";
+      });
+    }
+
+    document.getElementById("btnLogin")?.addEventListener("click", () => {
+      isAuthenticated = true;
+      // ejemplo: setear nombre (más adelante vendrá del backend)
+      document.getElementById("userName").textContent = "Camilo";
+      applyAuthUI();
+    });
+
+    document.getElementById("btnLogout")?.addEventListener("click", () => {
+      isAuthenticated = false;
+      applyAuthUI();
+    });
+
+    applyAuthUI();
+  </script>
 </body>
 </html>
