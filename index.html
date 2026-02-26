@@ -1,11 +1,209 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="es">
 <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>CoopTrack</title>
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --panel:#111;
+      --line:#2a2a2a;
+      --text:#e8e8e8;
+      --muted:#b8b8b8;
+      --accent:#8cff66;
+      --shadow: 0 10px 30px rgba(0,0,0,.55);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      line-height:1.45;
+    }
+
+    /* ===== TOP BAR (frame fijo) ===== */
+    .topbar{
+      position:sticky; /* fijo arriba al scrollear */
+      top:0;
+      z-index:999;
+      background:linear-gradient(180deg, #0f0f0f, #0b0b0b);
+      border-bottom:1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    .topbar-inner{
+      max-width: 1100px;
+      margin:0 auto;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 170px;
+    }
+    .brand .logo{
+      width:34px;
+      height:34px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      display:grid;
+      place-items:center;
+      background:var(--panel);
+      color:var(--accent);
+      font-weight:700;
+    }
+    .brand .title{
+      font-size:14px;
+      letter-spacing:.4px;
+    }
+    .brand .subtitle{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex:1;
+      overflow:auto;
+      padding-bottom:2px;
+    }
+    .tool{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      border-radius:10px;
+      text-decoration:none;
+      color:var(--text);
+      white-space:nowrap;
+      font-size:13px;
+    }
+    .tool:hover{
+      border-color: #3a3a3a;
+      transform: translateY(-1px);
+    }
+    .tool .icon{
+      width:22px;
+      height:22px;
+      display:grid;
+      place-items:center;
+      border-radius:7px;
+      background:#0d0d0d;
+      border:1px solid var(--line);
+      color:var(--accent);
+      font-size:14px;
+    }
+    .tool small{
+      color:var(--muted);
+      font-size:11px;
+      margin-left:6px;
+    }
+
+    .right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .pill{
+      font-size:12px;
+      color:var(--muted);
+      border:1px solid var(--line);
+      background:#0d0d0d;
+      border-radius:999px;
+      padding:6px 10px;
+      white-space:nowrap;
+    }
+
+    /* ===== CONTENT ===== */
+    main{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px 12px 44px;
+    }
+    .panel{
+      border:1px solid var(--line);
+      background:var(--panel);
+      border-radius:14px;
+      padding:14px;
+      margin-top:12px;
+    }
+    h1{
+      margin:0 0 8px;
+      font-size:18px;
+      color:var(--accent);
+    }
+    p{ margin:8px 0; color:var(--muted); }
+
+    /* mobile */
+    @media (max-width: 720px){
+      .brand{ min-width: unset; }
+      .brand .subtitle{ display:none; }
+      .right{ display:none; }
+    }
+  </style>
 </head>
-<body style="background:black;color:lime;font-family:monospace;">
-  <h1>COOPTRACK ONLINE</h1>
-  <p>El mazo ha sido creado.</p>
-  <p><a href="help.html" style="color:lime;">HELP</a></p>
+
+<body>
+  <!-- ====== TOP BAR ====== -->
+  <header class="topbar">
+    <div class="topbar-inner">
+
+      <div class="brand">
+        <div class="logo">CT</div>
+        <div>
+          <div class="title">COOPTRACK</div>
+          <div class="subtitle">Barra fija — prototipo</div>
+        </div>
+      </div>
+
+      <nav class="toolbar" aria-label="Barra de tareas">
+        <a class="tool" href="index.html" title="Inicio">
+          <span class="icon">🃏</span> Mazo
+        </a>
+        <a class="tool" href="help.html" title="Help / Reglas">
+          <span class="icon">🕯️</span> Help <small>reglas</small>
+        </a>
+        <a class="tool" href="calendar.html" title="Calendario">
+          <span class="icon">🗓️</span> Calendario
+        </a>
+        <a class="tool" href="bitacora.html" title="Bitácora">
+          <span class="icon">⌨️</span> Bitácora
+        </a>
+        <a class="tool" href="caja.html" title="Caja / Diamantes">
+          <span class="icon">🧮</span> Caja
+        </a>
+        <a class="tool" href="contactos.html" title="Contactos">
+          <span class="icon">👥</span> Contactos
+        </a>
+        <a class="tool" href="extra.html" title="Extra">
+          <span class="icon">📰</span> Extra
+        </a>
+      </nav>
+
+      <div class="right">
+        <div class="pill">Estado: <span class="mono">online</span></div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ====== PAGE CONTENT ====== -->
+  <main>
+    <div class="panel">
+      <h1>Inicio</h1>
+      <p>Acá va tu portada. La barra superior queda fija mientras navegás y scrolleás.</p>
+      <p>Próximo paso: crear páginas vacías (<code>calendar.html</code>, <code>bitacora.html</code>, etc.) para que los botones funcionen.</p>
+    </div>
+  </main>
 </body>
 </html>
