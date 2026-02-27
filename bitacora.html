@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CoopTrack — Bitácora</title>
+
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --panel:#111;
+      --line:#2a2a2a;
+      --text:#e8e8e8;
+      --muted:#b8b8b8;
+      --accent:#8cff66;
+      --shadow: 0 10px 30px rgba(0,0,0,.55);
+      --danger:#ff6b6b;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      line-height:1.45;
+    }
+
+    /* ===== TOP BAR (igual a index) ===== */
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:999;
+      background:linear-gradient(180deg, #0f0f0f, #0b0b0b);
+      border-bottom:1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    .topbar-inner{
+      max-width: 1100px;
+      margin:0 auto;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 170px;
+    }
+    .brand .logo{
+      width:34px;
+      height:34px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      display:grid;
+      place-items:center;
+      background:var(--panel);
+      color:var(--accent);
+      font-weight:700;
+    }
+    .brand .title{ font-size:14px; letter-spacing:.4px; }
+    .brand .subtitle{ font-size:11px; color:var(--muted); margin-top:2px; }
+
+    .profile{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 190px;
+    }
+    .avatar{
+      height:34px;
+      width:34px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      object-fit:cover;
+    }
+    .ptext .pname{ font-size:13px; }
+    .ptext .psub{ font-size:11px; color:var(--muted); margin-top:2px; }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex:1;
+      overflow:auto;
+      padding-bottom:2px;
+    }
+    .tool{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      border-radius:10px;
+      text-decoration:none;
+      color:var(--text);
+      white-space:nowrap;
+      font-size:13px;
+      cursor:pointer;
+      transition: all .18s ease;
+    }
+    .tool:hover{
+      border-color:#555;
+      background:#1a1a1a;
+      transform: translateY(-1px);
+    }
+    .tool .icon{
+      height:26px;
+      min-width:26px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:7px;
+      background:#0d0d0d;
+      border:1px solid var(--line);
+      overflow:hidden;
+    }
+    .tool .icon img{
+      height:22px;
+      width:auto;
+      display:block;
+      transition: transform .18s ease, filter .18s ease;
+    }
+    .tool:hover .icon img{
+      transform: scale(1.25);
+      filter: brightness(1.15);
+    }
+
+    .right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .btn{
+      cursor:pointer;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--text);
+      border-radius:10px;
+      font-family:inherit;
+      font-size:13px;
+      transition: all .18s ease;
+    }
+    .btn:hover{
+      border-color:#555;
+      background:#1a1a1a;
+      transform: translateY(-1px);
+    }
+    .btn-danger{
+      border-color:#4a2a2a;
+      background:#1a0f0f;
+      color:#ffd1d1;
+    }
+    .btn-danger:hover{
+      border-color:#7a3a3a;
+      background:#240f0f;
+    }
+    .pill{
+      font-size:12px;
+      color:var(--muted);
+      border:1px solid var(--line);
+      background:#0d0d0d;
+      border-radius:999px;
+      padding:6px 10px;
+      white-space:nowrap;
+    }
+
+    /* ===== PAGE LAYOUT ===== */
+    main{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px 12px 44px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; }
+      .pill{ display:none; }
+    }
+
+    .panel{
+      border:1px solid var(--line);
+      background:var(--panel);
+      border-radius:14px;
+      padding:14px;
+    }
+    .panel h1{
+      margin:0 0 8px;
+      font-size:18px;
+      color:var(--accent);
+    }
+    .muted{ color:var(--muted); }
+
+    /* ===== FORM ===== */
+    label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
+    input[type="text"], textarea{
+      width:100%;
+      border:1px solid var(--line);
+      background:#0d0d0d;
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      font-family:inherit;
+      font-size:13px;
+      outline:none;
+    }
+    textarea{
+      min-height:240px;
+      resize:vertical;
+    }
+    input[type="text"]:focus, textarea:focus{
+      border-color:#555;
+    }
+    .form-actions{
+      display:flex;
+      gap:8px;
+      margin-top:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    /* ===== LIST ===== */
+    .doclist{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:12px;
+    }
+    .doc{
+      border:1px solid var(--line);
+      background:#0d0d0d;
+      border-radius:12px;
+      padding:10px 12px;
+    }
+    .doc-top{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .doc-title{
+      margin:0;
+      font-size:13px;
+      color:var(--text);
+    }
+    .doc-meta{
+      font-size:11px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .doc-body{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:12px;
+      white-space:pre-wrap;
+      max-height:160px;
+      overflow:auto;
+      border-top:1px dashed #222;
+      padding-top:8px;
+    }
+    .empty{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ====== TOP BAR ====== -->
+  <header class="topbar">
+    <div class="topbar-inner">
+
+      <!-- SOLO ANÓNIMO -->
+      <div class="brand" data-when="guest">
+        <div class="logo">CT</div>
+        <div>
+          <div class="title">COOPTRACK</div>
+          <div class="subtitle">agenda + mazo</div>
+        </div>
+      </div>
+
+      <!-- SOLO LOGUEADO -->
+      <div class="profile" data-when="auth" style="display:none;">
+        <img class="avatar" src="assets/icons/singeta120.gif" alt="Perfil">
+        <div class="ptext">
+          <div class="pname" id="userName">Usuario</div>
+          <div class="psub">bitácora</div>
+        </div>
+      </div>
+
+      <nav class="toolbar" aria-label="Barra de tareas">
+        <!-- SIEMPRE -->
+        <a class="tool" href="help.html" title="Help / Reglas">
+          <span class="icon"><img src="assets/icons/bastonRecortado80.gif" alt="Help"></span>
+          Help
+        </a>
+        <a class="tool" href="calendar.html" title="Calendario">
+          <span class="icon"><img src="assets/icons/Extra120.gif" alt="Calendario"></span>
+          Calendario
+        </a>
+        <a class="tool" href="extra.html" title="Noticias">
+          <span class="icon"><img src="assets/icons/Extra120.gif" alt="Noticias"></span>
+          Noticias
+        </a>
+
+        <!-- SOLO LOGUEADO -->
+        <a class="tool" data-when="auth" href="bitacora.html" title="Bitácora" style="display:none;">
+          <span class="icon"><img src="assets/icons/maquina120.gif" alt="Bitácora"></span>
+          Bitácora
+        </a>
+        <a class="tool" data-when="auth" href="caja.html" title="Contabilidad" style="display:none;">
+          <span class="icon"><img src="assets/icons/calculadora120.gif" alt="Contabilidad"></span>
+          Contabilidad
+        </a>
+      </nav>
+
+      <div class="right">
+        <button class="btn" data-when="guest" id="btnLogin">Login</button>
+        <button class="btn" data-when="auth" id="btnLogout" style="display:none;">Salir</button>
+        <div class="pill">Estado: online</div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ====== PAGE ====== -->
+  <main>
+    <div class="grid">
+
+      <!-- FORM -->
+      <section class="panel">
+        <h1>Bitácora — Nuevo documento</h1>
+        <div class="muted">Acá escriben los corazones (memoria / descripción). Por ahora se guarda local en tu navegador.</div>
+
+        <label for="docTitle">Título</label>
+        <input id="docTitle" type="text" placeholder="Ej: Acta de inicio del mazo / Descripción del evento" maxlength="120" />
+
+        <label for="docText">Texto</label>
+        <textarea id="docText" placeholder="Escribí acá..."></textarea>
+
+        <div class="form-actions">
+          <button class="btn" id="btnSave">Guardar</button>
+          <button class="btn" id="btnClear">Limpiar</button>
+          <span class="muted" id="saveHint"></span>
+        </div>
+      </section>
+
+      <!-- VIEW -->
+      <section class="panel">
+        <h1>Documentos registrados</h1>
+        <div class="muted">Vista tipo “Notes view” (prototipo). Luego esto vendrá del servidor por mazo.</div>
+
+        <div class="form-actions">
+          <button class="btn btn-danger" id="btnDeleteAll">Borrar todo</button>
+          <span class="muted">⚠️ Solo afecta tu navegador</span>
+        </div>
+
+        <div id="docList" class="doclist"></div>
+        <div id="emptyState" class="empty" style="display:none;">No hay documentos todavía.</div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    // ===== AUTH UI (igual que en index) =====
+    let isAuthenticated = false; // simulación
+
+    function applyAuthUI() {
+      document.querySelectorAll('[data-when="guest"]').forEach(el => {
+        el.style.display = isAuthenticated ? "none" : "";
+      });
+      document.querySelectorAll('[data-when="auth"]').forEach(el => {
+        el.style.display = isAuthenticated ? "" : "none";
+      });
+    }
+
+    document.getElementById("btnLogin")?.addEventListener("click", () => {
+      isAuthenticated = true;
+      document.getElementById("userName").textContent = "Camilo";
+      applyAuthUI();
+    });
+
+    document.getElementById("btnLogout")?.addEventListener("click", () => {
+      isAuthenticated = false;
+      applyAuthUI();
+    });
+
+    applyAuthUI();
+
+    // ===== BITACORA (prototipo localStorage) =====
+    const KEY = "cooptrack.bitacora.docs.v1";
+
+    function nowISO() {
+      return new Date().toISOString();
+    }
+
+    function loadDocs() {
+      try {
+        const raw = localStorage.getItem(KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveDocs(docs) {
+      localStorage.setItem(KEY, JSON.stringify(docs));
+    }
+
+    function renderDocs() {
+      const docs = loadDocs().sort((a,b) => (b.created_at || "").localeCompare(a.created_at || ""));
+      const list = document.getElementById("docList");
+      const empty = document.getElementById("emptyState");
+      list.innerHTML = "";
+
+      if (!docs.length) {
+        empty.style.display = "";
+        return;
+      }
+      empty.style.display = "none";
+
+      for (const d of docs) {
+        const el = document.createElement("div");
+        el.className = "doc";
+        el.innerHTML = `
+          <div class="doc-top">
+            <div>
+              <p class="doc-title">${escapeHtml(d.title || "(sin título)")}</p>
+            </div>
+            <div class="doc-meta">${formatDate(d.created_at)}</div>
+          </div>
+          <div class="doc-body">${escapeHtml(d.text || "")}</div>
+        `;
+        list.appendChild(el);
+      }
+    }
+
+    function formatDate(iso) {
+      if (!iso) return "";
+      const dt = new Date(iso);
+      if (isNaN(dt.getTime())) return iso;
+      return dt.toLocaleString();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    // UI actions
+    const titleEl = document.getElementById("docTitle");
+    const textEl  = document.getElementById("docText");
+    const hintEl  = document.getElementById("saveHint");
+
+    document.getElementById("btnSave")?.addEventListener("click", () => {
+      const title = (titleEl.value || "").trim();
+      const text  = (textEl.value || "").trim();
+
+      if (!title && !text) {
+        hintEl.textContent = "Nada para guardar.";
+        return;
+      }
+
+      const docs = loadDocs();
+      docs.push({
+        id: crypto?.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2),
+        title: title || "(sin título)",
+        text,
+        created_at: nowISO()
+      });
+      saveDocs(docs);
+
+      hintEl.textContent = "Guardado.";
+      titleEl.value = "";
+      textEl.value = "";
+      renderDocs();
+    });
+
+    document.getElementById("btnClear")?.addEventListener("click", () => {
+      titleEl.value = "";
+      textEl.value = "";
+      hintEl.textContent = "";
+    });
+
+    document.getElementById("btnDeleteAll")?.addEventListener("click", () => {
+      if (!confirm("¿Borrar todos los documentos locales de Bitácora?")) return;
+      localStorage.removeItem(KEY);
+      renderDocs();
+    });
+
+    renderDocs();
+  </script>
+</body>
+</html>
