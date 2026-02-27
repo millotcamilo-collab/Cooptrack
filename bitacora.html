@@ -276,62 +276,201 @@
 
 <body>
   <!-- ====== TOP BAR ====== -->
-  <header class="topbar">
-    <div class="topbar-inner">
+  <!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CoopTrack</title>
 
-      <!-- SOLO ANÓNIMO -->
-      <div class="brand" data-when="guest">
-        <div class="logo">CT</div>
-        <div>
-          <div class="title">COOPTRACK</div>
-          <div class="subtitle">agenda + mazo</div>
-        </div>
-      </div>
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --panel:#111;
+      --line:#2a2a2a;
+      --text:#e8e8e8;
+      --muted:#b8b8b8;
+      --accent:#8cff66;
+      --shadow: 0 10px 30px rgba(0,0,0,.55);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      line-height:1.45;
+    }
 
-      <!-- SOLO LOGUEADO -->
-      <div class="profile" data-when="auth" style="display:none;">
-        <img class="avatar" src="assets/icons/singeta120.gif" alt="Perfil">
-        <div class="ptext">
-          <div class="pname" id="userName">Usuario</div>
-          <div class="psub">bitácora</div>
-        </div>
-      </div>
+    /* ===== TOP BAR (frame fijo) ===== */
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:999;
+      background:linear-gradient(180deg, #0f0f0f, #0b0b0b);
+      border-bottom:1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    .topbar-inner{
+      max-width: 1100px;
+      margin:0 auto;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
 
-      <nav class="toolbar" aria-label="Barra de tareas">
-        <!-- SIEMPRE -->
-        <a class="tool" href="help.html" title="Help / Reglas">
-          <span class="icon"><img src="assets/icons/bastonRecortado80.gif" alt="Help"></span>
-          Help
-        </a>
-        <a class="tool" href="calendar.html" title="Calendario">
-          <span class="icon"><img src="assets/icons/Extra120.gif" alt="Calendario"></span>
-          Calendario
-        </a>
-        <a class="tool" href="extra.html" title="Noticias">
-          <span class="icon"><img src="assets/icons/Extra120.gif" alt="Noticias"></span>
-          Noticias
-        </a>
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 170px;
+    }
+    .brand .logo{
+      width:34px;
+      height:34px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      display:grid;
+      place-items:center;
+      background:var(--panel);
+      color:var(--accent);
+      font-weight:700;
+    }
+    .brand .title{
+      font-size:14px;
+      letter-spacing:.4px;
+    }
 
-        <!-- SOLO LOGUEADO -->
-        <a class="tool" data-when="auth" href="bitacora.html" title="Bitácora" style="display:none;">
-          <span class="icon"><img src="assets/icons/maquina120.gif" alt="Bitácora"></span>
-          Bitácora
-        </a>
-        <a class="tool" data-when="auth" href="caja.html" title="Contabilidad" style="display:none;">
-          <span class="icon"><img src="assets/icons/calculadora120.gif" alt="Contabilidad"></span>
-          Contabilidad
-        </a>
-      </nav>
+    .profile{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 190px;
+    }
+    .avatar{
+      height:34px;
+      width:34px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      object-fit:cover;
+    }
+    .ptext .pname{ font-size:13px; }
+    .ptext .psub{ font-size:11px; color:var(--muted); margin-top:2px; }
 
-      <div class="right">
-        <button class="btn" data-when="guest" id="btnLogin">Login</button>
-        <button class="btn" data-when="auth" id="btnLogout" style="display:none;">Salir</button>
-        <div class="pill">Estado: online</div>
-      </div>
+    .toolbar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex:1;
+      overflow:auto;
+      padding-bottom:2px;
+    }
 
+    .tool{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      border-radius:10px;
+      text-decoration:none;
+      color:var(--text);
+      white-space:nowrap;
+      font-size:13px;
+      cursor:pointer;
+      transition: all .18s ease;
+    }
+    .tool:hover{
+      border-color:#555;
+      background:#1a1a1a;
+      transform: translateY(-1px);
+    }
+    .tool .icon{
+      height:26px;
+      min-width:26px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:7px;
+      background:#0d0d0d;
+      border:1px solid var(--line);
+      overflow:hidden;
+    }
+    .tool .icon img{
+      height:22px;
+      width:auto;
+      display:block;
+      transition: transform .18s ease, filter .18s ease;
+    }
+    .tool:hover .icon img{
+      transform: scale(1.25);
+      filter: brightness(1.15);
+    }
+
+    .right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .btn{
+      cursor:pointer;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--text);
+      border-radius:10px;
+      font-family:inherit;
+      font-size:13px;
+      transition: all .18s ease;
+    }
+    .btn:hover{
+      border-color:#555;
+      background:#1a1a1a;
+      transform: translateY(-1px);
+    }
+
+    /* ===== CONTENT ===== */
+    main{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px 12px 44px;
+    }
+    .panel{
+      border:1px solid var(--line);
+      background:var(--panel);
+      border-radius:14px;
+      padding:14px;
+      margin-top:12px;
+    }
+    h1{
+      margin:0 0 8px;
+      font-size:18px;
+      color:var(--accent);
+    }
+    p{ margin:8px 0; color:var(--muted); }
+  </style>
+</head>
+
+<body>
+  <!-- TOPBAR INJECT -->
+  <div id="topbar-slot"></div>
+
+  <main>
+    <div class="panel">
+      <h1>Inicio</h1>
+      <p>Modo anónimo: CoopTrack + Login + Help/Calendario/Noticias.</p>
+      <p>Modo logueado: Perfil + Bitácora + Contabilidad + Contactos.</p>
+      <p class="muted">Login simulado (queda guardado en tu navegador).</p>
     </div>
-  </header>
+  </main>
 
+  <script src="/assets/js/site.js"></script>
+</body>
+</html>
   <!-- ====== PAGE ====== -->
   <main>
     <div class="grid">
@@ -370,7 +509,7 @@
 
     </div>
   </main>
-
+<script src="/assets/js/site.js"></script>
   <script>
     // ===== AUTH UI (igual que en index) =====
     let isAuthenticated = false; // simulación
