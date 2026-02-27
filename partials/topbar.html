@@ -1,5 +1,75 @@
 <header class="topbar">
   <div class="topbar-inner">
-    <!-- ...todo tu banner aquí... -->
+
+    <!-- SOLO ANÓNIMO -->
+    <div class="brand" data-when="guest">
+      <div class="logo">CT</div>
+      <div>
+        <div class="title">COOPTRACK</div>
+      </div>
+    </div>
+
+    <!-- SOLO LOGUEADO -->
+    <div class="profile" data-when="auth" style="display:none;">
+      <img class="avatar" src="/assets/icons/singeta120.gif" alt="Perfil">
+      <div class="ptext">
+        <div class="pname" id="userName">Usuario</div>
+        <div class="psub">en línea</div>
+      </div>
+    </div>
+
+    <nav class="toolbar" aria-label="Barra de tareas">
+
+      <!-- SIEMPRE -->
+      <a class="tool" href="/help.html" title="Help / Reglas">
+        <span class="icon">
+          <img src="/assets/icons/bastonRecortado80.gif" alt="Help">
+        </span>
+        Help
+      </a>
+
+      <a class="tool" href="/calendar.html" title="Calendario">
+        <span class="icon">
+          <img src="/assets/icons/Schedule80.gif" alt="Calendario">
+        </span>
+        Calendario
+      </a>
+
+      <a class="tool" href="/extra.html" title="Noticias">
+        <span class="icon">
+          <img src="/assets/icons/Extra120.gif" alt="Noticias">
+        </span>
+        Noticias
+      </a>
+
+      <!-- SOLO LOGUEADO -->
+      <a class="tool" data-when="auth" href="/bitacora.html" title="Bitácora" style="display:none;">
+        <span class="icon">
+          <img src="/assets/icons/maquina120.gif" alt="Bitácora">
+        </span>
+        Bitácora
+      </a>
+
+      <a class="tool" data-when="auth" href="/caja.html" title="Contabilidad" style="display:none;">
+        <span class="icon">
+          <img src="/assets/icons/calculadora120.gif" alt="Contabilidad">
+        </span>
+        Contabilidad
+      </a>
+
+      <a class="tool" data-when="auth" href="/contactos.html" title="Contactos" style="display:none;">
+        <span class="icon">
+          <img src="/assets/icons/GenteGris.gif" alt="Contactos">
+        </span>
+        Contactos
+      </a>
+
+    </nav>
+
+    <div class="right">
+      <button class="btn" data-when="guest" id="btnLogin">Login</button>
+      <button class="btn" data-when="auth" id="btnLogout" style="display:none;">Salir</button>
+    </div>
+
   </div>
 </header>
