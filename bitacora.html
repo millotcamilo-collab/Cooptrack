@@ -4,212 +4,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>CoopTrack — Bitácora</title>
-
- <script src="/assets/js/site.js"></script>
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <script src="/assets/js/site.js" defer></script>
 </head>
-
 <body>
-  <!-- ====== TOP BAR ====== -->
-  <!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CoopTrack</title>
-
-  <style>
-    :root{
-      --bg:#0b0b0b;
-      --panel:#111;
-      --line:#2a2a2a;
-      --text:#e8e8e8;
-      --muted:#b8b8b8;
-      --accent:#8cff66;
-      --shadow: 0 10px 30px rgba(0,0,0,.55);
-    }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      line-height:1.45;
-    }
-
-    /* ===== TOP BAR (frame fijo) ===== */
-    .topbar{
-      position:sticky;
-      top:0;
-      z-index:999;
-      background:linear-gradient(180deg, #0f0f0f, #0b0b0b);
-      border-bottom:1px solid var(--line);
-      box-shadow: var(--shadow);
-    }
-    .topbar-inner{
-      max-width: 1100px;
-      margin:0 auto;
-      padding:10px 12px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width: 170px;
-    }
-    .brand .logo{
-      width:34px;
-      height:34px;
-      border:1px solid var(--line);
-      border-radius:8px;
-      display:grid;
-      place-items:center;
-      background:var(--panel);
-      color:var(--accent);
-      font-weight:700;
-    }
-    .brand .title{
-      font-size:14px;
-      letter-spacing:.4px;
-    }
-
-    .profile{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width: 190px;
-    }
-    .avatar{
-      height:34px;
-      width:34px;
-      border-radius:10px;
-      border:1px solid var(--line);
-      background:var(--panel);
-      object-fit:cover;
-    }
-    .ptext .pname{ font-size:13px; }
-    .ptext .psub{ font-size:11px; color:var(--muted); margin-top:2px; }
-
-    .toolbar{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex:1;
-      overflow:auto;
-      padding-bottom:2px;
-    }
-
-    .tool{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border:1px solid var(--line);
-      background:var(--panel);
-      border-radius:10px;
-      text-decoration:none;
-      color:var(--text);
-      white-space:nowrap;
-      font-size:13px;
-      cursor:pointer;
-      transition: all .18s ease;
-    }
-    .tool:hover{
-      border-color:#555;
-      background:#1a1a1a;
-      transform: translateY(-1px);
-    }
-    .tool .icon{
-      height:26px;
-      min-width:26px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:7px;
-      background:#0d0d0d;
-      border:1px solid var(--line);
-      overflow:hidden;
-    }
-    .tool .icon img{
-      height:22px;
-      width:auto;
-      display:block;
-      transition: transform .18s ease, filter .18s ease;
-    }
-    .tool:hover .icon img{
-      transform: scale(1.25);
-      filter: brightness(1.15);
-    }
-
-    .right{
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-
-    .btn{
-      cursor:pointer;
-      padding:8px 10px;
-      border:1px solid var(--line);
-      background:var(--panel);
-      color:var(--text);
-      border-radius:10px;
-      font-family:inherit;
-      font-size:13px;
-      transition: all .18s ease;
-    }
-    .btn:hover{
-      border-color:#555;
-      background:#1a1a1a;
-      transform: translateY(-1px);
-    }
-
-    /* ===== CONTENT ===== */
-    main{
-      max-width:1100px;
-      margin:0 auto;
-      padding:18px 12px 44px;
-    }
-    .panel{
-      border:1px solid var(--line);
-      background:var(--panel);
-      border-radius:14px;
-      padding:14px;
-      margin-top:12px;
-    }
-    h1{
-      margin:0 0 8px;
-      font-size:18px;
-      color:var(--accent);
-    }
-    p{ margin:8px 0; color:var(--muted); }
-  </style>
-</head>
-
-<body>
-  <!-- TOPBAR INJECT -->
   <div id="topbar-slot"></div>
 
   <main>
-    <div class="panel">
-      <h1>Inicio</h1>
-      <p>Modo anónimo: CoopTrack + Login + Help/Calendario/Noticias.</p>
-      <p>Modo logueado: Perfil + Bitácora + Contabilidad + Contactos.</p>
-      <p class="muted">Login simulado (queda guardado en tu navegador).</p>
-    </div>
-  </main>
-
-  <script src="/assets/js/site.js"></script>
-</body>
-</html>
-  <!-- ====== PAGE ====== -->
-  <main>
     <div class="grid">
 
-      <!-- FORM -->
       <section class="panel">
         <h1>Bitácora — Nuevo documento</h1>
         <div class="muted">Acá escriben los corazones (memoria / descripción). Por ahora se guarda local en tu navegador.</div>
@@ -227,7 +30,6 @@
         </div>
       </section>
 
-      <!-- VIEW -->
       <section class="panel">
         <h1>Documentos registrados</h1>
         <div class="muted">Vista tipo “Notes view” (prototipo). Luego esto vendrá del servidor por mazo.</div>
@@ -243,89 +45,23 @@
 
     </div>
   </main>
-<script src="/assets/js/site.js"></script>
+
   <script>
-    // ===== AUTH UI (igual que en index) =====
-    let isAuthenticated = false; // simulación
-
-    function applyAuthUI() {
-      document.querySelectorAll('[data-when="guest"]').forEach(el => {
-        el.style.display = isAuthenticated ? "none" : "";
-      });
-      document.querySelectorAll('[data-when="auth"]').forEach(el => {
-        el.style.display = isAuthenticated ? "" : "none";
-      });
-    }
-
-    document.getElementById("btnLogin")?.addEventListener("click", () => {
-      isAuthenticated = true;
-      document.getElementById("userName").textContent = "Camilo";
-      applyAuthUI();
-    });
-
-    document.getElementById("btnLogout")?.addEventListener("click", () => {
-      isAuthenticated = false;
-      applyAuthUI();
-    });
-
-    applyAuthUI();
-
     // ===== BITACORA (prototipo localStorage) =====
     const KEY = "cooptrack.bitacora.docs.v1";
 
-    function nowISO() {
-      return new Date().toISOString();
+    function nowISO(){ return new Date().toISOString(); }
+
+    function loadDocs(){
+      try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+      catch { return []; }
     }
 
-    function loadDocs() {
-      try {
-        const raw = localStorage.getItem(KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch {
-        return [];
-      }
-    }
-
-    function saveDocs(docs) {
+    function saveDocs(docs){
       localStorage.setItem(KEY, JSON.stringify(docs));
     }
 
-    function renderDocs() {
-      const docs = loadDocs().sort((a,b) => (b.created_at || "").localeCompare(a.created_at || ""));
-      const list = document.getElementById("docList");
-      const empty = document.getElementById("emptyState");
-      list.innerHTML = "";
-
-      if (!docs.length) {
-        empty.style.display = "";
-        return;
-      }
-      empty.style.display = "none";
-
-      for (const d of docs) {
-        const el = document.createElement("div");
-        el.className = "doc";
-        el.innerHTML = `
-          <div class="doc-top">
-            <div>
-              <p class="doc-title">${escapeHtml(d.title || "(sin título)")}</p>
-            </div>
-            <div class="doc-meta">${formatDate(d.created_at)}</div>
-          </div>
-          <div class="doc-body">${escapeHtml(d.text || "")}</div>
-        `;
-        list.appendChild(el);
-      }
-    }
-
-    function formatDate(iso) {
-      if (!iso) return "";
-      const dt = new Date(iso);
-      if (isNaN(dt.getTime())) return iso;
-      return dt.toLocaleString();
-    }
-
-    function escapeHtml(str) {
+    function escapeHtml(str){
       return String(str)
         .replaceAll("&","&amp;")
         .replaceAll("<","&lt;")
@@ -334,42 +70,59 @@
         .replaceAll("'","&#039;");
     }
 
-    // UI actions
+    function formatDate(iso){
+      if (!iso) return "";
+      const dt = new Date(iso);
+      return isNaN(dt.getTime()) ? iso : dt.toLocaleString();
+    }
+
+    function renderDocs(){
+      const docs = loadDocs().sort((a,b)=> (b.created_at||"").localeCompare(a.created_at||""));
+      const list = document.getElementById("docList");
+      const empty = document.getElementById("emptyState");
+      list.innerHTML = "";
+
+      if (!docs.length){ empty.style.display=""; return; }
+      empty.style.display="none";
+
+      for (const d of docs){
+        const el = document.createElement("div");
+        el.className = "doc";
+        el.innerHTML = `
+          <div class="doc-top">
+            <div><p class="doc-title">${escapeHtml(d.title || "(sin título)")}</p></div>
+            <div class="doc-meta">${formatDate(d.created_at)}</div>
+          </div>
+          <div class="doc-body">${escapeHtml(d.text || "")}</div>
+        `;
+        list.appendChild(el);
+      }
+    }
+
     const titleEl = document.getElementById("docTitle");
     const textEl  = document.getElementById("docText");
     const hintEl  = document.getElementById("saveHint");
 
-    document.getElementById("btnSave")?.addEventListener("click", () => {
-      const title = (titleEl.value || "").trim();
-      const text  = (textEl.value || "").trim();
-
-      if (!title && !text) {
-        hintEl.textContent = "Nada para guardar.";
-        return;
-      }
+    document.getElementById("btnSave").addEventListener("click", () => {
+      const title = (titleEl.value||"").trim();
+      const text  = (textEl.value||"").trim();
+      if (!title && !text){ hintEl.textContent="Nada para guardar."; return; }
 
       const docs = loadDocs();
-      docs.push({
-        id: crypto?.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2),
-        title: title || "(sin título)",
-        text,
-        created_at: nowISO()
-      });
+      docs.push({ id: (crypto?.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)),
+                 title: title || "(sin título)", text, created_at: nowISO() });
       saveDocs(docs);
 
-      hintEl.textContent = "Guardado.";
-      titleEl.value = "";
-      textEl.value = "";
+      hintEl.textContent="Guardado.";
+      titleEl.value=""; textEl.value="";
       renderDocs();
     });
 
-    document.getElementById("btnClear")?.addEventListener("click", () => {
-      titleEl.value = "";
-      textEl.value = "";
-      hintEl.textContent = "";
+    document.getElementById("btnClear").addEventListener("click", () => {
+      titleEl.value=""; textEl.value=""; hintEl.textContent="";
     });
 
-    document.getElementById("btnDeleteAll")?.addEventListener("click", () => {
+    document.getElementById("btnDeleteAll").addEventListener("click", () => {
       if (!confirm("¿Borrar todos los documentos locales de Bitácora?")) return;
       localStorage.removeItem(KEY);
       renderDocs();
@@ -377,6 +130,5 @@
 
     renderDocs();
   </script>
-  <script src="/assets/js/auth-ui.js" defer></script>
 </body>
 </html>
