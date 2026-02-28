@@ -331,4 +331,27 @@
     color:var(--muted);
     font-size:12px;
   }
+
+/* ==== FIX DEFINITIVO: texto visible en topbar ==== */
+.topbar,
+.topbar *{
+  color: var(--text) !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Links del menú (incluye visited) */
+.topbar a.tool,
+.topbar a.tool:link,
+.topbar a.tool:visited,
+.topbar a.tool:hover,
+.topbar a.tool:active{
+  color: var(--text) !important;
+  text-decoration: none !important;
+}
+
+/* Si algún estilo externo apunta al nav */
+.topbar .toolbar{
+  color: var(--text) !important;
+}
 </style>
