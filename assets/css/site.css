@@ -1,374 +1,329 @@
 <style>
-  :root{
-    --bg:#0b0b0b;
-    --panel:#111;
-    --line:#2a2a2a;
-    --text:#e8e8e8;
-    --muted:#b8b8b8;
-    --accent:#8cff66;
-    --shadow: 0 10px 30px rgba(0,0,0,.55);
-    --danger:#ff6b6b;
-  }
+:root{
+  --bg:#0b0b0b;
+  --panel:#111;
+  --line:#2a2a2a;
+  --text:#e8e8e8;
+  --muted:#b8b8b8;
+  --accent:#8cff66;
+  --shadow: 0 10px 30px rgba(0,0,0,.55);
+  --danger:#ff6b6b;
+}
 
-  *{ box-sizing:border-box; }
+*{ box-sizing:border-box; }
 
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    line-height:1.45;
-  }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  line-height:1.45;
+}
 
-  /* =========================
-     TOP BAR (igual a index)
-     ========================= */
-  .topbar{
-    position:sticky;
-    top:0;
-    z-index:999;
-    background:linear-gradient(180deg, #0f0f0f, #0b0b0b);
-    border-bottom:1px solid var(--line);
-    box-shadow: var(--shadow);
-  }
+/* =========================
+   TOP BAR
+========================= */
 
-  .topbar-inner{
-    max-width: 1100px;
-    margin:0 auto;
-    padding:10px 12px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:999;
+  background:linear-gradient(180deg, #0f0f0f, #0b0b0b);
+  border-bottom:1px solid var(--line);
+  box-shadow: var(--shadow);
+}
 
-  /* ---- FIX TOPBAR TEXT (para evitar negro sobre negro) ---- */
-  .topbar, .topbar *{
-    color: var(--text);
-  }
-  /* Links: cubrir visited y reglas externas */
-  .topbar a,
-  .topbar a:link,
-  .topbar a:visited,
-  .topbar a:hover,
-  .topbar a:active{
-    color: var(--text) !important;
-    text-decoration: none;
-  }
-  /* Botones dentro del topbar */
-  .topbar button,
-  .topbar .btn,
-  .topbar .tool{
-    color: var(--text) !important;
-  }
-  /* Si algún framework pone color al span del label */
-  .topbar .tool span,
-  .topbar .tool .label,
-  .topbar .btn span{
-    color: var(--text) !important;
-  }
-  /* -------------------------------------------------------- */
+.topbar-inner{
+  max-width:1100px;
+  margin:0 auto;
+  padding:10px 12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
 
-  .brand{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    min-width: 170px;
-  }
-  .brand .logo{
-    width:34px;
-    height:34px;
-    border:1px solid var(--line);
-    border-radius:8px;
-    display:grid;
-    place-items:center;
-    background:var(--panel);
-    color:var(--accent);
-    font-weight:700;
-  }
-  .brand .title{ font-size:14px; letter-spacing:.4px; }
-  .brand .subtitle{ font-size:11px; color:var(--muted); margin-top:2px; }
-
-  .profile{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    min-width: 190px;
-  }
-  .avatar{
-    height:34px;
-    width:34px;
-    border-radius:10px;
-    border:1px solid var(--line);
-    background:var(--panel);
-    object-fit:cover;
-  }
-  .ptext .pname{ font-size:13px; }
-  .ptext .psub{ font-size:11px; color:var(--muted); margin-top:2px; }
-
-  .toolbar{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    flex:1;
-    overflow:auto;
-    padding-bottom:2px;
-  }
-
-  .tool{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:8px 10px;
-    border:1px solid var(--line);
-    background:var(--panel);
-    border-radius:10px;
-    text-decoration:none;
-    color:var(--text);
-    white-space:nowrap;
-    font-size:13px;
-    cursor:pointer;
-    transition: all .18s ease;
-  }
-
-  .tool:hover{
-    border-color:#555;
-    background:#1a1a1a;
-    transform: translateY(-1px);
-  }
-
-  .tool .icon{
-    height:26px;
-    min-width:26px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:7px;
-    background:#0d0d0d;
-    border:1px solid var(--line);
-    overflow:hidden;
-  }
-
-  .tool .icon img{
-    height:22px;
-    width:auto;
-    display:block;
-    transition: transform .18s ease, filter .18s ease;
-  }
-
-  .tool:hover .icon img{
-    transform: scale(1.25);
-    filter: brightness(1.15);
-  }
-
-  .right{
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-
-  .btn{
-    cursor:pointer;
-    padding:8px 10px;
-    border:1px solid var(--line);
-    background:var(--panel);
-    color:var(--text);
-    border-radius:10px;
-    font-family:inherit;
-    font-size:13px;
-    transition: all .18s ease;
-  }
-
-  .btn:hover{
-    border-color:#555;
-    background:#1a1a1a;
-    transform: translateY(-1px);
-  }
-
-  .btn-danger{
-    border-color:#4a2a2a;
-    background:#1a0f0f;
-    color:#ffd1d1;
-  }
-
-  .btn-danger:hover{
-    border-color:#7a3a3a;
-    background:#240f0f;
-  }
-
-  .pill{
-    font-size:12px;
-    color:var(--muted);
-    border:1px solid var(--line);
-    background:#0d0d0d;
-    border-radius:999px;
-    padding:6px 10px;
-    white-space:nowrap;
-  }
-
-  /* =========================
-     PAGE LAYOUT
-     ========================= */
-  main{
-    max-width:1100px;
-    margin:0 auto;
-    padding:18px 12px 44px;
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:12px;
-  }
-
-  @media (max-width: 900px){
-    .grid{ grid-template-columns: 1fr; }
-    .pill{ display:none; }
-  }
-
-  .panel{
-    border:1px solid var(--line);
-    background:var(--panel);
-    border-radius:14px;
-    padding:14px;
-  }
-
-  .panel h1{
-    margin:0 0 8px;
-    font-size:18px;
-    color:var(--accent);
-  }
-
-  .muted{ color:var(--muted); }
-
-  /* =========================
-     FORM
-     ========================= */
-  label{
-    display:block;
-    font-size:12px;
-    color:var(--muted);
-    margin:10px 0 6px;
-  }
-
-  input[type="text"], textarea{
-    width:100%;
-    border:1px solid var(--line);
-    background:#0d0d0d;
-    color:var(--text);
-    border-radius:12px;
-    padding:10px 12px;
-    font-family:inherit;
-    font-size:13px;
-    outline:none;
-  }
-
-  textarea{
-    min-height:240px;
-    resize:vertical;
-  }
-
-  input[type="text"]:focus, textarea:focus{
-    border-color:#555;
-  }
-
-  .form-actions{
-    display:flex;
-    gap:8px;
-    margin-top:12px;
-    align-items:center;
-    flex-wrap:wrap;
-  }
-
-  /* =========================
-     LIST
-     ========================= */
-  .doclist{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    margin-top:12px;
-  }
-
-  .doc{
-    border:1px solid var(--line);
-    background:#0d0d0d;
-    border-radius:12px;
-    padding:10px 12px;
-  }
-
-  .doc-top{
-    display:flex;
-    justify-content:space-between;
-    gap:12px;
-    align-items:flex-start;
-  }
-
-  .doc-title{
-    margin:0;
-    font-size:13px;
-    color:var(--text);
-  }
-
-  .doc-meta{
-    font-size:11px;
-    color:var(--muted);
-    white-space:nowrap;
-  }
-
-  .doc-body{
-    margin-top:8px;
-    color:var(--muted);
-    font-size:12px;
-    white-space:pre-wrap;
-    max-height:160px;
-    overflow:auto;
-    border-top:1px dashed #222;
-    padding-top:8px;
-  }
-
-  .empty{
-    margin-top:10px;
-    color:var(--muted);
-    font-size:12px;
-  }
-
-/* ==== FIX DEFINITIVO: texto visible en topbar ==== */
+/* Forzar visibilidad texto del topbar */
 .topbar,
 .topbar *{
   color: var(--text) !important;
-  opacity: 1 !important;
-  filter: none !important;
 }
 
-/* Links del menú (incluye visited) */
-.topbar a.tool,
-.topbar a.tool:link,
-.topbar a.tool:visited,
-.topbar a.tool:hover,
-.topbar a.tool:active{
+.topbar a,
+.topbar a:link,
+.topbar a:visited,
+.topbar a:hover,
+.topbar a:active{
   color: var(--text) !important;
-  text-decoration: none !important;
+  text-decoration:none !important;
 }
 
-/* Si algún estilo externo apunta al nav */
-.topbar .toolbar{
-  color: var(--text) !important;
+.topbar .tool,
+.topbar .btn{
+  opacity:1 !important;
+  filter:none !important;
 }
 
-/* ===============================
-   FIX COLOR LINKS TOPBAR
-   =============================== */
-
-.topbar a.tool,
-.topbar a.tool:link,
-.topbar a.tool:visited,
-.topbar a.tool:hover,
-.topbar a.tool:active {
-  color: var(--text) !important;
+/* Brand */
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:170px;
 }
 
-/* asegurar que el texto herede bien */
-.topbar .tool {
-  color: var(--text) !important;
+.brand .logo{
+  width:34px;
+  height:34px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  display:grid;
+  place-items:center;
+  background:var(--panel);
+  color:var(--accent);
+  font-weight:700;
+}
+
+.brand .title{
+  font-size:14px;
+  letter-spacing:.4px;
+}
+
+/* Profile */
+.profile{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:190px;
+}
+
+.avatar{
+  height:34px;
+  width:34px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  object-fit:cover;
+}
+
+.ptext .pname{ font-size:13px; }
+.ptext .psub{ font-size:11px; color:var(--muted); margin-top:2px; }
+
+/* Toolbar */
+.toolbar{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex:1;
+  overflow:auto;
+  padding-bottom:2px;
+}
+
+.tool{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  border-radius:10px;
+  white-space:nowrap;
+  font-size:13px;
+  cursor:pointer;
+  transition:all .18s ease;
+}
+
+.tool:hover{
+  border-color:#555;
+  background:#1a1a1a;
+  transform:translateY(-1px);
+}
+
+.tool .icon{
+  height:26px;
+  min-width:26px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:7px;
+  background:#0d0d0d;
+  border:1px solid var(--line);
+  overflow:hidden;
+}
+
+.tool .icon img{
+  height:22px;
+  width:auto;
+  display:block;
+  transition:transform .18s ease, filter .18s ease;
+}
+
+.tool:hover .icon img{
+  transform:scale(1.25);
+  filter:brightness(1.15);
+}
+
+/* Right buttons */
+.right{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.btn{
+  cursor:pointer;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  border-radius:10px;
+  font-family:inherit;
+  font-size:13px;
+  transition:all .18s ease;
+}
+
+.btn:hover{
+  border-color:#555;
+  background:#1a1a1a;
+  transform:translateY(-1px);
+}
+
+.btn-danger{
+  border-color:#4a2a2a;
+  background:#1a0f0f;
+  color:#ffd1d1 !important;
+}
+
+.btn-danger:hover{
+  border-color:#7a3a3a;
+  background:#240f0f;
+}
+
+/* =========================
+   PAGE LAYOUT
+========================= */
+
+main{
+  max-width:1100px;
+  margin:0 auto;
+  padding:18px 12px 44px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+@media (max-width:900px){
+  .grid{ grid-template-columns:1fr; }
+}
+
+.panel{
+  border:1px solid var(--line);
+  background:var(--panel);
+  border-radius:14px;
+  padding:14px;
+}
+
+.panel h1{
+  margin:0 0 8px;
+  font-size:18px;
+  color:var(--accent);
+}
+
+.muted{ color:var(--muted); }
+
+/* =========================
+   FORM
+========================= */
+
+label{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  margin:10px 0 6px;
+}
+
+input[type="text"],
+textarea{
+  width:100%;
+  border:1px solid var(--line);
+  background:#0d0d0d;
+  color:var(--text);
+  border-radius:12px;
+  padding:10px 12px;
+  font-family:inherit;
+  font-size:13px;
+  outline:none;
+}
+
+textarea{
+  min-height:240px;
+  resize:vertical;
+}
+
+input[type="text"]:focus,
+textarea:focus{
+  border-color:#555;
+}
+
+.form-actions{
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+/* =========================
+   LIST
+========================= */
+
+.doclist{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px;
+}
+
+.doc{
+  border:1px solid var(--line);
+  background:#0d0d0d;
+  border-radius:12px;
+  padding:10px 12px;
+}
+
+.doc-top{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+
+.doc-title{
+  margin:0;
+  font-size:13px;
+}
+
+.doc-meta{
+  font-size:11px;
+  color:var(--muted);
+  white-space:nowrap;
+}
+
+.doc-body{
+  margin-top:8px;
+  color:var(--muted);
+  font-size:12px;
+  white-space:pre-wrap;
+  max-height:160px;
+  overflow:auto;
+  border-top:1px dashed #222;
+  padding-top:8px;
+}
+
+.empty{
+  margin-top:10px;
+  color:var(--muted);
+  font-size:12px;
 }
 </style>
