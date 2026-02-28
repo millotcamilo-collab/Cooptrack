@@ -1,4 +1,4 @@
-<style>
+
 :root{
   --bg:#0b0b0b;
   --panel:#111;
@@ -326,4 +326,4 @@ textarea:focus{
   color:var(--muted);
   font-size:12px;
 }
-</style>
+
