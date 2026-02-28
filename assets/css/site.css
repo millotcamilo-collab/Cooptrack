@@ -354,4 +354,21 @@
 .topbar .toolbar{
   color: var(--text) !important;
 }
+
+/* ===============================
+   FIX COLOR LINKS TOPBAR
+   =============================== */
+
+.topbar a.tool,
+.topbar a.tool:link,
+.topbar a.tool:visited,
+.topbar a.tool:hover,
+.topbar a.tool:active {
+  color: var(--text) !important;
+}
+
+/* asegurar que el texto herede bien */
+.topbar .tool {
+  color: var(--text) !important;
+}
 </style>
