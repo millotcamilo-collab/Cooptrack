@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CoopTrack — Bitácora</title>
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <script src="/assets/js/site.js" defer></script>
+</head>
+<body>
+  <div id="topbar-slot"></div>
+
+  <main>
+    <div class="grid">
+
+      <section class="panel">
+        <h1>Bitácora — Nuevo documento</h1>
+        <div class="muted">Acá escriben los corazones (memoria / descripción). Por ahora se guarda local en tu navegador.</div>
+
+        <label for="docTitle">Título</label>
+        <input id="docTitle" type="text" placeholder="Ej: Acta de inicio del mazo / Descripción del evento" maxlength="120" />
+
+        <label for="docText">Texto</label>
+        <textarea id="docText" placeholder="Escribí acá..."></textarea>
+
+        <div class="form-actions">
+          <button class="btn" id="btnSave">Guardar</button>
+          <button class="btn" id="btnClear">Limpiar</button>
+          <span class="muted" id="saveHint"></span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h1>Documentos registrados</h1>
+        <div class="muted">Vista tipo “Notes view” (prototipo). Luego esto vendrá del servidor por mazo.</div>
+
+        <div class="form-actions">
+          <button class="btn btn-danger" id="btnDeleteAll">Borrar todo</button>
+          <span class="muted">⚠️ Solo afecta tu navegador</span>
+        </div>
+
+        <div id="docList" class="doclist"></div>
+        <div id="emptyState" class="empty" style="display:none;">No hay documentos todavía.</div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    // ===== BITACORA (prototipo localStorage) =====
+    const KEY = "cooptrack.bitacora.docs.v1";
+
+    function nowISO(){ return new Date().toISOString(); }
+
+    function loadDocs(){
+      try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+      catch { return []; }
+    }
+
+    function saveDocs(docs){
+      localStorage.setItem(KEY, JSON.stringify(docs));
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function formatDate(iso){
+      if (!iso) return "";
+      const dt = new Date(iso);
+      return isNaN(dt.getTime()) ? iso : dt.toLocaleString();
+    }
+
+    function renderDocs(){
+      const docs = loadDocs().sort((a,b)=> (b.created_at||"").localeCompare(a.created_at||""));
+      const list = document.getElementById("docList");
+      const empty = document.getElementById("emptyState");
+      list.innerHTML = "";
+
+      if (!docs.length){ empty.style.display=""; return; }
+      empty.style.display="none";
+
+      for (const d of docs){
+        const el = document.createElement("div");
+        el.className = "doc";
+        el.innerHTML = `
+          <div class="doc-top">
+            <div><p class="doc-title">${escapeHtml(d.title || "(sin título)")}</p></div>
+            <div class="doc-meta">${formatDate(d.created_at)}</div>
+          </div>
+          <div class="doc-body">${escapeHtml(d.text || "")}</div>
+        `;
+        list.appendChild(el);
+      }
+    }
+
+    const titleEl = document.getElementById("docTitle");
+    const textEl  = document.getElementById("docText");
+    const hintEl  = document.getElementById("saveHint");
+
+    document.getElementById("btnSave").addEventListener("click", () => {
+      const title = (titleEl.value||"").trim();
+      const text  = (textEl.value||"").trim();
+      if (!title && !text){ hintEl.textContent="Nada para guardar."; return; }
+
+      const docs = loadDocs();
+      docs.push({ id: (crypto?.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)),
+                 title: title || "(sin título)", text, created_at: nowISO() });
+      saveDocs(docs);
+
+      hintEl.textContent="Guardado.";
+      titleEl.value=""; textEl.value="";
+      renderDocs();
+    });
+
+    document.getElementById("btnClear").addEventListener("click", () => {
+      titleEl.value=""; textEl.value=""; hintEl.textContent="";
+    });
+
+    document.getElementById("btnDeleteAll").addEventListener("click", () => {
+      if (!confirm("¿Borrar todos los documentos locales de Bitácora?")) return;
+      localStorage.removeItem(KEY);
+      renderDocs();
+    });
+
+    renderDocs();
+  </script>
+</body>
+</html>
