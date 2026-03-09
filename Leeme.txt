@@ -1,0 +1,7 @@
+PowerShell
+
+cd $HOME\Documents\cooptrack
+
+inciar el server: node server.js
+
+http://localhost:3000/health
