@@ -5,3 +5,34 @@ cd $HOME\Documents\cooptrack
 inciar el server: node server.js
 
 http://localhost:3000/health
+
+
+Archivo compilado: 
+
+Get-ChildItem -Recurse -File |
+Where-Object { $_.FullName -notmatch "node_modules" -and $_.FullName -notmatch "\\icons\\" } |
+ForEach-Object {
+    Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
+    Add-Content -Path cooptrack_snapshot.txt -Value "FILE: $($_.FullName)" -Encoding utf8
+    Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
+
+    Get-Content $_.FullName -Raw | Add-Content -Path cooptrack_snapshot.txt -Encoding utf8
+
+    Add-Content -Path cooptrack_snapshot.txt -Value "`n" -Encoding utf8
+}
+
+
+
+Get-ChildItem -Recurse -File |
+Where-Object { $_.FullName -notmatch "node_modules" } |
+ForEach-Object {
+    Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
+    Add-Content -Path cooptrack_snapshot.txt -Value "FILE: $($_.FullName)" -Encoding utf8
+    Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
+
+    Get-Content $_.FullName -Raw | Add-Content -Path cooptrack_snapshot.txt -Encoding utf8
+
+    Add-Content -Path cooptrack_snapshot.txt -Value "`n" -Encoding utf8
+}
+
+El modelo conceptual de cooptrack, lo guarde como documento de Word en Documentos

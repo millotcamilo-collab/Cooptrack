@@ -1,0 +1,124 @@
+.topbar {
+  height: 72px;
+  background: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.topbar__inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar__left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.topbar__logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.topbar__logo-img {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.topbar__icon-btn {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+}
+
+.topbar__icon-btn:hover,
+.topbar__icon-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.topbar__icon-img {
+  height: 30px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.topbar__icon-img--profile {
+  height: 42px;
+  max-width: 42px;
+  border-radius: 4px;
+}
+.topbar__icon-img--portfolio {
+  height: 32px;
+}
+
+.topbar__icon-img--exit {
+  height: 24px;
+}
+
+.topbar__icon-img--exit {
+  height: 24px;
+}
+
+.topbar__exit-btn {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.topbar__login-link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 500;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
+}
+
+.topbar__login-link:hover,
+.topbar__login-link:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  opacity: 0.9;
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.topbar {
+  background: rgb(0, 0, 0) !important;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  width: 100%;
+  box-sizing: border-box;
+}

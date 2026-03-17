@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Perfil - CoopTrack</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="/css/topbar.css" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #222;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+
+    .page-header p {
+      margin: 0;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 22px;
+    }
+
+    .photo-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .avatar {
+      width: 180px;
+      height: 180px;
+      border-radius: 20px;
+      object-fit: cover;
+      background: #eef2f7;
+      border: 1px solid #d0d5dd;
+      display: block;
+    }
+
+    .avatar-fallback {
+      width: 180px;
+      height: 180px;
+      border-radius: 20px;
+      background: #eef2f7;
+      border: 1px solid #d0d5dd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 56px;
+      font-weight: bold;
+      color: #667085;
+    }
+
+    .muted {
+      color: #667085;
+      font-size: 14px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #bbb;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #fff;
+      font-family: inherit;
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: #1f4fd1;
+      box-shadow: 0 0 0 3px rgba(31, 79, 209, 0.10);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #1f4fd1;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #183fa8;
+    }
+
+    .message {
+      min-height: 20px;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .message.success {
+      color: #1c6b2f;
+    }
+
+    .message.error {
+      color: #b42318;
+    }
+
+    .meta-list {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.7;
+    }
+
+    .meta-list strong {
+      color: #222;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .photo-box {
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="topbar-container"></div>
+
+  <div class="page">
+    <div class="page-header">
+      <h1>Perfil</h1>
+      <p>Editá tus datos personales y tu contraseña.</p>
+    </div>
+
+    <div class="layout">
+      <section class="panel">
+        <h2>Vista previa</h2>
+
+        <div class="photo-box">
+          <div id="avatarContainer"></div>
+          <div class="muted">
+            Esta imagen se usará para representarte en futuras vistas de acuerdos y ofertas.
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;" />
+
+        <div class="meta-list">
+          <div><strong>Usuario:</strong> <span id="metaNickname">—</span></div>
+          <div><strong>Email:</strong> <span id="metaEmail">—</span></div>
+          <div><strong>Teléfono:</strong> <span id="metaPhone">—</span></div>
+          <div><strong>Fecha de nacimiento:</strong> <span id="metaBirthDate">—</span></div>
+          <div><strong>Tipo:</strong> <span id="metaUserType">—</span></div>
+        </div>
+      </section>
+
+      <div>
+        <section class="panel" style="margin-bottom:24px;">
+          <h2>Datos personales</h2>
+
+          <form id="profileForm">
+            <div class="field">
+              <label for="nickname">Nickname</label>
+              <input id="nickname" required />
+            </div>
+
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" type="email" />
+            </div>
+
+            <div class="field">
+              <label for="phone">Teléfono</label>
+              <input id="phone" />
+            </div>
+
+            <div class="field">
+              <label for="birth_date">Fecha de nacimiento</label>
+              <input id="birth_date" type="date" />
+            </div>
+
+            <div class="field">
+              <label for="profile_photo_url">URL de foto</label>
+              <input id="profile_photo_url" type="url" placeholder="https://..." />
+            </div>
+
+            <button class="btn btn-primary" type="submit">Guardar perfil</button>
+            <div id="profileMsg" class="message"></div>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Cambiar contraseña</h2>
+
+          <form id="passwordForm">
+            <div class="field">
+              <label for="current_password">Contraseña actual</label>
+              <input id="current_password" type="password" required />
+            </div>
+
+            <div class="field">
+              <label for="new_password">Nueva contraseña</label>
+              <input id="new_password" type="password" required />
+            </div>
+
+            <button class="btn btn-primary" type="submit">Actualizar contraseña</button>
+            <div id="passwordMsg" class="message"></div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/topbar.js"></script>
+
+  <script>
+    const token = localStorage.getItem("cooptrackToken");
+    const storedUser = JSON.parse(localStorage.getItem("cooptrackUser") || "null");
+
+    if (!token || !storedUser) {
+      window.location.href = "/login.html";
+    }
+
+    const avatarContainer = document.getElementById("avatarContainer");
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatDateOnly(value) {
+      if (!value) return "—";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleDateString();
+    }
+
+    function renderAvatar(photoUrl, nickname) {
+      if (photoUrl) {
+        avatarContainer.innerHTML = `
+          <img
+            class="avatar"
+            src="${escapeHtml(photoUrl)}"
+            alt="Foto de perfil"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          />
+          <div class="avatar-fallback" style="display:none;">
+            ${escapeHtml((nickname || "?").slice(0, 1).toUpperCase())}
+          </div>
+        `;
+        return;
+      }
+
+      avatarContainer.innerHTML = `
+        <div class="avatar-fallback">
+          ${escapeHtml((nickname || "?").slice(0, 1).toUpperCase())}
+        </div>
+      `;
+    }
+
+    function updateProfilePreview(user) {
+      renderAvatar(user.profile_photo_url, user.nickname);
+
+      document.getElementById("metaNickname").textContent = user.nickname || "—";
+      document.getElementById("metaEmail").textContent = user.email || "—";
+      document.getElementById("metaPhone").textContent = user.phone || "—";
+      document.getElementById("metaBirthDate").textContent = formatDateOnly(user.birth_date);
+      document.getElementById("metaUserType").textContent = user.user_type || "—";
+    }
+
+    function fillProfileForm(user) {
+      document.getElementById("nickname").value = user.nickname || "";
+      document.getElementById("email").value = user.email || "";
+      document.getElementById("phone").value = user.phone || "";
+      document.getElementById("birth_date").value = user.birth_date ? String(user.birth_date).slice(0, 10) : "";
+      document.getElementById("profile_photo_url").value = user.profile_photo_url || "";
+    }
+
+    async function loadProfile() {
+      try {
+        const res = await fetch("/me", {
+          headers: authHeaders()
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          return;
+        }
+
+        fillProfileForm(data.user);
+        updateProfilePreview(data.user);
+
+        localStorage.setItem("cooptrackUser", JSON.stringify(data.user));
+      } catch (error) {
+        console.error("Error cargando perfil:", error);
+      }
+    }
+
+    document.getElementById("profile_photo_url").addEventListener("input", () => {
+      renderAvatar(
+        document.getElementById("profile_photo_url").value.trim(),
+        document.getElementById("nickname").value.trim()
+      );
+    });
+
+    document.getElementById("nickname").addEventListener("input", () => {
+      renderAvatar(
+        document.getElementById("profile_photo_url").value.trim(),
+        document.getElementById("nickname").value.trim()
+      );
+    });
+
+    document.getElementById("profileForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const profileMsg = document.getElementById("profileMsg");
+      profileMsg.className = "message";
+      profileMsg.textContent = "";
+
+      const payload = {
+        nickname: document.getElementById("nickname").value.trim(),
+        email: document.getElementById("email").value.trim() || null,
+        phone: document.getElementById("phone").value.trim() || null,
+        birth_date: document.getElementById("birth_date").value || null,
+        profile_photo_url: document.getElementById("profile_photo_url").value.trim() || null
+      };
+
+      try {
+        const res = await fetch("/me", {
+          method: "PUT",
+          headers: authHeaders({
+            "Content-Type": "application/json"
+          }),
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          profileMsg.className = "message success";
+          profileMsg.textContent = "Perfil actualizado.";
+
+          localStorage.setItem("cooptrackUser", JSON.stringify(data.user));
+          fillProfileForm(data.user);
+          updateProfilePreview(data.user);
+
+          if (typeof renderTopbar === "function") {
+            renderTopbar();
+          }
+        } else {
+          profileMsg.className = "message error";
+          profileMsg.textContent = data.error || "No se pudo actualizar el perfil.";
+        }
+      } catch (error) {
+        console.error("Error actualizando perfil:", error);
+        profileMsg.className = "message error";
+        profileMsg.textContent = "Error de conexión.";
+      }
+    });
+
+    document.getElementById("passwordForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const passwordMsg = document.getElementById("passwordMsg");
+      passwordMsg.className = "message";
+      passwordMsg.textContent = "";
+
+      const current_password = document.getElementById("current_password").value;
+      const new_password = document.getElementById("new_password").value;
+
+      try {
+        const res = await fetch("/me/password", {
+          method: "PUT",
+          headers: authHeaders({
+            "Content-Type": "application/json"
+          }),
+          body: JSON.stringify({
+            current_password,
+            new_password
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          passwordMsg.className = "message success";
+          passwordMsg.textContent = "Contraseña actualizada.";
+          document.getElementById("passwordForm").reset();
+        } else {
+          passwordMsg.className = "message error";
+          passwordMsg.textContent = data.error || "No se pudo actualizar la contraseña.";
+        }
+      } catch (error) {
+        console.error("Error actualizando contraseña:", error);
+        passwordMsg.className = "message error";
+        passwordMsg.textContent = "Error de conexión.";
+      }
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>

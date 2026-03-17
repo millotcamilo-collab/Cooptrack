@@ -1,0 +1,6578 @@
+﻿===============================
+FILE: C:\Users\win10\Documents\cooptrack\.env
+===============================
+PORT=3000
+DATABASE_URL=postgresql://cooptrack_db_user:5j9Yd4Yfp2D6gFT5NoOYQEW6r1XjurP9@dpg-d6m2a3tm5p6s73atc4k0-a.oregon-postgres.render.com/cooptrack_db?ssl=true
+JWT_SECRET=cooptrack_super_secreto_cambiar_esto
+
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\.gitignore
+===============================
+node_modules
+.env
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\Leeme.txt
+===============================
+PowerShell
+
+cd $HOME\Documents\cooptrack
+
+inciar el server: node server.js
+
+http://localhost:3000/health
+
+
+Archivo compilado: 
+
+Get-ChildItem -Recurse -File |
+Where-Object { $_.FullName -notmatch "node_modules" -and $_.FullName -notmatch "\\icons\\" } |
+ForEach-Object {
+    Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
+    Add-Content -Path cooptrack_snapshot.txt -Value "FILE: $($_.FullName)" -Encoding utf8
+    Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
+
+    Get-Content $_.FullName -Raw | Add-Content -Path cooptrack_snapshot.txt -Encoding utf8
+
+    Add-Content -Path cooptrack_snapshot.txt -Value "`n" -Encoding utf8
+}
+
+
+
+Get-ChildItem -Recurse -File |
+Where-Object { $_.FullName -notmatch "node_modules" } |
+ForEach-Object {
+    Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
+    Add-Content -Path cooptrack_snapshot.txt -Value "FILE: $($_.FullName)" -Encoding utf8
+    Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
+
+    Get-Content $_.FullName -Raw | Add-Content -Path cooptrack_snapshot.txt -Encoding utf8
+
+    Add-Content -Path cooptrack_snapshot.txt -Value "`n" -Encoding utf8
+}
+
+El modelo conceptual de cooptrack, lo guarde como documento de Word en Documentos
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\package-lock.json
+===============================
+{
+  "name": "cooptrack",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "name": "cooptrack",
+      "version": "1.0.0",
+      "license": "ISC",
+      "dependencies": {
+        "bcrypt": "^6.0.0",
+        "dotenv": "^17.3.1",
+        "express": "^5.2.1",
+        "jsonwebtoken": "^9.0.3",
+        "pg": "^8.20.0"
+      }
+    },
+    "node_modules/accepts": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/accepts/-/accepts-2.0.0.tgz",
+      "integrity": "sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==",
+      "license": "MIT",
+      "dependencies": {
+        "mime-types": "^3.0.0",
+        "negotiator": "^1.0.0"
+      },
+      "engines": {
+        "node": ">= 0.6"
+      }
+    },
+    "node_modules/bcrypt": {
+      "version": "6.0.0",
+      "resolved": "https://registry.npmjs.org/bcrypt/-/bcrypt-6.0.0.tgz",
+      "integrity": "sha512-cU8v/EGSrnH+HnxV2z0J7/blxH8gq7Xh2JFT6Aroax7UohdmiJJlxApMxtKfuI7z68NvvVcmR78k2LbT6efhRg==",
+      "hasInstallScript": true,
+      "license": "MIT",
+      "dependencies": {
+        "node-addon-api": "^8.3.0",
+        "node-gyp-build": "^4.8.4"
+      },
+      "engines": {
+        "node": ">= 18"
+      }
+    },
+    "node_modules/body-parser": {
+      "version": "2.2.2",
+      "resolved": "https://registry.npmjs.org/body-parser/-/body-parser-2.2.2.tgz",
+      "integrity": "sha512-oP5VkATKlNwcgvxi0vM0p/D3n2C3EReYVX+DNYs5TjZFn/oQt2j+4sVJtSMr18pdRr8wjTcBl6LoV+FUwzPmNA==",
+      "license": "MIT",
+      "dependencies": {
+        "bytes": "^3.1.2",
+        "content-type": "^1.0.5",
+        "debug": "^4.4.3",
+        "http-errors": "^2.0.0",
+        "iconv-lite": "^0.7.0",
+        "on-finished": "^2.4.1",
+        "qs": "^6.14.1",
+        "raw-body": "^3.0.1",
+        "type-is": "^2.0.1"
+      },
+      "engines": {
+        "node": ">=18"
+      },
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/express"
+      }
+    },
+    "node_modules/buffer-equal-constant-time": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/buffer-equal-constant-time/-/buffer-equal-constant-time-1.0.1.tgz",
+      "integrity": "sha512-zRpUiDwd/xk6ADqPMATG8vc9VPrkck7T07OIx0gnjmJAnHnTVXNQG3vfvWNuiZIkwu9KrKdA1iJKfsfTVxE6NA==",
+      "license": "BSD-3-Clause"
+    },
+    "node_modules/bytes": {
+      "version": "3.1.2",
+      "resolved": "https://registry.npmjs.org/bytes/-/bytes-3.1.2.tgz",
+      "integrity": "sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.8"
+      }
+    },
+    "node_modules/call-bind-apply-helpers": {
+      "version": "1.0.2",
+      "resolved": "https://registry.npmjs.org/call-bind-apply-helpers/-/call-bind-apply-helpers-1.0.2.tgz",
+      "integrity": "sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==",
+      "license": "MIT",
+      "dependencies": {
+        "es-errors": "^1.3.0",
+        "function-bind": "^1.1.2"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      }
+    },
+    "node_modules/call-bound": {
+      "version": "1.0.4",
+      "resolved": "https://registry.npmjs.org/call-bound/-/call-bound-1.0.4.tgz",
+      "integrity": "sha512-+ys997U96po4Kx/ABpBCqhA9EuxJaQWDQg7295H4hBphv3IZg0boBKuwYpt4YXp6MZ5AmZQnU/tyMTlRpaSejg==",
+      "license": "MIT",
+      "dependencies": {
+        "call-bind-apply-helpers": "^1.0.2",
+        "get-intrinsic": "^1.3.0"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/content-disposition": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/content-disposition/-/content-disposition-1.0.1.tgz",
+      "integrity": "sha512-oIXISMynqSqm241k6kcQ5UwttDILMK4BiurCfGEREw6+X9jkkpEe5T9FZaApyLGGOnFuyMWZpdolTXMtvEJ08Q==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=18"
+      },
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/express"
+      }
+    },
+    "node_modules/content-type": {
+      "version": "1.0.5",
+      "resolved": "https://registry.npmjs.org/content-type/-/content-type-1.0.5.tgz",
+      "integrity": "sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.6"
+      }
+    },
+    "node_modules/cookie": {
+      "version": "0.7.2",
+      "resolved": "https://registry.npmjs.org/cookie/-/cookie-0.7.2.tgz",
+      "integrity": "sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.6"
+      }
+    },
+    "node_modules/cookie-signature": {
+      "version": "1.2.2",
+      "resolved": "https://registry.npmjs.org/cookie-signature/-/cookie-signature-1.2.2.tgz",
+      "integrity": "sha512-D76uU73ulSXrD1UXF4KE2TMxVVwhsnCgfAyTg9k8P6KGZjlXKrOLe4dJQKI3Bxi5wjesZoFXJWElNWBjPZMbhg==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=6.6.0"
+      }
+    },
+    "node_modules/debug": {
+      "version": "4.4.3",
+      "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+      "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
+      "license": "MIT",
+      "dependencies": {
+        "ms": "^2.1.3"
+      },
+      "engines": {
+        "node": ">=6.0"
+      },
+      "peerDependenciesMeta": {
+        "supports-color": {
+          "optional": true
+        }
+      }
+    },
+    "node_modules/depd": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/depd/-/depd-2.0.0.tgz",
+      "integrity": "sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.8"
+      }
+    },
+    "node_modules/dotenv": {
+      "version": "17.3.1",
+      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-17.3.1.tgz",
+      "integrity": "sha512-IO8C/dzEb6O3F9/twg6ZLXz164a2fhTnEWb95H23Dm4OuN+92NmEAlTrupP9VW6Jm3sO26tQlqyvyi4CsnY9GA==",
+      "license": "BSD-2-Clause",
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://dotenvx.com"
+      }
+    },
+    "node_modules/dunder-proto": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/dunder-proto/-/dunder-proto-1.0.1.tgz",
+      "integrity": "sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==",
+      "license": "MIT",
+      "dependencies": {
+        "call-bind-apply-helpers": "^1.0.1",
+        "es-errors": "^1.3.0",
+        "gopd": "^1.2.0"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      }
+    },
+    "node_modules/ecdsa-sig-formatter": {
+      "version": "1.0.11",
+      "resolved": "https://registry.npmjs.org/ecdsa-sig-formatter/-/ecdsa-sig-formatter-1.0.11.tgz",
+      "integrity": "sha512-nagl3RYrbNv6kQkeJIpt6NJZy8twLB/2vtz6yN9Z4vRKHN4/QZJIEbqohALSgwKdnksuY3k5Addp5lg8sVoVcQ==",
+      "license": "Apache-2.0",
+      "dependencies": {
+        "safe-buffer": "^5.0.1"
+      }
+    },
+    "node_modules/ee-first": {
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/ee-first/-/ee-first-1.1.1.tgz",
+      "integrity": "sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==",
+      "license": "MIT"
+    },
+    "node_modules/encodeurl": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/encodeurl/-/encodeurl-2.0.0.tgz",
+      "integrity": "sha512-Q0n9HRi4m6JuGIV1eFlmvJB7ZEVxu93IrMyiMsGC0lrMJMWzRgx6WGquyfQgZVb31vhGgXnfmPNNXmxnOkRBrg==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.8"
+      }
+    },
+    "node_modules/es-define-property": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/es-define-property/-/es-define-property-1.0.1.tgz",
+      "integrity": "sha512-e3nRfgfUZ4rNGL232gUgX06QNyyez04KdjFrF+LTRoOXmrOgFKDg4BCdsjW8EnT69eqdYGmRpJwiPVYNrCaW3g==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.4"
+      }
+    },
+    "node_modules/es-errors": {
+      "version": "1.3.0",
+      "resolved": "https://registry.npmjs.org/es-errors/-/es-errors-1.3.0.tgz",
+      "integrity": "sha512-Zf5H2Kxt2xjTvbJvP2ZWLEICxA6j+hAmMzIlypy4xcBg1vKVnx89Wy0GbS+kf5cwCVFFzdCFh2XSCFNULS6csw==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.4"
+      }
+    },
+    "node_modules/es-object-atoms": {
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/es-object-atoms/-/es-object-atoms-1.1.1.tgz",
+      "integrity": "sha512-FGgH2h8zKNim9ljj7dankFPcICIK9Cp5bm+c2gQSYePhpaG5+esrLODihIorn+Pe6FGJzWhXQotPv73jTaldXA==",
+      "license": "MIT",
+      "dependencies": {
+        "es-errors": "^1.3.0"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      }
+    },
+    "node_modules/escape-html": {
+      "version": "1.0.3",
+      "resolved": "https://registry.npmjs.org/escape-html/-/escape-html-1.0.3.tgz",
+      "integrity": "sha512-NiSupZ4OeuGwr68lGIeym/ksIZMJodUGOSCZ/FSnTxcrekbvqrgdUxlJOMpijaKZVjAJrWrGs/6Jy8OMuyj9ow==",
+      "license": "MIT"
+    },
+    "node_modules/etag": {
+      "version": "1.8.1",
+      "resolved": "https://registry.npmjs.org/etag/-/etag-1.8.1.tgz",
+      "integrity": "sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.6"
+      }
+    },
+    "node_modules/express": {
+      "version": "5.2.1",
+      "resolved": "https://registry.npmjs.org/express/-/express-5.2.1.tgz",
+      "integrity": "sha512-hIS4idWWai69NezIdRt2xFVofaF4j+6INOpJlVOLDO8zXGpUVEVzIYk12UUi2JzjEzWL3IOAxcTubgz9Po0yXw==",
+      "license": "MIT",
+      "dependencies": {
+        "accepts": "^2.0.0",
+        "body-parser": "^2.2.1",
+        "content-disposition": "^1.0.0",
+        "content-type": "^1.0.5",
+        "cookie": "^0.7.1",
+        "cookie-signature": "^1.2.1",
+        "debug": "^4.4.0",
+        "depd": "^2.0.0",
+        "encodeurl": "^2.0.0",
+        "escape-html": "^1.0.3",
+        "etag": "^1.8.1",
+        "finalhandler": "^2.1.0",
+        "fresh": "^2.0.0",
+        "http-errors": "^2.0.0",
+        "merge-descriptors": "^2.0.0",
+        "mime-types": "^3.0.0",
+        "on-finished": "^2.4.1",
+        "once": "^1.4.0",
+        "parseurl": "^1.3.3",
+        "proxy-addr": "^2.0.7",
+        "qs": "^6.14.0",
+        "range-parser": "^1.2.1",
+        "router": "^2.2.0",
+        "send": "^1.1.0",
+        "serve-static": "^2.2.0",
+        "statuses": "^2.0.1",
+        "type-is": "^2.0.1",
+        "vary": "^1.1.2"
+      },
+      "engines": {
+        "node": ">= 18"
+      },
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/express"
+      }
+    },
+    "node_modules/finalhandler": {
+      "version": "2.1.1",
+      "resolved": "https://registry.npmjs.org/finalhandler/-/finalhandler-2.1.1.tgz",
+      "integrity": "sha512-S8KoZgRZN+a5rNwqTxlZZePjT/4cnm0ROV70LedRHZ0p8u9fRID0hJUZQpkKLzro8LfmC8sx23bY6tVNxv8pQA==",
+      "license": "MIT",
+      "dependencies": {
+        "debug": "^4.4.0",
+        "encodeurl": "^2.0.0",
+        "escape-html": "^1.0.3",
+        "on-finished": "^2.4.1",
+        "parseurl": "^1.3.3",
+        "statuses": "^2.0.1"
+      },
+      "engines": {
+        "node": ">= 18.0.0"
+      },
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/express"
+      }
+    },
+    "node_modules/forwarded": {
+      "version": "0.2.0",
+      "resolved": "https://registry.npmjs.org/forwarded/-/forwarded-0.2.0.tgz",
+      "integrity": "sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.6"
+      }
+    },
+    "node_modules/fresh": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/fresh/-/fresh-2.0.0.tgz",
+      "integrity": "sha512-Rx/WycZ60HOaqLKAi6cHRKKI7zxWbJ31MhntmtwMoaTeF7XFH9hhBp8vITaMidfljRQ6eYWCKkaTK+ykVJHP2A==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.8"
+      }
+    },
+    "node_modules/function-bind": {
+      "version": "1.1.2",
+      "resolved": "https://registry.npmjs.org/function-bind/-/function-bind-1.1.2.tgz",
+      "integrity": "sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==",
+      "license": "MIT",
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/get-intrinsic": {
+      "version": "1.3.0",
+      "resolved": "https://registry.npmjs.org/get-intrinsic/-/get-intrinsic-1.3.0.tgz",
+      "integrity": "sha512-9fSjSaos/fRIVIp+xSJlE6lfwhES7LNtKaCBIamHsjr2na1BiABJPo0mOjjz8GJDURarmCPGqaiVg5mfjb98CQ==",
+      "license": "MIT",
+      "dependencies": {
+        "call-bind-apply-helpers": "^1.0.2",
+        "es-define-property": "^1.0.1",
+        "es-errors": "^1.3.0",
+        "es-object-atoms": "^1.1.1",
+        "function-bind": "^1.1.2",
+        "get-proto": "^1.0.1",
+        "gopd": "^1.2.0",
+        "has-symbols": "^1.1.0",
+        "hasown": "^2.0.2",
+        "math-intrinsics": "^1.1.0"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/get-proto": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/get-proto/-/get-proto-1.0.1.tgz",
+      "integrity": "sha512-sTSfBjoXBp89JvIKIefqw7U2CCebsc74kiY6awiGogKtoSGbgjYE/G/+l9sF3MWFPNc9IcoOC4ODfKHfxFmp0g==",
+      "license": "MIT",
+      "dependencies": {
+        "dunder-proto": "^1.0.1",
+        "es-object-atoms": "^1.0.0"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      }
+    },
+    "node_modules/gopd": {
+      "version": "1.2.0",
+      "resolved": "https://registry.npmjs.org/gopd/-/gopd-1.2.0.tgz",
+      "integrity": "sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.4"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/has-symbols": {
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/has-symbols/-/has-symbols-1.1.0.tgz",
+      "integrity": "sha512-1cDNdwJ2Jaohmb3sg4OmKaMBwuC48sYni5HUw2DvsC8LjGTLK9h+eb1X6RyuOHe4hT0ULCW68iomhjUoKUqlPQ==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.4"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/hasown": {
+      "version": "2.0.2",
+      "resolved": "https://registry.npmjs.org/hasown/-/hasown-2.0.2.tgz",
+      "integrity": "sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==",
+      "license": "MIT",
+      "dependencies": {
+        "function-bind": "^1.1.2"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      }
+    },
+    "node_modules/http-errors": {
+      "version": "2.0.1",
+      "resolved": "https://registry.npmjs.org/http-errors/-/http-errors-2.0.1.tgz",
+      "integrity": "sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==",
+      "license": "MIT",
+      "dependencies": {
+        "depd": "~2.0.0",
+        "inherits": "~2.0.4",
+        "setprototypeof": "~1.2.0",
+        "statuses": "~2.0.2",
+        "toidentifier": "~1.0.1"
+      },
+      "engines": {
+        "node": ">= 0.8"
+      },
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/express"
+      }
+    },
+    "node_modules/iconv-lite": {
+      "version": "0.7.2",
+      "resolved": "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.7.2.tgz",
+      "integrity": "sha512-im9DjEDQ55s9fL4EYzOAv0yMqmMBSZp6G0VvFyTMPKWxiSBHUj9NW/qqLmXUwXrrM7AvqSlTCfvqRb0cM8yYqw==",
+      "license": "MIT",
+      "dependencies": {
+        "safer-buffer": ">= 2.1.2 < 3.0.0"
+      },
+      "engines": {
+        "node": ">=0.10.0"
+      },
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/express"
+      }
+    },
+    "node_modules/inherits": {
+      "version": "2.0.4",
+      "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.4.tgz",
+      "integrity": "sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==",
+      "license": "ISC"
+    },
+    "node_modules/ipaddr.js": {
+      "version": "1.9.1",
+      "resolved": "https://registry.npmjs.org/ipaddr.js/-/ipaddr.js-1.9.1.tgz",
+      "integrity": "sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.10"
+      }
+    },
+    "node_modules/is-promise": {
+      "version": "4.0.0",
+      "resolved": "https://registry.npmjs.org/is-promise/-/is-promise-4.0.0.tgz",
+      "integrity": "sha512-hvpoI6korhJMnej285dSg6nu1+e6uxs7zG3BYAm5byqDsgJNWwxzM6z6iZiAgQR4TJ30JmBTOwqZUw3WlyH3AQ==",
+      "license": "MIT"
+    },
+    "node_modules/jsonwebtoken": {
+      "version": "9.0.3",
+      "resolved": "https://registry.npmjs.org/jsonwebtoken/-/jsonwebtoken-9.0.3.tgz",
+      "integrity": "sha512-MT/xP0CrubFRNLNKvxJ2BYfy53Zkm++5bX9dtuPbqAeQpTVe0MQTFhao8+Cp//EmJp244xt6Drw/GVEGCUj40g==",
+      "license": "MIT",
+      "dependencies": {
+        "jws": "^4.0.1",
+        "lodash.includes": "^4.3.0",
+        "lodash.isboolean": "^3.0.3",
+        "lodash.isinteger": "^4.0.4",
+        "lodash.isnumber": "^3.0.3",
+        "lodash.isplainobject": "^4.0.6",
+        "lodash.isstring": "^4.0.1",
+        "lodash.once": "^4.0.0",
+        "ms": "^2.1.1",
+        "semver": "^7.5.4"
+      },
+      "engines": {
+        "node": ">=12",
+        "npm": ">=6"
+      }
+    },
+    "node_modules/jwa": {
+      "version": "2.0.1",
+      "resolved": "https://registry.npmjs.org/jwa/-/jwa-2.0.1.tgz",
+      "integrity": "sha512-hRF04fqJIP8Abbkq5NKGN0Bbr3JxlQ+qhZufXVr0DvujKy93ZCbXZMHDL4EOtodSbCWxOqR8MS1tXA5hwqCXDg==",
+      "license": "MIT",
+      "dependencies": {
+        "buffer-equal-constant-time": "^1.0.1",
+        "ecdsa-sig-formatter": "1.0.11",
+        "safe-buffer": "^5.0.1"
+      }
+    },
+    "node_modules/jws": {
+      "version": "4.0.1",
+      "resolved": "https://registry.npmjs.org/jws/-/jws-4.0.1.tgz",
+      "integrity": "sha512-EKI/M/yqPncGUUh44xz0PxSidXFr/+r0pA70+gIYhjv+et7yxM+s29Y+VGDkovRofQem0fs7Uvf4+YmAdyRduA==",
+      "license": "MIT",
+      "dependencies": {
+        "jwa": "^2.0.1",
+        "safe-buffer": "^5.0.1"
+      }
+    },
+    "node_modules/lodash.includes": {
+      "version": "4.3.0",
+      "resolved": "https://registry.npmjs.org/lodash.includes/-/lodash.includes-4.3.0.tgz",
+      "integrity": "sha512-W3Bx6mdkRTGtlJISOvVD/lbqjTlPPUDTMnlXZFnVwi9NKJ6tiAk6LVdlhZMm17VZisqhKcgzpO5Wz91PCt5b0w==",
+      "license": "MIT"
+    },
+    "node_modules/lodash.isboolean": {
+      "version": "3.0.3",
+      "resolved": "https://registry.npmjs.org/lodash.isboolean/-/lodash.isboolean-3.0.3.tgz",
+      "integrity": "sha512-Bz5mupy2SVbPHURB98VAcw+aHh4vRV5IPNhILUCsOzRmsTmSQ17jIuqopAentWoehktxGd9e/hbIXq980/1QJg==",
+      "license": "MIT"
+    },
+    "node_modules/lodash.isinteger": {
+      "version": "4.0.4",
+      "resolved": "https://registry.npmjs.org/lodash.isinteger/-/lodash.isinteger-4.0.4.tgz",
+      "integrity": "sha512-DBwtEWN2caHQ9/imiNeEA5ys1JoRtRfY3d7V9wkqtbycnAmTvRRmbHKDV4a0EYc678/dia0jrte4tjYwVBaZUA==",
+      "license": "MIT"
+    },
+    "node_modules/lodash.isnumber": {
+      "version": "3.0.3",
+      "resolved": "https://registry.npmjs.org/lodash.isnumber/-/lodash.isnumber-3.0.3.tgz",
+      "integrity": "sha512-QYqzpfwO3/CWf3XP+Z+tkQsfaLL/EnUlXWVkIk5FUPc4sBdTehEqZONuyRt2P67PXAk+NXmTBcc97zw9t1FQrw==",
+      "license": "MIT"
+    },
+    "node_modules/lodash.isplainobject": {
+      "version": "4.0.6",
+      "resolved": "https://registry.npmjs.org/lodash.isplainobject/-/lodash.isplainobject-4.0.6.tgz",
+      "integrity": "sha512-oSXzaWypCMHkPC3NvBEaPHf0KsA5mvPrOPgQWDsbg8n7orZ290M0BmC/jgRZ4vcJ6DTAhjrsSYgdsW/F+MFOBA==",
+      "license": "MIT"
+    },
+    "node_modules/lodash.isstring": {
+      "version": "4.0.1",
+      "resolved": "https://registry.npmjs.org/lodash.isstring/-/lodash.isstring-4.0.1.tgz",
+      "integrity": "sha512-0wJxfxH1wgO3GrbuP+dTTk7op+6L41QCXbGINEmD+ny/G/eCqGzxyCsh7159S+mgDDcoarnBw6PC1PS5+wUGgw==",
+      "license": "MIT"
+    },
+    "node_modules/lodash.once": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/lodash.once/-/lodash.once-4.1.1.tgz",
+      "integrity": "sha512-Sb487aTOCr9drQVL8pIxOzVhafOjZN9UU54hiN8PU3uAiSV7lx1yYNpbNmex2PK6dSJoNTSJUUswT651yww3Mg==",
+      "license": "MIT"
+    },
+    "node_modules/math-intrinsics": {
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/math-intrinsics/-/math-intrinsics-1.1.0.tgz",
+      "integrity": "sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.4"
+      }
+    },
+    "node_modules/media-typer": {
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/media-typer/-/media-typer-1.1.0.tgz",
+      "integrity": "sha512-aisnrDP4GNe06UcKFnV5bfMNPBUw4jsLGaWwWfnH3v02GnBuXX2MCVn5RbrWo0j3pczUilYblq7fQ7Nw2t5XKw==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.8"
+      }
+    },
+    "node_modules/merge-descriptors": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/merge-descriptors/-/merge-descriptors-2.0.0.tgz",
+      "integrity": "sha512-Snk314V5ayFLhp3fkUREub6WtjBfPdCPY1Ln8/8munuLuiYhsABgBVWsozAG+MWMbVEvcdcpbi9R7ww22l9Q3g==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=18"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/mime-db": {
+      "version": "1.54.0",
+      "resolved": "https://registry.npmjs.org/mime-db/-/mime-db-1.54.0.tgz",
+      "integrity": "sha512-aU5EJuIN2WDemCcAp2vFBfp/m4EAhWJnUNSSw0ixs7/kXbd6Pg64EmwJkNdFhB8aWt1sH2CTXrLxo/iAGV3oPQ==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.6"
+      }
+    },
+    "node_modules/mime-types": {
+      "version": "3.0.2",
+      "resolved": "https://registry.npmjs.org/mime-types/-/mime-types-3.0.2.tgz",
+      "integrity": "sha512-Lbgzdk0h4juoQ9fCKXW4by0UJqj+nOOrI9MJ1sSj4nI8aI2eo1qmvQEie4VD1glsS250n15LsWsYtCugiStS5A==",
+      "license": "MIT",
+      "dependencies": {
+        "mime-db": "^1.54.0"
+      },
+      "engines": {
+        "node": ">=18"
+      },
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/express"
+      }
+    },
+    "node_modules/ms": {
+      "version": "2.1.3",
+      "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+      "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
+      "license": "MIT"
+    },
+    "node_modules/negotiator": {
+      "version": "1.0.0",
+      "resolved": "https://registry.npmjs.org/negotiator/-/negotiator-1.0.0.tgz",
+      "integrity": "sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.6"
+      }
+    },
+    "node_modules/node-addon-api": {
+      "version": "8.6.0",
+      "resolved": "https://registry.npmjs.org/node-addon-api/-/node-addon-api-8.6.0.tgz",
+      "integrity": "sha512-gBVjCaqDlRUk0EwoPNKzIr9KkS9041G/q31IBShPs1Xz6UTA+EXdZADbzqAJQrpDRq71CIMnOP5VMut3SL0z5Q==",
+      "license": "MIT",
+      "engines": {
+        "node": "^18 || ^20 || >= 21"
+      }
+    },
+    "node_modules/node-gyp-build": {
+      "version": "4.8.4",
+      "resolved": "https://registry.npmjs.org/node-gyp-build/-/node-gyp-build-4.8.4.tgz",
+      "integrity": "sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==",
+      "license": "MIT",
+      "bin": {
+        "node-gyp-build": "bin.js",
+        "node-gyp-build-optional": "optional.js",
+        "node-gyp-build-test": "build-test.js"
+      }
+    },
+    "node_modules/object-inspect": {
+      "version": "1.13.4",
+      "resolved": "https://registry.npmjs.org/object-inspect/-/object-inspect-1.13.4.tgz",
+      "integrity": "sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.4"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/on-finished": {
+      "version": "2.4.1",
+      "resolved": "https://registry.npmjs.org/on-finished/-/on-finished-2.4.1.tgz",
+      "integrity": "sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==",
+      "license": "MIT",
+      "dependencies": {
+        "ee-first": "1.1.1"
+      },
+      "engines": {
+        "node": ">= 0.8"
+      }
+    },
+    "node_modules/once": {
+      "version": "1.4.0",
+      "resolved": "https://registry.npmjs.org/once/-/once-1.4.0.tgz",
+      "integrity": "sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==",
+      "license": "ISC",
+      "dependencies": {
+        "wrappy": "1"
+      }
+    },
+    "node_modules/parseurl": {
+      "version": "1.3.3",
+      "resolved": "https://registry.npmjs.org/parseurl/-/parseurl-1.3.3.tgz",
+      "integrity": "sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.8"
+      }
+    },
+    "node_modules/path-to-regexp": {
+      "version": "8.3.0",
+      "resolved": "https://registry.npmjs.org/path-to-regexp/-/path-to-regexp-8.3.0.tgz",
+      "integrity": "sha512-7jdwVIRtsP8MYpdXSwOS0YdD0Du+qOoF/AEPIt88PcCFrZCzx41oxku1jD88hZBwbNUIEfpqvuhjFaMAqMTWnA==",
+      "license": "MIT",
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/express"
+      }
+    },
+    "node_modules/pg": {
+      "version": "8.20.0",
+      "resolved": "https://registry.npmjs.org/pg/-/pg-8.20.0.tgz",
+      "integrity": "sha512-ldhMxz2r8fl/6QkXnBD3CR9/xg694oT6DZQ2s6c/RI28OjtSOpxnPrUCGOBJ46RCUxcWdx3p6kw/xnDHjKvaRA==",
+      "license": "MIT",
+      "dependencies": {
+        "pg-connection-string": "^2.12.0",
+        "pg-pool": "^3.13.0",
+        "pg-protocol": "^1.13.0",
+        "pg-types": "2.2.0",
+        "pgpass": "1.0.5"
+      },
+      "engines": {
+        "node": ">= 16.0.0"
+      },
+      "optionalDependencies": {
+        "pg-cloudflare": "^1.3.0"
+      },
+      "peerDependencies": {
+        "pg-native": ">=3.0.1"
+      },
+      "peerDependenciesMeta": {
+        "pg-native": {
+          "optional": true
+        }
+      }
+    },
+    "node_modules/pg-cloudflare": {
+      "version": "1.3.0",
+      "resolved": "https://registry.npmjs.org/pg-cloudflare/-/pg-cloudflare-1.3.0.tgz",
+      "integrity": "sha512-6lswVVSztmHiRtD6I8hw4qP/nDm1EJbKMRhf3HCYaqud7frGysPv7FYJ5noZQdhQtN2xJnimfMtvQq21pdbzyQ==",
+      "license": "MIT",
+      "optional": true
+    },
+    "node_modules/pg-connection-string": {
+      "version": "2.12.0",
+      "resolved": "https://registry.npmjs.org/pg-connection-string/-/pg-connection-string-2.12.0.tgz",
+      "integrity": "sha512-U7qg+bpswf3Cs5xLzRqbXbQl85ng0mfSV/J0nnA31MCLgvEaAo7CIhmeyrmJpOr7o+zm0rXK+hNnT5l9RHkCkQ==",
+      "license": "MIT"
+    },
+    "node_modules/pg-int8": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/pg-int8/-/pg-int8-1.0.1.tgz",
+      "integrity": "sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==",
+      "license": "ISC",
+      "engines": {
+        "node": ">=4.0.0"
+      }
+    },
+    "node_modules/pg-pool": {
+      "version": "3.13.0",
+      "resolved": "https://registry.npmjs.org/pg-pool/-/pg-pool-3.13.0.tgz",
+      "integrity": "sha512-gB+R+Xud1gLFuRD/QgOIgGOBE2KCQPaPwkzBBGC9oG69pHTkhQeIuejVIk3/cnDyX39av2AxomQiyPT13WKHQA==",
+      "license": "MIT",
+      "peerDependencies": {
+        "pg": ">=8.0"
+      }
+    },
+    "node_modules/pg-protocol": {
+      "version": "1.13.0",
+      "resolved": "https://registry.npmjs.org/pg-protocol/-/pg-protocol-1.13.0.tgz",
+      "integrity": "sha512-zzdvXfS6v89r6v7OcFCHfHlyG/wvry1ALxZo4LqgUoy7W9xhBDMaqOuMiF3qEV45VqsN6rdlcehHrfDtlCPc8w==",
+      "license": "MIT"
+    },
+    "node_modules/pg-types": {
+      "version": "2.2.0",
+      "resolved": "https://registry.npmjs.org/pg-types/-/pg-types-2.2.0.tgz",
+      "integrity": "sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==",
+      "license": "MIT",
+      "dependencies": {
+        "pg-int8": "1.0.1",
+        "postgres-array": "~2.0.0",
+        "postgres-bytea": "~1.0.0",
+        "postgres-date": "~1.0.4",
+        "postgres-interval": "^1.1.0"
+      },
+      "engines": {
+        "node": ">=4"
+      }
+    },
+    "node_modules/pgpass": {
+      "version": "1.0.5",
+      "resolved": "https://registry.npmjs.org/pgpass/-/pgpass-1.0.5.tgz",
+      "integrity": "sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==",
+      "license": "MIT",
+      "dependencies": {
+        "split2": "^4.1.0"
+      }
+    },
+    "node_modules/postgres-array": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/postgres-array/-/postgres-array-2.0.0.tgz",
+      "integrity": "sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=4"
+      }
+    },
+    "node_modules/postgres-bytea": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/postgres-bytea/-/postgres-bytea-1.0.1.tgz",
+      "integrity": "sha512-5+5HqXnsZPE65IJZSMkZtURARZelel2oXUEO8rH83VS/hxH5vv1uHquPg5wZs8yMAfdv971IU+kcPUczi7NVBQ==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=0.10.0"
+      }
+    },
+    "node_modules/postgres-date": {
+      "version": "1.0.7",
+      "resolved": "https://registry.npmjs.org/postgres-date/-/postgres-date-1.0.7.tgz",
+      "integrity": "sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=0.10.0"
+      }
+    },
+    "node_modules/postgres-interval": {
+      "version": "1.2.0",
+      "resolved": "https://registry.npmjs.org/postgres-interval/-/postgres-interval-1.2.0.tgz",
+      "integrity": "sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==",
+      "license": "MIT",
+      "dependencies": {
+        "xtend": "^4.0.0"
+      },
+      "engines": {
+        "node": ">=0.10.0"
+      }
+    },
+    "node_modules/proxy-addr": {
+      "version": "2.0.7",
+      "resolved": "https://registry.npmjs.org/proxy-addr/-/proxy-addr-2.0.7.tgz",
+      "integrity": "sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==",
+      "license": "MIT",
+      "dependencies": {
+        "forwarded": "0.2.0",
+        "ipaddr.js": "1.9.1"
+      },
+      "engines": {
+        "node": ">= 0.10"
+      }
+    },
+    "node_modules/qs": {
+      "version": "6.15.0",
+      "resolved": "https://registry.npmjs.org/qs/-/qs-6.15.0.tgz",
+      "integrity": "sha512-mAZTtNCeetKMH+pSjrb76NAM8V9a05I9aBZOHztWy/UqcJdQYNsf59vrRKWnojAT9Y+GbIvoTBC++CPHqpDBhQ==",
+      "license": "BSD-3-Clause",
+      "dependencies": {
+        "side-channel": "^1.1.0"
+      },
+      "engines": {
+        "node": ">=0.6"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/range-parser": {
+      "version": "1.2.1",
+      "resolved": "https://registry.npmjs.org/range-parser/-/range-parser-1.2.1.tgz",
+      "integrity": "sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.6"
+      }
+    },
+    "node_modules/raw-body": {
+      "version": "3.0.2",
+      "resolved": "https://registry.npmjs.org/raw-body/-/raw-body-3.0.2.tgz",
+      "integrity": "sha512-K5zQjDllxWkf7Z5xJdV0/B0WTNqx6vxG70zJE4N0kBs4LovmEYWJzQGxC9bS9RAKu3bgM40lrd5zoLJ12MQ5BA==",
+      "license": "MIT",
+      "dependencies": {
+        "bytes": "~3.1.2",
+        "http-errors": "~2.0.1",
+        "iconv-lite": "~0.7.0",
+        "unpipe": "~1.0.0"
+      },
+      "engines": {
+        "node": ">= 0.10"
+      }
+    },
+    "node_modules/router": {
+      "version": "2.2.0",
+      "resolved": "https://registry.npmjs.org/router/-/router-2.2.0.tgz",
+      "integrity": "sha512-nLTrUKm2UyiL7rlhapu/Zl45FwNgkZGaCpZbIHajDYgwlJCOzLSk+cIPAnsEqV955GjILJnKbdQC1nVPz+gAYQ==",
+      "license": "MIT",
+      "dependencies": {
+        "debug": "^4.4.0",
+        "depd": "^2.0.0",
+        "is-promise": "^4.0.0",
+        "parseurl": "^1.3.3",
+        "path-to-regexp": "^8.0.0"
+      },
+      "engines": {
+        "node": ">= 18"
+      }
+    },
+    "node_modules/safe-buffer": {
+      "version": "5.2.1",
+      "resolved": "https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.2.1.tgz",
+      "integrity": "sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==",
+      "funding": [
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/feross"
+        },
+        {
+          "type": "patreon",
+          "url": "https://www.patreon.com/feross"
+        },
+        {
+          "type": "consulting",
+          "url": "https://feross.org/support"
+        }
+      ],
+      "license": "MIT"
+    },
+    "node_modules/safer-buffer": {
+      "version": "2.1.2",
+      "resolved": "https://registry.npmjs.org/safer-buffer/-/safer-buffer-2.1.2.tgz",
+      "integrity": "sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==",
+      "license": "MIT"
+    },
+    "node_modules/semver": {
+      "version": "7.7.4",
+      "resolved": "https://registry.npmjs.org/semver/-/semver-7.7.4.tgz",
+      "integrity": "sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==",
+      "license": "ISC",
+      "bin": {
+        "semver": "bin/semver.js"
+      },
+      "engines": {
+        "node": ">=10"
+      }
+    },
+    "node_modules/send": {
+      "version": "1.2.1",
+      "resolved": "https://registry.npmjs.org/send/-/send-1.2.1.tgz",
+      "integrity": "sha512-1gnZf7DFcoIcajTjTwjwuDjzuz4PPcY2StKPlsGAQ1+YH20IRVrBaXSWmdjowTJ6u8Rc01PoYOGHXfP1mYcZNQ==",
+      "license": "MIT",
+      "dependencies": {
+        "debug": "^4.4.3",
+        "encodeurl": "^2.0.0",
+        "escape-html": "^1.0.3",
+        "etag": "^1.8.1",
+        "fresh": "^2.0.0",
+        "http-errors": "^2.0.1",
+        "mime-types": "^3.0.2",
+        "ms": "^2.1.3",
+        "on-finished": "^2.4.1",
+        "range-parser": "^1.2.1",
+        "statuses": "^2.0.2"
+      },
+      "engines": {
+        "node": ">= 18"
+      },
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/express"
+      }
+    },
+    "node_modules/serve-static": {
+      "version": "2.2.1",
+      "resolved": "https://registry.npmjs.org/serve-static/-/serve-static-2.2.1.tgz",
+      "integrity": "sha512-xRXBn0pPqQTVQiC8wyQrKs2MOlX24zQ0POGaj0kultvoOCstBQM5yvOhAVSUwOMjQtTvsPWoNCHfPGwaaQJhTw==",
+      "license": "MIT",
+      "dependencies": {
+        "encodeurl": "^2.0.0",
+        "escape-html": "^1.0.3",
+        "parseurl": "^1.3.3",
+        "send": "^1.2.0"
+      },
+      "engines": {
+        "node": ">= 18"
+      },
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/express"
+      }
+    },
+    "node_modules/setprototypeof": {
+      "version": "1.2.0",
+      "resolved": "https://registry.npmjs.org/setprototypeof/-/setprototypeof-1.2.0.tgz",
+      "integrity": "sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==",
+      "license": "ISC"
+    },
+    "node_modules/side-channel": {
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/side-channel/-/side-channel-1.1.0.tgz",
+      "integrity": "sha512-ZX99e6tRweoUXqR+VBrslhda51Nh5MTQwou5tnUDgbtyM0dBgmhEDtWGP/xbKn6hqfPRHujUNwz5fy/wbbhnpw==",
+      "license": "MIT",
+      "dependencies": {
+        "es-errors": "^1.3.0",
+        "object-inspect": "^1.13.3",
+        "side-channel-list": "^1.0.0",
+        "side-channel-map": "^1.0.1",
+        "side-channel-weakmap": "^1.0.2"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/side-channel-list": {
+      "version": "1.0.0",
+      "resolved": "https://registry.npmjs.org/side-channel-list/-/side-channel-list-1.0.0.tgz",
+      "integrity": "sha512-FCLHtRD/gnpCiCHEiJLOwdmFP+wzCmDEkc9y7NsYxeF4u7Btsn1ZuwgwJGxImImHicJArLP4R0yX4c2KCrMrTA==",
+      "license": "MIT",
+      "dependencies": {
+        "es-errors": "^1.3.0",
+        "object-inspect": "^1.13.3"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/side-channel-map": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/side-channel-map/-/side-channel-map-1.0.1.tgz",
+      "integrity": "sha512-VCjCNfgMsby3tTdo02nbjtM/ewra6jPHmpThenkTYh8pG9ucZ/1P8So4u4FGBek/BjpOVsDCMoLA/iuBKIFXRA==",
+      "license": "MIT",
+      "dependencies": {
+        "call-bound": "^1.0.2",
+        "es-errors": "^1.3.0",
+        "get-intrinsic": "^1.2.5",
+        "object-inspect": "^1.13.3"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/side-channel-weakmap": {
+      "version": "1.0.2",
+      "resolved": "https://registry.npmjs.org/side-channel-weakmap/-/side-channel-weakmap-1.0.2.tgz",
+      "integrity": "sha512-WPS/HvHQTYnHisLo9McqBHOJk2FkHO/tlpvldyrnem4aeQp4hai3gythswg6p01oSoTl58rcpiFAjF2br2Ak2A==",
+      "license": "MIT",
+      "dependencies": {
+        "call-bound": "^1.0.2",
+        "es-errors": "^1.3.0",
+        "get-intrinsic": "^1.2.5",
+        "object-inspect": "^1.13.3",
+        "side-channel-map": "^1.0.1"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/split2": {
+      "version": "4.2.0",
+      "resolved": "https://registry.npmjs.org/split2/-/split2-4.2.0.tgz",
+      "integrity": "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==",
+      "license": "ISC",
+      "engines": {
+        "node": ">= 10.x"
+      }
+    },
+    "node_modules/statuses": {
+      "version": "2.0.2",
+      "resolved": "https://registry.npmjs.org/statuses/-/statuses-2.0.2.tgz",
+      "integrity": "sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.8"
+      }
+    },
+    "node_modules/toidentifier": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/toidentifier/-/toidentifier-1.0.1.tgz",
+      "integrity": "sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=0.6"
+      }
+    },
+    "node_modules/type-is": {
+      "version": "2.0.1",
+      "resolved": "https://registry.npmjs.org/type-is/-/type-is-2.0.1.tgz",
+      "integrity": "sha512-OZs6gsjF4vMp32qrCbiVSkrFmXtG/AZhY3t0iAMrMBiAZyV9oALtXO8hsrHbMXF9x6L3grlFuwW2oAz7cav+Gw==",
+      "license": "MIT",
+      "dependencies": {
+        "content-type": "^1.0.5",
+        "media-typer": "^1.1.0",
+        "mime-types": "^3.0.0"
+      },
+      "engines": {
+        "node": ">= 0.6"
+      }
+    },
+    "node_modules/unpipe": {
+      "version": "1.0.0",
+      "resolved": "https://registry.npmjs.org/unpipe/-/unpipe-1.0.0.tgz",
+      "integrity": "sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.8"
+      }
+    },
+    "node_modules/vary": {
+      "version": "1.1.2",
+      "resolved": "https://registry.npmjs.org/vary/-/vary-1.1.2.tgz",
+      "integrity": "sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.8"
+      }
+    },
+    "node_modules/wrappy": {
+      "version": "1.0.2",
+      "resolved": "https://registry.npmjs.org/wrappy/-/wrappy-1.0.2.tgz",
+      "integrity": "sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==",
+      "license": "ISC"
+    },
+    "node_modules/xtend": {
+      "version": "4.0.2",
+      "resolved": "https://registry.npmjs.org/xtend/-/xtend-4.0.2.tgz",
+      "integrity": "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=0.4"
+      }
+    }
+  }
+}
+
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\package.json
+===============================
+{
+  "name": "cooptrack",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.20.0"
+  }
+}
+
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\server.js
+===============================
+const express = require('express');
+const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const SALT_ROUNDS = 10;
+const JWT_SECRET = process.env.JWT_SECRET;
+
+app.use(express.json());
+app.use(express.static('public'));
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim() !== '';
+}
+
+function isProvided(value) {
+  return value !== undefined && value !== null && value !== '';
+}
+
+function isValidDateString(value) {
+  if (!isProvided(value)) return false;
+  const date = new Date(value);
+  return !Number.isNaN(date.getTime());
+}
+
+function normalizeString(value) {
+  return isNonEmptyString(value) ? value.trim() : null;
+}
+
+function normalizeDate(value) {
+  return isProvided(value) ? value : null;
+}
+
+function isValidNumber(value) {
+  if (!isProvided(value)) return false;
+  return !Number.isNaN(Number(value));
+}
+
+function normalizeAmount(value) {
+  if (!isProvided(value)) return null;
+  const num = Number(value);
+  return Number.isNaN(num) ? null : num;
+}
+
+function requireAuth(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        ok: false,
+        error: 'Token requerido',
+      });
+    }
+
+    const token = authHeader.slice(7);
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    req.auth = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      ok: false,
+      error: 'Token invÃ¡lido o expirado',
+    });
+  }
+}
+
+// Health check
+app.get('/health', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT NOW() AS database_time');
+
+    res.json({
+      ok: true,
+      message: 'CoopTrack server running',
+      databaseTime: result.rows[0].database_time,
+    });
+  } catch (error) {
+    console.error('Health error:', error);
+
+    res.status(500).json({
+      ok: false,
+      error: 'Database connection failed',
+    });
+  }
+});
+
+// Crear usuario
+app.post('/users', async (req, res) => {
+  try {
+    const {
+      nickname,
+      email,
+      phone,
+      password,
+      password_hash,
+      profile_photo_url,
+      birth_date,
+    } = req.body;
+
+    const rawPassword = password || password_hash;
+
+    if (!nickname) {
+      return res.status(400).json({
+        ok: false,
+        error: 'nickname is required',
+      });
+    }
+
+    if (!email && !phone) {
+      return res.status(400).json({
+        ok: false,
+        error: 'email or phone is required',
+      });
+    }
+
+    if (!rawPassword) {
+      return res.status(400).json({
+        ok: false,
+        error: 'password is required',
+      });
+    }
+
+    if (isProvided(birth_date) && !isValidDateString(birth_date)) {
+      return res.status(400).json({
+        ok: false,
+        error: 'birth_date invÃ¡lida',
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(rawPassword, SALT_ROUNDS);
+
+    const query = `
+      INSERT INTO users
+      (
+        nickname,
+        email,
+        phone,
+        password_hash,
+        profile_photo_url,
+        birth_date
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING
+        id,
+        nickname,
+        email,
+        phone,
+        profile_photo_url,
+        birth_date,
+        user_type,
+        created_at,
+        updated_at
+    `;
+
+    const values = [
+      nickname,
+      email || null,
+      phone || null,
+      hashedPassword,
+      profile_photo_url || null,
+      normalizeDate(birth_date),
+    ];
+
+    const result = await pool.query(query, values);
+
+    res.status(201).json({
+      ok: true,
+      user: result.rows[0],
+    });
+  } catch (error) {
+    console.error('POST /users error:', error);
+
+    if (error.code === '23505') {
+      return res.status(409).json({
+        ok: false,
+        error: 'email or phone already exists',
+      });
+    }
+
+    res.status(500).json({
+      ok: false,
+      error: 'Could not create user',
+    });
+  }
+});
+
+// Obtener todos los usuarios
+app.get('/users', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, nickname, email, phone, profile_photo_url, birth_date, user_type, created_at
+      FROM users
+      ORDER BY id
+    `);
+
+    res.json({
+      ok: true,
+      users: result.rows,
+    });
+  } catch (error) {
+    console.error('GET /users error:', error);
+
+    res.status(500).json({
+      ok: false,
+      error: 'Could not fetch users',
+    });
+  }
+});
+
+// Borrar usuario
+app.delete('/users/:id', async (req, res) => {
+  const { id } = req.params;
+  const userId = Number(id);
+
+  if (Number.isNaN(userId)) {
+    return res.status(400).json({
+      ok: false,
+      error: 'Invalid user id',
+    });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const userCheck = await client.query(
+      `
+      SELECT id, nickname, email, phone
+      FROM users
+      WHERE id = $1
+      `,
+      [userId]
+    );
+
+    if (userCheck.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        ok: false,
+        error: 'User not found',
+      });
+    }
+
+    const decksResult = await client.query(
+      `
+      SELECT id
+      FROM decks
+      WHERE created_by = $1
+      `,
+      [userId]
+    );
+
+    const deckIds = decksResult.rows.map((row) => row.id);
+
+    await client.query(
+      `
+      DELETE FROM records
+      WHERE user_id = $1
+      `,
+      [userId]
+    );
+
+    await client.query(
+      `
+      DELETE FROM deck_members
+      WHERE user_id = $1
+      `,
+      [userId]
+    );
+
+    if (deckIds.length > 0) {
+      await client.query(
+        `
+        DELETE FROM records
+        WHERE deck_id = ANY($1::int[])
+        `,
+        [deckIds]
+      );
+
+      await client.query(
+        `
+        DELETE FROM deck_members
+        WHERE deck_id = ANY($1::int[])
+        `,
+        [deckIds]
+      );
+
+      await client.query(
+        `
+        DELETE FROM decks
+        WHERE id = ANY($1::int[])
+        `,
+        [deckIds]
+      );
+    }
+
+    const deleteResult = await client.query(
+      `
+      DELETE FROM users
+      WHERE id = $1
+      RETURNING id, nickname, email, phone
+      `,
+      [userId]
+    );
+
+    await client.query('COMMIT');
+
+    res.json({
+      ok: true,
+      message: 'User deleted',
+      user: deleteResult.rows[0],
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('DELETE /users/:id error:', error);
+
+    res.status(500).json({
+      ok: false,
+      error: 'Could not delete user',
+    });
+  } finally {
+    client.release();
+  }
+});
+
+// Login
+app.post('/login', async (req, res) => {
+  try {
+    const { login, password } = req.body;
+
+    if (!login) {
+      return res.status(400).json({
+        ok: false,
+        error: 'login is required',
+      });
+    }
+
+    if (!password) {
+      return res.status(400).json({
+        ok: false,
+        error: 'password is required',
+      });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT
+        id,
+        nickname,
+        email,
+        phone,
+        password_hash,
+        profile_photo_url,
+        birth_date,
+        user_type,
+        created_at,
+        updated_at
+      FROM users
+      WHERE email = $1 OR phone = $1
+      LIMIT 1
+      `,
+      [login]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        ok: false,
+        error: 'User not found',
+      });
+    }
+
+    const user = result.rows[0];
+    const passwordMatches = await bcrypt.compare(password, user.password_hash);
+
+    if (!passwordMatches) {
+      return res.status(401).json({
+        ok: false,
+        error: 'Invalid password',
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        nickname: user.nickname,
+        userType: user.user_type,
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      ok: true,
+      token,
+      user: {
+        id: user.id,
+        nickname: user.nickname,
+        email: user.email,
+        phone: user.phone,
+        profile_photo_url: user.profile_photo_url,
+        birth_date: user.birth_date,
+        user_type: user.user_type,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+      },
+    });
+  } catch (error) {
+    console.error('POST /login error:', error);
+
+    res.status(500).json({
+      ok: false,
+      error: 'Could not login',
+    });
+  }
+});
+
+// Perfil del usuario autenticado
+app.get('/me', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const result = await pool.query(
+      `
+      SELECT
+        id,
+        nickname,
+        email,
+        phone,
+        profile_photo_url,
+        birth_date,
+        user_type,
+        created_at,
+        updated_at
+      FROM users
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        error: 'User not found',
+      });
+    }
+
+    res.json({
+      ok: true,
+      user: result.rows[0],
+    });
+  } catch (error) {
+    console.error('GET /me error:', error);
+
+    res.status(500).json({
+      ok: false,
+      error: 'Could not fetch profile',
+    });
+  }
+});
+
+// Editar perfil del usuario autenticado
+app.put('/me', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const {
+      nickname,
+      email,
+      phone,
+      profile_photo_url,
+      birth_date,
+    } = req.body;
+
+    if (!isNonEmptyString(nickname)) {
+      return res.status(400).json({
+        ok: false,
+        error: 'nickname es obligatorio',
+      });
+    }
+
+    if (!isNonEmptyString(email)) {
+      return res.status(400).json({
+        ok: false,
+        error: 'email es obligatorio',
+      });
+    }
+
+    if (isProvided(birth_date) && !isValidDateString(birth_date)) {
+      return res.status(400).json({
+        ok: false,
+        error: 'birth_date invÃ¡lida',
+      });
+    }
+
+    const result = await pool.query(
+      `
+      UPDATE users
+      SET
+        nickname = $1,
+        email = $2,
+        phone = $3,
+        profile_photo_url = $4,
+        birth_date = $5,
+        updated_at = NOW()
+      WHERE id = $6
+      RETURNING
+        id,
+        nickname,
+        email,
+        phone,
+        profile_photo_url,
+        birth_date,
+        user_type,
+        created_at,
+        updated_at
+      `,
+      [
+        normalizeString(nickname),
+        normalizeString(email),
+        normalizeString(phone),
+        normalizeString(profile_photo_url),
+        normalizeDate(birth_date),
+        userId,
+      ]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        error: 'User not found',
+      });
+    }
+
+    res.json({
+      ok: true,
+      message: 'Perfil actualizado',
+      user: result.rows[0],
+    });
+  } catch (error) {
+    console.error('PUT /me error:', error);
+
+    if (error.code === '23505') {
+      return res.status(409).json({
+        ok: false,
+        error: 'email o phone ya existe',
+      });
+    }
+
+    res.status(500).json({
+      ok: false,
+      error: 'Could not update profile',
+    });
+  }
+});
+
+// Cambiar password del usuario autenticado
+app.put('/me/password', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const { current_password, new_password } = req.body;
+
+    if (!current_password) {
+      return res.status(400).json({
+        ok: false,
+        error: 'current_password es obligatoria',
+      });
+    }
+
+    if (!new_password) {
+      return res.status(400).json({
+        ok: false,
+        error: 'new_password es obligatoria',
+      });
+    }
+
+    if (String(new_password).length < 4) {
+      return res.status(400).json({
+        ok: false,
+        error: 'La nueva password es demasiado corta',
+      });
+    }
+
+    const userResult = await pool.query(
+      `
+      SELECT id, password_hash
+      FROM users
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        error: 'User not found',
+      });
+    }
+
+    const user = userResult.rows[0];
+    const passwordMatches = await bcrypt.compare(current_password, user.password_hash);
+
+    if (!passwordMatches) {
+      return res.status(401).json({
+        ok: false,
+        error: 'La password actual es incorrecta',
+      });
+    }
+
+    const newPasswordHash = await bcrypt.hash(new_password, SALT_ROUNDS);
+
+    await pool.query(
+      `
+      UPDATE users
+      SET
+        password_hash = $1,
+        updated_at = NOW()
+      WHERE id = $2
+      `,
+      [newPasswordHash, userId]
+    );
+
+    res.json({
+      ok: true,
+      message: 'Password actualizada',
+    });
+  } catch (error) {
+    console.error('PUT /me/password error:', error);
+
+    res.status(500).json({
+      ok: false,
+      error: 'Could not update password',
+    });
+  }
+});
+
+// Crear deck
+app.post('/decks', requireAuth, async (req, res) => {
+  const { name, description, is_private } = req.body;
+  const created_by = req.auth.userId;
+
+  if (!name) {
+    return res.status(400).json({
+      ok: false,
+      message: 'name es obligatorio',
+    });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const deckResult = await client.query(
+      `
+      INSERT INTO decks (name, description, created_by, is_private, updated_at)
+      VALUES ($1, $2, $3, $4, NOW())
+      RETURNING *;
+      `,
+      [name, description || null, created_by, is_private ?? false]
+    );
+
+    const deck = deckResult.rows[0];
+
+    await client.query(
+      `
+      INSERT INTO deck_members (deck_id, user_id)
+      VALUES ($1, $2);
+      `,
+      [deck.id, created_by]
+    );
+
+    await client.query('COMMIT');
+
+    res.status(201).json({
+      ok: true,
+      message: 'Deck creado correctamente',
+      deck,
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error al crear deck:', error);
+
+    res.status(500).json({
+      ok: false,
+      message: 'Error al crear deck',
+    });
+  } finally {
+    client.release();
+  }
+});
+
+// Listar decks
+app.get('/decks', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        d.id,
+        d.name,
+        d.description,
+        d.created_by,
+        d.is_private,
+        d.created_at,
+        d.updated_at,
+        u.nickname AS creator_nickname
+      FROM decks d
+      JOIN users u ON d.created_by = u.id
+      ORDER BY d.created_at DESC;
+    `);
+
+    res.json({
+      ok: true,
+      decks: result.rows,
+    });
+  } catch (error) {
+    console.error('Error al listar decks:', error);
+
+    res.status(500).json({
+      ok: false,
+      message: 'Error al listar decks',
+    });
+  }
+});
+
+// Obtener deck por id
+app.get('/decks/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        d.*,
+        u.nickname AS creator_nickname
+      FROM decks d
+      JOIN users u ON d.created_by = u.id
+      WHERE d.id = $1;
+      `,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        message: 'Deck no encontrado',
+      });
+    }
+
+    res.json({
+      ok: true,
+      deck: result.rows[0],
+    });
+  } catch (error) {
+    console.error('Error al obtener deck:', error);
+
+    res.status(500).json({
+      ok: false,
+      message: 'Error al obtener deck',
+    });
+  }
+});
+// Obtener estado de gobernanza de un deck
+app.get('/decks/:id/governance', async (req, res) => {
+  const { id } = req.params;
+  const deckId = Number(id);
+
+  if (Number.isNaN(deckId)) {
+    return res.status(400).json({
+      ok: false,
+      error: 'Invalid deck id',
+    });
+  }
+
+  try {
+    const deckResult = await pool.query(
+      `
+      SELECT id, name, created_by
+      FROM decks
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [deckId]
+    );
+
+    if (deckResult.rows.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Deck not found',
+      });
+    }
+
+    const acesResult = await pool.query(
+      `
+      SELECT
+        da.ace_type,
+        da.user_id,
+        u.nickname
+      FROM deck_aces da
+      JOIN users u ON u.id = da.user_id
+      WHERE da.deck_id = $1
+      ORDER BY da.ace_type
+      `,
+      [deckId]
+    );
+
+    const kingsResult = await pool.query(
+      `
+      SELECT
+        dk.king_type,
+        dk.user_id,
+        u.nickname,
+        dk.granted_by_user_id,
+        gu.nickname AS granted_by_nickname,
+        dk.granted_at
+      FROM deck_kings dk
+      JOIN users u ON u.id = dk.user_id
+      LEFT JOIN users gu ON gu.id = dk.granted_by_user_id
+      WHERE dk.deck_id = $1
+        AND dk.revoked_at IS NULL
+      ORDER BY dk.king_type, dk.user_id
+      `,
+      [deckId]
+    );
+
+    const stateResult = await pool.query(
+      `
+      SELECT
+        deck_id,
+        is_blocked,
+        blocked_reason,
+        blocker_transaction_id,
+        has_red_joker,
+        updated_at
+      FROM deck_governance_state
+      WHERE deck_id = $1
+      LIMIT 1
+      `,
+      [deckId]
+    );
+
+    const aces = acesResult.rows;
+    const kings = kingsResult.rows;
+    const state = stateResult.rows[0] || {
+      deck_id: deckId,
+      is_blocked: false,
+      blocked_reason: null,
+      blocker_transaction_id: null,
+      has_red_joker: false,
+      updated_at: null,
+    };
+
+    const heartHolder = aces.find((ace) => ace.ace_type === 'A_HEART') || null;
+
+    const aceCountByUser = {};
+    for (const ace of aces) {
+      aceCountByUser[ace.user_id] = (aceCountByUser[ace.user_id] || 0) + 1;
+    }
+
+    const computedRedJokerHolder = Object.entries(aceCountByUser).find(
+      ([, count]) => Number(count) === 4
+    );
+
+    const hasRedJoker = Boolean(computedRedJokerHolder);
+    const redJokerUserId = computedRedJokerHolder
+      ? Number(computedRedJokerHolder[0])
+      : null;
+
+    const redJokerHolder =
+      hasRedJoker
+        ? aces.find((ace) => Number(ace.user_id) === redJokerUserId) || null
+        : null;
+
+    res.json({
+      ok: true,
+      deck: deckResult.rows[0],
+      governance: {
+        deck_id: deckId,
+        is_blocked: state.is_blocked,
+        blocked_reason: state.blocked_reason,
+        blocker_transaction_id: state.blocker_transaction_id,
+        has_red_joker: hasRedJoker,
+        red_joker_user_id: redJokerUserId,
+        red_joker_nickname: redJokerHolder ? redJokerHolder.nickname : null,
+        heart_holder_user_id: heartHolder ? heartHolder.user_id : null,
+        heart_holder_nickname: heartHolder ? heartHolder.nickname : null,
+        aces,
+        kings,
+        stored_state: state,
+      },
+    });
+  } catch (error) {
+    console.error('GET /decks/:id/governance error:', error);
+
+    res.status(500).json({
+      ok: false,
+      error: 'Could not fetch governance state',
+    });
+  }
+});
+// Obtener miembros de un deck
+app.get('/decks/:id/members', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        dm.id,
+        dm.joined_at,
+        u.id AS user_id,
+        u.nickname,
+        u.email,
+        u.phone,
+        u.profile_photo_url,
+        u.birth_date
+      FROM deck_members dm
+      JOIN users u ON dm.user_id = u.id
+      WHERE dm.deck_id = $1
+      ORDER BY dm.joined_at ASC;
+      `,
+      [id]
+    );
+
+    res.json({
+      ok: true,
+      members: result.rows,
+    });
+  } catch (error) {
+    console.error('Error al obtener miembros del deck:', error);
+
+    res.status(500).json({
+      ok: false,
+      message: 'Error al obtener miembros del deck',
+    });
+  }
+});
+
+// Crear record inicial: solo J_HEART
+app.post('/records', requireAuth, async (req, res) => {
+  const { deck_id, description, title } = req.body;
+  const user_id = req.auth.userId;
+
+  if (!deck_id) {
+    return res.status(400).json({
+      ok: false,
+      message: 'deck_id es obligatorio',
+    });
+  }
+
+  if (!isNonEmptyString(description)) {
+    return res.status(400).json({
+      ok: false,
+      message: 'J_HEART requiere description',
+    });
+  }
+
+  try {
+    const deckCheck = await pool.query(
+      `
+      SELECT id
+      FROM decks
+      WHERE id = $1
+      `,
+      [deck_id]
+    );
+
+    if (deckCheck.rows.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        message: 'Deck no encontrado',
+      });
+    }
+
+    const result = await pool.query(
+      `
+      INSERT INTO records
+      (
+        deck_id,
+        user_id,
+        card_type,
+        title,
+        description,
+        amount,
+        activity_date,
+        start_date,
+        end_date,
+        location,
+        parent_record_id
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING *
+      `,
+      [
+        deck_id,
+        user_id,
+        'J_HEART',
+        normalizeString(title) || 'AnotaciÃ³n',
+        normalizeString(description),
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ]
+    );
+
+    res.status(201).json({
+      ok: true,
+      record: result.rows[0],
+    });
+  } catch (error) {
+    console.error('Error creando J_HEART:', error);
+
+    res.status(500).json({
+      ok: false,
+      message: 'Error creando record',
+    });
+  }
+});
+
+// Convertir record existente
+app.post('/records/:id/convert', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const {
+    target_card_type,
+    description,
+    start_date,
+    end_date,
+    location,
+    title,
+    amount,
+  } = req.body;
+
+  const user_id = req.auth.userId;
+
+  if (!target_card_type) {
+    return res.status(400).json({
+      ok: false,
+      message: 'target_card_type es obligatorio',
+    });
+  }
+
+  if (!['J_CLUB', 'J_SPADE'].includes(target_card_type)) {
+    return res.status(400).json({
+      ok: false,
+      message: 'Solo se permite convertir a J_CLUB o J_SPADE',
+    });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const recordResult = await client.query(
+      `
+      SELECT *
+      FROM records
+      WHERE id = $1
+      `,
+      [id]
+    );
+
+    if (recordResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        ok: false,
+        message: 'Record no encontrado',
+      });
+    }
+
+    const originalRecord = recordResult.rows[0];
+
+    if (Number(originalRecord.user_id) !== Number(user_id)) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({
+        ok: false,
+        message: 'Solo el autor del registro puede convertirlo',
+      });
+    }
+
+    if (originalRecord.card_type !== 'J_HEART') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        ok: false,
+        message: 'Solo se pueden convertir registros J_HEART',
+      });
+    }
+
+    if (target_card_type === 'J_CLUB') {
+      const finalDescription =
+        normalizeString(description) || normalizeString(originalRecord.description);
+
+      if (!isNonEmptyString(finalDescription)) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          message: 'J_CLUB requiere description',
+        });
+      }
+
+      if (isProvided(amount) && !isValidNumber(amount)) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          message: 'amount invÃ¡lido',
+        });
+      }
+
+      const updateResult = await client.query(
+        `
+        UPDATE records
+        SET
+          card_type = $1,
+          title = $2,
+          description = $3,
+          amount = NULL,
+          activity_date = NULL,
+          start_date = NULL,
+          end_date = NULL,
+          location = NULL,
+          parent_record_id = NULL
+        WHERE id = $4
+        RETURNING *
+        `,
+        [
+          'J_CLUB',
+          normalizeString(title) || 'Bien',
+          finalDescription,
+          id,
+        ]
+      );
+
+      const clubRecord = updateResult.rows[0];
+      let diamondRecord = null;
+
+      await client.query(
+        `
+        DELETE FROM records
+        WHERE parent_record_id = $1
+          AND card_type = 'J_DIAMOND'
+        `,
+        [clubRecord.id]
+      );
+
+      if (isProvided(amount)) {
+        const diamondInsert = await client.query(
+          `
+          INSERT INTO records
+          (
+            deck_id,
+            user_id,
+            card_type,
+            title,
+            description,
+            amount,
+            activity_date,
+            start_date,
+            end_date,
+            location,
+            parent_record_id
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          RETURNING *
+          `,
+          [
+            clubRecord.deck_id,
+            clubRecord.user_id,
+            'J_DIAMOND',
+            'Monto',
+            finalDescription,
+            normalizeAmount(amount),
+            null,
+            null,
+            null,
+            null,
+            clubRecord.id,
+          ]
+        );
+
+        diamondRecord = diamondInsert.rows[0];
+      }
+
+      await client.query('COMMIT');
+
+      return res.json({
+        ok: true,
+        message: diamondRecord
+          ? 'Record convertido a J_CLUB y se creÃ³ J_DIAMOND'
+          : 'Record convertido a J_CLUB',
+        record: clubRecord,
+        diamond_record: diamondRecord,
+      });
+    }
+
+    if (target_card_type === 'J_SPADE') {
+      const finalDescription =
+        normalizeString(description) || normalizeString(originalRecord.description);
+
+      if (!isNonEmptyString(finalDescription)) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          message: 'J_SPADE requiere description',
+        });
+      }
+
+      if (!isProvided(start_date) && !isProvided(end_date)) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          message: 'J_SPADE requiere start_date o end_date',
+        });
+      }
+
+      if (isProvided(start_date) && !isValidDateString(start_date)) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          message: 'start_date invÃ¡lida',
+        });
+      }
+
+      if (isProvided(end_date) && !isValidDateString(end_date)) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          message: 'end_date invÃ¡lida',
+        });
+      }
+
+      if (isProvided(start_date) && isProvided(end_date)) {
+        const start = new Date(start_date);
+        const end = new Date(end_date);
+
+        if (end < start) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({
+            ok: false,
+            message: 'end_date no puede ser anterior a start_date',
+          });
+        }
+      }
+
+      if (isProvided(amount) && !isValidNumber(amount)) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          message: 'amount invÃ¡lido',
+        });
+      }
+
+      const updateResult = await client.query(
+        `
+        UPDATE records
+        SET
+          card_type = $1,
+          title = $2,
+          description = $3,
+          amount = NULL,
+          activity_date = NULL,
+          start_date = $4,
+          end_date = $5,
+          location = $6,
+          parent_record_id = NULL
+        WHERE id = $7
+        RETURNING *
+        `,
+        [
+          'J_SPADE',
+          normalizeString(title) || 'Actividad',
+          finalDescription,
+          normalizeDate(start_date),
+          normalizeDate(end_date),
+          normalizeString(location),
+          id,
+        ]
+      );
+
+      const spadeRecord = updateResult.rows[0];
+      let diamondRecord = null;
+
+      await client.query(
+        `
+        DELETE FROM records
+        WHERE parent_record_id = $1
+          AND card_type = 'J_DIAMOND'
+        `,
+        [spadeRecord.id]
+      );
+
+      if (isProvided(amount)) {
+        const diamondInsert = await client.query(
+          `
+          INSERT INTO records
+          (
+            deck_id,
+            user_id,
+            card_type,
+            title,
+            description,
+            amount,
+            activity_date,
+            start_date,
+            end_date,
+            location,
+            parent_record_id
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          RETURNING *
+          `,
+          [
+            spadeRecord.deck_id,
+            spadeRecord.user_id,
+            'J_DIAMOND',
+            'Monto',
+            finalDescription,
+            normalizeAmount(amount),
+            null,
+            null,
+            null,
+            null,
+            spadeRecord.id,
+          ]
+        );
+
+        diamondRecord = diamondInsert.rows[0];
+      }
+
+      await client.query('COMMIT');
+
+      return res.json({
+        ok: true,
+        message: diamondRecord
+          ? 'Record convertido a J_SPADE y se creÃ³ J_DIAMOND'
+          : 'Record convertido a J_SPADE',
+        record: spadeRecord,
+        diamond_record: diamondRecord,
+      });
+    }
+
+    await client.query('ROLLBACK');
+
+    return res.status(400).json({
+      ok: false,
+      message: 'ConversiÃ³n no vÃ¡lida',
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error convirtiendo record:', error);
+
+    res.status(500).json({
+      ok: false,
+      message: 'Error convirtiendo record',
+    });
+  } finally {
+    client.release();
+  }
+});
+
+// Obtener records del usuario autenticado
+app.get('/records', requireAuth, async (req, res) => {
+  const user_id = req.auth.userId;
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        r.*,
+        d.name AS deck_name
+      FROM records r
+      JOIN decks d ON r.deck_id = d.id
+      WHERE r.user_id = $1
+      ORDER BY r.created_at DESC, r.id DESC
+      `,
+      [user_id]
+    );
+
+    res.json({
+      ok: true,
+      records: result.rows,
+    });
+  } catch (error) {
+    console.error('Error obteniendo records:', error);
+
+    res.status(500).json({
+      ok: false,
+      message: 'Error obteniendo records',
+    });
+  }
+});
+
+// Obtener records de un deck
+app.get('/decks/:id/records', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        r.*,
+        u.nickname AS user_nickname
+      FROM records r
+      JOIN users u ON r.user_id = u.id
+      WHERE r.deck_id = $1
+      ORDER BY r.created_at DESC, r.id DESC
+      `,
+      [id]
+    );
+
+    res.json({
+      ok: true,
+      records: result.rows,
+    });
+  } catch (error) {
+    console.error('Error obteniendo records del deck:', error);
+
+    res.status(500).json({
+      ok: false,
+      message: 'Error obteniendo records del deck',
+    });
+  }
+});
+
+app.post('/ace-transfers', requireAuth, async (req, res) => {
+  const actorUserId = Number(req.auth.userId);
+  const { deck_id, ace_type, to_user_id } = req.body;
+
+  if (!Number.isInteger(Number(deck_id))) {
+    return res.status(400).json({ ok: false, error: 'deck_id invÃ¡lido' });
+  }
+
+  if (!['A_SPADE', 'A_DIAMOND', 'A_CLUB'].includes(ace_type)) {
+    return res.status(400).json({ ok: false, error: 'ace_type invÃ¡lido' });
+  }
+
+  if (!Number.isInteger(Number(to_user_id))) {
+    return res.status(400).json({ ok: false, error: 'to_user_id invÃ¡lido' });
+  }
+
+  if (actorUserId === Number(to_user_id)) {
+    return res.status(400).json({ ok: false, error: 'No puedes transferirte el As a ti mismo' });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const blockedResult = await client.query(
+      `
+      SELECT is_blocked
+      FROM deck_governance_state
+      WHERE deck_id = $1
+      LIMIT 1
+      `,
+      [deck_id]
+    );
+
+    if (blockedResult.rows[0]?.is_blocked) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ ok: false, error: 'El mazo estÃ¡ bloqueado' });
+    }
+
+    const memberResult = await client.query(
+      `
+      SELECT user_id
+      FROM deck_members
+      WHERE deck_id = $1 AND user_id IN ($2, $3)
+      `,
+      [deck_id, actorUserId, Number(to_user_id)]
+    );
+
+    if (memberResult.rows.length !== 2) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ ok: false, error: 'Ambos usuarios deben pertenecer al mazo' });
+    }
+
+    const aceResult = await client.query(
+      `
+      SELECT deck_id, ace_type, user_id
+      FROM deck_aces
+      WHERE deck_id = $1 AND ace_type = $2
+      LIMIT 1
+      FOR UPDATE
+      `,
+      [deck_id, ace_type]
+    );
+
+    if (aceResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ ok: false, error: 'As no encontrado en el mazo' });
+    }
+
+    if (Number(aceResult.rows[0].user_id) !== actorUserId) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ ok: false, error: 'No eres el titular actual de ese As' });
+    }
+
+    const pendingResult = await client.query(
+      `
+      SELECT id
+      FROM ace_transfers
+      WHERE deck_id = $1
+        AND ace_type = $2
+        AND status = 'PENDING'
+      LIMIT 1
+      `,
+      [deck_id, ace_type]
+    );
+
+    if (pendingResult.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ ok: false, error: 'Ya existe una transferencia pendiente para ese As' });
+    }
+
+    const insertResult = await client.query(
+      `
+      INSERT INTO ace_transfers
+      (deck_id, ace_type, from_user_id, to_user_id, status)
+      VALUES ($1, $2, $3, $4, 'PENDING')
+      RETURNING *
+      `,
+      [deck_id, ace_type, actorUserId, Number(to_user_id)]
+    );
+
+    await client.query('COMMIT');
+
+    res.status(201).json({
+      ok: true,
+      transfer: insertResult.rows[0]
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('POST /ace-transfers error:', error);
+    res.status(500).json({ ok: false, error: 'No se pudo crear la transferencia' });
+  } finally {
+    client.release();
+  }
+});
+
+app.post('/ace-transfers/:id/respond', requireAuth, async (req, res) => {
+  const transferId = Number(req.params.id);
+  const actorUserId = Number(req.auth.userId);
+  const { decision } = req.body;
+
+  if (!Number.isInteger(transferId)) {
+    return res.status(400).json({ ok: false, error: 'transfer id invÃ¡lido' });
+  }
+
+  if (!['ACCEPT', 'REJECT'].includes(decision)) {
+    return res.status(400).json({ ok: false, error: 'decision invÃ¡lida' });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const transferResult = await client.query(
+      `
+      SELECT *
+      FROM ace_transfers
+      WHERE id = $1
+      LIMIT 1
+      FOR UPDATE
+      `,
+      [transferId]
+    );
+
+    if (transferResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ ok: false, error: 'Transferencia no encontrada' });
+    }
+
+    const transfer = transferResult.rows[0];
+
+    if (transfer.status !== 'PENDING') {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ ok: false, error: 'La transferencia ya fue respondida' });
+    }
+
+    if (Number(transfer.to_user_id) !== actorUserId) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ ok: false, error: 'Solo el receptor puede responder la transferencia' });
+    }
+
+    if (decision === 'REJECT') {
+      const rejectResult = await client.query(
+        `
+        UPDATE ace_transfers
+        SET status = 'REJECTED',
+            responded_at = NOW(),
+            responded_by_user_id = $2
+        WHERE id = $1
+        RETURNING *
+        `,
+        [transferId, actorUserId]
+      );
+
+      await client.query('COMMIT');
+      return res.json({ ok: true, transfer: rejectResult.rows[0] });
+    }
+
+    const aceResult = await client.query(
+      `
+      SELECT *
+      FROM deck_aces
+      WHERE deck_id = $1 AND ace_type = $2
+      LIMIT 1
+      FOR UPDATE
+      `,
+      [transfer.deck_id, transfer.ace_type]
+    );
+
+    if (aceResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ ok: false, error: 'As no encontrado' });
+    }
+
+    const currentAce = aceResult.rows[0];
+
+    if (Number(currentAce.user_id) !== Number(transfer.from_user_id)) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({
+        ok: false,
+        error: 'El As ya no pertenece al emisor original'
+      });
+    }
+
+    await client.query(
+      `
+      UPDATE deck_aces
+      SET user_id = $1
+      WHERE deck_id = $2 AND ace_type = $3
+      `,
+      [transfer.to_user_id, transfer.deck_id, transfer.ace_type]
+    );
+
+    const acceptResult = await client.query(
+      `
+      UPDATE ace_transfers
+      SET status = 'ACCEPTED',
+          responded_at = NOW(),
+          responded_by_user_id = $2
+      WHERE id = $1
+      RETURNING *
+      `,
+      [transferId, actorUserId]
+    );
+
+    await client.query('COMMIT');
+
+    res.json({
+      ok: true,
+      transfer: acceptResult.rows[0]
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('POST /ace-transfers/:id/respond error:', error);
+    res.status(500).json({ ok: false, error: 'No se pudo responder la transferencia' });
+  } finally {
+    client.release();
+  }
+});
+app.get('/decks/:id/ace-transfers', requireAuth, async (req, res) => {
+  const deckId = Number(req.params.id);
+  const status = req.query.status;
+
+  if (Number.isNaN(deckId)) {
+    return res.status(400).json({ ok: false, error: 'deck id invÃ¡lido' });
+  }
+
+  const allowedStatuses = ['PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED'];
+  const useStatus = allowedStatuses.includes(status) ? status : null;
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        t.*,
+        fu.nickname AS from_nickname,
+        tu.nickname AS to_nickname
+      FROM ace_transfers t
+      JOIN users fu ON fu.id = t.from_user_id
+      JOIN users tu ON tu.id = t.to_user_id
+      WHERE t.deck_id = $1
+        AND ($2::text IS NULL OR t.status = $2)
+      ORDER BY t.created_at DESC
+      `,
+      [deckId, useStatus]
+    );
+
+    res.json({
+      ok: true,
+      transfers: result.rows
+    });
+  } catch (error) {
+    console.error('GET /decks/:id/ace-transfers error:', error);
+    res.status(500).json({ ok: false, error: 'No se pudieron obtener las transferencias' });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`CoopTrack server listening on port ${PORT}`);
+});
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\agenda.html
+===============================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Agenda - CoopTrack</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/topbar.css" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #222;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .page-header h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+
+    .page-header p {
+      margin: 0 0 24px;
+      color: #666;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 18px;
+    }
+
+    .record-card {
+      position: relative;
+      min-height: 260px;
+      border-radius: 18px;
+      padding: 18px;
+      background: white;
+      border: 2px solid #ddd;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .record-top,
+    .record-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: bold;
+      font-size: 22px;
+    }
+
+    .record-center {
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .record-suit-big {
+      font-size: 42px;
+      margin-bottom: 10px;
+    }
+
+    .record-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .record-text {
+      font-size: 14px;
+      color: #555;
+      white-space: pre-wrap;
+      line-height: 1.45;
+    }
+
+    .record-meta {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #666;
+      text-align: left;
+      line-height: 1.45;
+    }
+
+    .deck-link {
+      color: #1f4fd1;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .deck-link:hover {
+      text-decoration: underline;
+    }
+
+    .heart,
+    .diamond {
+      color: #c62828;
+    }
+
+    .club,
+    .spade {
+      color: #1f1f1f;
+    }
+
+    .card-heart {
+      border-color: #ef9a9a;
+      background: linear-gradient(180deg, #fff, #fff8f8);
+    }
+
+    .card-diamond {
+      border-color: #f5b5b5;
+      background: linear-gradient(180deg, #fff, #fff8f8);
+    }
+
+    .card-club {
+      border-color: #cfd8dc;
+      background: linear-gradient(180deg, #fff, #f9fbfc);
+    }
+
+    .card-spade {
+      border-color: #cfd8dc;
+      background: linear-gradient(180deg, #fff, #f9fbfc);
+    }
+
+    .empty-state {
+      background: white;
+      border: 1px dashed #bbb;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div id="topbar-container"></div>
+
+  <div class="page">
+    <div class="page-header">
+      <h1>Agenda</h1>
+      <p>Tus registros personales, siempre vinculados a un mazo.</p>
+    </div>
+
+    <div id="recordsContainer"></div>
+  </div>
+
+  <script src="/js/cards.js"></script>
+<script src="/js/auth.js"></script>
+  <script>
+    const user = JSON.parse(localStorage.getItem("cooptrackUser"));
+
+    if (!user) {
+      window.location.href = "/login.html";
+    }
+
+    function renderAgendaCard(record) {
+      const baseCardHtml = renderCard(record);
+
+      return baseCardHtml.replace(
+        '</div>\n\n      <div class="record-bottom',
+        `
+          <div class="record-meta">
+            <div>
+              <strong>Mazo:</strong>
+              <a class="deck-link" href="/deck.html?id=${record.deck_id}">
+                ${escapeHtml(record.deck_name || "Sin mazo")}
+              </a>
+            </div>
+            <div><strong>Creada:</strong> ${escapeHtml(formatDate(record.created_at))}</div>
+          </div>
+
+      <div class="record-bottom`
+      );
+    }
+
+    async function loadRecords() {
+      try {
+        const res = await fetch(`/records`, {headers: authHeaders()});
+        const data = await res.json();
+
+        const container = document.getElementById("recordsContainer");
+
+        if (!data.ok || !data.records || data.records.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              No hay cartas todavÃ­a en tu Agenda.
+              <br><br>
+              Crea una carta entrando a alguno de tus mazos.
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="cards-grid">
+            ${data.records.map(renderAgendaCard).join("")}
+          </div>
+        `;
+      } catch (error) {
+        console.error("Error cargando records:", error);
+        document.getElementById("recordsContainer").innerHTML = `
+          <div class="empty-state">
+            Error cargando las cartas.
+          </div>
+        `;
+      }
+    }
+
+    loadRecords();
+  </script>
+
+  <script src="/js/topbar.js"></script>
+</body>
+</html>
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\deck.html
+===============================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Deck - CoopTrack</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link rel="stylesheet" href="/css/topbar.css" />
+
+<style>
+*{box-sizing:border-box;}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#222;}
+.page{max-width:1250px;margin:0 auto;padding:24px 16px 40px;}
+.page-header{margin-bottom:20px;}
+.page-header h1{margin:0 0 8px;font-size:32px;}
+.page-header p{margin:0;color:#666;line-height:1.5;}
+.hidden{display:none;}
+
+.panel{
+background:white;
+border:1px solid #ddd;
+border-radius:16px;
+padding:20px;
+box-shadow:0 4px 14px rgba(0,0,0,0.04);
+}
+
+.message{min-height:20px;margin-top:12px;font-size:14px;}
+.message.success{color:#1c6b2f;}
+.message.error{color:#b42318;}
+
+.records-table-wrap{overflow-x:auto;}
+
+.records-table{
+width:100%;
+border-collapse:collapse;
+background:white;
+border:1px solid #ddd;
+border-radius:16px;
+overflow:hidden;
+box-shadow:0 4px 14px rgba(0,0,0,0.04);
+min-width:980px;
+}
+
+.records-table thead th{
+text-align:left;
+font-size:13px;
+color:#667085;
+background:#f8fafc;
+border-bottom:1px solid #e5e7eb;
+padding:12px 14px;
+white-space:nowrap;
+}
+
+.records-table tbody td{
+padding:12px 14px;
+border-bottom:1px solid #eef2f7;
+vertical-align:middle;
+}
+
+.records-table tbody tr:last-child td{border-bottom:none;}
+
+.col-card{width:100px;white-space:nowrap;}
+.col-description{min-width:280px;}
+.col-diamond-card{width:90px;white-space:nowrap;}
+.col-diamond-amount{width:140px;white-space:nowrap;}
+.col-extra{min-width:240px;color:#555;font-size:14px;}
+.col-actions{width:140px;text-align:right;white-space:nowrap;}
+
+.card-badge{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+min-width:56px;
+padding:8px 10px;
+border-radius:12px;
+font-weight:bold;
+border:1px solid #ddd;
+background:#fff;
+}
+
+.heart,.diamond{color:#c62828;}
+.club,.spade{color:#1f1f1f;}
+
+.badge-heart{border-color:#ef9a9a;background:#fff8f8;}
+.badge-club{border-color:#cfd8dc;background:#f9fbfc;}
+.badge-spade{border-color:#cfd8dc;background:#f9fbfc;}
+.badge-diamond{border-color:#f5b5b5;background:#fff8f8;}
+
+.description-text{white-space:pre-wrap;line-height:1.45;}
+.meta-lines{line-height:1.5;white-space:pre-wrap;}
+
+.inline-input{
+width:100%;
+border:1px solid #bbb;
+border-radius:10px;
+padding:10px 12px;
+font-size:14px;
+font-family:inherit;
+background:#fff;
+}
+
+.inline-input:focus{
+outline:none;
+border-color:#1f4fd1;
+box-shadow:0 0 0 3px rgba(31,79,209,0.10);
+}
+
+.btn{
+border:none;
+border-radius:10px;
+padding:10px 14px;
+font-size:14px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.btn-primary{background:#1f4fd1;color:white;}
+.btn-primary:hover{background:#183fa8;}
+.btn-secondary{background:#eef2f7;color:#344054;}
+.btn-secondary:hover{background:#e4e7ec;}
+
+.btn-suit{
+min-width:42px;
+padding:8px 10px;
+border-radius:10px;
+border:1px solid #d0d5dd;
+background:white;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
+margin-left:6px;
+}
+
+.btn-suit:hover{background:#f9fafb;}
+.btn-heart{color:#c62828;}
+.btn-diamond{color:#c62828;}
+.btn-club,.btn-spade{color:#111827;}
+
+.empty-state{
+background:white;
+border:1px dashed #bbb;
+border-radius:16px;
+padding:24px;
+text-align:center;
+color:#666;
+}
+
+.editor-layout{
+display:grid;
+grid-template-columns:280px 1fr;
+gap:24px;
+align-items:start;
+}
+
+.editor-card{
+min-height:360px;
+border-radius:18px;
+padding:18px;
+background:white;
+border:2px solid #ddd;
+box-shadow:0 6px 18px rgba(0,0,0,0.06);
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+}
+
+.editor-card.card-heart{border-color:#ef9a9a;background:linear-gradient(180deg,#fff,#fff8f8);}
+.editor-card.card-club{border-color:#cfd8dc;background:linear-gradient(180deg,#fff,#f9fbfc);}
+.editor-card.card-spade{border-color:#cfd8dc;background:linear-gradient(180deg,#fff,#f9fbfc);}
+
+.editor-top,.editor-bottom{
+display:flex;
+align-items:center;
+justify-content:space-between;
+font-weight:bold;
+font-size:24px;
+}
+
+.editor-center{text-align:center;padding:12px 0;}
+.editor-suit-big{font-size:54px;margin-bottom:12px;}
+.editor-caption{font-size:16px;color:#555;}
+
+.field{margin-bottom:14px;}
+
+.field label{
+display:block;
+font-size:14px;
+font-weight:bold;
+margin-bottom:6px;
+}
+
+.field input,.field textarea{
+width:100%;
+padding:10px 12px;
+border:1px solid #bbb;
+border-radius:10px;
+font-size:14px;
+background:#fff;
+font-family:inherit;
+}
+
+.field textarea{min-height:120px;resize:vertical;}
+
+.editor-actions{display:flex;gap:10px;margin-top:16px;}
+.editor-actions .btn{min-width:110px;}
+
+.editor-note{margin-bottom:16px;color:#666;line-height:1.5;}
+
+@media (max-width:900px){
+.editor-layout{grid-template-columns:1fr;}
+}
+</style>
+</head>
+
+<body>
+
+<div id="topbar-container"></div>
+
+<div class="page">
+
+<div class="page-header">
+<h1 id="deckTitle">Deck</h1>
+<p id="deckDescription"></p>
+
+<div style="margin-top:16px;">
+<a id="openBoardLink"
+href="#"
+class="btn btn-primary"
+style="display:inline-block;text-decoration:none;">
+Autoridades
+</a>
+</div>
+
+</div>
+
+<section id="listView">
+<div id="listContainer"></div>
+<div id="listMsg" class="message"></div>
+</section>
+
+<section id="editorView" class="hidden">
+<div class="panel">
+
+<div class="editor-layout">
+
+<div id="editorCardPreview"></div>
+
+<div>
+
+<h2 id="editorTitle">Editar carta</h2>
+<p id="editorSubtitle" class="editor-note"></p>
+
+<div id="clubEditor" class="hidden">
+
+<div class="field">
+<label for="clubDescription">DescripciÃ³n</label>
+<textarea id="clubDescription"></textarea>
+</div>
+
+<div class="field">
+<label for="clubAmount">Monto</label>
+<input id="clubAmount" type="number" step="any">
+</div>
+
+</div>
+
+<div id="spadeEditor" class="hidden">
+
+<div class="field">
+<label for="spadeDescription">DescripciÃ³n</label>
+<textarea id="spadeDescription"></textarea>
+</div>
+
+<div class="field">
+<label for="spadeStart">Inicio</label>
+<input id="spadeStart" type="datetime-local">
+</div>
+
+<div class="field">
+<label for="spadeEnd">Fin</label>
+<input id="spadeEnd" type="datetime-local">
+</div>
+
+<div class="field">
+<label for="spadeLocation">Lugar</label>
+<input id="spadeLocation">
+</div>
+
+<div class="field">
+<label for="spadeAmount">Monto</label>
+<input id="spadeAmount" type="number" step="any">
+</div>
+
+</div>
+
+<div class="editor-actions">
+<button id="saveEditBtn" class="btn btn-primary">Salvar</button>
+<button id="cancelEditBtn" class="btn btn-secondary">Cancelar</button>
+</div>
+
+<div id="editorMsg" class="message"></div>
+
+</div>
+</div>
+
+</div>
+</section>
+
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/topbar.js"></script>
+
+<script>
+
+/* PARAMETROS */
+
+const params = new URLSearchParams(window.location.search);
+const deckId = params.get("id");
+
+/* AUTH */
+
+const user = JSON.parse(localStorage.getItem("cooptrackUser"));
+const token = localStorage.getItem("cooptrackToken");
+
+if (!user || !token) {
+window.location.href = "/login.html";
+}
+
+/* DOM */
+
+const deckTitle = document.getElementById("deckTitle");
+const deckDescription = document.getElementById("deckDescription");
+const listContainer = document.getElementById("listContainer");
+const listMsg = document.getElementById("listMsg");
+const editorView = document.getElementById("editorView");
+const listView = document.getElementById("listView");
+const editorCardPreview = document.getElementById("editorCardPreview");
+const editorTitle = document.getElementById("editorTitle");
+const editorSubtitle = document.getElementById("editorSubtitle");
+const editorMsg = document.getElementById("editorMsg");
+const clubEditor = document.getElementById("clubEditor");
+const spadeEditor = document.getElementById("spadeEditor");
+
+/* BOTON Autoridades = Tablero(nombre viejo) */
+
+const openBoardLink = document.getElementById("openBoardLink");
+
+if (openBoardLink && deckId) {
+openBoardLink.href = `/tablero.html?id=${deckId}`;
+}
+
+/* RESTO DEL SCRIPT SIGUE IGUAL */
+
+let records = [];
+let currentEditRecord = null;
+let currentEditTarget = null;
+
+/* ... el resto de tu JS sigue exactamente igual ... */
+
+</script>
+
+</body>
+</html>
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\help.html
+===============================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoopTrack Â· Help</title>
+  <style>
+    :root {
+      --bg: #f7f4ee;
+      --card: #fffdf8;
+      --ink: #1f1f1f;
+      --muted: #6b675f;
+      --line: #d8d1c5;
+      --red: #b63a3a;
+      --black: #2e3138;
+      --gold: #8a6a1d;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      background: var(--card);
+      padding: 28px 22px 18px;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      font-weight: 600;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 860px;
+    }
+
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 18px 56px;
+    }
+
+    .toc,
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border: 1px solid var(--line);
+      margin-right: 6px;
+      margin-bottom: 6px;
+      border-radius: 999px;
+      font-size: 14px;
+      background: #faf7f1;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      padding: 14px;
+      background: #fff;
+    }
+
+    code, pre {
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+    }
+
+    pre {
+      background: #f3efe8;
+      border: 1px solid var(--line);
+      padding: 12px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    ul { margin-top: 8px; }
+    .red { color: var(--red); }
+    .black { color: var(--black); }
+    .gold { color: var(--gold); }
+    .small { color: var(--muted); font-size: 14px; }
+    a { color: inherit; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CoopTrack Â· Help</h1>
+    <p>
+      CoopTrack organiza trabajo, autoridad, participaciÃ³n y validaciÃ³n mediante cartas dentro de mazos.
+      Este help resume cÃ³mo leer la interfaz, cÃ³mo se compone una jugada y quÃ© cambia entre Joker rojo y Joker azul.
+    </p>
+  </header>
+
+  <main>
+    <section class="toc">
+      <h2>Ãndice rÃ¡pido</h2>
+      <div class="grid">
+        <div><a href="#idea">1. Idea central</a></div>
+        <div><a href="#palos">2. Palos y cartas</a></div>
+        <div><a href="#joker">3. Joker rojo y azul</a></div>
+        <div><a href="#renglon">4. El renglÃ³n jugada</a></div>
+        <div><a href="#j">5. Jugadas que empiezan con J</a></div>
+        <div><a href="#q">6. Participaciones Q</a></div>
+        <div><a href="#autoridad">7. Ases y Reyes</a></div>
+        <div><a href="#comments">8. Comentarios y evidencia</a></div>
+        <div><a href="#awards">9. Awards y quejas</a></div>
+        <div><a href="#iconos">10. Ãconos y hover</a></div>
+      </div>
+    </section>
+
+    <section id="idea">
+      <h2>1. Idea central</h2>
+      <p>
+        CoopTrack no usa las cartas como decoraciÃ³n. Las cartas son la sintaxis institucional del sistema.
+        Una carta jugada ya es una jugada. Los renglones muestran esas jugadas y sus efectos.
+      </p>
+      <pre>Carta â†’ Jugada â†’ RenglÃ³n</pre>
+      <p>
+        Un mazo es un espacio compartido. Dentro del mazo conviven trabajo, gobernanza, conversaciÃ³n, economÃ­a y memoria.
+      </p>
+    </section>
+
+    <section id="palos">
+      <h2>2. Palos y cartas</h2>
+      <div class="grid">
+        <div class="card">
+          <h3 class="red">â™¥ Corazones</h3>
+          <p>Creatividad, sentido, vÃ­nculo, fundaciÃ³n.</p>
+        </div>
+        <div class="card">
+          <h3 class="black">â™  Picas</h3>
+          <p>EjecuciÃ³n, actividad, presencia, cumplimiento.</p>
+        </div>
+        <div class="card">
+          <h3 class="red">â™¦ Diamantes</h3>
+          <p>InversiÃ³n, pago, valor econÃ³mico, cuentas.</p>
+        </div>
+        <div class="card">
+          <h3 class="black">â™£ TrÃ©boles</h3>
+          <p>Bienes, producciÃ³n, publicaciÃ³n, entrega, integraciÃ³n.</p>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <span class="badge">J = registro / apertura</span>
+        <span class="badge">Q = participaciÃ³n / oferta / invitaciÃ³n</span>
+        <span class="badge">K = gestiÃ³n delegada</span>
+        <span class="badge">A = autoridad / validaciÃ³n</span>
+      </div>
+    </section>
+
+    <section id="joker">
+      <h2>3. Joker rojo y Joker azul</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Joker rojo</h3>
+          <p>Mazo de agenda personal o coordinaciÃ³n liviana.</p>
+          <ul>
+            <li>Las jugadas existen.</li>
+            <li>No afectan el perfil de los involucrados.</li>
+            <li>No hay Qâ™¥ ni Qâ™¦.</li>
+            <li>No hay awards ni quejas.</li>
+            <li>No tiene sentido estructura societaria.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Joker azul</h3>
+          <p>Mazo propietario con consecuencias reales.</p>
+          <ul>
+            <li>Habilita dimensiÃ³n econÃ³mica completa.</li>
+            <li>Permite Qâ™¥ y Qâ™¦.</li>
+            <li>Las jugadas afectan perfiles.</li>
+            <li>Puede generar awards y quejas.</li>
+            <li>Permite socios, conflictos y gobernanza plena.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="small">Todo costo de activaciÃ³n de un Joker debe registrarse como Jâ™¦ del mazo.</p>
+    </section>
+
+    <section id="renglon">
+      <h2>4. El renglÃ³n jugada</h2>
+      <p>
+        El renglÃ³n es la unidad visible principal del mazo. Muestra una jugada y sus derivaciones.
+      </p>
+      <pre>L = (O, D, R, X, Y)
+O = jugada de origen
+D = descripciÃ³n
+R = componente rojo
+X = jugada derivada izquierda
+Y = jugada derivada derecha</pre>
+      <p>
+        En la prÃ¡ctica, el renglÃ³n puede mostrarse en vista compacta o en foco. En foco aparecen acciones,
+        comentarios, participantes y estados pendientes.
+      </p>
+    </section>
+
+    <section id="j">
+      <h2>5. Jugadas que empiezan con J</h2>
+      <p>
+        Las jugadas J abren renglones de trabajo. Una vez que una jugada arranca con J, no mezcla K ni A dentro de la misma jugada.
+        Las jugadas J producen realidad; las jugadas K/A gobiernan esa realidad desde otra capa.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <h3>Jâ™¥ Nota</h3>
+          <p>Texto, descripciÃ³n, contexto. Si estÃ¡ aprobada, la pueden leer quienes tengan acceso al mazo.</p>
+        </div>
+        <div class="card">
+          <h3>Jâ™  Actividad</h3>
+          <p>Evento, tarea o deadline. Puede requerir fecha, fin y lugar.</p>
+        </div>
+        <div class="card">
+          <h3>Jâ™£ Bien</h3>
+          <p>Oferta o descripciÃ³n de un bien. Puede vincularse con Jâ™¦.</p>
+        </div>
+        <div class="card">
+          <h3>Jâ™¦ Registro econÃ³mico</h3>
+          <p>Costo, inversiÃ³n, gasto o valor econÃ³mico dentro del mazo.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="q">
+      <h2>6. Participaciones Q</h2>
+      <p>
+        Las Q siempre existen sobre una jugada previa. No existen solas.
+      </p>
+      <ul>
+        <li><strong>Jâ™ </strong> puede tener mÃºltiples Qâ™ .</li>
+        <li><strong>Jâ™£</strong> solo admite una Ãºnica Qâ™£.</li>
+        <li><strong>Qâ™¥</strong> expresa intenciÃ³n econÃ³mica.</li>
+        <li><strong>Qâ™¦</strong> concreta la transferencia de valor.</li>
+      </ul>
+      <p>
+        Si no hay Joker azul, Qâ™¥ y Qâ™¦ quedan inhabilitadas.
+      </p>
+      <p>
+        El invitado ve solo su Q y el contexto mÃ­nimo necesario. Puede aceptar o rechazar segÃºn el estado de la jugada.
+      </p>
+    </section>
+
+    <section id="autoridad">
+      <h2>7. Ases y Reyes</h2>
+      <p>
+        Los Ases se juegan desde la carta visible al lado de la foto del usuario. Al hacer click se abre un subform institucional.
+      </p>
+      <ul>
+        <li>Elegir destinatario.</li>
+        <li>Transferir el As.</li>
+        <li>O asignar K del palo correspondiente.</li>
+      </ul>
+      <p>
+        Una jugada iniciada desde un As puede pedir intervenciÃ³n de otro palo. En ese caso queda salvada y pendiente de aprobaciÃ³n
+        del As correspondiente antes de notificarse al destinatario.
+      </p>
+      <p>
+        Si alguien renuncia a un As, ese As vuelve al propietario del Joker azul. Si no existe, vuelve al titular de Aâ™¥.
+      </p>
+    </section>
+
+    <section id="comments">
+      <h2>8. Comentarios y evidencia</h2>
+      <p>
+        Los comments son documentos hijos del renglÃ³n. No gobiernan la jugada, pero aportan conversaciÃ³n, prueba y contexto.
+      </p>
+      <ul>
+        <li>Pueden incluir texto.</li>
+        <li>Pueden incluir attachments, fotos y multimedia.</li>
+        <li>Sirven como evidencia en disputas.</li>
+      </ul>
+      <p class="small">Las cartas dicen quÃ© pasÃ³. Los comentarios muestran cÃ³mo pasÃ³.</p>
+    </section>
+
+    <section id="awards">
+      <h2>9. Awards y quejas</h2>
+      <p>
+        Awards y quejas solo afectan perfiles cuando la jugada pertenece a un mazo con Joker azul.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <h3>â™  Award</h3>
+          <p>Reconoce actividad cumplida o prestaciÃ³n efectiva.</p>
+        </div>
+        <div class="card">
+          <h3>â™¦ Award</h3>
+          <p>Reconoce inversiÃ³n, pago o transferencia de valor.</p>
+        </div>
+        <div class="card">
+          <h3>â™£ Award</h3>
+          <p>Reconoce entrega o provisiÃ³n de un bien.</p>
+        </div>
+        <div class="card">
+          <h3>Queja</h3>
+          <p>Expresa incumplimiento o conflicto confirmado por el sistema.</p>
+        </div>
+      </div>
+      <p>
+        Las quejas detalladas pueden quedar visibles solo para los involucrados, mientras que el pÃºblico ve reputaciÃ³n neta.
+      </p>
+    </section>
+
+    <section id="iconos">
+      <h2>10. Ãconos, hover y ayuda contextual</h2>
+      <p>
+        La interfaz debe intentar explicarse sola. Cuando hace falta detalle, aparece por hover o mouse over.
+      </p>
+      <ul>
+        <li><strong>Sello</strong> â†’ indica que hay algo pendiente de aprobaciÃ³n.</li>
+        <li><strong>Hover sobre una Q</strong> â†’ muestra el nombre del propietario de esa Q.</li>
+        <li><strong>Hover sobre una carta</strong> â†’ muestra rol, estado o sentido.</li>
+      </ul>
+      <p>
+        Lo importante debe verse. Lo complejo aparece cuando el usuario lo busca.
+      </p>
+    </section>
+  </main>
+</body>
+</html>
+
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\index.html
+===============================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoopTrack</title>
+
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="/css/topbar.css" />
+  <link rel="stylesheet" href="/css/mazobar.css" />
+</head>
+<body>
+  <div id="topbar-container"></div>
+  <div id="mazobar-container"></div>
+<div id="decks-view-container"></div>
+  <script src="/js/topbar.js"></script>
+  <script src="/js/mazobar.js"></script>
+</body>
+</html>
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\login.html
+===============================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | CoopTrack</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f6f7fb;
+      color: #1f2937;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 22px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 20px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: #111827;
+      color: white;
+      font-size: 18px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .nav a {
+      color: #374151;
+      padding: 10px 12px;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+
+    .nav a:hover {
+      background: #f3f4f6;
+    }
+
+    .primary {
+      background: #111827;
+      color: white !important;
+    }
+
+    .page {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 100px 20px 40px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      margin-top: 0;
+      margin-bottom: 24px;
+      color: #6b7280;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #111827;
+      box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #111827;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1f2937;
+    }
+
+    .message {
+      margin-top: 14px;
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    .success {
+      color: #065f46;
+    }
+
+    .error {
+      color: #b91c1c;
+    }
+
+    .register-box {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+    }
+
+    .register-box p {
+      margin: 0 0 12px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .register-link {
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+      padding: 12px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid #d1d5db;
+      color: #111827;
+      background: #fff;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .register-link:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="topbar-container"></div>
+
+  <main class="page">
+    <div class="card">
+      <h1>Iniciar sesiÃ³n</h1>
+      <p class="subtitle">
+        EntrÃ¡ con tu email o telÃ©fono y tu contraseÃ±a.
+      </p>
+
+      <form id="loginForm">
+        <div class="field">
+          <label for="login">Email o telÃ©fono</label>
+          <input id="login" required>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" required>
+        </div>
+
+        <button type="submit">Entrar</button>
+        <div id="msg" class="message"></div>
+      </form>
+
+      <div class="register-box">
+        <p>Â¿TodavÃ­a no tenÃ©s cuenta?</p>
+        <a class="register-link" href="/register.html">Crear cuenta</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/topbar.js"></script>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const msg = document.getElementById("msg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      msg.className = "message";
+      msg.textContent = "";
+
+      const login = document.getElementById("login").value.trim();
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            login,
+            password
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          localStorage.setItem("cooptrackUser", JSON.stringify(data.user));
+          localStorage.setItem("cooptrackToken", data.token);
+
+          msg.className = "message success";
+          msg.textContent = "Login correcto.";
+
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 800);
+        } else {
+          msg.className = "message error";
+          msg.textContent = data.error || "Login incorrecto.";
+        }
+      } catch (err) {
+        msg.className = "message error";
+        msg.textContent = "Error de conexiÃ³n con el servidor.";
+      }
+    });
+  </script>
+
+</body>
+</html>
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\profile.html
+===============================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Perfil - CoopTrack</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="/css/topbar.css" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #222;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+
+    .page-header p {
+      margin: 0;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 22px;
+    }
+
+    .photo-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .avatar {
+      width: 180px;
+      height: 180px;
+      border-radius: 20px;
+      object-fit: cover;
+      background: #eef2f7;
+      border: 1px solid #d0d5dd;
+      display: block;
+    }
+
+    .avatar-fallback {
+      width: 180px;
+      height: 180px;
+      border-radius: 20px;
+      background: #eef2f7;
+      border: 1px solid #d0d5dd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 56px;
+      font-weight: bold;
+      color: #667085;
+    }
+
+    .muted {
+      color: #667085;
+      font-size: 14px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #bbb;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #fff;
+      font-family: inherit;
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: #1f4fd1;
+      box-shadow: 0 0 0 3px rgba(31, 79, 209, 0.10);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #1f4fd1;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #183fa8;
+    }
+
+    .message {
+      min-height: 20px;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .message.success {
+      color: #1c6b2f;
+    }
+
+    .message.error {
+      color: #b42318;
+    }
+
+    .meta-list {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.7;
+    }
+
+    .meta-list strong {
+      color: #222;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .photo-box {
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="topbar-container"></div>
+
+  <div class="page">
+    <div class="page-header">
+      <h1>Perfil</h1>
+      <p>EditÃ¡ tus datos personales y tu contraseÃ±a.</p>
+    </div>
+
+    <div class="layout">
+      <section class="panel">
+        <h2>Vista previa</h2>
+
+        <div class="photo-box">
+          <div id="avatarContainer"></div>
+          <div class="muted">
+            Esta imagen se usarÃ¡ para representarte en futuras vistas de acuerdos y ofertas.
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;" />
+
+        <div class="meta-list">
+          <div><strong>Usuario:</strong> <span id="metaNickname">â€”</span></div>
+          <div><strong>Email:</strong> <span id="metaEmail">â€”</span></div>
+          <div><strong>TelÃ©fono:</strong> <span id="metaPhone">â€”</span></div>
+          <div><strong>Fecha de nacimiento:</strong> <span id="metaBirthDate">â€”</span></div>
+          <div><strong>Tipo:</strong> <span id="metaUserType">â€”</span></div>
+        </div>
+      </section>
+
+      <div>
+        <section class="panel" style="margin-bottom:24px;">
+          <h2>Datos personales</h2>
+
+          <form id="profileForm">
+            <div class="field">
+              <label for="nickname">Nickname</label>
+              <input id="nickname" required />
+            </div>
+
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" type="email" />
+            </div>
+
+            <div class="field">
+              <label for="phone">TelÃ©fono</label>
+              <input id="phone" />
+            </div>
+
+            <div class="field">
+              <label for="birth_date">Fecha de nacimiento</label>
+              <input id="birth_date" type="date" />
+            </div>
+
+            <div class="field">
+              <label for="profile_photo_url">URL de foto</label>
+              <input id="profile_photo_url" type="url" placeholder="https://..." />
+            </div>
+
+            <button class="btn btn-primary" type="submit">Guardar perfil</button>
+            <div id="profileMsg" class="message"></div>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Cambiar contraseÃ±a</h2>
+
+          <form id="passwordForm">
+            <div class="field">
+              <label for="current_password">ContraseÃ±a actual</label>
+              <input id="current_password" type="password" required />
+            </div>
+
+            <div class="field">
+              <label for="new_password">Nueva contraseÃ±a</label>
+              <input id="new_password" type="password" required />
+            </div>
+
+            <button class="btn btn-primary" type="submit">Actualizar contraseÃ±a</button>
+            <div id="passwordMsg" class="message"></div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/topbar.js"></script>
+
+  <script>
+    const token = localStorage.getItem("cooptrackToken");
+    const storedUser = JSON.parse(localStorage.getItem("cooptrackUser") || "null");
+
+    if (!token || !storedUser) {
+      window.location.href = "/login.html";
+    }
+
+    const avatarContainer = document.getElementById("avatarContainer");
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatDateOnly(value) {
+      if (!value) return "â€”";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleDateString();
+    }
+
+    function renderAvatar(photoUrl, nickname) {
+      if (photoUrl) {
+        avatarContainer.innerHTML = `
+          <img
+            class="avatar"
+            src="${escapeHtml(photoUrl)}"
+            alt="Foto de perfil"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          />
+          <div class="avatar-fallback" style="display:none;">
+            ${escapeHtml((nickname || "?").slice(0, 1).toUpperCase())}
+          </div>
+        `;
+        return;
+      }
+
+      avatarContainer.innerHTML = `
+        <div class="avatar-fallback">
+          ${escapeHtml((nickname || "?").slice(0, 1).toUpperCase())}
+        </div>
+      `;
+    }
+
+    function updateProfilePreview(user) {
+      renderAvatar(user.profile_photo_url, user.nickname);
+
+      document.getElementById("metaNickname").textContent = user.nickname || "â€”";
+      document.getElementById("metaEmail").textContent = user.email || "â€”";
+      document.getElementById("metaPhone").textContent = user.phone || "â€”";
+      document.getElementById("metaBirthDate").textContent = formatDateOnly(user.birth_date);
+      document.getElementById("metaUserType").textContent = user.user_type || "â€”";
+    }
+
+    function fillProfileForm(user) {
+      document.getElementById("nickname").value = user.nickname || "";
+      document.getElementById("email").value = user.email || "";
+      document.getElementById("phone").value = user.phone || "";
+      document.getElementById("birth_date").value = user.birth_date ? String(user.birth_date).slice(0, 10) : "";
+      document.getElementById("profile_photo_url").value = user.profile_photo_url || "";
+    }
+
+    async function loadProfile() {
+      try {
+        const res = await fetch("/me", {
+          headers: authHeaders()
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          return;
+        }
+
+        fillProfileForm(data.user);
+        updateProfilePreview(data.user);
+
+        localStorage.setItem("cooptrackUser", JSON.stringify(data.user));
+      } catch (error) {
+        console.error("Error cargando perfil:", error);
+      }
+    }
+
+    document.getElementById("profile_photo_url").addEventListener("input", () => {
+      renderAvatar(
+        document.getElementById("profile_photo_url").value.trim(),
+        document.getElementById("nickname").value.trim()
+      );
+    });
+
+    document.getElementById("nickname").addEventListener("input", () => {
+      renderAvatar(
+        document.getElementById("profile_photo_url").value.trim(),
+        document.getElementById("nickname").value.trim()
+      );
+    });
+
+    document.getElementById("profileForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const profileMsg = document.getElementById("profileMsg");
+      profileMsg.className = "message";
+      profileMsg.textContent = "";
+
+      const payload = {
+        nickname: document.getElementById("nickname").value.trim(),
+        email: document.getElementById("email").value.trim() || null,
+        phone: document.getElementById("phone").value.trim() || null,
+        birth_date: document.getElementById("birth_date").value || null,
+        profile_photo_url: document.getElementById("profile_photo_url").value.trim() || null
+      };
+
+      try {
+        const res = await fetch("/me", {
+          method: "PUT",
+          headers: authHeaders({
+            "Content-Type": "application/json"
+          }),
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          profileMsg.className = "message success";
+          profileMsg.textContent = "Perfil actualizado.";
+
+          localStorage.setItem("cooptrackUser", JSON.stringify(data.user));
+          fillProfileForm(data.user);
+          updateProfilePreview(data.user);
+
+          if (typeof renderTopbar === "function") {
+            renderTopbar();
+          }
+        } else {
+          profileMsg.className = "message error";
+          profileMsg.textContent = data.error || "No se pudo actualizar el perfil.";
+        }
+      } catch (error) {
+        console.error("Error actualizando perfil:", error);
+        profileMsg.className = "message error";
+        profileMsg.textContent = "Error de conexiÃ³n.";
+      }
+    });
+
+    document.getElementById("passwordForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const passwordMsg = document.getElementById("passwordMsg");
+      passwordMsg.className = "message";
+      passwordMsg.textContent = "";
+
+      const current_password = document.getElementById("current_password").value;
+      const new_password = document.getElementById("new_password").value;
+
+      try {
+        const res = await fetch("/me/password", {
+          method: "PUT",
+          headers: authHeaders({
+            "Content-Type": "application/json"
+          }),
+          body: JSON.stringify({
+            current_password,
+            new_password
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          passwordMsg.className = "message success";
+          passwordMsg.textContent = "ContraseÃ±a actualizada.";
+          document.getElementById("passwordForm").reset();
+        } else {
+          passwordMsg.className = "message error";
+          passwordMsg.textContent = data.error || "No se pudo actualizar la contraseÃ±a.";
+        }
+      } catch (error) {
+        console.error("Error actualizando contraseÃ±a:", error);
+        passwordMsg.className = "message error";
+        passwordMsg.textContent = "Error de conexiÃ³n.";
+      }
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\register.html
+===============================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro | CoopTrack</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f6f7fb;
+      color: #1f2937;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 100px 20px 40px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+    }
+
+    h1, h2 {
+      margin-top: 0;
+      margin-bottom: 18px;
+    }
+
+    .subtitle {
+      margin-top: 0;
+      margin-bottom: 22px;
+      color: #6b7280;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #111827;
+      box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+    }
+
+    .primary-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #111827;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .primary-btn:hover {
+      background: #1f2937;
+    }
+
+    .message {
+      margin-top: 14px;
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    .success {
+      color: #065f46;
+    }
+
+    .error {
+      color: #b91c1c;
+    }
+
+    .users-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .reload-btn {
+      border: 1px solid #d1d5db;
+      background: white;
+      color: #111827;
+      padding: 9px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .reload-btn:hover {
+      background: #f9fafb;
+    }
+
+    .user-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .user-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: 700;
+      margin-bottom: 6px;
+      font-size: 16px;
+      word-break: break-word;
+    }
+
+    .user-meta {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .user-actions {
+      flex-shrink: 0;
+    }
+
+    .delete-btn {
+      border: none;
+      background: #b91c1c;
+      color: white;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .delete-btn:hover {
+      background: #991b1b;
+    }
+
+    .empty-state {
+      border: 1px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      color: #6b7280;
+      background: #fafafa;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .user-item {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .user-actions {
+        width: 100%;
+      }
+
+      .delete-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="topbar-container"></div>
+
+  <main class="page">
+    <div class="layout">
+      <section class="card">
+        <h1>Crear cuenta</h1>
+        <p class="subtitle">
+          RegistrÃ¡ nuevos usuarios de prueba para CoopTrack.
+        </p>
+
+        <form id="registerForm">
+          <div class="field">
+            <label for="nickname">Nickname</label>
+            <input id="nickname" required>
+          </div>
+
+          <div class="field">
+            <label for="email">Email (opcional)</label>
+            <input id="email" type="email">
+          </div>
+
+          <div class="field">
+            <label for="phone">TelÃ©fono (opcional)</label>
+            <input id="phone">
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" type="password" required>
+          </div>
+
+          <button class="primary-btn" type="submit">Crear cuenta</button>
+          <div id="msg" class="message"></div>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="users-header">
+          <h2>Usuarios registrados</h2>
+          <button id="reloadUsersBtn" class="reload-btn" type="button">Recargar</button>
+        </div>
+
+        <div id="usersContainer" class="user-list"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/js/topbar.js"></script>
+
+  <script>
+    const form = document.getElementById("registerForm");
+    const msg = document.getElementById("msg");
+    const usersContainer = document.getElementById("usersContainer");
+    const reloadUsersBtn = document.getElementById("reloadUsersBtn");
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return "â€”";
+
+      const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return dateString;
+
+      return date.toLocaleString();
+    }
+
+    async function loadUsers() {
+      usersContainer.innerHTML = `
+        <div class="empty-state">
+          Cargando usuarios...
+        </div>
+      `;
+
+      try {
+        const res = await fetch("/users");
+        const data = await res.json();
+
+        if (!data.ok || !data.users || data.users.length === 0) {
+          usersContainer.innerHTML = `
+            <div class="empty-state">
+              No hay usuarios registrados.
+            </div>
+          `;
+          return;
+        }
+
+        usersContainer.innerHTML = data.users.map(user => `
+          <div class="user-item">
+            <div class="user-info">
+              <div class="user-name">
+                #${user.id} - ${escapeHtml(user.nickname)}
+              </div>
+
+              <div class="user-meta">
+                <div><strong>Email:</strong> ${escapeHtml(user.email || "â€”")}</div>
+                <div><strong>TelÃ©fono:</strong> ${escapeHtml(user.phone || "â€”")}</div>
+                <div><strong>Tipo:</strong> ${escapeHtml(user.user_type || "â€”")}</div>
+                <div><strong>Creado:</strong> ${escapeHtml(formatDate(user.created_at))}</div>
+              </div>
+            </div>
+
+            <div class="user-actions">
+              <button
+                class="delete-btn"
+                type="button"
+                onclick="deleteUser(${user.id}, ${JSON.stringify(user.nickname)})"
+              >
+                Borrar
+              </button>
+            </div>
+          </div>
+        `).join("");
+      } catch (error) {
+        console.error("Error cargando usuarios:", error);
+
+        usersContainer.innerHTML = `
+          <div class="empty-state">
+            Error cargando usuarios.
+          </div>
+        `;
+      }
+    }
+
+    async function deleteUser(id, nickname) {
+      const confirmed = confirm(`Â¿Seguro que querÃ©s borrar el usuario "${nickname}" (ID ${id})?`);
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/users/${id}`, {
+          method: "DELETE"
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          await loadUsers();
+        } else {
+          alert(data.error || "No se pudo borrar el usuario.");
+        }
+      } catch (error) {
+        console.error("Error borrando usuario:", error);
+        alert("Error de conexiÃ³n al borrar usuario.");
+      }
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      msg.className = "message";
+      msg.textContent = "";
+
+      const nickname = document.getElementById("nickname").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await fetch("/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            nickname,
+            email,
+            phone,
+            password
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          msg.className = "message success";
+          msg.textContent = "Usuario creado correctamente.";
+
+          form.reset();
+          loadUsers();
+        } else {
+          msg.className = "message error";
+          msg.textContent = data.error || "Error al crear usuario.";
+        }
+      } catch (error) {
+        console.error("Error creando usuario:", error);
+        msg.className = "message error";
+        msg.textContent = "Error de conexiÃ³n con el servidor.";
+      }
+    });
+
+    reloadUsersBtn.addEventListener("click", loadUsers);
+
+    loadUsers();
+  </script>
+
+</body>
+</html>
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\css\global.css
+===============================
+body {
+  margin: 0;
+  font-family: system-ui, Arial, sans-serif;
+  background: #f5f5f5;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.decks-view {
+  padding: 0;
+}
+
+.decks-view__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.decks-view__item {
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid #d8d8d8;
+  box-sizing: border-box;
+}
+
+.decks-view__left-group {
+  display: flex;
+  align-items: center;
+}
+
+.decks-view__user-cards {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.decks-view__mini-card {
+  height: 64px;
+  width: auto;
+  display: block;
+}
+
+.decks-view__photo img {
+  height: 64px;
+  width: auto;
+  display: block;
+}
+
+.decks-view__right-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.decks-view__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.decks-view__ace {
+  color: #a00;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.decks-view__deck-name {
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.decks-view__suits {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.decks-view__suit-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.decks-view__suit-btn img {
+  height: 22px;
+  width: auto;
+  display: block;
+}
+
+.decks-view__suit-btn:hover {
+  transform: translateY(-1px);
+}
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\css\mazobar.css
+===============================
+.mazobar {
+  background: #f5f5f5;
+  padding: 18px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.mazobar__inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mazobar__inner--deck {
+  justify-content: flex-start;
+}
+
+.mazobar__card img {
+  height: 80px;
+  width: auto;
+}
+
+.mazobar__cards {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mazobar__cards img {
+  height: 80px;
+  width: auto;
+}
+
+.mazobar__jokers {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mazobar__jokers img {
+  height: 80px;
+  width: auto;
+  cursor: pointer;
+}
+
+.mazobar__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: 10px;
+}
+
+.mazobar__action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.mazobar__action-btn img {
+  height: 40px;
+  width: auto;
+}
+
+.mazobar__action-btn:hover {
+  transform: scale(1.1);
+}
+
+.mazobar__aces {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mazobar__aces img {
+  height: 80px;
+  width: auto;
+}
+
+.mazobar__form {
+  flex: 1;
+}
+
+.mazobar__form input {
+  width: 100%;
+  max-width: 360px;
+  padding: 10px 12px;
+  font-size: 18px;
+  border: 1px solid #bbb;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.mazobar__title {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.mazobar__title--deck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mazobar__deck-name {
+  font-size: 28px;
+  font-weight: 500;
+}
+
+.mazobar__exit {
+  background: #111;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.mazobar__left-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 170px;
+}
+
+.mazobar__user-cards {
+  display: flex;
+  align-items: center;
+}
+
+.mazobar__photo img,
+.mazobar__photo {
+  height: 120px;
+  width: auto;
+}
+
+.mazobar__right-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mazobar__suits {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mazobar__suits img {
+  height: 28px;
+  width: auto;
+}
+
+.deck-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+.deck-row__user-cards {
+  display: flex;
+  align-items: center;
+}
+
+.deck-row__user-cards img {
+  height: 50px;
+  width: auto;
+}
+
+.deck-row__user-cards img + img {
+  margin-left: -10px;
+}
+
+.deck-row__photo img {
+  height: 60px;
+  width: auto;
+}
+
+.deck-row__institution {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.deck-row__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.deck-row__title img {
+  height: 28px;
+  width: auto;
+}
+
+.deck-row__suits {
+  display: flex;
+  gap: 6px;
+}
+
+.deck-row__suits img {
+  height: 20px;
+  width: auto;
+}
+
+.mazobar__ace-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.mazobar__ace-btn + .mazobar__ace-btn {
+  margin-left: -8px;
+}
+
+.mazobar__mini-card {
+  height: 48px;
+  width: auto;
+  display: block;
+}
+
+.mazobar__ace-panel {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f4f4f4;
+  border: 1px solid #ccc;
+}
+
+.mazobar__ace-panel-header {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.mazobar__ace-panel-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.mazobar__ace-action {
+  padding: 8px 12px;
+  cursor: pointer;
+  border: 1px solid #999;
+  background: #fff;
+}
+
+.mazobar__ace-action:hover {
+  background: #eee;
+}
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\css\topbar.css
+===============================
+.topbar {
+  height: 72px;
+  background: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.topbar__inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar__left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.topbar__logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.topbar__logo-img {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.topbar__icon-btn {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+}
+
+.topbar__icon-btn:hover,
+.topbar__icon-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.topbar__icon-img {
+  height: 30px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.topbar__icon-img--profile {
+  height: 42px;
+  max-width: 42px;
+  border-radius: 4px;
+}
+.topbar__icon-img--portfolio {
+  height: 32px;
+}
+
+.topbar__icon-img--exit {
+  height: 24px;
+}
+
+.topbar__icon-img--exit {
+  height: 24px;
+}
+
+.topbar__exit-btn {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.topbar__login-link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 500;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
+}
+
+.topbar__login-link:hover,
+.topbar__login-link:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  opacity: 0.9;
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.topbar {
+  background: rgb(0, 0, 0) !important;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\js\auth.js
+===============================
+function getAuthToken() {
+  return localStorage.getItem("cooptrackToken");
+}
+
+function authHeaders(extra = {}) {
+  const token = getAuthToken();
+
+  const headers = {
+    ...extra
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\js\cards.js
+===============================
+function escapeHtml(text) {
+  return String(text || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatDate(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return Number.isNaN(date.getTime()) ? dateString : date.toLocaleString();
+}
+
+function getCardVisual(record) {
+  const type = record.card_type;
+
+  if (type === "J_HEART") {
+    return {
+      suit: "â™¥",
+      suitClass: "heart",
+      cardClass: "card-heart",
+      title: record.title || "AnotaciÃ³n",
+      text: record.description || "Sin descripciÃ³n"
+    };
+  }
+
+  if (type === "J_CLUB") {
+    return {
+      suit: "â™£",
+      suitClass: "club",
+      cardClass: "card-club",
+      title: record.title || "Bien",
+      text: record.description || "Sin descripciÃ³n"
+    };
+  }
+
+  if (type === "J_SPADE") {
+    const lines = [record.description || "Sin descripciÃ³n"];
+
+    if (record.start_date) {
+      lines.push(`Inicio: ${formatDate(record.start_date)}`);
+    }
+
+    if (record.end_date) {
+      lines.push(`Fin: ${formatDate(record.end_date)}`);
+    }
+
+    if (record.location) {
+      lines.push(`Lugar: ${record.location}`);
+    }
+
+    return {
+      suit: "â™ ",
+      suitClass: "spade",
+      cardClass: "card-spade",
+      title: record.title || "Actividad",
+      text: lines.join("\n")
+    };
+  }
+
+  if (type === "J_DIAMOND") {
+    const lines = [];
+
+    if (record.amount !== null && record.amount !== undefined) {
+      lines.push(`$ ${record.amount}`);
+    }
+
+    if (record.description) {
+      lines.push(record.description);
+    }
+
+    return {
+      suit: "â™¦",
+      suitClass: "diamond",
+      cardClass: "card-diamond",
+      title: record.title || "Monto",
+      text: lines.length > 0 ? lines.join("\n") : "Sin monto"
+    };
+  }
+
+  return {
+    suit: "?",
+    suitClass: "",
+    cardClass: "",
+    title: record.title || "Registro",
+    text: record.description || "Sin descripciÃ³n"
+  };
+}
+
+function renderCard(record) {
+  const visual = getCardVisual(record);
+
+  return `
+    <div class="record-card ${visual.cardClass}">
+      <div class="record-top ${visual.suitClass}">
+        <span>J</span>
+        <span>${visual.suit}</span>
+      </div>
+
+      <div class="record-center">
+        <div class="record-suit-big ${visual.suitClass}">
+          ${visual.suit}
+        </div>
+
+        <div class="record-title">
+          ${escapeHtml(visual.title)}
+        </div>
+
+        <div class="record-text">
+          ${escapeHtml(visual.text)}
+        </div>
+      </div>
+
+      <div class="record-bottom ${visual.suitClass}">
+        <span>${visual.suit}</span>
+        <span>J</span>
+      </div>
+    </div>
+  `;
+}
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\js\deck-view.js
+===============================
+function getStoredDecks() {
+  try {
+    const raw = localStorage.getItem("cooptrackDecks");
+    if (!raw) return [];
+    const decks = JSON.parse(raw);
+    return Array.isArray(decks) ? decks : [];
+  } catch (error) {
+    console.error("Error leyendo cooptrackDecks:", error);
+    return [];
+  }
+}
+
+function clearDecksView() {
+  const container = document.getElementById("decks-view-container");
+  if (!container) return;
+  container.innerHTML = "";
+}
+
+function buildDeckUserCardsHTML(deck) {
+  const joker = deck?.joker || "red";
+
+  if (joker === "red") {
+    return `
+      <div class="decks-view__user-cards">
+        <img src="/assets/icons/Joker120.gif" alt="Joker rojo" class="decks-view__mini-card" />
+      </div>
+    `;
+  }
+
+  if (joker === "blue") {
+    return `
+      <div class="decks-view__user-cards">
+        <img src="/assets/icons/joker_blue.gif" alt="Joker azul" class="decks-view__mini-card" />
+      </div>
+    `;
+  }
+
+  return `
+    <div class="decks-view__user-cards">
+      <img src="/assets/icons/Joker120.gif" alt="Carta" class="decks-view__mini-card" />
+    </div>
+  `;
+}
+
+function buildDeckRowHTML(deck) {
+  return `
+    <article class="decks-view__item" data-deck-id="${deck.id}">
+      
+      <div class="decks-view__left-group">
+        ${buildDeckUserCardsHTML(deck)}
+      </div>
+
+      <div class="decks-view__photo">
+        <img src="/assets/icons/singeta120.gif" alt="Mazo" />
+      </div>
+
+      <div class="decks-view__right-group">
+        <div class="decks-view__title">
+          <span class="decks-view__ace">A â™¥</span>
+          <span class="decks-view__deck-name">${deck.name}</span>
+        </div>
+
+        <div class="decks-view__suits">
+          <button class="decks-view__suit-btn" data-deck-id="${deck.id}" data-suit="SPADE" title="Vista picas" aria-label="Vista picas">
+            <img src="/assets/icons/pik40.gif" alt="Picas" />
+          </button>
+
+          <button class="decks-view__suit-btn" data-deck-id="${deck.id}" data-suit="DIAMOND" title="Vista diamantes" aria-label="Vista diamantes">
+            <img src="/assets/icons/dia40.gif" alt="Diamantes" />
+          </button>
+
+          <button class="decks-view__suit-btn" data-deck-id="${deck.id}" data-suit="CLUB" title="Vista trÃ©boles" aria-label="Vista trÃ©boles">
+            <img src="/assets/icons/tre40.gif" alt="TrÃ©boles" />
+          </button>
+
+          <button class="decks-view__suit-btn" data-deck-id="${deck.id}" data-suit="HEART" title="Vista corazones" aria-label="Vista corazones">
+            <img src="/assets/icons/cor40.gif" alt="Corazones" />
+          </button>
+        </div>
+      </div>
+
+    </article>
+  `;
+}
+
+function attachDeckSuitEvents() {
+  const suitButtons = document.querySelectorAll(".decks-view__suit-btn");
+
+  suitButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const deckId = button.dataset.deckId;
+      const suit = button.dataset.suit;
+
+      sessionStorage.setItem("activeDeckId", deckId);
+      sessionStorage.setItem("activeSuit", suit);
+
+      console.log("Vista de mazo/palo seleccionada:", { deckId, suit });
+
+      // MÃ¡s adelante:
+      // 1. ocultar otros renglones mazo
+      // 2. mostrar renglones jugada del palo elegido
+      // 3. enfocar ese mazo
+    });
+  });
+}
+
+function renderDecksView() {
+  const container = document.getElementById("decks-view-container");
+  if (!container) return;
+
+  const decks = getStoredDecks();
+
+  if (!decks.length) {
+    container.innerHTML = "";
+    return;
+  }
+
+  container.innerHTML = `
+    <section class="decks-view">
+      <div class="page-container">
+        <div class="decks-view__list">
+          ${decks.map((deck) => buildDeckRowHTML(deck)).join("")}
+        </div>
+      </div>
+    </section>
+  `;
+
+  attachDeckSuitEvents();
+}
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\js\mazobar.js
+===============================
+function getStoredDecks() {
+  try {
+    const raw = localStorage.getItem("cooptrackDecks");
+    if (!raw) return [];
+    const decks = JSON.parse(raw);
+    return Array.isArray(decks) ? decks : [];
+  } catch (error) {
+    console.error("Error leyendo cooptrackDecks:", error);
+    return [];
+  }
+}
+
+function saveStoredDecks(decks) {
+  localStorage.setItem("cooptrackDecks", JSON.stringify(decks));
+}
+
+function closeMazobar() {
+  const container = document.getElementById("mazobar-container");
+  if (!container) return;
+  container.innerHTML = "";
+}
+
+function goHome() {
+  window.location.href = "/index.html";
+}
+
+function getDefaultAcesForJoker(joker) {
+  if (joker === "red") {
+    return ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"];
+  }
+
+  return [];
+}
+
+function getCardImage(cardType) {
+  const map = {
+    A_HEART: "/assets/icons/Acorazon.gif",
+    A_SPADE: "/assets/icons/Apike.gif",
+    A_DIAMOND: "/assets/icons/Adiamante.gif",
+    A_CLUB: "/assets/icons/Atrebol.gif",
+    JOKER_RED: "/assets/icons/Joker120.gif",
+    JOKER_BLUE: "/assets/icons/joker_blue.gif",
+    SPADE: "/assets/icons/pik40.gif",
+    DIAMOND: "/assets/icons/dia40.gif",
+    CLUB: "/assets/icons/tre40.gif",
+    HEART: "/assets/icons/cor40.gif"
+  };
+
+  return map[cardType] || "/assets/icons/Joker120.gif";
+}
+
+function getCardLabel(cardType) {
+  const map = {
+    A_HEART: "Aâ™¥",
+    A_SPADE: "Aâ™ ",
+    A_DIAMOND: "Aâ™¦",
+    A_CLUB: "Aâ™£"
+  };
+
+  return map[cardType] || cardType;
+}
+
+function normalizeDeck(deck) {
+  if (!deck) return null;
+
+  const joker = deck.joker || "red";
+  const aces =
+    Array.isArray(deck.aces) && deck.aces.length > 0
+      ? deck.aces
+      : getDefaultAcesForJoker(joker);
+
+  return {
+    ...deck,
+    joker,
+    aces
+  };
+}
+
+function buildUserCardsHTML(deck) {
+  const normalizedDeck = normalizeDeck(deck);
+  const joker = normalizedDeck?.joker || "red";
+  const aces = normalizedDeck?.aces || [];
+
+  const jokerHTML =
+    joker === "blue"
+      ? `
+        <img
+          src="${getCardImage("JOKER_BLUE")}"
+          alt="Joker azul"
+          class="mazobar__mini-card"
+          title="Joker azul"
+        />
+      `
+      : `
+        <img
+          src="${getCardImage("JOKER_RED")}"
+          alt="Joker rojo"
+          class="mazobar__mini-card"
+          title="Joker rojo"
+        />
+      `;
+
+  const acesHTML = aces
+    .map(
+      (aceType) => `
+        <button
+          class="mazobar__ace-btn"
+          type="button"
+          data-ace-type="${aceType}"
+          title="${getCardLabel(aceType)}"
+        >
+          <img
+            src="${getCardImage(aceType)}"
+            alt="${getCardLabel(aceType)}"
+            class="mazobar__mini-card"
+          />
+        </button>
+      `
+    )
+    .join("");
+
+  return `
+    <div class="mazobar__user-cards">
+      ${jokerHTML}
+      ${acesHTML}
+    </div>
+  `;
+}
+
+function buildAcePlayPanelHTML(aceType) {
+  return `
+    <div class="mazobar__ace-panel" id="mazobarAcePanel">
+      <div class="mazobar__ace-panel-header">
+        <strong>${getCardLabel(aceType)}</strong>
+      </div>
+
+      <div class="mazobar__ace-panel-actions">
+        <button
+          type="button"
+          class="mazobar__action-btn mazobar__ace-action"
+          id="transferAceBtn"
+          data-ace-type="${aceType}"
+        >
+          Transferir
+        </button>
+
+        <button
+          type="button"
+          class="mazobar__action-btn mazobar__ace-action"
+          id="renounceAceBtn"
+          data-ace-type="${aceType}"
+        >
+          Renunciar
+        </button>
+
+        <button
+          type="button"
+          class="mazobar__action-btn mazobar__ace-action"
+          id="closeAcePanelBtn"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function removeAcePlayPanel() {
+  const panel = document.getElementById("mazobarAcePanel");
+  if (panel) panel.remove();
+}
+
+function updateStoredDeck(deckId, updater) {
+  const decks = getStoredDecks();
+  const index = decks.findIndex((item) => String(item.id) === String(deckId));
+
+  if (index === -1) return null;
+
+  decks[index] = updater({ ...decks[index] });
+  saveStoredDecks(decks);
+
+  return decks[index];
+}
+
+function transferAce(deck, aceType) {
+  const targetNickname = window.prompt(
+    `Transferir ${getCardLabel(aceType)} a:`,
+    ""
+  );
+
+  if (!targetNickname || !targetNickname.trim()) return;
+
+  window.alert(
+    `${getCardLabel(aceType)} preparado para transferencia a ${targetNickname.trim()}.`
+  );
+
+  removeAcePlayPanel();
+}
+
+function renounceAce(deck, aceType) {
+  const confirmed = window.confirm(
+    `Â¿Seguro que querÃ©s renunciar a ${getCardLabel(aceType)}?`
+  );
+
+  if (!confirmed) return;
+
+  const updatedDeck = updateStoredDeck(deck.id, (storedDeck) => {
+    const currentAces = Array.isArray(storedDeck.aces) ? storedDeck.aces : [];
+    return {
+      ...storedDeck,
+      aces: currentAces.filter((item) => item !== aceType)
+    };
+  });
+
+  if (updatedDeck) {
+    renderMazobar("deck", normalizeDeck(updatedDeck));
+  }
+
+  removeAcePlayPanel();
+}
+
+function attachAcePanelEvents(deck, aceType) {
+  document.getElementById("transferAceBtn")?.addEventListener("click", () => {
+    transferAce(deck, aceType);
+  });
+
+  document.getElementById("renounceAceBtn")?.addEventListener("click", () => {
+    renounceAce(deck, aceType);
+  });
+
+  document.getElementById("closeAcePanelBtn")?.addEventListener("click", () => {
+    removeAcePlayPanel();
+  });
+}
+
+function openAcePlay(deck, aceType) {
+  removeAcePlayPanel();
+
+  const host = document.getElementById("mazobar-ace-play-host");
+  if (!host) return;
+
+  host.innerHTML = buildAcePlayPanelHTML(aceType);
+  attachAcePanelEvents(deck, aceType);
+}
+
+function attachDeckAceEvents(deck) {
+  const aceButtons = document.querySelectorAll(".mazobar__ace-btn");
+
+  aceButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const aceType = button.dataset.aceType;
+      if (!aceType) return;
+      openAcePlay(deck, aceType);
+    });
+  });
+}
+
+function buildDeckFinalRow(deck) {
+  const normalizedDeck = normalizeDeck(deck);
+
+  return `
+    <section class="mazobar">
+      <div class="page-container mazobar__inner mazobar__inner--deck">
+
+        <div class="mazobar__left-group">
+          ${buildUserCardsHTML(normalizedDeck)}
+        </div>
+
+        <div class="mazobar__photo">
+          <img src="/assets/icons/singeta120.gif" alt="Foto del mazo" />
+        </div>
+
+        <div class="mazobar__right-group">
+          <div class="mazobar__title mazobar__title--deck">
+            <span class="mazobar__deck-name">${normalizedDeck.name}</span>
+          </div>
+
+          <div class="mazobar__suits">
+            <img src="${getCardImage("HEART")}" alt="Corazones" />
+            <img src="${getCardImage("SPADE")}" alt="Picas" />
+            <img src="${getCardImage("DIAMOND")}" alt="Diamantes" />
+            <img src="${getCardImage("CLUB")}" alt="TrÃ©boles" />
+          </div>
+        </div>
+
+      </div>
+
+      <div class="page-container" id="mazobar-ace-play-host"></div>
+    </section>
+  `;
+}
+
+function renderMazobar(mode = "create", deck = null) {
+  const container = document.getElementById("mazobar-container");
+
+  if (!container) {
+    console.warn("mazobar-container no encontrado");
+    return;
+  }
+
+  let html = "";
+
+  if (mode === "create") {
+    html = `
+      <section class="mazobar">
+        <div class="page-container mazobar__inner">
+
+          <div class="mazobar__card">
+            <img src="/assets/icons/Acorazon.gif" alt="A corazÃ³n" />
+          </div>
+
+          <div class="mazobar__form">
+            <input
+              id="deckNameInput"
+              type="text"
+              placeholder="Nombre del mazo"
+            />
+          </div>
+
+          <div class="mazobar__jokers">
+            <img
+              src="/assets/icons/Joker120.gif"
+              class="joker-option"
+              id="jokerRed"
+              title="Joker rojo"
+              alt="Joker rojo"
+            />
+
+            <img
+              src="/assets/icons/joker_blue.gif"
+              class="joker-option"
+              id="jokerBlue"
+              title="Joker azul"
+              alt="Joker azul"
+            />
+          </div>
+
+          <button class="mazobar__exit" id="mazoExitBtn" title="Salir">
+            EXIT
+          </button>
+
+        </div>
+      </section>
+    `;
+
+    container.innerHTML = html;
+
+    document.getElementById("mazoExitBtn")?.addEventListener("click", () => {
+      closeMazobar();
+    });
+
+    document.getElementById("jokerRed")?.addEventListener("click", () => {
+      const deckName =
+        document.getElementById("deckNameInput")?.value?.trim() || "Nuevo mazo";
+
+      renderMazobar("confirm", {
+        name: deckName,
+        joker: "red",
+        aces: ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"]
+      });
+    });
+
+    document.getElementById("jokerBlue")?.addEventListener("click", () => {
+      const deckName =
+        document.getElementById("deckNameInput")?.value?.trim() || "Nuevo mazo";
+
+      renderMazobar("confirm", {
+        name: deckName,
+        joker: "blue",
+        aces: []
+      });
+    });
+
+    return;
+  }
+
+  if (mode === "confirm") {
+    const normalizedDeck = normalizeDeck(deck);
+    const jokerImage =
+      normalizedDeck?.joker === "blue"
+        ? "/assets/icons/joker_blue.gif"
+        : "/assets/icons/Joker120.gif";
+
+    const acesHTML = (normalizedDeck?.aces || [])
+      .map(
+        (aceType) => `
+          <img src="${getCardImage(aceType)}" alt="${getCardLabel(aceType)}" />
+        `
+      )
+      .join("");
+
+    html = `
+      <section class="mazobar">
+        <div class="page-container mazobar__inner">
+
+          <div class="mazobar__card">
+            <img src="/assets/icons/Acorazon.gif" alt="A corazÃ³n" />
+          </div>
+
+          <div class="mazobar__title">
+            ${normalizedDeck.name}
+          </div>
+
+          <div class="mazobar__cards">
+            <img src="${jokerImage}" alt="Joker" />
+            ${acesHTML}
+          </div>
+
+          <div class="mazobar__actions">
+
+            <button class="mazobar__action-btn" id="confirmDeckBtn" title="Aprobar mazo">
+              <img src="/assets/icons/Sello40.gif" alt="Aprobar mazo" />
+            </button>
+
+            <button class="mazobar__action-btn" id="editDeckBtn" title="Editar nombre">
+              <img src="/assets/icons/desarrollo40.gif" alt="Editar mazo" />
+            </button>
+
+            <button class="mazobar__action-btn" id="exitDeckBtn" title="Salir al home">
+              <img src="/assets/icons/exit120.gif" alt="Salir" />
+            </button>
+
+          </div>
+
+        </div>
+      </section>
+    `;
+
+    container.innerHTML = html;
+
+    document.getElementById("confirmDeckBtn")?.addEventListener("click", () => {
+      const storedDecks = getStoredDecks();
+
+      const newDeck = {
+        id: Date.now(),
+        name: normalizedDeck.name,
+        joker: normalizedDeck.joker || "red",
+        aces: normalizedDeck.aces || []
+      };
+
+      storedDecks.push(newDeck);
+      saveStoredDecks(storedDecks);
+
+      sessionStorage.setItem("activeDeckId", String(newDeck.id));
+      sessionStorage.setItem("activeDeckName", newDeck.name);
+
+      if (typeof renderTopbar === "function") {
+        renderTopbar();
+      }
+
+      renderMazobar("deck", newDeck);
+    });
+
+    document.getElementById("editDeckBtn")?.addEventListener("click", () => {
+      renderMazobar("create");
+    });
+
+    document.getElementById("exitDeckBtn")?.addEventListener("click", () => {
+      goHome();
+    });
+
+    return;
+  }
+
+  if (mode === "deck") {
+    const normalizedDeck = normalizeDeck(deck);
+    html = buildDeckFinalRow(normalizedDeck);
+    container.innerHTML = html;
+    attachDeckAceEvents(normalizedDeck);
+  }
+}
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\js\topbar.js
+===============================
+function getLoggedUser() {
+  try {
+    const raw = localStorage.getItem("cooptrackUser");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("Error leyendo usuario de localStorage:", error);
+    return null;
+  }
+}
+
+function logout() {
+  localStorage.removeItem("cooptrackUser");
+  localStorage.removeItem("cooptrackToken");
+  window.location.href = "/index.html";
+}
+
+function getProfileImage(user) {
+  if (user && user.profile_photo_url && user.profile_photo_url.trim() !== "") {
+    return user.profile_photo_url;
+  }
+  return "/assets/icons/singeta120.gif";
+}
+
+function hasDecks() {
+  try {
+    const raw = localStorage.getItem("cooptrackDecks");
+    if (!raw) return false;
+    const decks = JSON.parse(raw);
+    return Array.isArray(decks) && decks.length > 0;
+  } catch (error) {
+    console.error("Error leyendo mazos:", error);
+    return false;
+  }
+}
+
+function isDecksViewOpen() {
+  return sessionStorage.getItem("cooptrackDecksViewOpen") === "true";
+}
+
+function setDecksViewOpen(value) {
+  sessionStorage.setItem("cooptrackDecksViewOpen", value ? "true" : "false");
+}
+
+function toggleDecksView() {
+  const open = isDecksViewOpen();
+  const next = !open;
+
+  setDecksViewOpen(next);
+
+  if (typeof renderDecksView === "function") {
+    if (next) {
+      renderDecksView();
+    } else {
+      clearDecksView();
+    }
+  }
+
+  renderTopbar();
+}
+
+function renderTopbar() {
+  const user = getLoggedUser();
+  const userHasDecks = hasDecks();
+  const decksViewOpen = isDecksViewOpen();
+
+  let topbarHTML = "";
+
+  if (user) {
+    topbarHTML = `
+      <header class="topbar">
+        <div class="page-container topbar__inner">
+
+          <div class="topbar__left">
+            <a href="/index.html" class="topbar__logo" aria-label="CoopTrack">
+              <img src="/assets/icons/cooptrack.png" alt="CoopTrack" class="topbar__logo-img" />
+            </a>
+          </div>
+
+          <nav class="topbar__right" aria-label="NavegaciÃ³n principal">
+
+            <a href="/profile.html" class="topbar__icon-btn" title="Perfil" aria-label="Perfil">
+              <img src="${getProfileImage(user)}" alt="Perfil" class="topbar__icon-img topbar__icon-img--profile" />
+            </a>
+
+            <button class="topbar__icon-btn" id="newDeckBtn" title="Nuevo mazo" aria-label="Nuevo mazo">
+              <img src="/assets/icons/Acorazon.gif" alt="Nuevo mazo" class="topbar__icon-img" />
+            </button>
+
+            ${
+              userHasDecks
+                ? `
+                  <button class="topbar__icon-btn" id="portfolioBtn" title="Mazos" aria-label="Mazos">
+                    <img
+                      src="${
+                        decksViewOpen
+                          ? "/assets/icons/portafolioAbierto.png"
+                          : "/assets/icons/portafolios80.gif"
+                      }"
+                      alt="Mazos"
+                      class="topbar__icon-img topbar__icon-img--portfolio"
+                    />
+                  </button>
+                `
+                : ""
+            }
+
+            <a href="/notificaciones.html" class="topbar__icon-btn" title="Notificaciones" aria-label="Notificaciones">
+              <img src="/assets/icons/Dorso70.gif" alt="Notificaciones" class="topbar__icon-img" />
+            </a>
+
+            <a href="/almanaque.html" class="topbar__icon-btn" title="Almanaque" aria-label="Almanaque">
+              <img src="/assets/icons/Schedule80.gif" alt="Almanaque" class="topbar__icon-img" />
+            </a>
+
+            <a href="/noticias.html" class="topbar__icon-btn" title="Noticias" aria-label="Noticias">
+              <img src="/assets/icons/Extra120.gif" alt="Noticias" class="topbar__icon-img" />
+            </a>
+
+            <a href="/help.html" class="topbar__icon-btn" title="Help" aria-label="Help">
+              <img src="/assets/icons/bastonRecortado80.gif" alt="Help" class="topbar__icon-img" />
+            </a>
+
+            <button class="topbar__icon-btn topbar__exit-btn" id="logoutBtn" title="Salir" aria-label="Salir">
+              <img src="/assets/icons/exit80.gif" alt="Salir" class="topbar__icon-img topbar__icon-img--exit" />
+            </button>
+
+          </nav>
+        </div>
+      </header>
+    `;
+  } else {
+    topbarHTML = `
+      <header class="topbar">
+        <div class="page-container topbar__inner">
+
+          <div class="topbar__left">
+            <a href="/index.html" class="topbar__logo" aria-label="CoopTrack">
+              <img src="/assets/icons/cooptrack.png" alt="CoopTrack" class="topbar__logo-img" />
+            </a>
+          </div>
+
+          <nav class="topbar__right" aria-label="NavegaciÃ³n principal">
+            <a href="/almanaque.html" class="topbar__icon-btn" title="Almanaque" aria-label="Almanaque">
+              <img src="/assets/icons/Schedule80.gif" alt="Almanaque" class="topbar__icon-img" />
+            </a>
+
+            <a href="/help.html" class="topbar__icon-btn" title="Help" aria-label="Help">
+              <img src="/assets/icons/bastonRecortado80.gif" alt="Help" class="topbar__icon-img" />
+            </a>
+
+            <a href="/login.html" class="topbar__login-link" title="Login" aria-label="Login">
+              Login
+            </a>
+          </nav>
+        </div>
+      </header>
+    `;
+  }
+
+  const container = document.getElementById("topbar-container");
+
+  if (!container) {
+    console.warn("topbar-container no encontrado");
+    return;
+  }
+
+  container.innerHTML = topbarHTML;
+
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", logout);
+  }
+
+  const newDeckBtn = document.getElementById("newDeckBtn");
+  if (newDeckBtn) {
+    newDeckBtn.addEventListener("click", () => {
+      if (typeof renderMazobar === "function") {
+        renderMazobar("create");
+      }
+    });
+  }
+
+  const portfolioBtn = document.getElementById("portfolioBtn");
+  if (portfolioBtn) {
+    portfolioBtn.addEventListener("click", toggleDecksView);
+  }
+}
+
+renderTopbar();
+
+

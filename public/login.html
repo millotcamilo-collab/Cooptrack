@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | CoopTrack</title>
+  <link rel="stylesheet" href="/css/topbar.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f6f7fb;
+      color: #1f2937;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 22px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 20px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: #111827;
+      color: white;
+      font-size: 18px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .nav a {
+      color: #374151;
+      padding: 10px 12px;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+
+    .nav a:hover {
+      background: #f3f4f6;
+    }
+
+    .primary {
+      background: #111827;
+      color: white !important;
+    }
+
+    .page {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 100px 20px 40px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      margin-top: 0;
+      margin-bottom: 24px;
+      color: #6b7280;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #111827;
+      box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #111827;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1f2937;
+    }
+
+    .message {
+      margin-top: 14px;
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    .success {
+      color: #065f46;
+    }
+
+    .error {
+      color: #b91c1c;
+    }
+
+    .register-box {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+    }
+
+    .register-box p {
+      margin: 0 0 12px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .register-link {
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+      padding: 12px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid #d1d5db;
+      color: #111827;
+      background: #fff;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .register-link:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    /* =========================
+   TOPBAR FIX
+========================= */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.topbar__inner {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+
+.topbar__left,
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* LOGO */
+.topbar__logo-img {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+/* ICONOS */
+.topbar__icon-img {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
+/* PERFIL */
+.topbar__icon-img--profile {
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+}
+
+/* BOTONES */
+.topbar__icon-btn {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.topbar__icon-btn:hover {
+  background: #f3f4f6;
+}
+
+/* LINK LOGIN */
+.topbar__login-link {
+  text-decoration: none;
+  color: #111827;
+  font-weight: 600;
+}
+  </style>
+</head>
+<body>
+
+  <div id="topbar-container"></div>
+
+  <main class="page">
+    <div class="card">
+      <h1>Iniciar sesión</h1>
+      <p class="subtitle">
+        Entrá con tu email o teléfono y tu contraseña.
+      </p>
+
+      <form id="loginForm">
+        <div class="field">
+          <label for="login">Email o teléfono</label>
+          <input id="login" required>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" required>
+        </div>
+
+        <button type="submit">Entrar</button>
+        <div id="msg" class="message"></div>
+      </form>
+
+      <div class="register-box">
+        <p>¿Todavía no tenés cuenta?</p>
+        <a class="register-link" href="/register.html">Crear cuenta</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/topbar.js"></script>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const msg = document.getElementById("msg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      msg.className = "message";
+      msg.textContent = "";
+
+      const login = document.getElementById("login").value.trim();
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            login,
+            password
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          localStorage.setItem("cooptrackUser", JSON.stringify(data.user));
+          localStorage.setItem("cooptrackToken", data.token);
+
+          msg.className = "message success";
+          msg.textContent = "Login correcto.";
+
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 800);
+        } else {
+          msg.className = "message error";
+          msg.textContent = data.error || "Login incorrecto.";
+        }
+      } catch (err) {
+        msg.className = "message error";
+        msg.textContent = "Error de conexión con el servidor.";
+      }
+    });
+  </script>
+
+</body>
+</html>
