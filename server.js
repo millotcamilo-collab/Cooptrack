@@ -257,7 +257,7 @@ app.delete('/users/:id', async (req, res) => {
       `
       SELECT id
       FROM decks
-      WHERE created_by = $1
+      WHERE created_by_user_id = $1
       `,
       [userId]
     );
@@ -266,8 +266,24 @@ app.delete('/users/:id', async (req, res) => {
 
     await client.query(
       `
-      DELETE FROM records
+      DELETE FROM record_comments
       WHERE user_id = $1
+      `,
+      [userId]
+    );
+
+    await client.query(
+      `
+      DELETE FROM participations
+      WHERE sender_user_id = $1 OR recipient_user_id = $1
+      `,
+      [userId]
+    );
+
+    await client.query(
+      `
+      DELETE FROM records
+      WHERE created_by_user_id = $1
       `,
       [userId]
     );
@@ -283,24 +299,8 @@ app.delete('/users/:id', async (req, res) => {
     if (deckIds.length > 0) {
       await client.query(
         `
-        DELETE FROM records
-        WHERE deck_id = ANY($1::int[])
-        `,
-        [deckIds]
-      );
-
-      await client.query(
-        `
-        DELETE FROM deck_members
-        WHERE deck_id = ANY($1::int[])
-        `,
-        [deckIds]
-      );
-
-      await client.query(
-        `
         DELETE FROM decks
-        WHERE id = ANY($1::int[])
+        WHERE id = ANY($1::bigint[])
         `,
         [deckIds]
       );
@@ -648,8 +648,8 @@ app.put('/me/password', requireAuth, async (req, res) => {
 
 // Crear deck
 app.post('/decks', requireAuth, async (req, res) => {
-  const { name, description, is_private } = req.body;
-  const created_by = req.auth.userId;
+  const { name, description, is_private, joker_type, currency_code } = req.body;
+  const createdByUserId = req.auth.userId;
 
   if (!name) {
     return res.status(400).json({
@@ -665,11 +665,27 @@ app.post('/decks', requireAuth, async (req, res) => {
 
     const deckResult = await client.query(
       `
-      INSERT INTO decks (name, description, created_by, is_private, updated_at)
-      VALUES ($1, $2, $3, $4, NOW())
+      INSERT INTO decks (
+        name,
+        description,
+        created_by_user_id,
+        owner_user_id,
+        is_private,
+        joker_type,
+        currency_code,
+        updated_at
+      )
+      VALUES ($1, $2, $3, $3, $4, $5, $6, NOW())
       RETURNING *;
       `,
-      [name, description || null, created_by, is_private ?? false]
+      [
+        name,
+        description || null,
+        createdByUserId,
+        is_private ?? false,
+        joker_type || 'RED',
+        currency_code || 'ARS',
+      ]
     );
 
     const deck = deckResult.rows[0];
@@ -679,7 +695,16 @@ app.post('/decks', requireAuth, async (req, res) => {
       INSERT INTO deck_members (deck_id, user_id)
       VALUES ($1, $2);
       `,
-      [deck.id, created_by]
+      [deck.id, createdByUserId]
+    );
+
+    await client.query(
+      `
+      INSERT INTO deck_governance_state (deck_id)
+      VALUES ($1)
+      ON CONFLICT (deck_id) DO NOTHING;
+      `,
+      [deck.id]
     );
 
     await client.query('COMMIT');
@@ -710,13 +735,16 @@ app.get('/decks', async (req, res) => {
         d.id,
         d.name,
         d.description,
-        d.created_by,
+        d.created_by_user_id,
+        d.owner_user_id,
         d.is_private,
+        d.joker_type,
+        d.currency_code,
         d.created_at,
         d.updated_at,
         u.nickname AS creator_nickname
       FROM decks d
-      JOIN users u ON d.created_by = u.id
+      JOIN users u ON d.created_by_user_id = u.id
       ORDER BY d.created_at DESC;
     `);
 
@@ -745,7 +773,7 @@ app.get('/decks/:id', async (req, res) => {
         d.*,
         u.nickname AS creator_nickname
       FROM decks d
-      JOIN users u ON d.created_by = u.id
+      JOIN users u ON d.created_by_user_id = u.id
       WHERE d.id = $1;
       `,
       [id]
@@ -771,6 +799,7 @@ app.get('/decks/:id', async (req, res) => {
     });
   }
 });
+
 // Obtener estado de gobernanza de un deck
 app.get('/decks/:id/governance', async (req, res) => {
   const { id } = req.params;
@@ -786,7 +815,7 @@ app.get('/decks/:id/governance', async (req, res) => {
   try {
     const deckResult = await pool.query(
       `
-      SELECT id, name, created_by
+      SELECT id, name, created_by_user_id, owner_user_id, joker_type
       FROM decks
       WHERE id = $1
       LIMIT 1
@@ -841,7 +870,6 @@ app.get('/decks/:id/governance', async (req, res) => {
         is_blocked,
         blocked_reason,
         blocker_transaction_id,
-        has_red_joker,
         updated_at
       FROM deck_governance_state
       WHERE deck_id = $1
@@ -857,7 +885,6 @@ app.get('/decks/:id/governance', async (req, res) => {
       is_blocked: false,
       blocked_reason: null,
       blocker_transaction_id: null,
-      has_red_joker: false,
       updated_at: null,
     };
 
@@ -909,6 +936,7 @@ app.get('/decks/:id/governance', async (req, res) => {
     });
   }
 });
+
 // Obtener miembros de un deck
 app.get('/decks/:id/members', async (req, res) => {
   const { id } = req.params;
@@ -947,10 +975,10 @@ app.get('/decks/:id/members', async (req, res) => {
   }
 });
 
-// Crear record inicial: solo J_HEART
+// Crear record inicial: J_HEART mínima
 app.post('/records', requireAuth, async (req, res) => {
   const { deck_id, description, title } = req.body;
-  const user_id = req.auth.userId;
+  const createdByUserId = req.auth.userId;
 
   if (!deck_id) {
     return res.status(400).json({
@@ -988,32 +1016,45 @@ app.post('/records', requireAuth, async (req, res) => {
       INSERT INTO records
       (
         deck_id,
-        user_id,
+        created_by_user_id,
         card_type,
+        suit,
+        record_kind,
         title,
         description,
-        amount,
-        activity_date,
+        lifecycle_status,
+        governance_status,
+        visible_to_deck,
         start_date,
         end_date,
         location,
-        parent_record_id
+        parent_record_id,
+        updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      VALUES (
+        $1,
+        $2,
+        'J_HEART',
+        'HEART',
+        'NOTE',
+        $3,
+        $4,
+        'SAVED',
+        'NORMAL',
+        FALSE,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NOW()
+      )
       RETURNING *
       `,
       [
         deck_id,
-        user_id,
-        'J_HEART',
+        createdByUserId,
         normalizeString(title) || 'Anotación',
         normalizeString(description),
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
       ]
     );
 
@@ -1031,7 +1072,7 @@ app.post('/records', requireAuth, async (req, res) => {
   }
 });
 
-// Convertir record existente
+// Convertir record existente manteniendo el mismo id
 app.post('/records/:id/convert', requireAuth, async (req, res) => {
   const { id } = req.params;
   const {
@@ -1044,7 +1085,7 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
     amount,
   } = req.body;
 
-  const user_id = req.auth.userId;
+  const userId = req.auth.userId;
 
   if (!target_card_type) {
     return res.status(400).json({
@@ -1070,6 +1111,7 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
       SELECT *
       FROM records
       WHERE id = $1
+      FOR UPDATE
       `,
       [id]
     );
@@ -1084,7 +1126,7 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
 
     const originalRecord = recordResult.rows[0];
 
-    if (Number(originalRecord.user_id) !== Number(user_id)) {
+    if (Number(originalRecord.created_by_user_id) !== Number(userId)) {
       await client.query('ROLLBACK');
       return res.status(403).json({
         ok: false,
@@ -1100,6 +1142,14 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
       });
     }
 
+    if (originalRecord.lifecycle_status !== 'SAVED') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        ok: false,
+        message: 'Solo se pueden convertir registros J_HEART en estado SAVED',
+      });
+    }
+
     if (target_card_type === 'J_CLUB') {
       const finalDescription =
         normalizeString(description) || normalizeString(originalRecord.description);
@@ -1112,32 +1162,24 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
         });
       }
 
-      if (isProvided(amount) && !isValidNumber(amount)) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({
-          ok: false,
-          message: 'amount inválido',
-        });
-      }
-
       const updateResult = await client.query(
         `
         UPDATE records
         SET
-          card_type = $1,
-          title = $2,
-          description = $3,
-          amount = NULL,
-          activity_date = NULL,
+          card_type = 'J_CLUB',
+          suit = 'CLUB',
+          record_kind = 'ASSET',
+          title = $1,
+          description = $2,
           start_date = NULL,
           end_date = NULL,
           location = NULL,
-          parent_record_id = NULL
-        WHERE id = $4
+          parent_record_id = NULL,
+          updated_at = NOW()
+        WHERE id = $3
         RETURNING *
         `,
         [
-          'J_CLUB',
           normalizeString(title) || 'Bien',
           finalDescription,
           id,
@@ -1145,64 +1187,57 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
       );
 
       const clubRecord = updateResult.rows[0];
-      let diamondRecord = null;
 
       await client.query(
         `
-        DELETE FROM records
-        WHERE parent_record_id = $1
-          AND card_type = 'J_DIAMOND'
+        DELETE FROM record_economic_components
+        WHERE record_id = $1
         `,
         [clubRecord.id]
       );
 
+      let economicComponent = null;
+
       if (isProvided(amount)) {
-        const diamondInsert = await client.query(
+        if (!isValidNumber(amount)) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({
+            ok: false,
+            message: 'amount inválido',
+          });
+        }
+
+        const economicInsert = await client.query(
           `
-          INSERT INTO records
+          INSERT INTO record_economic_components
           (
-            deck_id,
-            user_id,
-            card_type,
-            title,
-            description,
+            record_id,
             amount,
-            activity_date,
-            start_date,
-            end_date,
-            location,
-            parent_record_id
+            currency_code,
+            description
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          VALUES ($1, $2, 'ARS', $3)
           RETURNING *
           `,
           [
-            clubRecord.deck_id,
-            clubRecord.user_id,
-            'J_DIAMOND',
-            'Monto',
-            finalDescription,
-            normalizeAmount(amount),
-            null,
-            null,
-            null,
-            null,
             clubRecord.id,
+            normalizeAmount(amount),
+            'Componente económico de J_CLUB',
           ]
         );
 
-        diamondRecord = diamondInsert.rows[0];
+        economicComponent = economicInsert.rows[0];
       }
 
       await client.query('COMMIT');
 
       return res.json({
         ok: true,
-        message: diamondRecord
-          ? 'Record convertido a J_CLUB y se creó J_DIAMOND'
+        message: economicComponent
+          ? 'Record convertido a J_CLUB con componente económico'
           : 'Record convertido a J_CLUB',
         record: clubRecord,
-        diamond_record: diamondRecord,
+        economic_component: economicComponent,
       });
     }
 
@@ -1255,32 +1290,24 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
         }
       }
 
-      if (isProvided(amount) && !isValidNumber(amount)) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({
-          ok: false,
-          message: 'amount inválido',
-        });
-      }
-
       const updateResult = await client.query(
         `
         UPDATE records
         SET
-          card_type = $1,
-          title = $2,
-          description = $3,
-          amount = NULL,
-          activity_date = NULL,
-          start_date = $4,
-          end_date = $5,
-          location = $6,
-          parent_record_id = NULL
-        WHERE id = $7
+          card_type = 'J_SPADE',
+          suit = 'SPADE',
+          record_kind = 'ACTIVITY',
+          title = $1,
+          description = $2,
+          start_date = $3,
+          end_date = $4,
+          location = $5,
+          parent_record_id = NULL,
+          updated_at = NOW()
+        WHERE id = $6
         RETURNING *
         `,
         [
-          'J_SPADE',
           normalizeString(title) || 'Actividad',
           finalDescription,
           normalizeDate(start_date),
@@ -1291,64 +1318,57 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
       );
 
       const spadeRecord = updateResult.rows[0];
-      let diamondRecord = null;
 
       await client.query(
         `
-        DELETE FROM records
-        WHERE parent_record_id = $1
-          AND card_type = 'J_DIAMOND'
+        DELETE FROM record_economic_components
+        WHERE record_id = $1
         `,
         [spadeRecord.id]
       );
 
+      let economicComponent = null;
+
       if (isProvided(amount)) {
-        const diamondInsert = await client.query(
+        if (!isValidNumber(amount)) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({
+            ok: false,
+            message: 'amount inválido',
+          });
+        }
+
+        const economicInsert = await client.query(
           `
-          INSERT INTO records
+          INSERT INTO record_economic_components
           (
-            deck_id,
-            user_id,
-            card_type,
-            title,
-            description,
+            record_id,
             amount,
-            activity_date,
-            start_date,
-            end_date,
-            location,
-            parent_record_id
+            currency_code,
+            description
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          VALUES ($1, $2, 'ARS', $3)
           RETURNING *
           `,
           [
-            spadeRecord.deck_id,
-            spadeRecord.user_id,
-            'J_DIAMOND',
-            'Monto',
-            finalDescription,
-            normalizeAmount(amount),
-            null,
-            null,
-            null,
-            null,
             spadeRecord.id,
+            normalizeAmount(amount),
+            'Componente económico de J_SPADE',
           ]
         );
 
-        diamondRecord = diamondInsert.rows[0];
+        economicComponent = economicInsert.rows[0];
       }
 
       await client.query('COMMIT');
 
       return res.json({
         ok: true,
-        message: diamondRecord
-          ? 'Record convertido a J_SPADE y se creó J_DIAMOND'
+        message: economicComponent
+          ? 'Record convertido a J_SPADE con componente económico'
           : 'Record convertido a J_SPADE',
         record: spadeRecord,
-        diamond_record: diamondRecord,
+        economic_component: economicComponent,
       });
     }
 
@@ -1373,20 +1393,28 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
 
 // Obtener records del usuario autenticado
 app.get('/records', requireAuth, async (req, res) => {
-  const user_id = req.auth.userId;
+  const userId = req.auth.userId;
 
   try {
     const result = await pool.query(
       `
       SELECT
         r.*,
-        d.name AS deck_name
+        d.name AS deck_name,
+        COALESCE(
+          (
+            SELECT json_agg(rec.* ORDER BY rec.id)
+            FROM record_economic_components rec
+            WHERE rec.record_id = r.id
+          ),
+          '[]'::json
+        ) AS economic_components
       FROM records r
       JOIN decks d ON r.deck_id = d.id
-      WHERE r.user_id = $1
+      WHERE r.created_by_user_id = $1
       ORDER BY r.created_at DESC, r.id DESC
       `,
-      [user_id]
+      [userId]
     );
 
     res.json({
@@ -1412,9 +1440,17 @@ app.get('/decks/:id/records', async (req, res) => {
       `
       SELECT
         r.*,
-        u.nickname AS user_nickname
+        u.nickname AS user_nickname,
+        COALESCE(
+          (
+            SELECT json_agg(rec.* ORDER BY rec.id)
+            FROM record_economic_components rec
+            WHERE rec.record_id = r.id
+          ),
+          '[]'::json
+        ) AS economic_components
       FROM records r
-      JOIN users u ON r.user_id = u.id
+      JOIN users u ON r.created_by_user_id = u.id
       WHERE r.deck_id = $1
       ORDER BY r.created_at DESC, r.id DESC
       `,
@@ -1432,285 +1468,6 @@ app.get('/decks/:id/records', async (req, res) => {
       ok: false,
       message: 'Error obteniendo records del deck',
     });
-  }
-});
-
-app.post('/ace-transfers', requireAuth, async (req, res) => {
-  const actorUserId = Number(req.auth.userId);
-  const { deck_id, ace_type, to_user_id } = req.body;
-
-  if (!Number.isInteger(Number(deck_id))) {
-    return res.status(400).json({ ok: false, error: 'deck_id inválido' });
-  }
-
-  if (!['A_SPADE', 'A_DIAMOND', 'A_CLUB'].includes(ace_type)) {
-    return res.status(400).json({ ok: false, error: 'ace_type inválido' });
-  }
-
-  if (!Number.isInteger(Number(to_user_id))) {
-    return res.status(400).json({ ok: false, error: 'to_user_id inválido' });
-  }
-
-  if (actorUserId === Number(to_user_id)) {
-    return res.status(400).json({ ok: false, error: 'No puedes transferirte el As a ti mismo' });
-  }
-
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-
-    const blockedResult = await client.query(
-      `
-      SELECT is_blocked
-      FROM deck_governance_state
-      WHERE deck_id = $1
-      LIMIT 1
-      `,
-      [deck_id]
-    );
-
-    if (blockedResult.rows[0]?.is_blocked) {
-      await client.query('ROLLBACK');
-      return res.status(409).json({ ok: false, error: 'El mazo está bloqueado' });
-    }
-
-    const memberResult = await client.query(
-      `
-      SELECT user_id
-      FROM deck_members
-      WHERE deck_id = $1 AND user_id IN ($2, $3)
-      `,
-      [deck_id, actorUserId, Number(to_user_id)]
-    );
-
-    if (memberResult.rows.length !== 2) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ ok: false, error: 'Ambos usuarios deben pertenecer al mazo' });
-    }
-
-    const aceResult = await client.query(
-      `
-      SELECT deck_id, ace_type, user_id
-      FROM deck_aces
-      WHERE deck_id = $1 AND ace_type = $2
-      LIMIT 1
-      FOR UPDATE
-      `,
-      [deck_id, ace_type]
-    );
-
-    if (aceResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ ok: false, error: 'As no encontrado en el mazo' });
-    }
-
-    if (Number(aceResult.rows[0].user_id) !== actorUserId) {
-      await client.query('ROLLBACK');
-      return res.status(403).json({ ok: false, error: 'No eres el titular actual de ese As' });
-    }
-
-    const pendingResult = await client.query(
-      `
-      SELECT id
-      FROM ace_transfers
-      WHERE deck_id = $1
-        AND ace_type = $2
-        AND status = 'PENDING'
-      LIMIT 1
-      `,
-      [deck_id, ace_type]
-    );
-
-    if (pendingResult.rows.length > 0) {
-      await client.query('ROLLBACK');
-      return res.status(409).json({ ok: false, error: 'Ya existe una transferencia pendiente para ese As' });
-    }
-
-    const insertResult = await client.query(
-      `
-      INSERT INTO ace_transfers
-      (deck_id, ace_type, from_user_id, to_user_id, status)
-      VALUES ($1, $2, $3, $4, 'PENDING')
-      RETURNING *
-      `,
-      [deck_id, ace_type, actorUserId, Number(to_user_id)]
-    );
-
-    await client.query('COMMIT');
-
-    res.status(201).json({
-      ok: true,
-      transfer: insertResult.rows[0]
-    });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('POST /ace-transfers error:', error);
-    res.status(500).json({ ok: false, error: 'No se pudo crear la transferencia' });
-  } finally {
-    client.release();
-  }
-});
-
-app.post('/ace-transfers/:id/respond', requireAuth, async (req, res) => {
-  const transferId = Number(req.params.id);
-  const actorUserId = Number(req.auth.userId);
-  const { decision } = req.body;
-
-  if (!Number.isInteger(transferId)) {
-    return res.status(400).json({ ok: false, error: 'transfer id inválido' });
-  }
-
-  if (!['ACCEPT', 'REJECT'].includes(decision)) {
-    return res.status(400).json({ ok: false, error: 'decision inválida' });
-  }
-
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-
-    const transferResult = await client.query(
-      `
-      SELECT *
-      FROM ace_transfers
-      WHERE id = $1
-      LIMIT 1
-      FOR UPDATE
-      `,
-      [transferId]
-    );
-
-    if (transferResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ ok: false, error: 'Transferencia no encontrada' });
-    }
-
-    const transfer = transferResult.rows[0];
-
-    if (transfer.status !== 'PENDING') {
-      await client.query('ROLLBACK');
-      return res.status(409).json({ ok: false, error: 'La transferencia ya fue respondida' });
-    }
-
-    if (Number(transfer.to_user_id) !== actorUserId) {
-      await client.query('ROLLBACK');
-      return res.status(403).json({ ok: false, error: 'Solo el receptor puede responder la transferencia' });
-    }
-
-    if (decision === 'REJECT') {
-      const rejectResult = await client.query(
-        `
-        UPDATE ace_transfers
-        SET status = 'REJECTED',
-            responded_at = NOW(),
-            responded_by_user_id = $2
-        WHERE id = $1
-        RETURNING *
-        `,
-        [transferId, actorUserId]
-      );
-
-      await client.query('COMMIT');
-      return res.json({ ok: true, transfer: rejectResult.rows[0] });
-    }
-
-    const aceResult = await client.query(
-      `
-      SELECT *
-      FROM deck_aces
-      WHERE deck_id = $1 AND ace_type = $2
-      LIMIT 1
-      FOR UPDATE
-      `,
-      [transfer.deck_id, transfer.ace_type]
-    );
-
-    if (aceResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ ok: false, error: 'As no encontrado' });
-    }
-
-    const currentAce = aceResult.rows[0];
-
-    if (Number(currentAce.user_id) !== Number(transfer.from_user_id)) {
-      await client.query('ROLLBACK');
-      return res.status(409).json({
-        ok: false,
-        error: 'El As ya no pertenece al emisor original'
-      });
-    }
-
-    await client.query(
-      `
-      UPDATE deck_aces
-      SET user_id = $1
-      WHERE deck_id = $2 AND ace_type = $3
-      `,
-      [transfer.to_user_id, transfer.deck_id, transfer.ace_type]
-    );
-
-    const acceptResult = await client.query(
-      `
-      UPDATE ace_transfers
-      SET status = 'ACCEPTED',
-          responded_at = NOW(),
-          responded_by_user_id = $2
-      WHERE id = $1
-      RETURNING *
-      `,
-      [transferId, actorUserId]
-    );
-
-    await client.query('COMMIT');
-
-    res.json({
-      ok: true,
-      transfer: acceptResult.rows[0]
-    });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('POST /ace-transfers/:id/respond error:', error);
-    res.status(500).json({ ok: false, error: 'No se pudo responder la transferencia' });
-  } finally {
-    client.release();
-  }
-});
-app.get('/decks/:id/ace-transfers', requireAuth, async (req, res) => {
-  const deckId = Number(req.params.id);
-  const status = req.query.status;
-
-  if (Number.isNaN(deckId)) {
-    return res.status(400).json({ ok: false, error: 'deck id inválido' });
-  }
-
-  const allowedStatuses = ['PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED'];
-  const useStatus = allowedStatuses.includes(status) ? status : null;
-
-  try {
-    const result = await pool.query(
-      `
-      SELECT
-        t.*,
-        fu.nickname AS from_nickname,
-        tu.nickname AS to_nickname
-      FROM ace_transfers t
-      JOIN users fu ON fu.id = t.from_user_id
-      JOIN users tu ON tu.id = t.to_user_id
-      WHERE t.deck_id = $1
-        AND ($2::text IS NULL OR t.status = $2)
-      ORDER BY t.created_at DESC
-      `,
-      [deckId, useStatus]
-    );
-
-    res.json({
-      ok: true,
-      transfers: result.rows
-    });
-  } catch (error) {
-    console.error('GET /decks/:id/ace-transfers error:', error);
-    res.status(500).json({ ok: false, error: 'No se pudieron obtener las transferencias' });
   }
 });
 

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mazo | CoopTrack</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f6f7fb;
+      color: #1f2937;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 100px 16px 40px;
+    }
+
+    /* ===== MAZOBAR ===== */
+    .mazobar {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mazo-title {
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .palos {
+      display: flex;
+      gap: 10px;
+    }
+
+    .palo {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      border: 1px solid #ddd;
+      background: #fafafa;
+    }
+
+    .palo:hover {
+      background: #f0f0f0;
+    }
+
+    /* ===== RENGLÓN ===== */
+    .row {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .row-header {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .row-body {
+      font-size: 15px;
+    }
+
+    .card-type {
+      font-weight: bold;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- TOPBAR -->
+  <div id="topbar-container"></div>
+
+  <main class="page">
+
+    <!-- MAZOBAR -->
+    <div class="mazobar">
+      <div class="mazo-title" id="mazo-title">
+        Mazo #1
+      </div>
+
+      <div class="palos">
+        <div class="palo">♥</div>
+        <div class="palo">♠</div>
+        <div class="palo">♦</div>
+        <div class="palo">♣</div>
+      </div>
+    </div>
+
+    <!-- RENGLÓNES -->
+    <div id="rows-container"></div>
+
+  </main>
+
+  <!-- TOPBAR SCRIPT -->
+  <script src="/js/topbar.js"></script>
+
+  <!-- LOGICA DEL MAZO -->
+  <script>
+    // ⚠️ temporal: después esto viene de la URL
+    const deckId = 1;
+
+    async function loadRows() {
+      try {
+        const res = await fetch(`/decks/${deckId}/records`);
+        const data = await res.json();
+
+        if (!data.ok) {
+          console.error("Error cargando renglones");
+          return;
+        }
+
+        renderRows(data.records);
+
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+
+    function renderRows(records) {
+      const container = document.getElementById("rows-container");
+      container.innerHTML = "";
+
+      if (!records.length) {
+        container.innerHTML = "<p>No hay jugadas todavía.</p>";
+        return;
+      }
+
+      records.forEach(record => {
+        const row = document.createElement("div");
+        row.className = "row";
+
+        row.innerHTML = `
+          <div class="row-header">
+            <span class="card-type">${record.card_type}</span>
+            por ${record.user_nickname || "usuario"}
+          </div>
+
+          <div class="row-body">
+            ${record.description || "(sin descripción)"}
+          </div>
+        `;
+
+        container.appendChild(row);
+      });
+    }
+
+    loadRows();
+  </script>
+
+</body>
+</html>
