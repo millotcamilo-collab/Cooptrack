@@ -1,3 +1,22 @@
+function goToMazoPage(deck, suit = "HEART") {
+  if (!deck || !deck.id) {
+    console.warn("No se puede navegar a mazo: deck inválido", deck);
+    return;
+  }
+
+  sessionStorage.setItem("activeDeckId", String(deck.id));
+  sessionStorage.setItem("activeDeckName", deck.name || "");
+  sessionStorage.setItem("activeSuit", suit);
+
+  console.log("Navegando a /mazo.html con:", {
+    deckId: deck.id,
+    deckName: deck.name,
+    suit
+  });
+
+  window.location.href = "/mazo.html";
+}
+
 function getStoredDecks() {
   try {
     const raw = localStorage.getItem("cooptrackDecks");
@@ -91,15 +110,10 @@ function attachDeckSuitEvents() {
       const deckId = button.dataset.deckId;
       const suit = button.dataset.suit;
 
-      sessionStorage.setItem("activeDeckId", deckId);
-      sessionStorage.setItem("activeSuit", suit);
+      const decks = getStoredDecks();
+      const deck = decks.find((item) => String(item.id) === String(deckId));
 
-      console.log("Vista de mazo/palo seleccionada:", { deckId, suit });
-
-      // Más adelante:
-      // 1. ocultar otros renglones mazo
-      // 2. mostrar renglones jugada del palo elegido
-      // 3. enfocar ese mazo
+      goToMazoPage(deck, suit);
     });
   });
 }
@@ -137,16 +151,10 @@ function attachDeckRowEvents() {
       if (event.target.closest(".decks-view__suit-btn")) return;
 
       const deckId = row.dataset.deckId;
-      if (!deckId) return;
-
       const decks = getStoredDecks();
       const deck = decks.find((item) => String(item.id) === String(deckId));
 
-      sessionStorage.setItem("activeDeckId", String(deckId));
-      sessionStorage.setItem("activeDeckName", deck?.name || "");
-      sessionStorage.setItem("activeSuit", "HEART");
-
-      window.location.href = "/mazo.html";
+      goToMazoPage(deck, "HEART");
     });
   });
 }
