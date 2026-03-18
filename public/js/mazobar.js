@@ -44,7 +44,7 @@ function goHome() {
 }
 
 function getDefaultAcesForJoker(joker) {
-  if (joker === "red") {
+  if (joker === "red" || joker === "blue") {
     return ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"];
   }
 
@@ -386,7 +386,7 @@ function renderMazobar(mode = "create", deck = null) {
       renderMazobar("confirm", {
         name: deckName,
         joker: "blue",
-        aces: []
+         aces: ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"]
       });
     });
 
