@@ -1,0 +1,130 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6f7fb;
+  color: #1f2937;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 96px 16px 40px;
+}
+
+.deck-page-bar {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.deck-page-bar__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.deck-page-bar__suits {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.deck-page-bar__suit {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111827;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.deck-page-bar__suit:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+.deck-page-bar__suit:active {
+  transform: translateY(0);
+}
+
+.deck-rows {
+  display: grid;
+  gap: 12px;
+}
+
+.deck-row {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.deck-row__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.deck-row__card-type {
+  font-weight: 700;
+  color: #111827;
+}
+
+.deck-row__author {
+  color: #6b7280;
+}
+
+.deck-row__body {
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1f2937;
+  word-break: break-word;
+}
+
+.deck-empty-state {
+  background: white;
+  border: 1px dashed #d1d5db;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  color: #6b7280;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 88px 12px 32px;
+  }
+
+  .deck-page-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .deck-page-bar__suits {
+    justify-content: space-between;
+  }
+
+  .deck-page-bar__suit {
+    flex: 1;
+  }
+}
