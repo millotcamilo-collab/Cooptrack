@@ -126,6 +126,7 @@ function renderDecksView() {
   `;
 
   attachDeckSuitEvents();
+  attachDeckRowEvents();
 }
 
 function attachDeckRowEvents() {
