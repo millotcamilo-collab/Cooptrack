@@ -429,27 +429,24 @@ function renderMazobar(mode = "create", deck = null) {
     container.innerHTML = html;
 
     document.getElementById("confirmDeckBtn")?.addEventListener("click", () => {
-      const storedDecks = getStoredDecks();
+  const storedDecks = getStoredDecks();
 
-      const newDeck = {
-        id: Date.now(),
-        name: normalizedDeck.name,
-        joker: normalizedDeck.joker || "red",
-        aces: normalizedDeck.aces || []
-      };
+  const newDeck = {
+    id: Date.now(),
+    name: normalizedDeck.name,
+    joker: normalizedDeck.joker || "red",
+    aces: normalizedDeck.aces || []
+  };
 
-      storedDecks.push(newDeck);
-      saveStoredDecks(storedDecks);
+  storedDecks.push(newDeck);
+  saveStoredDecks(storedDecks);
 
-      sessionStorage.setItem("activeDeckId", String(newDeck.id));
-      sessionStorage.setItem("activeDeckName", newDeck.name);
+  sessionStorage.setItem("activeDeckId", String(newDeck.id));
+  sessionStorage.setItem("activeDeckName", newDeck.name);
+  sessionStorage.setItem("activeSuit", "HEART");
 
-      if (typeof renderTopbar === "function") {
-        renderTopbar();
-      }
-
-      renderMazobar("deck", newDeck);
-    });
+  window.location.href = "/mazo.html";
+});
 
     document.getElementById("editDeckBtn")?.addEventListener("click", () => {
       renderMazobar("create");
