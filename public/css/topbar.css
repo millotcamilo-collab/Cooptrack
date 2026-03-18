@@ -70,12 +70,15 @@
   display: block;
   object-fit: contain;
 }
-
 .topbar__icon-img--profile {
-  height: 42px;
-  max-width: 42px;
-  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
+
 .topbar__icon-img--portfolio {
   height: 32px;
 }
