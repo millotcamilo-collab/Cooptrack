@@ -34,6 +34,19 @@ function hasDecks() {
   }
 }
 
+function hasPendingApprovals() {
+  try {
+    const raw = localStorage.getItem("cooptrackPendingApprovals");
+    if (!raw) return false;
+
+    const pending = JSON.parse(raw);
+    return Array.isArray(pending) && pending.length > 0;
+  } catch (error) {
+    console.error("Error leyendo aprobaciones pendientes:", error);
+    return false;
+  }
+}
+
 function isDecksViewOpen() {
   return sessionStorage.getItem("cooptrackDecksViewOpen") === "true";
 }
@@ -51,7 +64,7 @@ function toggleDecksView() {
   if (typeof renderDecksView === "function") {
     if (next) {
       renderDecksView();
-    } else {
+    } else if (typeof clearDecksView === "function") {
       clearDecksView();
     }
   }
@@ -62,6 +75,7 @@ function toggleDecksView() {
 function renderTopbar() {
   const user = getLoggedUser();
   const userHasDecks = hasDecks();
+  const userHasPendingApprovals = hasPendingApprovals();
   const decksViewOpen = isDecksViewOpen();
 
   let topbarHTML = "";
@@ -105,9 +119,15 @@ function renderTopbar() {
                 : ""
             }
 
-            <a href="/notificaciones.html" class="topbar__icon-btn" title="Notificaciones" aria-label="Notificaciones">
-              <img src="/assets/icons/Dorso70.gif" alt="Notificaciones" class="topbar__icon-img" />
-            </a>
+            ${
+              userHasPendingApprovals
+                ? `
+                  <a href="/notificaciones.html" class="topbar__icon-btn" title="Notificaciones" aria-label="Notificaciones">
+                    <img src="/assets/icons/Dorso70.gif" alt="Notificaciones" class="topbar__icon-img" />
+                  </a>
+                `
+                : ""
+            }
 
             <a href="/almanaque.html" class="topbar__icon-btn" title="Almanaque" aria-label="Almanaque">
               <img src="/assets/icons/Schedule80.gif" alt="Almanaque" class="topbar__icon-img" />
