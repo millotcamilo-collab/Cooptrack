@@ -127,3 +127,25 @@ function renderDecksView() {
 
   attachDeckSuitEvents();
 }
+
+function attachDeckRowEvents() {
+  const deckRows = document.querySelectorAll(".decks-view__item");
+
+  deckRows.forEach((row) => {
+    row.addEventListener("click", (event) => {
+      if (event.target.closest(".decks-view__suit-btn")) return;
+
+      const deckId = row.dataset.deckId;
+      if (!deckId) return;
+
+      const decks = getStoredDecks();
+      const deck = decks.find((item) => String(item.id) === String(deckId));
+
+      sessionStorage.setItem("activeDeckId", String(deckId));
+      sessionStorage.setItem("activeDeckName", deck?.name || "");
+      sessionStorage.setItem("activeSuit", "HEART");
+
+      window.location.href = "/mazo.html";
+    });
+  });
+}
