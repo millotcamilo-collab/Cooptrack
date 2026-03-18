@@ -310,9 +310,9 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            login,
-            password
-          })
+  email: login,
+  password
+})
         });
 
         const data = await res.json();
