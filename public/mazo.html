@@ -3,105 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mazo | CoopTrack</title>
+  <title>Mazo - CoopTrack</title>
 
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="stylesheet" href="/css/topbar.css" />
-  <link rel="stylesheet" href="/css/mazo.css" />
+  <link rel="stylesheet" href="/css/mazobar.css" />
 </head>
-
 <body>
   <div id="topbar-container"></div>
+  <div id="mazobar-container"></div>
 
-  <main class="page">
+  <!-- Si después querés más contenido de la página mazo -->
+  <main id="mazo-page-content"></main>
 
-    <section class="deck-page-bar">
-      <div class="deck-page-bar__title" id="mazo-title">
-        Mazo
-      </div>
-
-      <div class="deck-page-bar__suits">
-        <button class="deck-page-bar__suit" data-suit="HEART" aria-label="Corazones">♥</button>
-        <button class="deck-page-bar__suit" data-suit="SPADE" aria-label="Picas">♠</button>
-        <button class="deck-page-bar__suit" data-suit="DIAMOND" aria-label="Diamantes">♦</button>
-        <button class="deck-page-bar__suit" data-suit="CLUB" aria-label="Tréboles">♣</button>
-      </div>
-    </section>
-
-    <section class="deck-rows">
-      <div id="rows-container"></div>
-    </section>
-
-  </main>
-
+  <script src="/js/mazobar.js"></script>
   <script src="/js/topbar.js"></script>
 
   <script>
-    const deckId = sessionStorage.getItem("activeDeckId");
-    const activeDeckName = sessionStorage.getItem("activeDeckName");
-    const activeSuit = sessionStorage.getItem("activeSuit") || "HEART";
-
-    if (activeDeckName) {
-      const title = document.getElementById("mazo-title");
-      if (title) {
-        title.textContent = activeDeckName;
-      }
-    }
-
-    async function loadRows() {
-      if (!deckId) {
-        console.error("No hay activeDeckId en sessionStorage");
-        return;
-      }
-
+    function getStoredDeckById(deckId) {
       try {
-        const res = await fetch(`/decks/${deckId}/records`);
-        const data = await res.json();
+        const raw = localStorage.getItem("cooptrackDecks");
+        if (!raw) return null;
 
-        if (!data.ok) {
-          console.error("Error cargando renglones");
-          return;
-        }
+        const decks = JSON.parse(raw);
+        if (!Array.isArray(decks)) return null;
 
-        renderRows(data.records || []);
+        return decks.find(deck => String(deck.id) === String(deckId)) || null;
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error leyendo decks:", error);
+        return null;
       }
     }
 
-    function renderRows(records) {
-      const container = document.getElementById("rows-container");
-      container.innerHTML = "";
+    function initMazoPage() {
+      const activeDeckId = sessionStorage.getItem("activeDeckId");
 
-      if (!records.length) {
-        container.innerHTML = `
-          <div class="deck-empty-state">
-            No hay jugadas todavía.
-          </div>
-        `;
+      if (!activeDeckId) {
+        console.warn("No hay activeDeckId en sessionStorage");
         return;
       }
 
-      records.forEach((record) => {
-        const row = document.createElement("article");
-        row.className = "deck-row";
+      const deck = getStoredDeckById(activeDeckId);
 
-        row.innerHTML = `
-          <div class="deck-row__header">
-            <span class="deck-row__card-type">${record.card_type}</span>
-            <span class="deck-row__author">por ${record.user_nickname || "usuario"}</span>
-          </div>
+      if (!deck) {
+        console.warn("No se encontró el deck activo");
+        return;
+      }
 
-          <div class="deck-row__body">
-            ${record.description || "(sin descripción)"}
-          </div>
-        `;
-
-        container.appendChild(row);
-      });
+      renderMazobar("deck", deck);
     }
 
-    loadRows();
+    initMazoPage();
   </script>
 </body>
 </html>
