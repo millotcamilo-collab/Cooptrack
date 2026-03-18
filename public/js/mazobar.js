@@ -1,3 +1,22 @@
+function goToMazoPage(deck, suit = "HEART") {
+  if (!deck || !deck.id) {
+    console.warn("No se puede navegar a mazo: deck inválido", deck);
+    return;
+  }
+
+  sessionStorage.setItem("activeDeckId", String(deck.id));
+  sessionStorage.setItem("activeDeckName", deck.name || "");
+  sessionStorage.setItem("activeSuit", suit);
+
+  console.log("Navegando a /mazo.html con:", {
+    deckId: deck.id,
+    deckName: deck.name,
+    suit
+  });
+
+  window.location.href = "/mazo.html";
+}
+
 function getStoredDecks() {
   try {
     const raw = localStorage.getItem("cooptrackDecks");
@@ -429,24 +448,24 @@ function renderMazobar(mode = "create", deck = null) {
     container.innerHTML = html;
 
     document.getElementById("confirmDeckBtn")?.addEventListener("click", () => {
-  const storedDecks = getStoredDecks();
+      const storedDecks = getStoredDecks();
 
-  const newDeck = {
-    id: Date.now(),
-    name: normalizedDeck.name,
-    joker: normalizedDeck.joker || "red",
-    aces: normalizedDeck.aces || []
-  };
+      const newDeck = {
+        id: Date.now(),
+        name: normalizedDeck.name,
+        joker: normalizedDeck.joker || "red",
+        aces: normalizedDeck.aces || []
+      };
 
-  storedDecks.push(newDeck);
-  saveStoredDecks(storedDecks);
+      storedDecks.push(newDeck);
+      saveStoredDecks(storedDecks);
 
-  sessionStorage.setItem("activeDeckId", String(newDeck.id));
-  sessionStorage.setItem("activeDeckName", newDeck.name);
-  sessionStorage.setItem("activeSuit", "HEART");
+      if (typeof renderTopbar === "function") {
+        renderTopbar();
+      }
 
-  window.location.href = "/mazo.html";
-});
+      goToMazoPage(newDeck, "HEART");
+    });
 
     document.getElementById("editDeckBtn")?.addEventListener("click", () => {
       renderMazobar("create");
