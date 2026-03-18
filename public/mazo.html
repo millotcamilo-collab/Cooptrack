@@ -5,118 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mazo | CoopTrack</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f6f7fb;
-      color: #1f2937;
-    }
-
-    .page {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 100px 16px 40px;
-    }
-
-    /* ===== MAZOBAR ===== */
-    .mazobar {
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .mazo-title {
-      font-weight: 700;
-      font-size: 18px;
-    }
-
-    .palos {
-      display: flex;
-      gap: 10px;
-    }
-
-    .palo {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      border: 1px solid #ddd;
-      background: #fafafa;
-    }
-
-    .palo:hover {
-      background: #f0f0f0;
-    }
-
-    /* ===== RENGLÓN ===== */
-    .row {
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
-
-    .row-header {
-      font-size: 14px;
-      color: #6b7280;
-      margin-bottom: 6px;
-    }
-
-    .row-body {
-      font-size: 15px;
-    }
-
-    .card-type {
-      font-weight: bold;
-      margin-right: 6px;
-    }
-  </style>
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="/css/topbar.css" />
+  <link rel="stylesheet" href="/css/mazo.css" />
 </head>
 
 <body>
-
-  <!-- TOPBAR -->
   <div id="topbar-container"></div>
 
   <main class="page">
 
-    <!-- MAZOBAR -->
-    <div class="mazobar">
-      <div class="mazo-title" id="mazo-title">
-        Mazo #1
+    <section class="deck-page-bar">
+      <div class="deck-page-bar__title" id="mazo-title">
+        Mazo
       </div>
 
-      <div class="palos">
-        <div class="palo">♥</div>
-        <div class="palo">♠</div>
-        <div class="palo">♦</div>
-        <div class="palo">♣</div>
+      <div class="deck-page-bar__suits">
+        <button class="deck-page-bar__suit" data-suit="HEART" aria-label="Corazones">♥</button>
+        <button class="deck-page-bar__suit" data-suit="SPADE" aria-label="Picas">♠</button>
+        <button class="deck-page-bar__suit" data-suit="DIAMOND" aria-label="Diamantes">♦</button>
+        <button class="deck-page-bar__suit" data-suit="CLUB" aria-label="Tréboles">♣</button>
       </div>
-    </div>
+    </section>
 
-    <!-- RENGLÓNES -->
-    <div id="rows-container"></div>
+    <section class="deck-rows">
+      <div id="rows-container"></div>
+    </section>
 
   </main>
 
-  <!-- TOPBAR SCRIPT -->
   <script src="/js/topbar.js"></script>
 
-  <!-- LOGICA DEL MAZO -->
   <script>
-    // ⚠️ temporal: después esto viene de la URL
-    const deckId = 1;
+    const deckId = sessionStorage.getItem("activeDeckId");
+    const activeDeckName = sessionStorage.getItem("activeDeckName");
+    const activeSuit = sessionStorage.getItem("activeSuit") || "HEART";
+
+    if (activeDeckName) {
+      const title = document.getElementById("mazo-title");
+      if (title) {
+        title.textContent = activeDeckName;
+      }
+    }
 
     async function loadRows() {
+      if (!deckId) {
+        console.error("No hay activeDeckId en sessionStorage");
+        return;
+      }
+
       try {
         const res = await fetch(`/decks/${deckId}/records`);
         const data = await res.json();
@@ -126,8 +63,7 @@
           return;
         }
 
-        renderRows(data.records);
-
+        renderRows(data.records || []);
       } catch (error) {
         console.error("Error:", error);
       }
@@ -138,21 +74,25 @@
       container.innerHTML = "";
 
       if (!records.length) {
-        container.innerHTML = "<p>No hay jugadas todavía.</p>";
+        container.innerHTML = `
+          <div class="deck-empty-state">
+            No hay jugadas todavía.
+          </div>
+        `;
         return;
       }
 
-      records.forEach(record => {
-        const row = document.createElement("div");
-        row.className = "row";
+      records.forEach((record) => {
+        const row = document.createElement("article");
+        row.className = "deck-row";
 
         row.innerHTML = `
-          <div class="row-header">
-            <span class="card-type">${record.card_type}</span>
-            por ${record.user_nickname || "usuario"}
+          <div class="deck-row__header">
+            <span class="deck-row__card-type">${record.card_type}</span>
+            <span class="deck-row__author">por ${record.user_nickname || "usuario"}</span>
           </div>
 
-          <div class="row-body">
+          <div class="deck-row__body">
             ${record.description || "(sin descripción)"}
           </div>
         `;
@@ -163,6 +103,5 @@
 
     loadRows();
   </script>
-
 </body>
 </html>
