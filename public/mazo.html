@@ -9,18 +9,19 @@
   <link rel="stylesheet" href="/css/topbar.css" />
   <link rel="stylesheet" href="/css/mazobar.css" />
   <link rel="stylesheet" href="/css/playform.css" />
+  <link rel="stylesheet" href="/css/plays-view.css" />
 </head>
 <body>
   <div id="topbar-container"></div>
   <div id="mazobar-container"></div>
   <div id="playform-container"></div>
-
-  <!-- Si después querés más contenido de la página mazo -->
-  <main id="mazo-page-content"></main>
+  <div id="mazo-records-container"></div>
 
   <script src="/js/mazobar.js"></script>
+  <script src="/js/playform.js"></script>
+  <script src="/js/plays-view.js"></script>
   <script src="/js/topbar.js"></script>
-<script src="/js/playform.js"></script>
+
   <script>
     function getStoredDeckById(deckId) {
       try {
@@ -30,7 +31,7 @@
         const decks = JSON.parse(raw);
         if (!Array.isArray(decks)) return null;
 
-        return decks.find(deck => String(deck.id) === String(deckId)) || null;
+        return decks.find((deck) => String(deck.id) === String(deckId)) || null;
       } catch (error) {
         console.error("Error leyendo decks:", error);
         return null;
@@ -52,7 +53,17 @@
         return;
       }
 
-      renderMazobar("deck", deck);
+      if (typeof renderMazobar === "function") {
+        renderMazobar("deck", deck);
+      }
+
+      if (typeof renderPlayform === "function") {
+        renderPlayform(deck);
+      }
+
+      if (typeof renderPlaysView === "function") {
+        renderPlaysView(deck);
+      }
     }
 
     initMazoPage();
