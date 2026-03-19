@@ -8,6 +8,9 @@ function goToMazoPage(deck, suit = "HEART") {
   sessionStorage.setItem("activeDeckName", deck.name || "");
   sessionStorage.setItem("activeSuit", suit);
 
+  // al entrar a un mazo, la vista portfolio deja de estar desplegada
+  sessionStorage.setItem("cooptrackDecksViewOpen", "false");
+
   console.log("Navegando a /mazo.html con:", {
     deckId: deck.id,
     deckName: deck.name,
