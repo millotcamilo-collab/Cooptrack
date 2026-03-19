@@ -60,16 +60,6 @@ function userCanPlayInDeck(deck, currentUser = null) {
 function buildPlayformHTML(deck, currentUser = null) {
   const authorityCards = getDeckAuthorityCardsForCurrentUser(deck, currentUser);
 
-  const cardsHTML = authorityCards
-    .map(
-      (card) => `
-        <span class="playform__authority-card" title="${card}">
-          ${getCardShortLabelForPlayform(card)}
-        </span>
-      `
-    )
-    .join("");
-
   return `
     <section class="playform">
       <div class="page-container">
@@ -126,18 +116,11 @@ function buildPlayformHTML(deck, currentUser = null) {
           </div>
 
           <div class="playform__right">
-            <div class="playform__authority">
-              ${cardsHTML}
-            </div>
+            
 
-            <button
-              type="button"
-              class="playform__exit-btn"
-              id="playformClearBtn"
-              title="Limpiar"
-            >
-              EXIT
-            </button>
+           <button class="playform__exit-btn" id="playformClearBtn" title="Limpiar">
+  <img src="/assets/icons/exit40.gif" alt="Limpiar" />
+</button>
           </div>
 
         </div>
