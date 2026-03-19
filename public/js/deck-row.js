@@ -1,7 +1,3 @@
-// ===============================
-// UTILIDADES (copiadas de mazobar)
-// ===============================
-
 function getCardImage(cardType) {
   const map = {
     A_HEART: "/assets/icons/Acorazon.gif",
@@ -28,121 +24,169 @@ function getCardImage(cardType) {
   return map[cardType] || "/assets/icons/Joker120.gif";
 }
 
-// ===============================
-// REGLAS DE NEGOCIO
-// ===============================
+function getCardShortLabel(cardType) {
+  const map = {
+    A_HEART: "A♥",
+    A_SPADE: "A♠",
+    A_DIAMOND: "A♦",
+    A_CLUB: "A♣",
 
-// imagen del mazo
+    K_HEART: "K♥",
+    K_SPADE: "K♠",
+    K_DIAMOND: "K♦",
+    K_CLUB: "K♣",
+
+    J_HEART: "J♥",
+    J_SPADE: "J♠",
+    J_DIAMOND: "J♦",
+    J_CLUB: "J♣",
+
+    Q_HEART: "Q♥",
+    Q_SPADE: "Q♠",
+    Q_DIAMOND: "Q♦",
+    Q_CLUB: "Q♣"
+  };
+
+  return map[cardType] || cardType;
+}
+
 function getDeckRowImage(deck) {
-  if (deck.joker === "blue" && deck.jokerImageUrl) {
+  const joker = String(deck?.joker || "").toLowerCase();
+
+  if (joker === "blue" && deck.jokerImageUrl) {
     return deck.jokerImageUrl;
   }
 
-  // fallback (acá después podés poner A_CLUB real desde backend)
-  return deck.clubOwnerPhotoUrl || "/assets/icons/singeta120.gif";
+  if (deck.clubOwnerPhotoUrl) {
+    return deck.clubOwnerPhotoUrl;
+  }
+
+  return "/assets/icons/singeta120.gif";
 }
 
-// cartas visibles del usuario (A y K)
 function getUserCards(deck) {
   if (!Array.isArray(deck.currentUserCards)) return [];
 
   return deck.currentUserCards.filter(
-    (card) => card.startsWith("A_") || card.startsWith("K_")
+    (card) =>
+      typeof card === "string" &&
+      (card.startsWith("A_") || card.startsWith("K_"))
   );
 }
 
-// resumen J/Q
 function getSummaryCards(deck) {
-  return deck.summaryCards || [];
+  if (!Array.isArray(deck.summaryCards)) return [];
+
+  return deck.summaryCards.filter(
+    (card) =>
+      typeof card === "string" &&
+      (card.startsWith("J_") || card.startsWith("Q_"))
+  );
 }
 
-// ===============================
-// RENDER PRINCIPAL
-// ===============================
+function buildUserCardsHTML(deck) {
+  const userCards = getUserCards(deck);
+
+  if (!userCards.length) {
+    return `<div class="deck-row__cards deck-row__cards--empty"></div>`;
+  }
+
+  return `
+    <div class="deck-row__cards">
+      ${userCards
+        .map(
+          (card) => `
+            <img
+              src="${getCardImage(card)}"
+              alt="${getCardShortLabel(card)}"
+              title="${getCardShortLabel(card)}"
+              class="deck-row__card"
+            />
+          `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function buildSummaryCardsHTML(deck) {
+  const summaryCards = getSummaryCards(deck);
+
+  if (!summaryCards.length) {
+    return `
+      <div class="deck-row__summary deck-row__summary--empty">
+        <span class="deck-row__summary-placeholder">Sin J / Q todavía</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="deck-row__summary">
+      ${summaryCards
+        .map(
+          (card) => `
+            <span
+              class="deck-row__summary-item"
+              title="${getCardShortLabel(card)}"
+            >
+              ${getCardShortLabel(card)}
+            </span>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+}
 
 function renderDeckRow(deck) {
   const imageUrl = getDeckRowImage(deck);
-  const userCards = getUserCards(deck);
-  const summaryCards = getSummaryCards(deck);
-
-  // izquierda (A / K)
-  const userCardsHTML = userCards
-    .map(
-      (card) => `
-        <img 
-          src="${getCardImage(card)}" 
-          class="deck-row__card" 
-          alt="${card}" 
-        />
-      `
-    )
-    .join("");
-
-  // resumen (J / Q)
-  const summaryHTML = summaryCards
-    .map(
-      (card) => `
-        <img 
-          src="${getCardImage(card)}" 
-          class="deck-row__summary-card" 
-          alt="${card}" 
-        />
-      `
-    )
-    .join("");
 
   return `
     <article class="deck-row" data-deck-id="${deck.id}">
-      
-      <!-- IZQUIERDA -->
       <div class="deck-row__left">
-        ${userCardsHTML}
+        ${buildUserCardsHTML(deck)}
       </div>
 
-      <!-- FOTO -->
       <div class="deck-row__photo">
-        <img src="${imageUrl}" alt="${deck.name}" />
+        <img src="${imageUrl}" alt="${deck.name}" class="deck-row__photo-img" />
       </div>
 
-      <!-- DERECHA -->
       <div class="deck-row__right">
-        <div class="deck-row__name">
+        <div class="deck-row__name" title="${deck.name}">
           ${deck.name}
         </div>
 
-        <div class="deck-row__summary">
-          ${summaryHTML}
-        </div>
+        ${buildSummaryCardsHTML(deck)}
       </div>
-
     </article>
   `;
 }
 
-// ===============================
-// EVENTOS
-// ===============================
-
 function attachDeckRowEvents() {
-  document.querySelectorAll(".deck-row").forEach((row) => {
+  const rows = document.querySelectorAll(".deck-row");
+
+  rows.forEach((row) => {
     row.addEventListener("click", () => {
       const deckId = row.dataset.deckId;
-
       if (!deckId) return;
 
-      // reutilizamos tu navegación
       const decks = JSON.parse(localStorage.getItem("cooptrackDecks") || "[]");
-      const deck = decks.find((d) => String(d.id) === String(deckId));
+      const deck = decks.find((item) => String(item.id) === String(deckId));
 
-      if (!deck) return;
+      if (!deck) {
+        console.warn("No se encontró el deck para navegar:", deckId);
+        return;
+      }
 
       if (typeof goToMazoPage === "function") {
-        goToMazoPage(deck);
-      } else {
-        // fallback
-        sessionStorage.setItem("activeDeckId", deck.id);
-        window.location.href = "/mazo.html";
+        goToMazoPage(deck, "HEART");
+        return;
       }
+
+      sessionStorage.setItem("activeDeckId", String(deck.id));
+      sessionStorage.setItem("activeDeckName", deck.name || "");
+      sessionStorage.setItem("activeSuit", "HEART");
+      window.location.href = "/mazo.html";
     });
   });
 }
