@@ -29,93 +29,104 @@ function getStoredDecks() {
   }
 }
 
+function getLoggedUser() {
+  try {
+    const raw = localStorage.getItem("cooptrackUser");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("Error leyendo cooptrackUser:", error);
+    return null;
+  }
+}
+
 function clearDecksView() {
   const container = document.getElementById("decks-view-container");
   if (!container) return;
   container.innerHTML = "";
 }
 
-function buildDeckUserCardsHTML(deck) {
-  const joker = deck?.joker || "red";
+/**
+ * TEMPORAL:
+ * mientras todavía no venga todo del backend, armamos
+ * un view model amigable para deck-row.js
+ */
+function buildDeckRowViewModel(deck, currentUser = null) {
+  const normalizedJoker = String(deck?.joker || deck?.joker_type || "red").toLowerCase();
 
-  if (joker === "red") {
-    return `
-      <div class="decks-view__user-cards">
-        <img src="/assets/icons/Joker120.gif" alt="Joker rojo" class="decks-view__mini-card" />
-      </div>
-    `;
-  }
+  return {
+    id: deck.id,
+    name: deck.name || "Mazo sin nombre",
 
-  if (joker === "blue") {
-    return `
-      <div class="decks-view__user-cards">
-        <img src="/assets/icons/joker_blue.gif" alt="Joker azul" class="decks-view__mini-card" />
-      </div>
-    `;
-  }
+    // joker
+    joker: normalizedJoker,
 
-  return `
-    <div class="decks-view__user-cards">
-      <img src="/assets/icons/Joker120.gif" alt="Carta" class="decks-view__mini-card" />
-    </div>
-  `;
+    // imagen institucional del mazo
+    // azul => imagen cargada en el joker azul
+    // rojo => por ahora fallback a singeta si no tenés todavía A_CLUB real
+    jokerImageUrl:
+      deck.jokerImageUrl ||
+      deck.joker_image_url ||
+      deck.jokerImage ||
+      null,
+
+    clubOwnerPhotoUrl:
+      deck.clubOwnerPhotoUrl ||
+      deck.club_owner_photo_url ||
+      null,
+
+    // cartas del usuario actual a la izquierda
+    // si todavía no las tenés reales, tratamos de usar lo que exista
+    currentUserCards: buildCurrentUserCards(deck, currentUser),
+
+    // fila inferior con J / Q jugadas
+    summaryCards: buildSummaryCards(deck),
+
+    // por si más adelante querés usar el deck original al click
+    originalDeck: deck
+  };
 }
 
-function buildDeckRowHTML(deck) {
-  return `
-    <article class="decks-view__item" data-deck-id="${deck.id}">
-      
-      <div class="decks-view__left-group">
-        ${buildDeckUserCardsHTML(deck)}
-      </div>
+function buildCurrentUserCards(deck, currentUser = null) {
+  // 1) si ya vienen preparadas, usamos eso
+  if (Array.isArray(deck.currentUserCards)) {
+    return deck.currentUserCards.filter(Boolean);
+  }
 
-      <div class="decks-view__photo">
-        <img src="/assets/icons/singeta120.gif" alt="Mazo" />
-      </div>
+  // 2) si ya viene algo como userCards, usamos eso
+  if (Array.isArray(deck.userCards)) {
+    return deck.userCards.filter(Boolean);
+  }
 
-      <div class="decks-view__right-group">
-        <div class="decks-view__title">
-          <span class="decks-view__ace">A ♥</span>
-          <span class="decks-view__deck-name">${deck.name}</span>
-        </div>
+  // 3) fallback temporal:
+  // si el deck guarda aces, los usamos
+  // esto NO es la regla final, pero ayuda a que se vea algo mientras tanto
+  const aces = Array.isArray(deck.aces) ? deck.aces : [];
 
-        <div class="decks-view__suits">
-          <button class="decks-view__suit-btn" data-deck-id="${deck.id}" data-suit="SPADE" title="Vista picas" aria-label="Vista picas">
-            <img src="/assets/icons/pik40.gif" alt="Picas" />
-          </button>
+  // si después sumás kings en localStorage, podés agregarlos acá
+  const kings = Array.isArray(deck.kings) ? deck.kings : [];
 
-          <button class="decks-view__suit-btn" data-deck-id="${deck.id}" data-suit="DIAMOND" title="Vista diamantes" aria-label="Vista diamantes">
-            <img src="/assets/icons/dia40.gif" alt="Diamantes" />
-          </button>
+  const authorityCards = [...aces, ...kings].filter(
+    (card) => typeof card === "string" && (card.startsWith("A_") || card.startsWith("K_"))
+  );
 
-          <button class="decks-view__suit-btn" data-deck-id="${deck.id}" data-suit="CLUB" title="Vista tréboles" aria-label="Vista tréboles">
-            <img src="/assets/icons/tre40.gif" alt="Tréboles" />
-          </button>
-
-          <button class="decks-view__suit-btn" data-deck-id="${deck.id}" data-suit="HEART" title="Vista corazones" aria-label="Vista corazones">
-            <img src="/assets/icons/cor40.gif" alt="Corazones" />
-          </button>
-        </div>
-      </div>
-
-    </article>
-  `;
+  return authorityCards;
 }
 
-function attachDeckSuitEvents() {
-  const suitButtons = document.querySelectorAll(".decks-view__suit-btn");
+function buildSummaryCards(deck) {
+  // 1) si ya vienen preparadas, usamos eso
+  if (Array.isArray(deck.summaryCards)) {
+    return deck.summaryCards.filter(Boolean);
+  }
 
-  suitButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const deckId = button.dataset.deckId;
-      const suit = button.dataset.suit;
+  // 2) si ya viene algo como playedCards, usamos eso
+  if (Array.isArray(deck.playedCards)) {
+    return deck.playedCards.filter(Boolean);
+  }
 
-      const decks = getStoredDecks();
-      const deck = decks.find((item) => String(item.id) === String(deckId));
-
-      goToMazoPage(deck, suit);
-    });
-  });
+  // 3) fallback temporal vacío
+  // más adelante esto debería venir de records + participations
+  return [];
 }
 
 function renderDecksView() {
@@ -123,38 +134,34 @@ function renderDecksView() {
   if (!container) return;
 
   const decks = getStoredDecks();
+  const currentUser = getLoggedUser();
 
   if (!decks.length) {
     container.innerHTML = "";
     return;
   }
 
+  if (typeof renderDeckRow !== "function") {
+    console.warn("renderDeckRow no está disponible. Verificá que deck-row.js esté cargado.");
+    return;
+  }
+
+  const deckRowsHTML = decks
+    .map((deck) => buildDeckRowViewModel(deck, currentUser))
+    .map((deckView) => renderDeckRow(deckView))
+    .join("");
+
   container.innerHTML = `
     <section class="decks-view">
       <div class="page-container">
         <div class="decks-view__list">
-          ${decks.map((deck) => buildDeckRowHTML(deck)).join("")}
+          ${deckRowsHTML}
         </div>
       </div>
     </section>
   `;
 
-  attachDeckSuitEvents();
-  attachDeckRowEvents();
-}
-
-function attachDeckRowEvents() {
-  const deckRows = document.querySelectorAll(".decks-view__item");
-
-  deckRows.forEach((row) => {
-    row.addEventListener("click", (event) => {
-      if (event.target.closest(".decks-view__suit-btn")) return;
-
-      const deckId = row.dataset.deckId;
-      const decks = getStoredDecks();
-      const deck = decks.find((item) => String(item.id) === String(deckId));
-
-      goToMazoPage(deck, "HEART");
-    });
-  });
+  if (typeof attachDeckRowEvents === "function") {
+    attachDeckRowEvents();
+  }
 }
