@@ -1,0 +1,147 @@
+.playform {
+  width: 100%;
+  border-bottom: 1px solid #d8d1c5;
+  background: #fffdf8;
+  position: sticky;
+  top: 72px; /* ajustá según altura del topbar + mazobar */
+  z-index: 900;
+}
+
+.playform__inner {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+}
+
+/* IZQUIERDA */
+.playform__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.playform__prefix {
+  font-weight: 700;
+  font-size: 20px;
+  color: #1f1f1f;
+}
+
+.playform__input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 6px 10px;
+  border: 1px solid #d8d1c5;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 14px;
+  outline: none;
+}
+
+.playform__input:focus {
+  border-color: #8a6a1d;
+  box-shadow: 0 0 0 1px rgba(138, 106, 29, 0.2);
+}
+
+/* CENTRO (botones de palo) */
+.playform__center {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.playform__action-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #d8d1c5;
+  background: #faf7f0;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+
+.playform__action-btn:hover {
+  background: #f0eadf;
+  border-color: #8a6a1d;
+  transform: translateY(-1px);
+}
+
+/* Colores por palo */
+.playform__action-btn--heart {
+  color: #b63a3a;
+}
+
+.playform__action-btn--diamond {
+  color: #b63a3a;
+}
+
+.playform__action-btn--spade {
+  color: #2e3138;
+}
+
+.playform__action-btn--club {
+  color: #2e3138;
+}
+
+/* DERECHA */
+.playform__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Cartas A/K visibles */
+.playform__authority {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.playform__authority-card {
+  font-size: 14px;
+  padding: 2px 6px;
+  border: 1px solid #d7cfbf;
+  border-radius: 999px;
+  background: #faf7f0;
+  color: #4a443c;
+}
+
+/* Botón EXIT */
+.playform__exit-btn {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid #d8d1c5;
+  background: #ffffff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.playform__exit-btn:hover {
+  background: #f3efe6;
+  border-color: #444;
+}
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  .playform__inner {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .playform__center {
+    justify-content: flex-start;
+  }
+
+  .playform__right {
+    justify-content: space-between;
+  }
+}
