@@ -32,8 +32,7 @@ function clearPlayform() {
 }
 
 function getDeckAuthorityCardsForCurrentUser(deck, currentUser = null) {
-  if (!currentUser) return [];
-
+  // 1) si ya vienen preparadas, usamos esas
   if (Array.isArray(deck.currentUserCards)) {
     return deck.currentUserCards.filter(
       (card) =>
@@ -42,6 +41,8 @@ function getDeckAuthorityCardsForCurrentUser(deck, currentUser = null) {
     );
   }
 
+  // 2) fallback temporal:
+  // mientras no esté modelado por usuario real, usamos aces/kings del deck
   const aces = Array.isArray(deck.aces) ? deck.aces : [];
   const kings = Array.isArray(deck.kings) ? deck.kings : [];
 
@@ -58,8 +59,6 @@ function userCanPlayInDeck(deck, currentUser = null) {
 }
 
 function buildPlayformHTML(deck, currentUser = null) {
-  const authorityCards = getDeckAuthorityCardsForCurrentUser(deck, currentUser);
-
   return `
     <section class="playform">
       <div class="page-container">
@@ -116,32 +115,20 @@ function buildPlayformHTML(deck, currentUser = null) {
           </div>
 
           <div class="playform__right">
-            
-
-           <button class="playform__exit-btn" id="playformClearBtn" title="Limpiar">
-  <img src="/assets/icons/exit40.gif" alt="Limpiar" />
-</button>
+            <button
+              type="button"
+              class="playform__exit-btn"
+              id="playformClearBtn"
+              title="Limpiar"
+            >
+              <img src="/assets/icons/exit40.gif" alt="Limpiar" />
+            </button>
           </div>
 
         </div>
       </div>
     </section>
   `;
-}
-
-function getCardShortLabelForPlayform(cardType) {
-  const map = {
-    A_HEART: "A♥",
-    A_SPADE: "A♠",
-    A_DIAMOND: "A♦",
-    A_CLUB: "A♣",
-    K_HEART: "K♥",
-    K_SPADE: "K♠",
-    K_DIAMOND: "K♦",
-    K_CLUB: "K♣"
-  };
-
-  return map[cardType] || cardType;
 }
 
 function getRecordCardTypeFromSuit(suit) {
