@@ -1,0 +1,126 @@
+.plays-view {
+  width: 100%;
+  padding: 16px 0 40px;
+}
+
+.plays-view__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* FILA (RENGLÓN) */
+.plays-view__row {
+  display: grid;
+  grid-template-columns: 60px 1fr 120px;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px dotted #7a7a7a;
+  border-radius: 8px;
+  background: #fffdf8;
+}
+
+/* IZQUIERDA (CARTA) */
+.plays-view__left {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.plays-view__card {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* colores por palo */
+.plays-view__card--heart {
+  color: #b63a3a;
+}
+
+.plays-view__card--diamond {
+  color: #b63a3a;
+}
+
+.plays-view__card--spade {
+  color: #2e3138;
+}
+
+.plays-view__card--club {
+  color: #2e3138;
+}
+
+/* CENTRO */
+.plays-view__center {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plays-view__text {
+  font-size: 15px;
+  color: #1f1f1f;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.plays-view__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b675f;
+}
+
+.plays-view__user {
+  font-weight: 600;
+}
+
+.plays-view__date {
+  opacity: 0.8;
+}
+
+/* DERECHA (placeholder futuro) */
+.plays-view__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 24px;
+}
+
+/* VACÍO */
+.plays-view__empty {
+  padding: 20px;
+  border: 1px dashed #cfc7b8;
+  border-radius: 8px;
+  background: #faf7f0;
+  text-align: center;
+  color: #8a8378;
+  font-size: 14px;
+}
+
+/* HOVER (opcional, muy leve por ahora) */
+.plays-view__row:hover {
+  background: #f7f3eb;
+  border-color: #444;
+}
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  .plays-view__row {
+    grid-template-columns: 40px 1fr;
+    gap: 8px;
+  }
+
+  .plays-view__right {
+    display: none;
+  }
+
+  .plays-view__card {
+    font-size: 16px;
+  }
+
+  .plays-view__text {
+    font-size: 14px;
+  }
+}
