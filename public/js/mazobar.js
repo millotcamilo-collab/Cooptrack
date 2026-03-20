@@ -70,16 +70,6 @@ function buildMazobarHTML(mode = "create") {
             </div>
 
             <div class="mazobar__field">
-              <label for="deckDescriptionInput" class="mazobar__label">Descripción</label>
-              <textarea
-                id="deckDescriptionInput"
-                class="mazobar__textarea"
-                placeholder="Descripción breve del mazo..."
-                rows="3"
-              ></textarea>
-            </div>
-
-            <div class="mazobar__field">
               <span class="mazobar__label">Tipo de Joker</span>
 
               <div class="mazobar__radio-group">
@@ -149,11 +139,9 @@ function getSelectedJokerType() {
 function buildNewDeckObject() {
   const currentUser = getLoggedUser();
   const nameInput = document.getElementById("deckNameInput");
-  const descriptionInput = document.getElementById("deckDescriptionInput");
   const currencySelect = document.getElementById("deckCurrencySelect");
 
   const name = normalizeDeckName(nameInput?.value);
-  const description = String(descriptionInput?.value || "").trim();
   const jokerType = getSelectedJokerType();
   const currencyCode = currencySelect?.value || "ARS";
 
@@ -170,7 +158,7 @@ function buildNewDeckObject() {
   return {
     id: generateLocalDeckId(),
     name,
-    description,
+    description: "",
 
     createdByUserId: userId,
     ownerUserId: userId,
