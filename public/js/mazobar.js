@@ -45,18 +45,18 @@ function normalizeDeckName(value) {
 
 function buildMazobarHTML(mode = "create") {
   const title = mode === "create" ? "Nuevo mazo" : "Editar mazo";
+  const actionLabel = mode === "create" ? "Crear mazo" : "Guardar cambios";
 
   return `
     <section class="mazobar">
       <div class="page-container">
-        <div class="mazobar__inner">
+        <div class="mazobar__card">
 
           <div class="mazobar__header">
             <h2 class="mazobar__title">${title}</h2>
           </div>
 
-          <div class="mazobar__body">
-
+          <div class="mazobar__form">
             <div class="mazobar__field">
               <label for="deckNameInput" class="mazobar__label">Nombre del mazo</label>
               <input
@@ -115,13 +115,12 @@ function buildMazobarHTML(mode = "create") {
                 <option value="CLP">CLP</option>
               </select>
             </div>
-
           </div>
 
-          <div class="mazobar__footer">
+          <div class="mazobar__actions">
             <button
               type="button"
-              class="mazobar__btn mazobar__btn--ghost"
+              class="mazobar__btn mazobar__btn--secondary"
               id="mazobarCancelBtn"
             >
               Cancelar
@@ -132,7 +131,7 @@ function buildMazobarHTML(mode = "create") {
               class="mazobar__btn mazobar__btn--primary"
               id="mazobarSaveBtn"
             >
-              Crear mazo
+              ${actionLabel}
             </button>
           </div>
 
@@ -166,11 +165,7 @@ function buildNewDeckObject() {
 
   const nowIso = new Date().toISOString();
   const userId = currentUser?.id || null;
-
-  const currentUserCards =
-    jokerType === "RED"
-      ? ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"]
-      : ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"];
+  const nickname = currentUser?.nickname || "Usuario";
 
   return {
     id: generateLocalDeckId(),
@@ -180,8 +175,8 @@ function buildNewDeckObject() {
     createdByUserId: userId,
     ownerUserId: userId,
 
-    createdByNickname: currentUser?.nickname || "Usuario",
-    ownerNickname: currentUser?.nickname || "Usuario",
+    createdByNickname: nickname,
+    ownerNickname: nickname,
 
     profilePhotoUrl: getDefaultDeckImage(),
     profile_photo_url: getDefaultDeckImage(),
@@ -195,8 +190,8 @@ function buildNewDeckObject() {
 
     plays: [],
     members: userId ? [userId] : [],
-    currentUserCards,
 
+    currentUserCards: ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"],
     aces: ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"],
     kings: [],
 
@@ -238,7 +233,7 @@ function handleMazobarCancel() {
 
   const url = new URL(window.location.href);
   url.searchParams.delete("view");
-  window.history.replaceState({}, "", url.toString());
+  window.history.replaceState({}, "", url.pathname + url.search);
 }
 
 function attachMazobarEvents() {
