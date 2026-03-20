@@ -180,9 +180,7 @@ function renderTopbar() {
   const newDeckBtn = document.getElementById("newDeckBtn");
   if (newDeckBtn) {
     newDeckBtn.addEventListener("click", () => {
-      if (typeof renderMazobar === "function") {
-        renderMazobar("create");
-      }
+     window.location.href = "/mazos.html?view=create";
     });
   }
 }
