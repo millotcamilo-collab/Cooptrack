@@ -12,10 +12,10 @@
 </head>
 <body>
   <div id="topbar-container"></div>
-  <div id="mazobar-container"></div>
+  <div id="create-deck-container"></div>
   <div id="decks-view-container"></div>
 
-  <script src="/js/mazobar.js"></script>
+  <script src="/js/create-deck.js"></script>
   <script src="/js/deck-row.js"></script>
   <script src="/js/deck-view.js"></script>
   <script src="/js/topbar.js"></script>
@@ -28,8 +28,8 @@
       renderDecksView();
     }
 
-    if (view === "create" && typeof renderMazobar === "function") {
-      renderMazobar("create");
+    if (view === "create" && typeof renderCreateDeckForm === "function") {
+      renderCreateDeckForm();
     }
   </script>
 </body>
