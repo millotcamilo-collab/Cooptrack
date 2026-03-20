@@ -193,7 +193,7 @@ async function renderTopbar() {
   const newDeckBtn = document.getElementById("newDeckBtn");
   if (newDeckBtn) {
     newDeckBtn.addEventListener("click", () => {
-      window.location.href = "/mazos.html?view=create";
+      window.location.href = "/mazo.html?view=create";
     });
   }
 }
