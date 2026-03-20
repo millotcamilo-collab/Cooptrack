@@ -17,5 +17,11 @@
   <script src="/js/deck-view.js"></script>
   <script src="/js/topbar.js"></script>
   <script src="/js/deck-row.js"></script>
+
+  <script>
+    if (typeof renderDecksView === "function") {
+      renderDecksView();
+    }
+  </script>
 </body>
 </html>
