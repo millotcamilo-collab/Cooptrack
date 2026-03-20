@@ -37,7 +37,7 @@
 .mazobar__form {
   display: flex;
   align-items: flex-end;
-  gap: 16px;
+  gap: 18px;
   flex: 1 1 auto;
   flex-wrap: wrap;
   min-width: 280px;
@@ -57,7 +57,6 @@
 }
 
 .mazobar__input,
-.mazobar__textarea,
 .mazobar__select {
   font: inherit;
   color: #111;
@@ -71,13 +70,6 @@
   width: 250px;
   height: 40px;
   padding: 8px 10px;
-}
-
-.mazobar__textarea {
-  width: 270px;
-  min-height: 58px;
-  padding: 8px 10px;
-  resize: vertical;
 }
 
 .mazobar__select {
@@ -167,7 +159,6 @@
   }
 
   .mazobar__input,
-  .mazobar__textarea,
   .mazobar__select {
     width: 100%;
   }
