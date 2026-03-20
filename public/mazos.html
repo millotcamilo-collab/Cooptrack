@@ -19,9 +19,16 @@
   <script src="/js/deck-row.js"></script>
 
   <script>
-    if (typeof renderDecksView === "function") {
-      renderDecksView();
-    }
-  </script>
+  const params = new URLSearchParams(window.location.search);
+  const view = params.get("view");
+
+  if (typeof renderDecksView === "function") {
+    renderDecksView();
+  }
+
+  if (view === "create" && typeof renderMazobar === "function") {
+    renderMazobar("create");
+  }
+</script>
 </body>
 </html>
