@@ -1,10 +1,27 @@
-function getLoggedUser() {
+async function getLoggedUser() {
   try {
-    const raw = localStorage.getItem("cooptrackUser");
-    if (!raw) return null;
-    return JSON.parse(raw);
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) return null;
+
+    const response = await fetch("/me", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        return null;
+      }
+
+      throw new Error(`Error HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data?.user || null;
   } catch (error) {
-    console.error("Error leyendo usuario de localStorage:", error);
+    console.error("Error obteniendo usuario autenticado:", error);
     return null;
   }
 }
@@ -22,41 +39,38 @@ function getProfileImage(user) {
   return "/assets/icons/singeta120.gif";
 }
 
-function hasDecks() {
+async function hasDecks() {
   try {
-    const raw = localStorage.getItem("cooptrackDecks");
-    if (!raw) return false;
-    const decks = JSON.parse(raw);
-    return Array.isArray(decks) && decks.length > 0;
+    const response = await fetch("/decks", {
+      method: "GET"
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const decks = Array.isArray(data?.decks) ? data.decks : [];
+    return decks.length > 0;
   } catch (error) {
-    console.error("Error leyendo mazos:", error);
+    console.error("Error leyendo mazos desde servidor:", error);
     return false;
   }
 }
 
-function hasPendingApprovals() {
-  try {
-    const raw = localStorage.getItem("cooptrackPendingApprovals");
-    if (!raw) return false;
-
-    const pending = JSON.parse(raw);
-    return Array.isArray(pending) && pending.length > 0;
-  } catch (error) {
-    console.error("Error leyendo aprobaciones pendientes:", error);
-    return false;
-  }
+async function hasPendingApprovals() {
+  return false;
 }
 
-/* 🔹 NUEVO: detectar si estamos en mazos.html */
 function isMazosPage() {
   return window.location.pathname.endsWith("/mazos.html") ||
          window.location.pathname === "/mazos.html";
 }
 
-function renderTopbar() {
-  const user = getLoggedUser();
-  const userHasDecks = hasDecks();
-  const userHasPendingApprovals = hasPendingApprovals();
+async function renderTopbar() {
+  const user = await getLoggedUser();
+  const userHasDecks = await hasDecks();
+  const userHasPendingApprovals = await hasPendingApprovals();
   const onMazosPage = isMazosPage();
 
   let topbarHTML = "";
@@ -171,7 +185,6 @@ function renderTopbar() {
 
   container.innerHTML = topbarHTML;
 
-  /* eventos */
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", logout);
@@ -180,10 +193,9 @@ function renderTopbar() {
   const newDeckBtn = document.getElementById("newDeckBtn");
   if (newDeckBtn) {
     newDeckBtn.addEventListener("click", () => {
-     window.location.href = "/mazos.html?view=create";
+      window.location.href = "/mazos.html?view=create";
     });
   }
 }
 
-/* render inicial */
 renderTopbar();
