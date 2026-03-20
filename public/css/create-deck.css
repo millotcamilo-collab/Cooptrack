@@ -1,0 +1,170 @@
+.create-deck {
+  width: 100%;
+  padding: 18px 0 12px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #d8d8d8;
+  box-sizing: border-box;
+}
+
+.create-deck .page-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.create-deck__card {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.create-deck__header {
+  flex: 0 0 auto;
+}
+
+.create-deck__title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.1;
+}
+
+.create-deck__form {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+  min-width: 260px;
+}
+
+.create-deck__field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+}
+
+.create-deck__label {
+  font-size: 0.95rem;
+  color: #111;
+  white-space: nowrap;
+}
+
+.create-deck__input,
+.create-deck__select {
+  font: inherit;
+  color: #111;
+  background: #fff;
+  border: 1px solid #c5bca8;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.create-deck__input {
+  width: 250px;
+  height: 40px;
+  padding: 8px 10px;
+}
+
+.create-deck__select {
+  min-width: 90px;
+  height: 40px;
+  padding: 0 10px;
+}
+
+.create-deck__radio-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.create-deck__radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  color: #111;
+}
+
+.create-deck__radio-option input {
+  margin: 0;
+}
+
+.create-deck__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.create-deck__btn {
+  appearance: none;
+  border: 1px solid #bdb39f;
+  border-radius: 4px;
+  background: #fff;
+  color: #111;
+  font: inherit;
+  padding: 10px 16px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.create-deck__btn:hover {
+  opacity: 0.92;
+}
+
+.create-deck__btn--primary {
+  background: #f7f0e2;
+}
+
+.create-deck__btn--secondary {
+  background: #fff;
+}
+
+/* Responsive */
+
+@media (max-width: 960px) {
+  .create-deck__card {
+    align-items: flex-start;
+  }
+
+  .create-deck__form {
+    width: 100%;
+  }
+
+  .create-deck__actions {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 680px) {
+  .create-deck .page-container {
+    padding: 0 16px;
+  }
+
+  .create-deck__title {
+    font-size: 1.6rem;
+  }
+
+  .create-deck__field {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .create-deck__input,
+  .create-deck__select {
+    width: 100%;
+  }
+
+  .create-deck__actions {
+    width: 100%;
+  }
+}
