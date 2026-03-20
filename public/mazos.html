@@ -14,21 +14,22 @@
   <div id="mazobar-container"></div>
   <div id="decks-view-container"></div>
 
+  <script src="/js/mazobar.js"></script>
+  <script src="/js/deck-row.js"></script>
   <script src="/js/deck-view.js"></script>
   <script src="/js/topbar.js"></script>
-  <script src="/js/deck-row.js"></script>
 
   <script>
-  const params = new URLSearchParams(window.location.search);
-  const view = params.get("view");
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get("view");
 
-  if (typeof renderDecksView === "function") {
-    renderDecksView();
-  }
+    if (typeof renderDecksView === "function") {
+      renderDecksView();
+    }
 
-  if (view === "create" && typeof renderMazobar === "function") {
-    renderMazobar("create");
-  }
-</script>
+    if (view === "create" && typeof renderMazobar === "function") {
+      renderMazobar("create");
+    }
+  </script>
 </body>
 </html>
