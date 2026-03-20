@@ -60,6 +60,8 @@ function clearPlayform() {
 }
 
 function getDeckAuthorityCardsForCurrentUser(deck, currentUser = null) {
+  if (!deck) return [];
+
   if (Array.isArray(deck.currentUserCards)) {
     return deck.currentUserCards.filter(
       (card) =>
@@ -128,15 +130,6 @@ function buildPlayformHTML(deck, currentUser = null) {
             >
               ♣
             </button>
-
-            <button
-              type="button"
-              class="playform__action-btn playform__action-btn--diamond"
-              data-play-suit="DIAMOND"
-              title="Salvar como económico (J♦)"
-            >
-              ♦
-            </button>
           </div>
 
           <div class="playform__right">
@@ -160,23 +153,59 @@ function getRecordCardTypeFromSuit(suit) {
   const map = {
     HEART: "J_HEART",
     SPADE: "J_SPADE",
-    DIAMOND: "J_DIAMOND",
     CLUB: "J_CLUB"
   };
 
   return map[suit] || "J_HEART";
 }
 
+function getRecordKindFromSuit(suit) {
+  const map = {
+    HEART: "NOTE",
+    SPADE: "ACTIVITY",
+    CLUB: "ASSET"
+  };
+
+  return map[suit] || "NOTE";
+}
+
 function buildLocalPlayRecord(deck, currentUser, suit, text) {
+  const nowIso = new Date().toISOString();
+
   return {
     id: Date.now(),
+    deckId: deck?.id || null,
     cardType: getRecordCardTypeFromSuit(suit),
     suit,
+    recordKind: getRecordKindFromSuit(suit),
+
+    title: text,
+    description: text,
     text,
-    createdAt: new Date().toISOString(),
+
+    createdAt: nowIso,
+    updatedAt: nowIso,
+
     createdByUserId: currentUser?.id || null,
     createdByNickname: currentUser?.nickname || "Usuario",
-    status: "SAVED"
+
+    lifecycleStatus: "SAVED",
+    governanceStatus: "NORMAL",
+    visibleToDeck: false,
+
+    approvalStatus: "PENDING",
+    isApproved: false,
+    isRejected: false,
+
+    parentRecordId: null,
+
+    startDate: null,
+    endDate: null,
+    location: null,
+
+    comments: [],
+    validations: [],
+    economicComponents: []
   };
 }
 
@@ -186,7 +215,7 @@ async function saveLocalPlayRecord(deckId, record) {
 
   if (deckIndex === -1) {
     console.warn("No se encontró el mazo para guardar la jugada:", deckId);
-    return;
+    return null;
   }
 
   if (!Array.isArray(decks[deckIndex].plays)) {
@@ -195,6 +224,7 @@ async function saveLocalPlayRecord(deckId, record) {
 
   decks[deckIndex].plays.unshift(record);
   saveStoredDecks(decks);
+  return record;
 }
 
 async function handlePlayformSave(deck, suit) {
@@ -212,7 +242,12 @@ async function handlePlayformSave(deck, suit) {
   }
 
   const record = buildLocalPlayRecord(deck, currentUser, suit, text);
-  await saveLocalPlayRecord(deck.id, record);
+  const savedRecord = await saveLocalPlayRecord(deck.id, record);
+
+  if (!savedRecord) {
+    window.alert("No se pudo guardar la jugada.");
+    return;
+  }
 
   input.value = "";
 
