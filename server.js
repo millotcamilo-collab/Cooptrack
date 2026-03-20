@@ -648,7 +648,15 @@ app.put('/me/password', requireAuth, async (req, res) => {
 
 // Crear deck
 app.post('/decks', requireAuth, async (req, res) => {
-  const { name, description, is_private, joker_type, currency_code } = req.body;
+  const {
+    name,
+    description,
+    is_private,
+    joker_type,
+    currency_code,
+    profile_photo_url // 👈 NUEVO
+  } = req.body;
+
   const createdByUserId = req.auth.userId;
 
   if (!name) {
@@ -673,9 +681,10 @@ app.post('/decks', requireAuth, async (req, res) => {
         is_private,
         joker_type,
         currency_code,
+        profile_photo_url, -- 👈 NUEVO
         updated_at
       )
-      VALUES ($1, $2, $3, $3, $4, $5, $6, NOW())
+      VALUES ($1, $2, $3, $3, $4, $5, $6, $7, NOW())
       RETURNING *;
       `,
       [
@@ -685,8 +694,48 @@ app.post('/decks', requireAuth, async (req, res) => {
         is_private ?? false,
         joker_type || 'RED',
         currency_code || 'ARS',
+        profile_photo_url || null // 👈 NUEVO
       ]
     );
+
+    const deck = deckResult.rows[0];
+
+    await client.query(
+      `
+      INSERT INTO deck_members (deck_id, user_id)
+      VALUES ($1, $2);
+      `,
+      [deck.id, createdByUserId]
+    );
+
+    await client.query(
+      `
+      INSERT INTO deck_governance_state (deck_id)
+      VALUES ($1)
+      ON CONFLICT (deck_id) DO NOTHING;
+      `,
+      [deck.id]
+    );
+
+    await client.query('COMMIT');
+
+    res.status(201).json({
+      ok: true,
+      message: 'Deck creado correctamente',
+      deck,
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error al crear deck:', error);
+
+    res.status(500).json({
+      ok: false,
+      message: 'Error al crear deck',
+    });
+  } finally {
+    client.release();
+  }
+});
 
     const deck = deckResult.rows[0];
 
