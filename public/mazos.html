@@ -7,26 +7,21 @@
 
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="stylesheet" href="/css/topbar.css" />
-  <link rel="stylesheet" href="/css/mazobar.css" />
   <link rel="stylesheet" href="/css/deck-row.css" />
-   <link rel="stylesheet" href="/css/create-deck.css" />
 </head>
+
 <body>
   <div id="topbar-container"></div>
-  <div id="create-deck-container"></div>
   <div id="decks-view-container"></div>
 
-  <script src="/js/create-deck.js"></script>
- 
+  <script src="/js/deck-view.js"></script>
+  <script src="/js/deck-row.js"></script>
   <script src="/js/topbar.js"></script>
 
- <script>
-  const params = new URLSearchParams(window.location.search);
-  const view = params.get("view");
-
-  if (view === "create" && typeof renderCreateDeckForm === "function") {
-    renderCreateDeckForm();
-  }
-</script>
+  <script>
+    if (typeof renderDecksView === "function") {
+      renderDecksView();
+    }
+  </script>
 </body>
 </html>
