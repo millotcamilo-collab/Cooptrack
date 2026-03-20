@@ -1,12 +1,40 @@
-function getStoredDecks() {
+async function getStoredDecks() {
   try {
-    const raw = localStorage.getItem("cooptrackDecks");
-    if (!raw) return [];
-    const decks = JSON.parse(raw);
-    return Array.isArray(decks) ? decks : [];
+    const token = localStorage.getItem("cooptrackToken");
+
+    const response = await fetch("/api/decks", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}`);
+    }
+
+    const decks = await response.json();
+
+    if (!Array.isArray(decks)) {
+      console.warn("La API no devolvió un array de mazos");
+      return [];
+    }
+
+    localStorage.setItem("cooptrackDecks", JSON.stringify(decks));
+    return decks;
   } catch (error) {
-    console.error("Error leyendo cooptrackDecks:", error);
-    return [];
+    console.error("Error trayendo mazos desde API:", error);
+
+    try {
+      const raw = localStorage.getItem("cooptrackDecks");
+      if (!raw) return [];
+      const decks = JSON.parse(raw);
+      return Array.isArray(decks) ? decks : [];
+    } catch (localError) {
+      console.error("Error leyendo cooptrackDecks desde localStorage:", localError);
+      return [];
+    }
   }
 }
 
@@ -32,7 +60,6 @@ function clearPlayform() {
 }
 
 function getDeckAuthorityCardsForCurrentUser(deck, currentUser = null) {
-  // 1) si ya vienen preparadas, usamos esas
   if (Array.isArray(deck.currentUserCards)) {
     return deck.currentUserCards.filter(
       (card) =>
@@ -41,8 +68,6 @@ function getDeckAuthorityCardsForCurrentUser(deck, currentUser = null) {
     );
   }
 
-  // 2) fallback temporal:
-  // mientras no esté modelado por usuario real, usamos aces/kings del deck
   const aces = Array.isArray(deck.aces) ? deck.aces : [];
   const kings = Array.isArray(deck.kings) ? deck.kings : [];
 
@@ -155,8 +180,8 @@ function buildLocalPlayRecord(deck, currentUser, suit, text) {
   };
 }
 
-function saveLocalPlayRecord(deckId, record) {
-  const decks = getStoredDecks();
+async function saveLocalPlayRecord(deckId, record) {
+  const decks = await getStoredDecks();
   const deckIndex = decks.findIndex((item) => String(item.id) === String(deckId));
 
   if (deckIndex === -1) {
@@ -172,7 +197,7 @@ function saveLocalPlayRecord(deckId, record) {
   saveStoredDecks(decks);
 }
 
-function handlePlayformSave(deck, suit) {
+async function handlePlayformSave(deck, suit) {
   const input = document.getElementById("playformTextInput");
   const currentUser = getLoggedUser();
 
@@ -187,12 +212,12 @@ function handlePlayformSave(deck, suit) {
   }
 
   const record = buildLocalPlayRecord(deck, currentUser, suit, text);
-  saveLocalPlayRecord(deck.id, record);
+  await saveLocalPlayRecord(deck.id, record);
 
   input.value = "";
 
   if (typeof renderPlaysView === "function") {
-    const updatedDecks = getStoredDecks();
+    const updatedDecks = await getStoredDecks();
     const updatedDeck =
       updatedDecks.find((item) => String(item.id) === String(deck.id)) || deck;
 
@@ -202,10 +227,10 @@ function handlePlayformSave(deck, suit) {
 
 function attachPlayformEvents(deck) {
   document.querySelectorAll("[data-play-suit]").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       const suit = button.dataset.playSuit;
       if (!suit) return;
-      handlePlayformSave(deck, suit);
+      await handlePlayformSave(deck, suit);
     });
   });
 
@@ -214,10 +239,10 @@ function attachPlayformEvents(deck) {
     if (input) input.value = "";
   });
 
-  document.getElementById("playformTextInput")?.addEventListener("keydown", (event) => {
+  document.getElementById("playformTextInput")?.addEventListener("keydown", async (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      handlePlayformSave(deck, "HEART");
+      await handlePlayformSave(deck, "HEART");
     }
   });
 }
