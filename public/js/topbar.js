@@ -47,36 +47,17 @@ function hasPendingApprovals() {
   }
 }
 
-function isDecksViewOpen() {
-  return sessionStorage.getItem("cooptrackDecksViewOpen") === "true";
-}
-
-function setDecksViewOpen(value) {
-  sessionStorage.setItem("cooptrackDecksViewOpen", value ? "true" : "false");
-}
-
-function toggleDecksView() {
-  const open = isDecksViewOpen();
-  const next = !open;
-
-  setDecksViewOpen(next);
-
-  if (typeof renderDecksView === "function") {
-    if (next) {
-      renderDecksView();
-    } else if (typeof clearDecksView === "function") {
-      clearDecksView();
-    }
-  }
-
-  renderTopbar();
+/* 🔹 NUEVO: detectar si estamos en mazos.html */
+function isMazosPage() {
+  return window.location.pathname.endsWith("/mazos.html") ||
+         window.location.pathname === "/mazos.html";
 }
 
 function renderTopbar() {
   const user = getLoggedUser();
   const userHasDecks = hasDecks();
   const userHasPendingApprovals = hasPendingApprovals();
-  const decksViewOpen = isDecksViewOpen();
+  const onMazosPage = isMazosPage();
 
   let topbarHTML = "";
 
@@ -104,17 +85,20 @@ function renderTopbar() {
             ${
               userHasDecks
                 ? `
-                  <button class="topbar__icon-btn" id="portfolioBtn" title="Mazos" aria-label="Mazos">
+                  <a href="${onMazosPage ? "/index.html" : "/mazos.html"}"
+                     class="topbar__icon-btn"
+                     title="Mazos"
+                     aria-label="Mazos">
                     <img
                       src="${
-                        decksViewOpen
+                        onMazosPage
                           ? "/assets/icons/portafolioAbierto.png"
                           : "/assets/icons/portafolios80.gif"
                       }"
                       alt="Mazos"
                       class="topbar__icon-img topbar__icon-img--portfolio"
                     />
-                  </button>
+                  </a>
                 `
                 : ""
             }
@@ -187,6 +171,7 @@ function renderTopbar() {
 
   container.innerHTML = topbarHTML;
 
+  /* eventos */
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", logout);
@@ -200,11 +185,7 @@ function renderTopbar() {
       }
     });
   }
-
-  const portfolioBtn = document.getElementById("portfolioBtn");
-  if (portfolioBtn) {
-    portfolioBtn.addEventListener("click", toggleDecksView);
-  }
 }
 
+/* render inicial */
 renderTopbar();
