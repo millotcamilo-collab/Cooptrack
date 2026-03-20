@@ -1,254 +1,178 @@
 .mazobar {
+  width: 100%;
+  padding: 18px 0 10px;
   background: #f5f5f5;
-  padding: 18px 0;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #d8d8d8;
+  box-sizing: border-box;
 }
 
-.mazobar__inner {
+.mazobar .page-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.mazobar__card {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
+  gap: 22px;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mazobar__header {
+  flex: 0 0 auto;
+}
+
+.mazobar__title {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.1;
+  font-weight: 700;
+  color: #111;
+}
+
+.mazobar__form {
+  display: flex;
+  align-items: flex-end;
   gap: 16px;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  min-width: 280px;
 }
 
-.mazobar__inner--deck {
-  justify-content: flex-start;
-}
-
-.mazobar__card img {
-  height: 80px;
-  width: auto;
-}
-
-.mazobar__cards {
+.mazobar__field {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-height: 40px;
 }
 
-.mazobar__cards img {
-  height: 80px;
-  width: auto;
+.mazobar__label {
+  font-size: 0.98rem;
+  color: #111;
+  white-space: nowrap;
 }
 
-.mazobar__jokers {
+.mazobar__input,
+.mazobar__textarea,
+.mazobar__select {
+  font: inherit;
+  color: #111;
+  background: #fff;
+  border: 1px solid #c5bca8;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.mazobar__input {
+  width: 250px;
+  height: 40px;
+  padding: 8px 10px;
+}
+
+.mazobar__textarea {
+  width: 270px;
+  min-height: 58px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.mazobar__select {
+  min-width: 90px;
+  height: 40px;
+  padding: 0 10px;
+}
+
+.mazobar__radio-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-.mazobar__jokers img {
-  height: 80px;
-  width: auto;
-  cursor: pointer;
+.mazobar__radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.98rem;
+  color: #111;
+  white-space: nowrap;
+}
+
+.mazobar__radio-option input {
+  margin: 0;
 }
 
 .mazobar__actions {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-left: 10px;
-}
-
-.mazobar__action-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.mazobar__action-btn img {
-  height: 40px;
-  width: auto;
-}
-
-.mazobar__action-btn:hover {
-  transform: scale(1.1);
-}
-
-.mazobar__aces {
-  display: flex;
-  align-items: center;
   gap: 10px;
+  margin-left: auto;
 }
 
-.mazobar__aces img {
-  height: 80px;
-  width: auto;
-}
-
-.mazobar__form {
-  flex: 1;
-}
-
-.mazobar__form input {
-  width: 100%;
-  max-width: 360px;
-  padding: 10px 12px;
-  font-size: 18px;
-  border: 1px solid #bbb;
+.mazobar__btn {
+  appearance: none;
+  border: 1px solid #bdb39f;
+  border-radius: 4px;
   background: #fff;
-  box-sizing: border-box;
-}
-
-.mazobar__title {
-  font-size: 24px;
-  font-weight: 500;
-}
-
-.mazobar__title--deck {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mazobar__deck-name {
-  font-size: 28px;
-  font-weight: 500;
-}
-
-.mazobar__exit {
-  background: #111;
-  color: #fff;
-  border: none;
-  padding: 10px 14px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.mazobar__left-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 170px;
-}
-
-.mazobar__user-cards {
-  display: flex;
-  align-items: center;
-}
-
-.mazobar__photo img,
-.mazobar__photo {
-  height: 120px;
-  width: auto;
-}
-
-.mazobar__right-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.mazobar__suits {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.mazobar__suits img {
-  height: 28px;
-  width: auto;
-}
-
-.deck-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  color: #111;
+  font: inherit;
   padding: 10px 16px;
-  border-bottom: 1px solid #ddd;
-}
-
-.deck-row__user-cards {
-  display: flex;
-  align-items: center;
-}
-
-.deck-row__user-cards img {
-  height: 50px;
-  width: auto;
-}
-
-.deck-row__user-cards img + img {
-  margin-left: -10px;
-}
-
-.deck-row__photo img {
-  height: 60px;
-  width: auto;
-}
-
-.deck-row__institution {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.deck-row__title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 20px;
-  font-weight: 500;
-}
-
-.deck-row__title img {
-  height: 28px;
-  width: auto;
-}
-
-.deck-row__suits {
-  display: flex;
-  gap: 6px;
-}
-
-.deck-row__suits img {
-  height: 20px;
-  width: auto;
-}
-
-.mazobar__ace-btn {
-  background: transparent;
-  border: none;
-  padding: 0;
   cursor: pointer;
+  line-height: 1;
 }
 
-.mazobar__ace-btn + .mazobar__ace-btn {
-  margin-left: -8px;
+.mazobar__btn:hover {
+  opacity: 0.92;
 }
 
-.mazobar__mini-card {
-  height: 48px;
-  width: auto;
-  display: block;
+.mazobar__btn--primary {
+  background: #f7f0e2;
 }
 
-.mazobar__ace-panel {
-  margin-top: 12px;
-  padding: 12px;
-  background: #f4f4f4;
-  border: 1px solid #ccc;
-}
-
-.mazobar__ace-panel-header {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.mazobar__ace-panel-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-}
-
-.mazobar__ace-action {
-  padding: 8px 12px;
-  cursor: pointer;
-  border: 1px solid #999;
+.mazobar__btn--secondary {
   background: #fff;
 }
 
-.mazobar__ace-action:hover {
-  background: #eee;
+@media (max-width: 960px) {
+  .mazobar__card {
+    align-items: flex-start;
+  }
+
+  .mazobar__form {
+    width: 100%;
+  }
+
+  .mazobar__actions {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 680px) {
+  .mazobar .page-container {
+    padding: 0 16px;
+  }
+
+  .mazobar__title {
+    font-size: 1.6rem;
+  }
+
+  .mazobar__field {
+    width: 100%;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mazobar__input,
+  .mazobar__textarea,
+  .mazobar__select {
+    width: 100%;
+  }
+
+  .mazobar__actions {
+    width: 100%;
+  }
 }
