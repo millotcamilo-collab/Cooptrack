@@ -1,248 +1,444 @@
-function getLoggedUser() {
-  try {
-    const raw = localStorage.getItem("cooptrackUser");
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (error) {
-    console.error("Error leyendo cooptrackUser:", error);
-    return null;
+(function () {
+  const DEFAULT_DECK_IMAGE = "/assets/icons/singeta120.gif";
+
+  const CARD_LABELS = {
+    A_HEART: "A♥",
+    A_SPADE: "A♠",
+    A_DIAMOND: "A♦",
+    A_CLUB: "A♣",
+    K_HEART: "K♥",
+    K_SPADE: "K♠",
+    K_DIAMOND: "K♦",
+    K_CLUB: "K♣",
+    JOKER_RED: "🃏R",
+    JOKER_BLUE: "🃏B"
+  };
+
+  function clearMazobar() {
+    const container = document.getElementById("mazobar-container");
+    if (container) container.innerHTML = "";
   }
-}
 
-function getStoredDecksSync() {
-  try {
-    const raw = localStorage.getItem("cooptrackDecks");
-    if (!raw) return [];
-    const decks = JSON.parse(raw);
-    return Array.isArray(decks) ? decks : [];
-  } catch (error) {
-    console.error("Error leyendo cooptrackDecks:", error);
-    return [];
+  function normalizeArray(value) {
+    return Array.isArray(value) ? value : [];
   }
-}
 
-function saveStoredDecksSync(decks) {
-  localStorage.setItem("cooptrackDecks", JSON.stringify(decks));
-}
+  function getDeckImage(deck) {
+    return (
+      deck?.profile_photo_url ||
+      deck?.profilePhotoUrl ||
+      deck?.image_url ||
+      DEFAULT_DECK_IMAGE
+    );
+  }
 
-function clearMazobar() {
-  const container = document.getElementById("mazobar-container");
-  if (!container) return;
-  container.innerHTML = "";
-}
+  function getDeckTitle(deck) {
+    return String(deck?.name || "Mazo sin nombre").trim();
+  }
 
-function generateLocalDeckId() {
-  return Date.now();
-}
+  function getCurrencyCode(deck) {
+    return deck?.currency_code || deck?.currencyCode || "ARS";
+  }
 
-function getDefaultDeckImage() {
-  return "/assets/icons/singeta120.gif";
-}
+  function getViewerBalance(deck) {
+    if (deck?.viewer_economic_status && typeof deck.viewer_economic_status.amount === "number") {
+      return deck.viewer_economic_status.amount;
+    }
 
-function normalizeDeckName(value) {
-  return String(value || "").trim();
-}
+    if (typeof deck?.viewer_balance === "number") {
+      return deck.viewer_balance;
+    }
 
-function buildMazobarHTML(mode = "create") {
-  const title = mode === "create" ? "Nuevo mazo" : "Editar mazo";
-  const actionLabel = mode === "create" ? "Crear mazo" : "Guardar cambios";
+    if (typeof deck?.personal_balance === "number") {
+      return deck.personal_balance;
+    }
 
-  return `
-    <section class="mazobar">
-      <div class="page-container">
-        <div class="mazobar__card">
+    if (typeof deck?.balance === "number") {
+      return deck.balance;
+    }
 
-          <div class="mazobar__header">
-            <h2 class="mazobar__title">${title}</h2>
-          </div>
+    return 0;
+  }
 
-          <div class="mazobar__form">
-            <div class="mazobar__field">
-              <label for="deckNameInput" class="mazobar__label">Nombre del mazo</label>
-              <input
-                id="deckNameInput"
-                type="text"
-                class="mazobar__input"
-                placeholder="Escribí el nombre del mazo..."
-                maxlength="150"
-                autocomplete="off"
-              />
-            </div>
+  function formatMoney(amount, currencyCode) {
+    try {
+      return new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: currencyCode,
+        maximumFractionDigits: 0
+      }).format(amount);
+    } catch (error) {
+      const sign = amount > 0 ? "+" : "";
+      return `${currencyCode} ${sign}${amount}`;
+    }
+  }
 
-            <div class="mazobar__field">
-              <span class="mazobar__label">Tipo de Joker</span>
+  function getBalanceClass(amount) {
+    if (amount > 0) return "mazobar__balance mazobar__balance--positive";
+    if (amount < 0) return "mazobar__balance mazobar__balance--negative";
+    return "mazobar__balance mazobar__balance--neutral";
+  }
 
-              <div class="mazobar__radio-group">
-                <label class="mazobar__radio-option">
-                  <input
-                    type="radio"
-                    name="jokerType"
-                    value="RED"
-                    checked
-                  />
-                  <span>Joker rojo</span>
-                </label>
+  function getViewerCorporateCards(deck) {
+    const directCards = normalizeArray(
+      deck?.viewer_corporate_cards ||
+      deck?.currentUserCards ||
+      deck?.viewerCards ||
+      deck?.corporateCards
+    );
 
-                <label class="mazobar__radio-option">
-                  <input
-                    type="radio"
-                    name="jokerType"
-                    value="BLUE"
-                  />
-                  <span>Joker azul</span>
-                </label>
-              </div>
-            </div>
+    if (directCards.length > 0) {
+      return directCards.filter((cardCode) => /^A_|^K_/.test(cardCode));
+    }
 
-            <div class="mazobar__field">
-              <label for="deckCurrencySelect" class="mazobar__label">Moneda base</label>
-              <select id="deckCurrencySelect" class="mazobar__select">
-                <option value="ARS" selected>ARS</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="BRL">BRL</option>
-                <option value="UYU">UYU</option>
-                <option value="CLP">CLP</option>
-              </select>
-            </div>
-          </div>
+    const governance = deck?.governance || {};
+    const aces = normalizeArray(governance.aces);
+    const kings = normalizeArray(governance.kings);
+    const viewerUserId =
+      deck?.viewer_user_id ||
+      deck?.current_user_id ||
+      deck?.viewerId ||
+      null;
 
-          <div class="mazobar__actions">
+    if (!viewerUserId) return [];
+
+    const aceCards = aces
+      .filter((ace) => Number(ace.user_id) === Number(viewerUserId))
+      .map((ace) => ace.ace_type);
+
+    const kingCards = kings
+      .filter((king) => Number(king.user_id) === Number(viewerUserId))
+      .map((king) => king.king_type);
+
+    return [...aceCards, ...kingCards];
+  }
+
+  function hasCorporateCard(deck) {
+    return getViewerCorporateCards(deck).length > 0;
+  }
+
+  function getVisibleJokers(deck) {
+    const jokers = [];
+
+    const jokerType = String(deck?.joker_type || deck?.jokerType || "").toUpperCase();
+    const hasBlue =
+      jokerType === "BLUE" ||
+      deck?.has_blue_joker === true ||
+      deck?.joker_blue === true;
+
+    const hasRed =
+      jokerType === "RED" ||
+      deck?.has_red_joker === true ||
+      deck?.joker_red === true;
+
+    if (hasRed) jokers.push("JOKER_RED");
+    if (hasBlue) jokers.push("JOKER_BLUE");
+
+    return jokers;
+  }
+
+  function canEditBlueJoker(deck) {
+    if (typeof deck?.current_user_can_edit_blue_joker === "boolean") {
+      return deck.current_user_can_edit_blue_joker;
+    }
+
+    const viewerId =
+      deck?.viewer_user_id ||
+      deck?.current_user_id ||
+      deck?.viewerId ||
+      null;
+
+    const serviceOwnerId =
+      deck?.service_owner_user_id ||
+      deck?.serviceOwnerUserId ||
+      deck?.owner_user_id ||
+      deck?.ownerUserId ||
+      null;
+
+    if (!viewerId || !serviceOwnerId) return false;
+    return Number(viewerId) === Number(serviceOwnerId);
+  }
+
+  function getInitialFilter(deck) {
+    if (hasCorporateCard(deck)) return "HEART";
+    return "HEART";
+  }
+
+  function buildCorporateCardsHTML(deck) {
+    const cards = getViewerCorporateCards(deck);
+
+    if (cards.length === 0) {
+      return `<div class="mazobar__corporate-cards mazobar__corporate-cards--empty"></div>`;
+    }
+
+    return `
+      <div class="mazobar__corporate-cards">
+        ${cards.map((cardCode) => `
+          <button
+            type="button"
+            class="mazobar__mini-card"
+            data-card-code="${cardCode}"
+            title="${cardCode}"
+          >
+            ${CARD_LABELS[cardCode] || cardCode}
+          </button>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function buildJokersHTML(deck) {
+    const jokers = getVisibleJokers(deck);
+
+    if (jokers.length === 0) {
+      return `<div class="mazobar__jokers"></div>`;
+    }
+
+    return `
+      <div class="mazobar__jokers">
+        ${jokers.map((jokerCode) => {
+          const isBlue = jokerCode === "JOKER_BLUE";
+          const editable = isBlue && canEditBlueJoker(deck);
+
+          return `
             <button
               type="button"
-              class="mazobar__btn mazobar__btn--secondary"
-              id="mazobarCancelBtn"
+              class="mazobar__joker ${editable ? "mazobar__joker--editable" : "mazobar__joker--passive"}"
+              data-joker-code="${jokerCode}"
+              ${editable ? "" : 'disabled aria-disabled="true"'}
+              title="${jokerCode}"
             >
-              Cancelar
+              ${CARD_LABELS[jokerCode] || jokerCode}
             </button>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }
 
-            <button
-              type="button"
-              class="mazobar__btn mazobar__btn--primary"
-              id="mazobarSaveBtn"
-            >
-              ${actionLabel}
-            </button>
-          </div>
+  function buildHeaderHTML(deck) {
+    const amount = getViewerBalance(deck);
+    const currencyCode = getCurrencyCode(deck);
 
+    return `
+      <div class="mazobar__title-row">
+        <div class="mazobar__title-main">
+          <button
+            type="button"
+            class="mazobar__ace-heart"
+            id="mazobarAceHeartBtn"
+            title="As de corazones"
+          >
+            A♥
+          </button>
+
+          <h1 class="mazobar__title" id="mazobarDeckTitle">
+            ${escapeHtml(getDeckTitle(deck))}
+          </h1>
+        </div>
+
+        <div class="${getBalanceClass(amount)}" id="mazobarBalance">
+          <span class="mazobar__balance-diamond">♦</span>
+          <span class="mazobar__balance-value">${escapeHtml(formatMoney(amount, currencyCode))}</span>
         </div>
       </div>
-    </section>
-  `;
-}
-
-function getSelectedJokerType() {
-  const checked = document.querySelector('input[name="jokerType"]:checked');
-  return checked?.value || "RED";
-}
-
-function buildNewDeckObject() {
-  const currentUser = getLoggedUser();
-  const nameInput = document.getElementById("deckNameInput");
-  const currencySelect = document.getElementById("deckCurrencySelect");
-
-  const name = normalizeDeckName(nameInput?.value);
-  const jokerType = getSelectedJokerType();
-  const currencyCode = currencySelect?.value || "ARS";
-
-  if (!name) {
-    window.alert("Escribí un nombre para el mazo.");
-    nameInput?.focus();
-    return null;
+    `;
   }
 
-  const nowIso = new Date().toISOString();
-  const userId = currentUser?.id || null;
-  const nickname = currentUser?.nickname || "Usuario";
+  function buildActionBarHTML(deck) {
+    const clubEnabled = hasCorporateCard(deck);
 
-  return {
-    id: generateLocalDeckId(),
-    name,
-    description: "",
+    return `
+      <div class="mazobar__actions-row">
+        <button
+          type="button"
+          class="mazobar__action-btn"
+          id="mazobarAddJBtn"
+          title="Nueva jugada J"
+        >
+          +J
+        </button>
 
-    createdByUserId: userId,
-    ownerUserId: userId,
+        <div class="mazobar__filters" id="mazobarFilters">
+          <button
+            type="button"
+            class="mazobar__filter-btn"
+            data-filter="HEART"
+            title="Anotaciones"
+          >
+            ♥
+          </button>
 
-    createdByNickname: nickname,
-    ownerNickname: nickname,
+          <button
+            type="button"
+            class="mazobar__filter-btn"
+            data-filter="SPADE"
+            title="Jugadas de picas"
+          >
+            ♠
+          </button>
 
-    profilePhotoUrl: getDefaultDeckImage(),
-    profile_photo_url: getDefaultDeckImage(),
+          <button
+            type="button"
+            class="mazobar__filter-btn"
+            data-filter="DIAMOND"
+            title="Vista económica"
+          >
+            ♦
+          </button>
 
-    isPrivate: false,
-    jokerType,
-    currencyCode,
+          <button
+            type="button"
+            class="mazobar__filter-btn"
+            data-filter="CLUB"
+            title="Vista corporativa"
+            ${clubEnabled ? "" : 'disabled aria-disabled="true"'}
+          >
+            ♣
+          </button>
+        </div>
 
-    createdAt: nowIso,
-    updatedAt: nowIso,
-
-    plays: [],
-    members: userId ? [userId] : [],
-
-    currentUserCards: ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"],
-    aces: ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"],
-    kings: [],
-
-    jokerRed: {
-      visibleToCreatorOnly: true,
-      staysWithCreatorUntilAceTransfer: true
-    },
-
-    jokerBlue: {
-      visibleToEveryone: true,
-      editableByOwnerOnly: true
-    }
-  };
-}
-
-function saveNewDeckLocally(deck) {
-  const decks = getStoredDecksSync();
-  decks.unshift(deck);
-  saveStoredDecksSync(decks);
-  return deck;
-}
-
-function openDeckPage(deck) {
-  if (!deck?.id) return;
-  window.location.href = `/mazo.html?id=${deck.id}`;
-}
-
-function handleMazobarSave() {
-  const newDeck = buildNewDeckObject();
-  if (!newDeck) return;
-
-  saveNewDeckLocally(newDeck);
-  clearMazobar();
-  openDeckPage(newDeck);
-}
-
-function handleMazobarCancel() {
-  clearMazobar();
-
-  const url = new URL(window.location.href);
-  url.searchParams.delete("view");
-  window.history.replaceState({}, "", url.pathname + url.search);
-}
-
-function attachMazobarEvents() {
-  document.getElementById("mazobarSaveBtn")?.addEventListener("click", handleMazobarSave);
-  document.getElementById("mazobarCancelBtn")?.addEventListener("click", handleMazobarCancel);
-
-  document.getElementById("deckNameInput")?.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      handleMazobarSave();
-    }
-  });
-}
-
-function renderMazobar(mode = "create") {
-  const container = document.getElementById("mazobar-container");
-  if (!container) {
-    console.warn("mazobar-container no encontrado");
-    return;
+        <button
+          type="button"
+          class="mazobar__action-btn mazobar__action-btn--exit"
+          id="mazobarExitBtn"
+          title="Salir"
+        >
+          EXIT
+        </button>
+      </div>
+    `;
   }
 
-  container.innerHTML = buildMazobarHTML(mode);
-  attachMazobarEvents();
-}
+  function buildMazobarHTML(deck) {
+    return `
+      <section class="mazobar mazobar--saved">
+        <div class="page-container">
+          <div class="mazobar__board">
+            <div class="mazobar__left">
+              ${buildCorporateCardsHTML(deck)}
+
+              <div class="mazobar__deck-photo-wrap">
+                <img
+                  src="${escapeAttribute(getDeckImage(deck))}"
+                  alt="Foto del mazo"
+                  class="mazobar__deck-photo"
+                />
+              </div>
+
+              ${buildJokersHTML(deck)}
+            </div>
+
+            <div class="mazobar__right">
+              ${buildHeaderHTML(deck)}
+              ${buildActionBarHTML(deck)}
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttribute(value) {
+    return escapeHtml(value);
+  }
+
+  function dispatchMazobarEvent(name, detail = {}) {
+    document.dispatchEvent(new CustomEvent(name, { detail }));
+  }
+
+  function setActiveFilter(filter) {
+    const buttons = document.querySelectorAll(".mazobar__filter-btn");
+    buttons.forEach((button) => {
+      const isActive = button.dataset.filter === filter;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+  }
+
+  function bindMazobarEvents(deck) {
+    document.getElementById("mazobarAddJBtn")?.addEventListener("click", () => {
+      dispatchMazobarEvent("cooptrack:mazobar:add-j", { deck });
+      dispatchMazobarEvent("cooptrack:playform:toggle", { deck, source: "mazobar" });
+    });
+
+    document.getElementById("mazobarAceHeartBtn")?.addEventListener("click", () => {
+      dispatchMazobarEvent("cooptrack:mazobar:ace-heart", { deck });
+    });
+
+    document.getElementById("mazobarExitBtn")?.addEventListener("click", () => {
+      window.location.href = "/mazos.html";
+    });
+
+    document.querySelectorAll(".mazobar__filter-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (button.disabled) return;
+
+        const filter = button.dataset.filter;
+        setActiveFilter(filter);
+
+        dispatchMazobarEvent("cooptrack:mazobar:filter-change", {
+          deck,
+          filter
+        });
+      });
+    });
+
+    document.querySelectorAll(".mazobar__joker--editable").forEach((button) => {
+      button.addEventListener("click", () => {
+        dispatchMazobarEvent("cooptrack:mazobar:blue-joker-edit", {
+          deck,
+          jokerCode: button.dataset.jokerCode
+        });
+      });
+    });
+  }
+
+  function renderMazobar(mode = "deck", deck = null) {
+    const container = document.getElementById("mazobar-container");
+    if (!container) {
+      console.warn("mazobar-container no encontrado");
+      return;
+    }
+
+    if (mode !== "deck") {
+      container.innerHTML = "";
+      return;
+    }
+
+    if (!deck) {
+      container.innerHTML = "";
+      console.warn("renderMazobar requiere un deck");
+      return;
+    }
+
+    container.innerHTML = buildMazobarHTML(deck);
+
+    const initialFilter = getInitialFilter(deck);
+    setActiveFilter(initialFilter);
+    bindMazobarEvents(deck);
+
+    dispatchMazobarEvent("cooptrack:mazobar:ready", {
+      deck,
+      filter: initialFilter,
+      hasCorporateAccess: hasCorporateCard(deck)
+    });
+
+    dispatchMazobarEvent("cooptrack:mazobar:filter-change", {
+      deck,
+      filter: initialFilter
+    });
+  }
+
+  window.clearMazobar = clearMazobar;
+  window.renderMazobar = renderMazobar;
+})();
