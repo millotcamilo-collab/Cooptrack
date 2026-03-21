@@ -3,7 +3,7 @@ async function getLoggedUser() {
     const token = localStorage.getItem("cooptrackToken");
     if (!token) return null;
 
-    const response = await fetch("/me", {
+    const response = await fetch("https://cooptrack-backend.onrender.com/me", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`
