@@ -9,6 +9,10 @@ const newMazobarState = {
   isSaving: false
 };
 
+window.sessionScope = window.sessionScope || {
+  jugadas: []
+};
+
 function getAuthToken() {
   try {
     return localStorage.getItem("cooptrackToken");
@@ -16,6 +20,10 @@ function getAuthToken() {
     console.error("Error leyendo cooptrackToken:", error);
     return null;
   }
+}
+
+function getCurrentIsoDate() {
+  return new Date().toISOString();
 }
 
 function clearNewMazobar() {
@@ -357,6 +365,129 @@ function handleBlueImagePreview() {
   preview.src = value || getDefaultDeckImage();
 }
 
+function buildPlayString(parts) {
+  return parts.map((part) => String(part ?? "").trim()).join("§");
+}
+
+function buildInitialDeckPlays({ deckId, userId, description, jokerType }) {
+  const createdAt = getCurrentIsoDate();
+  const normalizedDescription = String(description || "").trim();
+  const plays = [];
+
+  // A♥ fundador
+  plays.push(
+    buildPlayString([deckId, userId, createdAt, "A", "HEART", normalizedDescription, "SAVE"])
+  );
+
+  // Ases restantes
+  if (jokerType === "RED") {
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "A", "SPADE", "", "SAVE"])
+    );
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "A", "DIAMOND", "", "SAVE"])
+    );
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "A", "CLUB", "", "SAVE"])
+    );
+
+    // Joker rojo: habilita K♥ y K♣ al creador
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "K", "HEART", "puedejugar", `U:${userId}`])
+    );
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "K", "CLUB", "puedejugar", `U:${userId}`])
+    );
+
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "JOKER", "RED", "SAVE"])
+    );
+  }
+
+  if (jokerType === "BLUE") {
+    // Con azul, los ases no corazón nacen habilitados
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "A", "SPADE", "puedejugar", `U:${userId}`])
+    );
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "A", "DIAMOND", "puedejugar", `U:${userId}`])
+    );
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "A", "CLUB", "puedejugar", `U:${userId}`])
+    );
+
+    // Y completa todos los reyes con puedejugar
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "K", "HEART", "puedejugar", `U:${userId}`])
+    );
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "K", "SPADE", "puedejugar", `U:${userId}`])
+    );
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "K", "DIAMOND", "puedejugar", `U:${userId}`])
+    );
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "K", "CLUB", "puedejugar", `U:${userId}`])
+    );
+
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "JOKER", "BLUE", "SAVE"])
+    );
+    plays.push(
+      buildPlayString([deckId, userId, createdAt, "JOKER", "RED", "SAVE"])
+    );
+  }
+
+  return plays;
+}
+
+function setSessionJugadas(plays) {
+  window.sessionScope = window.sessionScope || {};
+  window.sessionScope.jugadas = Array.isArray(plays) ? [...plays] : [];
+
+  try {
+    sessionStorage.setItem(
+      "cooptrackSessionJugadas",
+      JSON.stringify(window.sessionScope.jugadas)
+    );
+  } catch (error) {
+    console.warn("No se pudieron guardar jugadas en sessionStorage:", error);
+  }
+}
+
+function dispatchInitialPlaysReady({ deckId, plays }) {
+  document.dispatchEvent(
+    new CustomEvent("cooptrack:new-deck:plays-ready", {
+      detail: {
+        deckId,
+        plays
+      }
+    })
+  );
+}
+
+async function fetchLoggedUser(token) {
+  try {
+    const response = await fetch("https://cooptrack-backend.onrender.com/me", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data?.ok || !data?.user?.id) {
+      throw new Error(data?.error || `Error HTTP ${response.status}`);
+    }
+
+    return data.user;
+  } catch (error) {
+    console.error("No se pudo obtener usuario autenticado:", error);
+    return null;
+  }
+}
+
 async function finalizeNewDeck() {
   const token = getAuthToken();
 
@@ -378,7 +509,7 @@ async function finalizeNewDeck() {
       profile_photo_url: newMazobarState.draft.profilePhotoUrl || null
     };
 
-    const response = await fetch("/decks", {
+    const response = await fetch("https://cooptrack-backend.onrender.com/decks", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -392,6 +523,28 @@ async function finalizeNewDeck() {
     if (!response.ok || !data?.ok || !data?.deck?.id) {
       throw new Error(data?.message || data?.error || `Error HTTP ${response.status}`);
     }
+
+    const user = await fetchLoggedUser(token);
+    const userId = user?.id;
+
+    if (!userId) {
+      throw new Error("No se pudo identificar el usuario autenticado");
+    }
+
+    const initialPlays = buildInitialDeckPlays({
+      deckId: data.deck.id,
+      userId,
+      description: newMazobarState.draft.name,
+      jokerType: newMazobarState.draft.jokerType || "RED"
+    });
+
+    setSessionJugadas(initialPlays);
+    dispatchInitialPlaysReady({
+      deckId: data.deck.id,
+      plays: initialPlays
+    });
+
+    console.log("Jugadas iniciales del mazo:", initialPlays);
 
     resetNewMazobarState();
     window.location.href = `/mazo.html?id=${data.deck.id}`;
