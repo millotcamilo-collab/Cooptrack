@@ -12,16 +12,14 @@
   <link rel="stylesheet" href="/css/playform.css" />
   <link rel="stylesheet" href="/css/plays-view.css" />
 </head>
-
 <body>
   <div id="topbar-container"></div>
+
+  <div id="new-mazobar-container"></div>
   <div id="mazobar-container"></div>
   <div id="playform-container"></div>
   <div id="mazo-records-container"></div>
 
-  <div id="new-mazobar-container"></div>
-
-  <!-- 🔥 SCRIPTS -->
   <script src="/js/new-mazobar.js"></script>
   <script src="/js/mazobar.js"></script>
   <script src="/js/playform.js"></script>
@@ -45,21 +43,41 @@
       }
     }
 
+    function clearCreateView() {
+      const el = document.getElementById("new-mazobar-container");
+      if (el) el.innerHTML = "";
+    }
+
+    function clearDeckView() {
+      const ids = [
+        "mazobar-container",
+        "playform-container",
+        "mazo-records-container"
+      ];
+
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = "";
+      });
+    }
+
     async function initMazoPage() {
       const params = new URLSearchParams(window.location.search);
       const view = params.get("view");
       const deckId = params.get("id");
 
-      // 🟥 CASO 1: CREAR MAZO (A♥)
       if (view === "create") {
+        clearDeckView();
+
         if (typeof renderNewMazobar === "function") {
           renderNewMazobar();
         }
         return;
       }
 
-      // 🟦 CASO 2: VER MAZO EXISTENTE
       if (deckId) {
+        clearCreateView();
+
         const deck = await fetchDeckById(deckId);
 
         if (!deck) {
@@ -67,17 +85,14 @@
           return;
         }
 
-        // 👉 mazobar institucional
         if (typeof renderMazobar === "function") {
           renderMazobar("deck", deck);
         }
 
-        // 👉 playform (J)
         if (typeof renderPlayform === "function") {
           renderPlayform(deck);
         }
 
-        // 👉 renglones
         if (typeof renderPlaysView === "function") {
           renderPlaysView(deck);
         }
@@ -85,7 +100,6 @@
         return;
       }
 
-      // ⚠️ fallback
       console.warn("Mazo sin parámetros");
     }
 
