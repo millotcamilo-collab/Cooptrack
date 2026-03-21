@@ -21,18 +21,15 @@ ForEach-Object {
     Add-Content -Path cooptrack_snapshot.txt -Value "`n" -Encoding utf8
 }
 
+Si quiero traer desde github
+git pull origin main
 
+Si quiero subir a github
+git add .
+git commit -m "nuevo feature"
+git push origin main
 
-Get-ChildItem -Recurse -File |
-Where-Object { $_.FullName -notmatch "node_modules" } |
-ForEach-Object {
-    Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
-    Add-Content -Path cooptrack_snapshot.txt -Value "FILE: $($_.FullName)" -Encoding utf8
-    Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
+GitHub = versión oficial
+Tu PC = copia local
 
-    Get-Content $_.FullName -Raw | Add-Content -Path cooptrack_snapshot.txt -Encoding utf8
-
-    Add-Content -Path cooptrack_snapshot.txt -Value "`n" -Encoding utf8
-}
-
-El modelo conceptual de cooptrack, lo guarde como documento de Word en Documentos
+git pull = actualizar tu copia

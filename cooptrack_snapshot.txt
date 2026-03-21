@@ -40,21 +40,19 @@ ForEach-Object {
     Add-Content -Path cooptrack_snapshot.txt -Value "`n" -Encoding utf8
 }
 
+Si quiero traer desde github
+git pull origin main
 
+Si quiero subir a github
+git add .
+git commit -m "nuevo feature"
+git push origin main
 
-Get-ChildItem -Recurse -File |
-Where-Object { $_.FullName -notmatch "node_modules" } |
-ForEach-Object {
-    Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
-    Add-Content -Path cooptrack_snapshot.txt -Value "FILE: $($_.FullName)" -Encoding utf8
-    Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
+GitHub = versiÃ³n oficial
+Tu PC = copia local
 
-    Get-Content $_.FullName -Raw | Add-Content -Path cooptrack_snapshot.txt -Encoding utf8
+git pull = actualizar tu copia
 
-    Add-Content -Path cooptrack_snapshot.txt -Value "`n" -Encoding utf8
-}
-
-El modelo conceptual de cooptrack, lo guarde como documento de Word en Documentos
 
 
 ===============================
@@ -1506,7 +1504,7 @@ app.delete('/users/:id', async (req, res) => {
       `
       SELECT id
       FROM decks
-      WHERE created_by = $1
+      WHERE created_by_user_id = $1
       `,
       [userId]
     );
@@ -1515,8 +1513,24 @@ app.delete('/users/:id', async (req, res) => {
 
     await client.query(
       `
-      DELETE FROM records
+      DELETE FROM record_comments
       WHERE user_id = $1
+      `,
+      [userId]
+    );
+
+    await client.query(
+      `
+      DELETE FROM participations
+      WHERE sender_user_id = $1 OR recipient_user_id = $1
+      `,
+      [userId]
+    );
+
+    await client.query(
+      `
+      DELETE FROM records
+      WHERE created_by_user_id = $1
       `,
       [userId]
     );
@@ -1532,24 +1546,8 @@ app.delete('/users/:id', async (req, res) => {
     if (deckIds.length > 0) {
       await client.query(
         `
-        DELETE FROM records
-        WHERE deck_id = ANY($1::int[])
-        `,
-        [deckIds]
-      );
-
-      await client.query(
-        `
-        DELETE FROM deck_members
-        WHERE deck_id = ANY($1::int[])
-        `,
-        [deckIds]
-      );
-
-      await client.query(
-        `
         DELETE FROM decks
-        WHERE id = ANY($1::int[])
+        WHERE id = ANY($1::bigint[])
         `,
         [deckIds]
       );
@@ -1897,8 +1895,8 @@ app.put('/me/password', requireAuth, async (req, res) => {
 
 // Crear deck
 app.post('/decks', requireAuth, async (req, res) => {
-  const { name, description, is_private } = req.body;
-  const created_by = req.auth.userId;
+  const { name, description, is_private, joker_type, currency_code } = req.body;
+  const createdByUserId = req.auth.userId;
 
   if (!name) {
     return res.status(400).json({
@@ -1914,11 +1912,27 @@ app.post('/decks', requireAuth, async (req, res) => {
 
     const deckResult = await client.query(
       `
-      INSERT INTO decks (name, description, created_by, is_private, updated_at)
-      VALUES ($1, $2, $3, $4, NOW())
+      INSERT INTO decks (
+        name,
+        description,
+        created_by_user_id,
+        owner_user_id,
+        is_private,
+        joker_type,
+        currency_code,
+        updated_at
+      )
+      VALUES ($1, $2, $3, $3, $4, $5, $6, NOW())
       RETURNING *;
       `,
-      [name, description || null, created_by, is_private ?? false]
+      [
+        name,
+        description || null,
+        createdByUserId,
+        is_private ?? false,
+        joker_type || 'RED',
+        currency_code || 'ARS',
+      ]
     );
 
     const deck = deckResult.rows[0];
@@ -1928,7 +1942,16 @@ app.post('/decks', requireAuth, async (req, res) => {
       INSERT INTO deck_members (deck_id, user_id)
       VALUES ($1, $2);
       `,
-      [deck.id, created_by]
+      [deck.id, createdByUserId]
+    );
+
+    await client.query(
+      `
+      INSERT INTO deck_governance_state (deck_id)
+      VALUES ($1)
+      ON CONFLICT (deck_id) DO NOTHING;
+      `,
+      [deck.id]
     );
 
     await client.query('COMMIT');
@@ -1959,13 +1982,16 @@ app.get('/decks', async (req, res) => {
         d.id,
         d.name,
         d.description,
-        d.created_by,
+        d.created_by_user_id,
+        d.owner_user_id,
         d.is_private,
+        d.joker_type,
+        d.currency_code,
         d.created_at,
         d.updated_at,
         u.nickname AS creator_nickname
       FROM decks d
-      JOIN users u ON d.created_by = u.id
+      JOIN users u ON d.created_by_user_id = u.id
       ORDER BY d.created_at DESC;
     `);
 
@@ -1994,7 +2020,7 @@ app.get('/decks/:id', async (req, res) => {
         d.*,
         u.nickname AS creator_nickname
       FROM decks d
-      JOIN users u ON d.created_by = u.id
+      JOIN users u ON d.created_by_user_id = u.id
       WHERE d.id = $1;
       `,
       [id]
@@ -2020,6 +2046,7 @@ app.get('/decks/:id', async (req, res) => {
     });
   }
 });
+
 // Obtener estado de gobernanza de un deck
 app.get('/decks/:id/governance', async (req, res) => {
   const { id } = req.params;
@@ -2035,7 +2062,7 @@ app.get('/decks/:id/governance', async (req, res) => {
   try {
     const deckResult = await pool.query(
       `
-      SELECT id, name, created_by
+      SELECT id, name, created_by_user_id, owner_user_id, joker_type
       FROM decks
       WHERE id = $1
       LIMIT 1
@@ -2090,7 +2117,6 @@ app.get('/decks/:id/governance', async (req, res) => {
         is_blocked,
         blocked_reason,
         blocker_transaction_id,
-        has_red_joker,
         updated_at
       FROM deck_governance_state
       WHERE deck_id = $1
@@ -2106,7 +2132,6 @@ app.get('/decks/:id/governance', async (req, res) => {
       is_blocked: false,
       blocked_reason: null,
       blocker_transaction_id: null,
-      has_red_joker: false,
       updated_at: null,
     };
 
@@ -2158,6 +2183,7 @@ app.get('/decks/:id/governance', async (req, res) => {
     });
   }
 });
+
 // Obtener miembros de un deck
 app.get('/decks/:id/members', async (req, res) => {
   const { id } = req.params;
@@ -2196,10 +2222,10 @@ app.get('/decks/:id/members', async (req, res) => {
   }
 });
 
-// Crear record inicial: solo J_HEART
+// Crear record inicial: J_HEART mÃ­nima
 app.post('/records', requireAuth, async (req, res) => {
   const { deck_id, description, title } = req.body;
-  const user_id = req.auth.userId;
+  const createdByUserId = req.auth.userId;
 
   if (!deck_id) {
     return res.status(400).json({
@@ -2237,32 +2263,45 @@ app.post('/records', requireAuth, async (req, res) => {
       INSERT INTO records
       (
         deck_id,
-        user_id,
+        created_by_user_id,
         card_type,
+        suit,
+        record_kind,
         title,
         description,
-        amount,
-        activity_date,
+        lifecycle_status,
+        governance_status,
+        visible_to_deck,
         start_date,
         end_date,
         location,
-        parent_record_id
+        parent_record_id,
+        updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      VALUES (
+        $1,
+        $2,
+        'J_HEART',
+        'HEART',
+        'NOTE',
+        $3,
+        $4,
+        'SAVED',
+        'NORMAL',
+        FALSE,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NOW()
+      )
       RETURNING *
       `,
       [
         deck_id,
-        user_id,
-        'J_HEART',
+        createdByUserId,
         normalizeString(title) || 'AnotaciÃ³n',
         normalizeString(description),
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
       ]
     );
 
@@ -2280,7 +2319,7 @@ app.post('/records', requireAuth, async (req, res) => {
   }
 });
 
-// Convertir record existente
+// Convertir record existente manteniendo el mismo id
 app.post('/records/:id/convert', requireAuth, async (req, res) => {
   const { id } = req.params;
   const {
@@ -2293,7 +2332,7 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
     amount,
   } = req.body;
 
-  const user_id = req.auth.userId;
+  const userId = req.auth.userId;
 
   if (!target_card_type) {
     return res.status(400).json({
@@ -2319,6 +2358,7 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
       SELECT *
       FROM records
       WHERE id = $1
+      FOR UPDATE
       `,
       [id]
     );
@@ -2333,7 +2373,7 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
 
     const originalRecord = recordResult.rows[0];
 
-    if (Number(originalRecord.user_id) !== Number(user_id)) {
+    if (Number(originalRecord.created_by_user_id) !== Number(userId)) {
       await client.query('ROLLBACK');
       return res.status(403).json({
         ok: false,
@@ -2349,6 +2389,14 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
       });
     }
 
+    if (originalRecord.lifecycle_status !== 'SAVED') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        ok: false,
+        message: 'Solo se pueden convertir registros J_HEART en estado SAVED',
+      });
+    }
+
     if (target_card_type === 'J_CLUB') {
       const finalDescription =
         normalizeString(description) || normalizeString(originalRecord.description);
@@ -2361,32 +2409,24 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
         });
       }
 
-      if (isProvided(amount) && !isValidNumber(amount)) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({
-          ok: false,
-          message: 'amount invÃ¡lido',
-        });
-      }
-
       const updateResult = await client.query(
         `
         UPDATE records
         SET
-          card_type = $1,
-          title = $2,
-          description = $3,
-          amount = NULL,
-          activity_date = NULL,
+          card_type = 'J_CLUB',
+          suit = 'CLUB',
+          record_kind = 'ASSET',
+          title = $1,
+          description = $2,
           start_date = NULL,
           end_date = NULL,
           location = NULL,
-          parent_record_id = NULL
-        WHERE id = $4
+          parent_record_id = NULL,
+          updated_at = NOW()
+        WHERE id = $3
         RETURNING *
         `,
         [
-          'J_CLUB',
           normalizeString(title) || 'Bien',
           finalDescription,
           id,
@@ -2394,64 +2434,57 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
       );
 
       const clubRecord = updateResult.rows[0];
-      let diamondRecord = null;
 
       await client.query(
         `
-        DELETE FROM records
-        WHERE parent_record_id = $1
-          AND card_type = 'J_DIAMOND'
+        DELETE FROM record_economic_components
+        WHERE record_id = $1
         `,
         [clubRecord.id]
       );
 
+      let economicComponent = null;
+
       if (isProvided(amount)) {
-        const diamondInsert = await client.query(
+        if (!isValidNumber(amount)) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({
+            ok: false,
+            message: 'amount invÃ¡lido',
+          });
+        }
+
+        const economicInsert = await client.query(
           `
-          INSERT INTO records
+          INSERT INTO record_economic_components
           (
-            deck_id,
-            user_id,
-            card_type,
-            title,
-            description,
+            record_id,
             amount,
-            activity_date,
-            start_date,
-            end_date,
-            location,
-            parent_record_id
+            currency_code,
+            description
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          VALUES ($1, $2, 'ARS', $3)
           RETURNING *
           `,
           [
-            clubRecord.deck_id,
-            clubRecord.user_id,
-            'J_DIAMOND',
-            'Monto',
-            finalDescription,
-            normalizeAmount(amount),
-            null,
-            null,
-            null,
-            null,
             clubRecord.id,
+            normalizeAmount(amount),
+            'Componente econÃ³mico de J_CLUB',
           ]
         );
 
-        diamondRecord = diamondInsert.rows[0];
+        economicComponent = economicInsert.rows[0];
       }
 
       await client.query('COMMIT');
 
       return res.json({
         ok: true,
-        message: diamondRecord
-          ? 'Record convertido a J_CLUB y se creÃ³ J_DIAMOND'
+        message: economicComponent
+          ? 'Record convertido a J_CLUB con componente econÃ³mico'
           : 'Record convertido a J_CLUB',
         record: clubRecord,
-        diamond_record: diamondRecord,
+        economic_component: economicComponent,
       });
     }
 
@@ -2504,32 +2537,24 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
         }
       }
 
-      if (isProvided(amount) && !isValidNumber(amount)) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({
-          ok: false,
-          message: 'amount invÃ¡lido',
-        });
-      }
-
       const updateResult = await client.query(
         `
         UPDATE records
         SET
-          card_type = $1,
-          title = $2,
-          description = $3,
-          amount = NULL,
-          activity_date = NULL,
-          start_date = $4,
-          end_date = $5,
-          location = $6,
-          parent_record_id = NULL
-        WHERE id = $7
+          card_type = 'J_SPADE',
+          suit = 'SPADE',
+          record_kind = 'ACTIVITY',
+          title = $1,
+          description = $2,
+          start_date = $3,
+          end_date = $4,
+          location = $5,
+          parent_record_id = NULL,
+          updated_at = NOW()
+        WHERE id = $6
         RETURNING *
         `,
         [
-          'J_SPADE',
           normalizeString(title) || 'Actividad',
           finalDescription,
           normalizeDate(start_date),
@@ -2540,64 +2565,57 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
       );
 
       const spadeRecord = updateResult.rows[0];
-      let diamondRecord = null;
 
       await client.query(
         `
-        DELETE FROM records
-        WHERE parent_record_id = $1
-          AND card_type = 'J_DIAMOND'
+        DELETE FROM record_economic_components
+        WHERE record_id = $1
         `,
         [spadeRecord.id]
       );
 
+      let economicComponent = null;
+
       if (isProvided(amount)) {
-        const diamondInsert = await client.query(
+        if (!isValidNumber(amount)) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({
+            ok: false,
+            message: 'amount invÃ¡lido',
+          });
+        }
+
+        const economicInsert = await client.query(
           `
-          INSERT INTO records
+          INSERT INTO record_economic_components
           (
-            deck_id,
-            user_id,
-            card_type,
-            title,
-            description,
+            record_id,
             amount,
-            activity_date,
-            start_date,
-            end_date,
-            location,
-            parent_record_id
+            currency_code,
+            description
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          VALUES ($1, $2, 'ARS', $3)
           RETURNING *
           `,
           [
-            spadeRecord.deck_id,
-            spadeRecord.user_id,
-            'J_DIAMOND',
-            'Monto',
-            finalDescription,
-            normalizeAmount(amount),
-            null,
-            null,
-            null,
-            null,
             spadeRecord.id,
+            normalizeAmount(amount),
+            'Componente econÃ³mico de J_SPADE',
           ]
         );
 
-        diamondRecord = diamondInsert.rows[0];
+        economicComponent = economicInsert.rows[0];
       }
 
       await client.query('COMMIT');
 
       return res.json({
         ok: true,
-        message: diamondRecord
-          ? 'Record convertido a J_SPADE y se creÃ³ J_DIAMOND'
+        message: economicComponent
+          ? 'Record convertido a J_SPADE con componente econÃ³mico'
           : 'Record convertido a J_SPADE',
         record: spadeRecord,
-        diamond_record: diamondRecord,
+        economic_component: economicComponent,
       });
     }
 
@@ -2622,20 +2640,28 @@ app.post('/records/:id/convert', requireAuth, async (req, res) => {
 
 // Obtener records del usuario autenticado
 app.get('/records', requireAuth, async (req, res) => {
-  const user_id = req.auth.userId;
+  const userId = req.auth.userId;
 
   try {
     const result = await pool.query(
       `
       SELECT
         r.*,
-        d.name AS deck_name
+        d.name AS deck_name,
+        COALESCE(
+          (
+            SELECT json_agg(rec.* ORDER BY rec.id)
+            FROM record_economic_components rec
+            WHERE rec.record_id = r.id
+          ),
+          '[]'::json
+        ) AS economic_components
       FROM records r
       JOIN decks d ON r.deck_id = d.id
-      WHERE r.user_id = $1
+      WHERE r.created_by_user_id = $1
       ORDER BY r.created_at DESC, r.id DESC
       `,
-      [user_id]
+      [userId]
     );
 
     res.json({
@@ -2661,9 +2687,17 @@ app.get('/decks/:id/records', async (req, res) => {
       `
       SELECT
         r.*,
-        u.nickname AS user_nickname
+        u.nickname AS user_nickname,
+        COALESCE(
+          (
+            SELECT json_agg(rec.* ORDER BY rec.id)
+            FROM record_economic_components rec
+            WHERE rec.record_id = r.id
+          ),
+          '[]'::json
+        ) AS economic_components
       FROM records r
-      JOIN users u ON r.user_id = u.id
+      JOIN users u ON r.created_by_user_id = u.id
       WHERE r.deck_id = $1
       ORDER BY r.created_at DESC, r.id DESC
       `,
@@ -2684,521 +2718,13 @@ app.get('/decks/:id/records', async (req, res) => {
   }
 });
 
-app.post('/ace-transfers', requireAuth, async (req, res) => {
-  const actorUserId = Number(req.auth.userId);
-  const { deck_id, ace_type, to_user_id } = req.body;
-
-  if (!Number.isInteger(Number(deck_id))) {
-    return res.status(400).json({ ok: false, error: 'deck_id invÃ¡lido' });
-  }
-
-  if (!['A_SPADE', 'A_DIAMOND', 'A_CLUB'].includes(ace_type)) {
-    return res.status(400).json({ ok: false, error: 'ace_type invÃ¡lido' });
-  }
-
-  if (!Number.isInteger(Number(to_user_id))) {
-    return res.status(400).json({ ok: false, error: 'to_user_id invÃ¡lido' });
-  }
-
-  if (actorUserId === Number(to_user_id)) {
-    return res.status(400).json({ ok: false, error: 'No puedes transferirte el As a ti mismo' });
-  }
-
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-
-    const blockedResult = await client.query(
-      `
-      SELECT is_blocked
-      FROM deck_governance_state
-      WHERE deck_id = $1
-      LIMIT 1
-      `,
-      [deck_id]
-    );
-
-    if (blockedResult.rows[0]?.is_blocked) {
-      await client.query('ROLLBACK');
-      return res.status(409).json({ ok: false, error: 'El mazo estÃ¡ bloqueado' });
-    }
-
-    const memberResult = await client.query(
-      `
-      SELECT user_id
-      FROM deck_members
-      WHERE deck_id = $1 AND user_id IN ($2, $3)
-      `,
-      [deck_id, actorUserId, Number(to_user_id)]
-    );
-
-    if (memberResult.rows.length !== 2) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ ok: false, error: 'Ambos usuarios deben pertenecer al mazo' });
-    }
-
-    const aceResult = await client.query(
-      `
-      SELECT deck_id, ace_type, user_id
-      FROM deck_aces
-      WHERE deck_id = $1 AND ace_type = $2
-      LIMIT 1
-      FOR UPDATE
-      `,
-      [deck_id, ace_type]
-    );
-
-    if (aceResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ ok: false, error: 'As no encontrado en el mazo' });
-    }
-
-    if (Number(aceResult.rows[0].user_id) !== actorUserId) {
-      await client.query('ROLLBACK');
-      return res.status(403).json({ ok: false, error: 'No eres el titular actual de ese As' });
-    }
-
-    const pendingResult = await client.query(
-      `
-      SELECT id
-      FROM ace_transfers
-      WHERE deck_id = $1
-        AND ace_type = $2
-        AND status = 'PENDING'
-      LIMIT 1
-      `,
-      [deck_id, ace_type]
-    );
-
-    if (pendingResult.rows.length > 0) {
-      await client.query('ROLLBACK');
-      return res.status(409).json({ ok: false, error: 'Ya existe una transferencia pendiente para ese As' });
-    }
-
-    const insertResult = await client.query(
-      `
-      INSERT INTO ace_transfers
-      (deck_id, ace_type, from_user_id, to_user_id, status)
-      VALUES ($1, $2, $3, $4, 'PENDING')
-      RETURNING *
-      `,
-      [deck_id, ace_type, actorUserId, Number(to_user_id)]
-    );
-
-    await client.query('COMMIT');
-
-    res.status(201).json({
-      ok: true,
-      transfer: insertResult.rows[0]
-    });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('POST /ace-transfers error:', error);
-    res.status(500).json({ ok: false, error: 'No se pudo crear la transferencia' });
-  } finally {
-    client.release();
-  }
-});
-
-app.post('/ace-transfers/:id/respond', requireAuth, async (req, res) => {
-  const transferId = Number(req.params.id);
-  const actorUserId = Number(req.auth.userId);
-  const { decision } = req.body;
-
-  if (!Number.isInteger(transferId)) {
-    return res.status(400).json({ ok: false, error: 'transfer id invÃ¡lido' });
-  }
-
-  if (!['ACCEPT', 'REJECT'].includes(decision)) {
-    return res.status(400).json({ ok: false, error: 'decision invÃ¡lida' });
-  }
-
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-
-    const transferResult = await client.query(
-      `
-      SELECT *
-      FROM ace_transfers
-      WHERE id = $1
-      LIMIT 1
-      FOR UPDATE
-      `,
-      [transferId]
-    );
-
-    if (transferResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ ok: false, error: 'Transferencia no encontrada' });
-    }
-
-    const transfer = transferResult.rows[0];
-
-    if (transfer.status !== 'PENDING') {
-      await client.query('ROLLBACK');
-      return res.status(409).json({ ok: false, error: 'La transferencia ya fue respondida' });
-    }
-
-    if (Number(transfer.to_user_id) !== actorUserId) {
-      await client.query('ROLLBACK');
-      return res.status(403).json({ ok: false, error: 'Solo el receptor puede responder la transferencia' });
-    }
-
-    if (decision === 'REJECT') {
-      const rejectResult = await client.query(
-        `
-        UPDATE ace_transfers
-        SET status = 'REJECTED',
-            responded_at = NOW(),
-            responded_by_user_id = $2
-        WHERE id = $1
-        RETURNING *
-        `,
-        [transferId, actorUserId]
-      );
-
-      await client.query('COMMIT');
-      return res.json({ ok: true, transfer: rejectResult.rows[0] });
-    }
-
-    const aceResult = await client.query(
-      `
-      SELECT *
-      FROM deck_aces
-      WHERE deck_id = $1 AND ace_type = $2
-      LIMIT 1
-      FOR UPDATE
-      `,
-      [transfer.deck_id, transfer.ace_type]
-    );
-
-    if (aceResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ ok: false, error: 'As no encontrado' });
-    }
-
-    const currentAce = aceResult.rows[0];
-
-    if (Number(currentAce.user_id) !== Number(transfer.from_user_id)) {
-      await client.query('ROLLBACK');
-      return res.status(409).json({
-        ok: false,
-        error: 'El As ya no pertenece al emisor original'
-      });
-    }
-
-    await client.query(
-      `
-      UPDATE deck_aces
-      SET user_id = $1
-      WHERE deck_id = $2 AND ace_type = $3
-      `,
-      [transfer.to_user_id, transfer.deck_id, transfer.ace_type]
-    );
-
-    const acceptResult = await client.query(
-      `
-      UPDATE ace_transfers
-      SET status = 'ACCEPTED',
-          responded_at = NOW(),
-          responded_by_user_id = $2
-      WHERE id = $1
-      RETURNING *
-      `,
-      [transferId, actorUserId]
-    );
-
-    await client.query('COMMIT');
-
-    res.json({
-      ok: true,
-      transfer: acceptResult.rows[0]
-    });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('POST /ace-transfers/:id/respond error:', error);
-    res.status(500).json({ ok: false, error: 'No se pudo responder la transferencia' });
-  } finally {
-    client.release();
-  }
-});
-app.get('/decks/:id/ace-transfers', requireAuth, async (req, res) => {
-  const deckId = Number(req.params.id);
-  const status = req.query.status;
-
-  if (Number.isNaN(deckId)) {
-    return res.status(400).json({ ok: false, error: 'deck id invÃ¡lido' });
-  }
-
-  const allowedStatuses = ['PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED'];
-  const useStatus = allowedStatuses.includes(status) ? status : null;
-
-  try {
-    const result = await pool.query(
-      `
-      SELECT
-        t.*,
-        fu.nickname AS from_nickname,
-        tu.nickname AS to_nickname
-      FROM ace_transfers t
-      JOIN users fu ON fu.id = t.from_user_id
-      JOIN users tu ON tu.id = t.to_user_id
-      WHERE t.deck_id = $1
-        AND ($2::text IS NULL OR t.status = $2)
-      ORDER BY t.created_at DESC
-      `,
-      [deckId, useStatus]
-    );
-
-    res.json({
-      ok: true,
-      transfers: result.rows
-    });
-  } catch (error) {
-    console.error('GET /decks/:id/ace-transfers error:', error);
-    res.status(500).json({ ok: false, error: 'No se pudieron obtener las transferencias' });
-  }
-});
-
 app.listen(PORT, () => {
   console.log(`CoopTrack server listening on port ${PORT}`);
 });
 
 
 ===============================
-FILE: C:\Users\win10\Documents\cooptrack\public\agenda.html
-===============================
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Agenda - CoopTrack</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/css/topbar.css" />
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f7fb;
-      color: #222;
-    }
-
-    .page {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px 16px 40px;
-    }
-
-    .page-header h1 {
-      margin: 0 0 8px;
-      font-size: 32px;
-    }
-
-    .page-header p {
-      margin: 0 0 24px;
-      color: #666;
-    }
-
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 18px;
-    }
-
-    .record-card {
-      position: relative;
-      min-height: 260px;
-      border-radius: 18px;
-      padding: 18px;
-      background: white;
-      border: 2px solid #ddd;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .record-top,
-    .record-bottom {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-weight: bold;
-      font-size: 22px;
-    }
-
-    .record-center {
-      text-align: center;
-      padding: 10px 0;
-    }
-
-    .record-suit-big {
-      font-size: 42px;
-      margin-bottom: 10px;
-    }
-
-    .record-title {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-
-    .record-text {
-      font-size: 14px;
-      color: #555;
-      white-space: pre-wrap;
-      line-height: 1.45;
-    }
-
-    .record-meta {
-      margin-top: 12px;
-      font-size: 13px;
-      color: #666;
-      text-align: left;
-      line-height: 1.45;
-    }
-
-    .deck-link {
-      color: #1f4fd1;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .deck-link:hover {
-      text-decoration: underline;
-    }
-
-    .heart,
-    .diamond {
-      color: #c62828;
-    }
-
-    .club,
-    .spade {
-      color: #1f1f1f;
-    }
-
-    .card-heart {
-      border-color: #ef9a9a;
-      background: linear-gradient(180deg, #fff, #fff8f8);
-    }
-
-    .card-diamond {
-      border-color: #f5b5b5;
-      background: linear-gradient(180deg, #fff, #fff8f8);
-    }
-
-    .card-club {
-      border-color: #cfd8dc;
-      background: linear-gradient(180deg, #fff, #f9fbfc);
-    }
-
-    .card-spade {
-      border-color: #cfd8dc;
-      background: linear-gradient(180deg, #fff, #f9fbfc);
-    }
-
-    .empty-state {
-      background: white;
-      border: 1px dashed #bbb;
-      border-radius: 16px;
-      padding: 24px;
-      text-align: center;
-      color: #666;
-    }
-  </style>
-</head>
-<body>
-  <div id="topbar-container"></div>
-
-  <div class="page">
-    <div class="page-header">
-      <h1>Agenda</h1>
-      <p>Tus registros personales, siempre vinculados a un mazo.</p>
-    </div>
-
-    <div id="recordsContainer"></div>
-  </div>
-
-  <script src="/js/cards.js"></script>
-<script src="/js/auth.js"></script>
-  <script>
-    const user = JSON.parse(localStorage.getItem("cooptrackUser"));
-
-    if (!user) {
-      window.location.href = "/login.html";
-    }
-
-    function renderAgendaCard(record) {
-      const baseCardHtml = renderCard(record);
-
-      return baseCardHtml.replace(
-        '</div>\n\n      <div class="record-bottom',
-        `
-          <div class="record-meta">
-            <div>
-              <strong>Mazo:</strong>
-              <a class="deck-link" href="/deck.html?id=${record.deck_id}">
-                ${escapeHtml(record.deck_name || "Sin mazo")}
-              </a>
-            </div>
-            <div><strong>Creada:</strong> ${escapeHtml(formatDate(record.created_at))}</div>
-          </div>
-
-      <div class="record-bottom`
-      );
-    }
-
-    async function loadRecords() {
-      try {
-        const res = await fetch(`/records`, {headers: authHeaders()});
-        const data = await res.json();
-
-        const container = document.getElementById("recordsContainer");
-
-        if (!data.ok || !data.records || data.records.length === 0) {
-          container.innerHTML = `
-            <div class="empty-state">
-              No hay cartas todavÃ­a en tu Agenda.
-              <br><br>
-              Crea una carta entrando a alguno de tus mazos.
-            </div>
-          `;
-          return;
-        }
-
-        container.innerHTML = `
-          <div class="cards-grid">
-            ${data.records.map(renderAgendaCard).join("")}
-          </div>
-        `;
-      } catch (error) {
-        console.error("Error cargando records:", error);
-        document.getElementById("recordsContainer").innerHTML = `
-          <div class="empty-state">
-            Error cargando las cartas.
-          </div>
-        `;
-      }
-    }
-
-    loadRecords();
-  </script>
-
-  <script src="/js/topbar.js"></script>
-</body>
-</html>
-
-
-===============================
-FILE: C:\Users\win10\Documents\cooptrack\public\deck.html
+FILE: C:\Users\win10\Documents\cooptrack\public\deck_old.html
 ===============================
 <!DOCTYPE html>
 <html lang="es">
@@ -3575,6 +3101,7 @@ FILE: C:\Users\win10\Documents\cooptrack\public\help.html
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CoopTrack Â· Help</title>
+ <link rel="stylesheet" href="/css/topbar.css">
   <style>
     :root {
       --bg: #f7f4ee;
@@ -3588,6 +3115,7 @@ FILE: C:\Users\win10\Documents\cooptrack\public\help.html
     }
 
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Georgia, "Times New Roman", serif;
@@ -3596,10 +3124,82 @@ FILE: C:\Users\win10\Documents\cooptrack\public\help.html
       line-height: 1.5;
     }
 
+    /* =========================
+       TOPBAR
+    ========================= */
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    .topbar__inner {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      align-items: center;
+    }
+
+    .topbar__left,
+    .topbar__right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar__logo-img {
+      height: 36px;
+      width: auto;
+      display: block;
+    }
+
+    .topbar__icon-img {
+      height: 28px;
+      width: auto;
+      display: block;
+    }
+
+    .topbar__icon-img--profile {
+      height: 32px;
+      width: 32px;
+      border-radius: 50%;
+    }
+
+    .topbar__icon-btn {
+      background: none;
+      border: none;
+      padding: 6px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .topbar__icon-btn:hover {
+      background: #f3f4f6;
+    }
+
+    .topbar__login-link {
+      text-decoration: none;
+      color: #111827;
+      font-weight: 600;
+    }
+
+    /* =========================
+       CONTENT (desplazado por topbar)
+    ========================= */
+
     header {
       border-bottom: 1px solid var(--line);
       background: var(--card);
-      padding: 28px 22px 18px;
+      padding: 90px 22px 18px; /* ðŸ‘ˆ clave para no tapar contenido */
     }
 
     header h1 {
@@ -3675,14 +3275,25 @@ FILE: C:\Users\win10\Documents\cooptrack\public\help.html
     }
 
     ul { margin-top: 8px; }
+
     .red { color: var(--red); }
     .black { color: var(--black); }
     .gold { color: var(--gold); }
-    .small { color: var(--muted); font-size: 14px; }
+
+    .small {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
     a { color: inherit; }
   </style>
 </head>
+
 <body>
+
+  <!-- âœ… TOPBAR -->
+  <div id="topbar-container"></div>
+
   <header>
     <h1>CoopTrack Â· Help</h1>
     <p>
@@ -3914,6 +3525,7 @@ Y = jugada derivada derecha</pre>
       </p>
     </section>
   </main>
+  <script src="/js/topbar.js"></script>
 </body>
 </html>
 
@@ -3931,16 +3543,15 @@ FILE: C:\Users\win10\Documents\cooptrack\public\index.html
 
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="stylesheet" href="/css/topbar.css" />
-  <link rel="stylesheet" href="/css/mazobar.css" />
 </head>
 <body>
   <div id="topbar-container"></div>
   <div id="mazobar-container"></div>
-<div id="decks-view-container"></div>
+
   <script src="/js/topbar.js"></script>
-  <script src="/js/mazobar.js"></script>
 </body>
 </html>
+
 
 
 ===============================
@@ -3952,7 +3563,7 @@ FILE: C:\Users\win10\Documents\cooptrack\public\login.html
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login | CoopTrack</title>
-
+  <link rel="stylesheet" href="/css/topbar.css">
   <style>
     * {
       box-sizing: border-box;
@@ -4133,6 +3744,74 @@ FILE: C:\Users\win10\Documents\cooptrack\public\login.html
       background: #f9fafb;
       border-color: #9ca3af;
     }
+
+    /* =========================
+   TOPBAR FIX
+========================= */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.topbar__inner {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+
+.topbar__left,
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* LOGO */
+.topbar__logo-img {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+/* ICONOS */
+.topbar__icon-img {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
+/* PERFIL */
+.topbar__icon-img--profile {
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+}
+
+/* BOTONES */
+.topbar__icon-btn {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.topbar__icon-btn:hover {
+  background: #f3f4f6;
+}
+
+/* LINK LOGIN */
+.topbar__login-link {
+  text-decoration: none;
+  color: #111827;
+  font-weight: 600;
+}
   </style>
 </head>
 <body>
@@ -4192,7 +3871,7 @@ FILE: C:\Users\win10\Documents\cooptrack\public\login.html
           body: JSON.stringify({
             login,
             password
-          })
+        })
         });
 
         const data = await res.json();
@@ -4220,6 +3899,127 @@ FILE: C:\Users\win10\Documents\cooptrack\public\login.html
 
 </body>
 </html>
+
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\mazo.html
+===============================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mazo - CoopTrack</title>
+
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="/css/topbar.css" />
+  <link rel="stylesheet" href="/css/mazobar.css" />
+  <link rel="stylesheet" href="/css/playform.css" />
+  <link rel="stylesheet" href="/css/plays-view.css" />
+</head>
+<body>
+  <div id="topbar-container"></div>
+  <div id="mazobar-container"></div>
+  <div id="playform-container"></div>
+  <div id="mazo-records-container"></div>
+
+  <script src="/js/mazobar.js"></script>
+  <script src="/js/playform.js"></script>
+  <script src="/js/plays-view.js"></script>
+  <script src="/js/topbar.js"></script>
+
+  <script>
+    function getStoredDeckById(deckId) {
+      try {
+        const raw = localStorage.getItem("cooptrackDecks");
+        if (!raw) return null;
+
+        const decks = JSON.parse(raw);
+        if (!Array.isArray(decks)) return null;
+
+        return decks.find((deck) => String(deck.id) === String(deckId)) || null;
+      } catch (error) {
+        console.error("Error leyendo decks:", error);
+        return null;
+      }
+    }
+
+    function initMazoPage() {
+      const activeDeckId = sessionStorage.getItem("activeDeckId");
+
+      if (!activeDeckId) {
+        console.warn("No hay activeDeckId en sessionStorage");
+        return;
+      }
+
+      const deck = getStoredDeckById(activeDeckId);
+
+      if (!deck) {
+        console.warn("No se encontrÃ³ el deck activo");
+        return;
+      }
+
+      if (typeof renderMazobar === "function") {
+        renderMazobar("deck", deck);
+      }
+
+      if (typeof renderPlayform === "function") {
+        renderPlayform(deck);
+      }
+
+      if (typeof renderPlaysView === "function") {
+        renderPlaysView(deck);
+      }
+    }
+
+    initMazoPage();
+  </script>
+</body>
+</html>
+
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\mazos.html
+===============================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mazos | CoopTrack</title>
+
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="/css/topbar.css" />
+  <link rel="stylesheet" href="/css/mazobar.css" />
+  <link rel="stylesheet" href="/css/deck-row.css" />
+</head>
+<body>
+  <div id="topbar-container"></div>
+  <div id="mazobar-container"></div>
+  <div id="decks-view-container"></div>
+
+  <script src="/js/mazobar.js"></script>
+  <script src="/js/deck-row.js"></script>
+  <script src="/js/deck-view.js"></script>
+  <script src="/js/topbar.js"></script>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get("view");
+
+    if (typeof renderDecksView === "function") {
+      renderDecksView();
+    }
+
+    if (view === "create" && typeof renderMazobar === "function") {
+      renderMazobar("create");
+    }
+  </script>
+</body>
+</html>
+
 
 
 ===============================
@@ -4701,7 +4501,7 @@ FILE: C:\Users\win10\Documents\cooptrack\public\register.html
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro | CoopTrack</title>
-
+ <link rel="stylesheet" href="/css/topbar.css">
   <style>
     * {
       box-sizing: border-box;
@@ -5121,6 +4921,171 @@ FILE: C:\Users\win10\Documents\cooptrack\public\register.html
 
 
 ===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\css\deck-row.css
+===============================
+.decks-view {
+  width: 100%;
+  padding: 12px 0 20px;
+}
+
+.decks-view__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* FILA COMPLETA */
+.deck-row {
+  display: grid;
+  grid-template-columns: auto 72px 1fr;
+  align-items: center;
+  gap: 14px;
+  min-height: 88px;
+  padding: 10px 14px;
+  border: 1px dotted #7a7a7a;
+  border-radius: 10px;
+  background: #fffdf8;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.deck-row:hover {
+  background: #f7f3eb;
+  border-color: #444;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+/* IZQUIERDA */
+.deck-row__left {
+  display: flex;
+  align-items: center;
+  min-width: 70px;
+}
+
+.deck-row__cards {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.deck-row__cards--empty {
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.deck-row__card {
+  width: 28px;
+  height: 40px;
+  object-fit: contain;
+  display: block;
+}
+
+/* FOTO CENTRAL */
+.deck-row__photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid #cfc7b8;
+  background: #f5f1e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.deck-row__photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* DERECHA */
+.deck-row__right {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.deck-row__name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f1f1f;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deck-row__summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-height: 22px;
+}
+
+.deck-row__summary-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border: 1px solid #d7cfbf;
+  border-radius: 999px;
+  background: #faf7f0;
+  color: #4a443c;
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.deck-row__summary--empty {
+  color: #8a8378;
+}
+
+.deck-row__summary-placeholder {
+  font-size: 13px;
+  color: #8a8378;
+}
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  .deck-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .deck-row__left {
+    min-width: 0;
+  }
+
+  .deck-row__photo {
+    width: 64px;
+    height: 64px;
+  }
+
+  .deck-row__name {
+    font-size: 16px;
+  }
+
+  .deck-row__summary-item {
+    font-size: 13px;
+  }
+}
+
+
+
+===============================
 FILE: C:\Users\win10\Documents\cooptrack\public\css\global.css
 ===============================
 body {
@@ -5232,6 +5197,142 @@ body {
 .decks-view__suit-btn:hover {
   transform: translateY(-1px);
 }
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\css\mazo.css
+===============================
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6f7fb;
+  color: #1f2937;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 96px 16px 40px;
+}
+
+.deck-page-bar {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.deck-page-bar__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.deck-page-bar__suits {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.deck-page-bar__suit {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111827;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.deck-page-bar__suit:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+.deck-page-bar__suit:active {
+  transform: translateY(0);
+}
+
+.deck-rows {
+  display: grid;
+  gap: 12px;
+}
+
+.deck-row {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.deck-row__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.deck-row__card-type {
+  font-weight: 700;
+  color: #111827;
+}
+
+.deck-row__author {
+  color: #6b7280;
+}
+
+.deck-row__body {
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1f2937;
+  word-break: break-word;
+}
+
+.deck-empty-state {
+  background: white;
+  border: 1px dashed #d1d5db;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  color: #6b7280;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 88px 12px 32px;
+  }
+
+  .deck-page-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .deck-page-bar__suits {
+    justify-content: space-between;
+  }
+
+  .deck-page-bar__suit {
+    flex: 1;
+  }
+}
+
 
 
 ===============================
@@ -5494,6 +5595,291 @@ FILE: C:\Users\win10\Documents\cooptrack\public\css\mazobar.css
 
 
 ===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\css\playform.css
+===============================
+.playform {
+  width: 100%;
+  border-bottom: 1px solid #d8d1c5;
+  background: #fffdf8;
+  position: sticky;
+  top: 72px; /* ajustÃ¡ segÃºn altura del topbar + mazobar */
+  z-index: 900;
+}
+
+.playform__inner {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+}
+
+/* IZQUIERDA */
+.playform__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.playform__prefix {
+  font-weight: 700;
+  font-size: 20px;
+  color: #1f1f1f;
+}
+
+.playform__input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 6px 10px;
+  border: 1px solid #d8d1c5;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 14px;
+  outline: none;
+}
+
+.playform__input:focus {
+  border-color: #8a6a1d;
+  box-shadow: 0 0 0 1px rgba(138, 106, 29, 0.2);
+}
+
+/* CENTRO (botones de palo) */
+.playform__center {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.playform__action-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #d8d1c5;
+  background: #faf7f0;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+
+.playform__action-btn:hover {
+  background: #f0eadf;
+  border-color: #8a6a1d;
+  transform: translateY(-1px);
+}
+
+/* Colores por palo */
+.playform__action-btn--heart {
+  color: #b63a3a;
+}
+
+.playform__action-btn--diamond {
+  color: #b63a3a;
+}
+
+.playform__action-btn--spade {
+  color: #2e3138;
+}
+
+.playform__action-btn--club {
+  color: #2e3138;
+}
+
+/* DERECHA */
+.playform__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Cartas A/K visibles */
+.playform__authority {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.playform__authority-card {
+  font-size: 14px;
+  padding: 2px 6px;
+  border: 1px solid #d7cfbf;
+  border-radius: 999px;
+  background: #faf7f0;
+  color: #4a443c;
+}
+
+/* BotÃ³n EXIT */
+.playform__exit-btn {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid #d8d1c5;
+  background: #ffffff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.playform__exit-btn:hover {
+  background: #f3efe6;
+  border-color: #444;
+}
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  .playform__inner {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .playform__center {
+    justify-content: flex-start;
+  }
+
+  .playform__right {
+    justify-content: space-between;
+  }
+}
+
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\css\plays-view.css
+===============================
+.plays-view {
+  width: 100%;
+  padding: 16px 0 40px;
+}
+
+.plays-view__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* FILA (RENGLÃ“N) */
+.plays-view__row {
+  display: grid;
+  grid-template-columns: 60px 1fr 120px;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px dotted #7a7a7a;
+  border-radius: 8px;
+  background: #fffdf8;
+}
+
+/* IZQUIERDA (CARTA) */
+.plays-view__left {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.plays-view__card {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* colores por palo */
+.plays-view__card--heart {
+  color: #b63a3a;
+}
+
+.plays-view__card--diamond {
+  color: #b63a3a;
+}
+
+.plays-view__card--spade {
+  color: #2e3138;
+}
+
+.plays-view__card--club {
+  color: #2e3138;
+}
+
+/* CENTRO */
+.plays-view__center {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plays-view__text {
+  font-size: 15px;
+  color: #1f1f1f;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.plays-view__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b675f;
+}
+
+.plays-view__user {
+  font-weight: 600;
+}
+
+.plays-view__date {
+  opacity: 0.8;
+}
+
+/* DERECHA (placeholder futuro) */
+.plays-view__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 24px;
+}
+
+/* VACÃO */
+.plays-view__empty {
+  padding: 20px;
+  border: 1px dashed #cfc7b8;
+  border-radius: 8px;
+  background: #faf7f0;
+  text-align: center;
+  color: #8a8378;
+  font-size: 14px;
+}
+
+/* HOVER (opcional, muy leve por ahora) */
+.plays-view__row:hover {
+  background: #f7f3eb;
+  border-color: #444;
+}
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  .plays-view__row {
+    grid-template-columns: 40px 1fr;
+    gap: 8px;
+  }
+
+  .plays-view__right {
+    display: none;
+  }
+
+  .plays-view__card {
+    font-size: 16px;
+  }
+
+  .plays-view__text {
+    font-size: 14px;
+  }
+}
+
+
+
+===============================
 FILE: C:\Users\win10\Documents\cooptrack\public\css\topbar.css
 ===============================
 .topbar {
@@ -5568,12 +5954,15 @@ FILE: C:\Users\win10\Documents\cooptrack\public\css\topbar.css
   display: block;
   object-fit: contain;
 }
-
 .topbar__icon-img--profile {
-  height: 42px;
-  max-width: 42px;
-  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
+
 .topbar__icon-img--portfolio {
   height: 32px;
 }
@@ -5620,6 +6009,7 @@ FILE: C:\Users\win10\Documents\cooptrack\public\css\topbar.css
   width: 100%;
   box-sizing: border-box;
 }
+
 
 
 ===============================
@@ -5772,8 +6162,289 @@ function renderCard(record) {
 
 
 ===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\js\deck-row.js
+===============================
+function getLoggedUser() {
+  try {
+    const raw = localStorage.getItem("cooptrackUser");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("Error leyendo cooptrackUser:", error);
+    return null;
+  }
+}
+
+function clearDeckRow() {
+  const container = document.getElementById("deck-row-container");
+  if (!container) return;
+  container.innerHTML = "";
+}
+
+function getDeckDisplayImage(deck) {
+  if (deck?.profilePhotoUrl && String(deck.profilePhotoUrl).trim() !== "") {
+    return deck.profilePhotoUrl;
+  }
+
+  if (deck?.profile_photo_url && String(deck.profile_photo_url).trim() !== "") {
+    return deck.profile_photo_url;
+  }
+
+  if (deck?.imageUrl && String(deck.imageUrl).trim() !== "") {
+    return deck.imageUrl;
+  }
+
+  return "/assets/icons/singeta120.gif";
+}
+
+function getDeckDisplayName(deck) {
+  if (!deck) return "Mazo";
+  return deck.name || deck.title || "Mazo sin nombre";
+}
+
+function normalizeDeckCardList(cards) {
+  if (!Array.isArray(cards)) return [];
+  return cards.filter((item) => typeof item === "string" && item.trim() !== "");
+}
+
+function getDeckCorporateCardsForCurrentUser(deck, currentUser = null) {
+  if (!deck) return [];
+
+  if (Array.isArray(deck.currentUserCards)) {
+    return normalizeDeckCardList(deck.currentUserCards);
+  }
+
+  const cards = [];
+
+  if (Array.isArray(deck.aces)) {
+    cards.push(...normalizeDeckCardList(deck.aces));
+  }
+
+  if (Array.isArray(deck.kings)) {
+    cards.push(...normalizeDeckCardList(deck.kings));
+  }
+
+  return cards;
+}
+
+function getCardImageByType(cardType) {
+  const map = {
+    A_HEART: "/assets/cards/Acorazon.gif",
+    A_SPADE: "/assets/cards/Apica.gif",
+    A_DIAMOND: "/assets/cards/Adiamante.gif",
+    A_CLUB: "/assets/cards/Atrebol.gif",
+
+    K_HEART: "/assets/cards/Kcorazon.gif",
+    K_SPADE: "/assets/cards/Kpica.gif",
+    K_DIAMOND: "/assets/cards/Kdiamante.gif",
+    K_CLUB: "/assets/cards/Ktrebol.gif",
+
+    JOKER_RED: "/assets/cards/jokerRojo.gif",
+    JOKER_BLUE: "/assets/cards/jokerAzul.gif"
+  };
+
+  return map[cardType] || "/assets/icons/card-placeholder.png";
+}
+
+function getCardAltByType(cardType) {
+  const map = {
+    A_HEART: "As de corazones",
+    A_SPADE: "As de picas",
+    A_DIAMOND: "As de diamantes",
+    A_CLUB: "As de trÃ©boles",
+
+    K_HEART: "Rey de corazones",
+    K_SPADE: "Rey de picas",
+    K_DIAMOND: "Rey de diamantes",
+    K_CLUB: "Rey de trÃ©boles",
+
+    JOKER_RED: "Joker rojo",
+    JOKER_BLUE: "Joker azul"
+  };
+
+  return map[cardType] || "Carta";
+}
+
+function buildCorporateCardsHTML(deck, currentUser) {
+  const cards = getDeckCorporateCardsForCurrentUser(deck, currentUser);
+
+  if (!cards.length) {
+    return `
+      <div class="deck-row__cards deck-row__cards--empty"></div>
+    `;
+  }
+
+  const cardsHTML = cards
+    .map((cardType) => {
+      return `
+        <button
+          type="button"
+          class="deck-row__card-btn"
+          data-corporate-card="${cardType}"
+          title="${getCardAltByType(cardType)}"
+          aria-label="${getCardAltByType(cardType)}"
+        >
+          <img
+            src="${getCardImageByType(cardType)}"
+            alt="${getCardAltByType(cardType)}"
+            class="deck-row__card-img"
+          />
+        </button>
+      `;
+    })
+    .join("");
+
+  return `
+    <div class="deck-row__cards">
+      ${cardsHTML}
+    </div>
+  `;
+}
+
+function buildDeckSuitsHTML() {
+  return `
+    <div class="deck-row__suits" aria-label="Palos del mazo">
+      <span class="deck-row__suit deck-row__suit--heart">â™¥</span>
+      <span class="deck-row__suit deck-row__suit--spade">â™ </span>
+      <span class="deck-row__suit deck-row__suit--diamond">â™¦</span>
+      <span class="deck-row__suit deck-row__suit--club">â™£</span>
+    </div>
+  `;
+}
+
+function buildDeckHeaderHTML(deck, currentUser) {
+  return `
+    <section class="deck-row">
+      <div class="page-container">
+        <div class="deck-row__inner">
+
+          <div class="deck-row__left">
+            ${buildCorporateCardsHTML(deck, currentUser)}
+          </div>
+
+          <div class="deck-row__center">
+            <img
+              src="${getDeckDisplayImage(deck)}"
+              alt="${getDeckDisplayName(deck)}"
+              class="deck-row__photo"
+            />
+          </div>
+
+          <div class="deck-row__right">
+            <h1 class="deck-row__title">${getDeckDisplayName(deck)}</h1>
+            ${buildDeckSuitsHTML()}
+          </div>
+
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function attachCorporateCardEvents(deck) {
+  document.querySelectorAll("[data-corporate-card]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const cardType = button.dataset.corporateCard;
+      if (!cardType) return;
+
+      console.log("Carta corporativa clickeada:", cardType, "en mazo:", deck?.id);
+
+      /*
+        ETAPA POSTERIOR:
+        acÃ¡ vamos a abrir el subform institucional para:
+        - transferir As
+        - asignar Reyes
+        - ocultar el playform J mientras esa jugada estÃ© activa
+      */
+    });
+  });
+}
+
+function ensureDeckLayoutContainers() {
+  let deckContainer = document.getElementById("deck-row-container");
+  let playformContainer = document.getElementById("playform-container");
+  let playsViewContainer = document.getElementById("plays-view-container");
+
+  if (!deckContainer || !playformContainer || !playsViewContainer) {
+    const root =
+      document.getElementById("deck-view-container") ||
+      document.getElementById("decks-view-container");
+
+    if (!root) {
+      console.warn("No se encontrÃ³ contenedor raÃ­z del mazo");
+      return null;
+    }
+
+    root.innerHTML = `
+      <div id="deck-row-container"></div>
+      <div id="playform-container"></div>
+      <div id="plays-view-container"></div>
+    `;
+
+    deckContainer = document.getElementById("deck-row-container");
+    playformContainer = document.getElementById("playform-container");
+    playsViewContainer = document.getElementById("plays-view-container");
+  }
+
+  return {
+    deckContainer,
+    playformContainer,
+    playsViewContainer
+  };
+}
+
+function renderDeckRow(deck) {
+  const layout = ensureDeckLayoutContainers();
+  if (!layout) return;
+
+  const currentUser = getLoggedUser();
+
+  layout.deckContainer.innerHTML = buildDeckHeaderHTML(deck, currentUser);
+  attachCorporateCardEvents(deck);
+}
+
+function renderDeckView(deck) {
+  const layout = ensureDeckLayoutContainers();
+  if (!layout) return;
+
+  renderDeckRow(deck);
+
+  if (typeof renderPlayform === "function") {
+    renderPlayform(deck);
+  }
+
+  if (typeof renderPlaysView === "function") {
+    renderPlaysView(deck);
+  }
+}
+
+
+
+===============================
 FILE: C:\Users\win10\Documents\cooptrack\public\js\deck-view.js
 ===============================
+function goToMazoPage(deck, suit = "HEART") {
+  if (!deck || !deck.id) {
+    console.warn("No se puede navegar a mazo: deck invÃ¡lido", deck);
+    return;
+  }
+
+  sessionStorage.setItem("activeDeckId", String(deck.id));
+  sessionStorage.setItem("activeDeckName", deck.name || "");
+  sessionStorage.setItem("activeSuit", suit);
+
+  // al entrar a un mazo, la vista portfolio deja de estar desplegada
+  sessionStorage.setItem("cooptrackDecksViewOpen", "false");
+
+  console.log("Navegando a /mazo.html con:", {
+    deckId: deck.id,
+    deckName: deck.name,
+    suit
+  });
+
+  window.location.href = "/mazo.html";
+}
+
 function getStoredDecks() {
   try {
     const raw = localStorage.getItem("cooptrackDecks");
@@ -5783,6 +6454,17 @@ function getStoredDecks() {
   } catch (error) {
     console.error("Error leyendo cooptrackDecks:", error);
     return [];
+  }
+}
+
+function getLoggedUser() {
+  try {
+    const raw = localStorage.getItem("cooptrackUser");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("Error leyendo cooptrackUser:", error);
+    return null;
   }
 }
 
@@ -5792,92 +6474,87 @@ function clearDecksView() {
   container.innerHTML = "";
 }
 
-function buildDeckUserCardsHTML(deck) {
-  const joker = deck?.joker || "red";
+/**
+ * TEMPORAL:
+ * mientras todavÃ­a no venga todo del backend, armamos
+ * un view model amigable para deck-row.js
+ */
+function buildDeckRowViewModel(deck, currentUser = null) {
+  const normalizedJoker = String(deck?.joker || deck?.joker_type || "red").toLowerCase();
 
-  if (joker === "red") {
-    return `
-      <div class="decks-view__user-cards">
-        <img src="/assets/icons/Joker120.gif" alt="Joker rojo" class="decks-view__mini-card" />
-      </div>
-    `;
-  }
+  return {
+    id: deck.id,
+    name: deck.name || "Mazo sin nombre",
 
-  if (joker === "blue") {
-    return `
-      <div class="decks-view__user-cards">
-        <img src="/assets/icons/joker_blue.gif" alt="Joker azul" class="decks-view__mini-card" />
-      </div>
-    `;
-  }
+    // joker
+    joker: normalizedJoker,
 
-  return `
-    <div class="decks-view__user-cards">
-      <img src="/assets/icons/Joker120.gif" alt="Carta" class="decks-view__mini-card" />
-    </div>
-  `;
+    // imagen institucional del mazo
+    // azul => imagen cargada en el joker azul
+    // rojo => por ahora fallback a singeta si no tenÃ©s todavÃ­a A_CLUB real
+    jokerImageUrl:
+      deck.jokerImageUrl ||
+      deck.joker_image_url ||
+      deck.jokerImage ||
+      null,
+
+    clubOwnerPhotoUrl:
+      deck.clubOwnerPhotoUrl ||
+      deck.club_owner_photo_url ||
+      null,
+
+    // cartas del usuario actual a la izquierda
+    // si todavÃ­a no las tenÃ©s reales, tratamos de usar lo que exista
+    currentUserCards: buildCurrentUserCards(deck, currentUser),
+
+    // fila inferior con J / Q jugadas
+    summaryCards: buildSummaryCards(deck),
+
+    // por si mÃ¡s adelante querÃ©s usar el deck original al click
+    originalDeck: deck
+  };
 }
 
-function buildDeckRowHTML(deck) {
-  return `
-    <article class="decks-view__item" data-deck-id="${deck.id}">
-      
-      <div class="decks-view__left-group">
-        ${buildDeckUserCardsHTML(deck)}
-      </div>
+function buildCurrentUserCards(deck, currentUser = null) {
+  // 1) si ya vienen preparadas, usamos eso
+  if (Array.isArray(deck.currentUserCards)) {
+    return deck.currentUserCards.filter(Boolean);
+  }
 
-      <div class="decks-view__photo">
-        <img src="/assets/icons/singeta120.gif" alt="Mazo" />
-      </div>
+  // 2) si ya viene algo como userCards, usamos eso
+  if (Array.isArray(deck.userCards)) {
+    return deck.userCards.filter(Boolean);
+  }
 
-      <div class="decks-view__right-group">
-        <div class="decks-view__title">
-          <span class="decks-view__ace">A â™¥</span>
-          <span class="decks-view__deck-name">${deck.name}</span>
-        </div>
+  // 3) fallback temporal:
+  // si el deck guarda aces, los usamos
+  // esto NO es la regla final, pero ayuda a que se vea algo mientras tanto
+  const aces = Array.isArray(deck.aces) ? deck.aces : [];
 
-        <div class="decks-view__suits">
-          <button class="decks-view__suit-btn" data-deck-id="${deck.id}" data-suit="SPADE" title="Vista picas" aria-label="Vista picas">
-            <img src="/assets/icons/pik40.gif" alt="Picas" />
-          </button>
+  // si despuÃ©s sumÃ¡s kings en localStorage, podÃ©s agregarlos acÃ¡
+  const kings = Array.isArray(deck.kings) ? deck.kings : [];
 
-          <button class="decks-view__suit-btn" data-deck-id="${deck.id}" data-suit="DIAMOND" title="Vista diamantes" aria-label="Vista diamantes">
-            <img src="/assets/icons/dia40.gif" alt="Diamantes" />
-          </button>
+  const authorityCards = [...aces, ...kings].filter(
+    (card) => typeof card === "string" && (card.startsWith("A_") || card.startsWith("K_"))
+  );
 
-          <button class="decks-view__suit-btn" data-deck-id="${deck.id}" data-suit="CLUB" title="Vista trÃ©boles" aria-label="Vista trÃ©boles">
-            <img src="/assets/icons/tre40.gif" alt="TrÃ©boles" />
-          </button>
-
-          <button class="decks-view__suit-btn" data-deck-id="${deck.id}" data-suit="HEART" title="Vista corazones" aria-label="Vista corazones">
-            <img src="/assets/icons/cor40.gif" alt="Corazones" />
-          </button>
-        </div>
-      </div>
-
-    </article>
-  `;
+  return authorityCards;
 }
 
-function attachDeckSuitEvents() {
-  const suitButtons = document.querySelectorAll(".decks-view__suit-btn");
+function buildSummaryCards(deck) {
+  // 1) si ya vienen preparadas, usamos eso
+  if (Array.isArray(deck.summaryCards)) {
+    return deck.summaryCards.filter(Boolean);
+  }
 
-  suitButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const deckId = button.dataset.deckId;
-      const suit = button.dataset.suit;
+  // 2) si ya viene algo como playedCards, usamos eso
+  if (Array.isArray(deck.playedCards)) {
+    return deck.playedCards.filter(Boolean);
+  }
 
-      sessionStorage.setItem("activeDeckId", deckId);
-      sessionStorage.setItem("activeSuit", suit);
-
-      console.log("Vista de mazo/palo seleccionada:", { deckId, suit });
-
-      // MÃ¡s adelante:
-      // 1. ocultar otros renglones mazo
-      // 2. mostrar renglones jugada del palo elegido
-      // 3. enfocar ese mazo
-    });
-  });
+  // 3) fallback temporal vacÃ­o
+  // mÃ¡s adelante esto deberÃ­a venir de records + participations
+  return [];
 }
 
 function renderDecksView() {
@@ -5885,30 +6562,55 @@ function renderDecksView() {
   if (!container) return;
 
   const decks = getStoredDecks();
+  const currentUser = getLoggedUser();
 
   if (!decks.length) {
     container.innerHTML = "";
     return;
   }
 
+  if (typeof renderDeckRow !== "function") {
+    console.warn("renderDeckRow no estÃ¡ disponible. VerificÃ¡ que deck-row.js estÃ© cargado.");
+    return;
+  }
+
+  const deckRowsHTML = decks
+    .map((deck) => buildDeckRowViewModel(deck, currentUser))
+    .map((deckView) => renderDeckRow(deckView))
+    .join("");
+
   container.innerHTML = `
     <section class="decks-view">
       <div class="page-container">
         <div class="decks-view__list">
-          ${decks.map((deck) => buildDeckRowHTML(deck)).join("")}
+          ${deckRowsHTML}
         </div>
       </div>
     </section>
   `;
 
-  attachDeckSuitEvents();
+  if (typeof attachDeckRowEvents === "function") {
+    attachDeckRowEvents();
+  }
 }
+
 
 
 ===============================
 FILE: C:\Users\win10\Documents\cooptrack\public\js\mazobar.js
 ===============================
-function getStoredDecks() {
+function getLoggedUser() {
+  try {
+    const raw = localStorage.getItem("cooptrackUser");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("Error leyendo cooptrackUser:", error);
+    return null;
+  }
+}
+
+function getStoredDecksSync() {
   try {
     const raw = localStorage.getItem("cooptrackDecks");
     if (!raw) return [];
@@ -5920,465 +6622,1209 @@ function getStoredDecks() {
   }
 }
 
-function saveStoredDecks(decks) {
+function saveStoredDecksSync(decks) {
   localStorage.setItem("cooptrackDecks", JSON.stringify(decks));
 }
 
-function closeMazobar() {
+function clearMazobar() {
   const container = document.getElementById("mazobar-container");
   if (!container) return;
   container.innerHTML = "";
 }
 
-function goHome() {
-  window.location.href = "/index.html";
+function generateLocalDeckId() {
+  return Date.now();
 }
 
-function getDefaultAcesForJoker(joker) {
-  if (joker === "red") {
-    return ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"];
-  }
-
-  return [];
+function getDefaultDeckImage() {
+  return "/assets/icons/singeta120.gif";
 }
 
-function getCardImage(cardType) {
-  const map = {
-    A_HEART: "/assets/icons/Acorazon.gif",
-    A_SPADE: "/assets/icons/Apike.gif",
-    A_DIAMOND: "/assets/icons/Adiamante.gif",
-    A_CLUB: "/assets/icons/Atrebol.gif",
-    JOKER_RED: "/assets/icons/Joker120.gif",
-    JOKER_BLUE: "/assets/icons/joker_blue.gif",
-    SPADE: "/assets/icons/pik40.gif",
-    DIAMOND: "/assets/icons/dia40.gif",
-    CLUB: "/assets/icons/tre40.gif",
-    HEART: "/assets/icons/cor40.gif"
-  };
-
-  return map[cardType] || "/assets/icons/Joker120.gif";
+function normalizeDeckName(value) {
+  return String(value || "").trim();
 }
 
-function getCardLabel(cardType) {
-  const map = {
-    A_HEART: "Aâ™¥",
-    A_SPADE: "Aâ™ ",
-    A_DIAMOND: "Aâ™¦",
-    A_CLUB: "Aâ™£"
-  };
-
-  return map[cardType] || cardType;
-}
-
-function normalizeDeck(deck) {
-  if (!deck) return null;
-
-  const joker = deck.joker || "red";
-  const aces =
-    Array.isArray(deck.aces) && deck.aces.length > 0
-      ? deck.aces
-      : getDefaultAcesForJoker(joker);
-
-  return {
-    ...deck,
-    joker,
-    aces
-  };
-}
-
-function buildUserCardsHTML(deck) {
-  const normalizedDeck = normalizeDeck(deck);
-  const joker = normalizedDeck?.joker || "red";
-  const aces = normalizedDeck?.aces || [];
-
-  const jokerHTML =
-    joker === "blue"
-      ? `
-        <img
-          src="${getCardImage("JOKER_BLUE")}"
-          alt="Joker azul"
-          class="mazobar__mini-card"
-          title="Joker azul"
-        />
-      `
-      : `
-        <img
-          src="${getCardImage("JOKER_RED")}"
-          alt="Joker rojo"
-          class="mazobar__mini-card"
-          title="Joker rojo"
-        />
-      `;
-
-  const acesHTML = aces
-    .map(
-      (aceType) => `
-        <button
-          class="mazobar__ace-btn"
-          type="button"
-          data-ace-type="${aceType}"
-          title="${getCardLabel(aceType)}"
-        >
-          <img
-            src="${getCardImage(aceType)}"
-            alt="${getCardLabel(aceType)}"
-            class="mazobar__mini-card"
-          />
-        </button>
-      `
-    )
-    .join("");
-
-  return `
-    <div class="mazobar__user-cards">
-      ${jokerHTML}
-      ${acesHTML}
-    </div>
-  `;
-}
-
-function buildAcePlayPanelHTML(aceType) {
-  return `
-    <div class="mazobar__ace-panel" id="mazobarAcePanel">
-      <div class="mazobar__ace-panel-header">
-        <strong>${getCardLabel(aceType)}</strong>
-      </div>
-
-      <div class="mazobar__ace-panel-actions">
-        <button
-          type="button"
-          class="mazobar__action-btn mazobar__ace-action"
-          id="transferAceBtn"
-          data-ace-type="${aceType}"
-        >
-          Transferir
-        </button>
-
-        <button
-          type="button"
-          class="mazobar__action-btn mazobar__ace-action"
-          id="renounceAceBtn"
-          data-ace-type="${aceType}"
-        >
-          Renunciar
-        </button>
-
-        <button
-          type="button"
-          class="mazobar__action-btn mazobar__ace-action"
-          id="closeAcePanelBtn"
-        >
-          Cancelar
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-function removeAcePlayPanel() {
-  const panel = document.getElementById("mazobarAcePanel");
-  if (panel) panel.remove();
-}
-
-function updateStoredDeck(deckId, updater) {
-  const decks = getStoredDecks();
-  const index = decks.findIndex((item) => String(item.id) === String(deckId));
-
-  if (index === -1) return null;
-
-  decks[index] = updater({ ...decks[index] });
-  saveStoredDecks(decks);
-
-  return decks[index];
-}
-
-function transferAce(deck, aceType) {
-  const targetNickname = window.prompt(
-    `Transferir ${getCardLabel(aceType)} a:`,
-    ""
-  );
-
-  if (!targetNickname || !targetNickname.trim()) return;
-
-  window.alert(
-    `${getCardLabel(aceType)} preparado para transferencia a ${targetNickname.trim()}.`
-  );
-
-  removeAcePlayPanel();
-}
-
-function renounceAce(deck, aceType) {
-  const confirmed = window.confirm(
-    `Â¿Seguro que querÃ©s renunciar a ${getCardLabel(aceType)}?`
-  );
-
-  if (!confirmed) return;
-
-  const updatedDeck = updateStoredDeck(deck.id, (storedDeck) => {
-    const currentAces = Array.isArray(storedDeck.aces) ? storedDeck.aces : [];
-    return {
-      ...storedDeck,
-      aces: currentAces.filter((item) => item !== aceType)
-    };
-  });
-
-  if (updatedDeck) {
-    renderMazobar("deck", normalizeDeck(updatedDeck));
-  }
-
-  removeAcePlayPanel();
-}
-
-function attachAcePanelEvents(deck, aceType) {
-  document.getElementById("transferAceBtn")?.addEventListener("click", () => {
-    transferAce(deck, aceType);
-  });
-
-  document.getElementById("renounceAceBtn")?.addEventListener("click", () => {
-    renounceAce(deck, aceType);
-  });
-
-  document.getElementById("closeAcePanelBtn")?.addEventListener("click", () => {
-    removeAcePlayPanel();
-  });
-}
-
-function openAcePlay(deck, aceType) {
-  removeAcePlayPanel();
-
-  const host = document.getElementById("mazobar-ace-play-host");
-  if (!host) return;
-
-  host.innerHTML = buildAcePlayPanelHTML(aceType);
-  attachAcePanelEvents(deck, aceType);
-}
-
-function attachDeckAceEvents(deck) {
-  const aceButtons = document.querySelectorAll(".mazobar__ace-btn");
-
-  aceButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const aceType = button.dataset.aceType;
-      if (!aceType) return;
-      openAcePlay(deck, aceType);
-    });
-  });
-}
-
-function buildDeckFinalRow(deck) {
-  const normalizedDeck = normalizeDeck(deck);
+function buildMazobarHTML(mode = "create") {
+  const title = mode === "create" ? "Nuevo mazo" : "Editar mazo";
 
   return `
     <section class="mazobar">
-      <div class="page-container mazobar__inner mazobar__inner--deck">
+      <div class="page-container">
+        <div class="mazobar__inner">
 
-        <div class="mazobar__left-group">
-          ${buildUserCardsHTML(normalizedDeck)}
-        </div>
-
-        <div class="mazobar__photo">
-          <img src="/assets/icons/singeta120.gif" alt="Foto del mazo" />
-        </div>
-
-        <div class="mazobar__right-group">
-          <div class="mazobar__title mazobar__title--deck">
-            <span class="mazobar__deck-name">${normalizedDeck.name}</span>
+          <div class="mazobar__header">
+            <h2 class="mazobar__title">${title}</h2>
           </div>
 
-          <div class="mazobar__suits">
-            <img src="${getCardImage("HEART")}" alt="Corazones" />
-            <img src="${getCardImage("SPADE")}" alt="Picas" />
-            <img src="${getCardImage("DIAMOND")}" alt="Diamantes" />
-            <img src="${getCardImage("CLUB")}" alt="TrÃ©boles" />
-          </div>
-        </div>
+          <div class="mazobar__body">
 
+            <div class="mazobar__field">
+              <label for="deckNameInput" class="mazobar__label">Nombre del mazo</label>
+              <input
+                id="deckNameInput"
+                type="text"
+                class="mazobar__input"
+                placeholder="EscribÃ­ el nombre del mazo..."
+                maxlength="150"
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="mazobar__field">
+              <label for="deckDescriptionInput" class="mazobar__label">DescripciÃ³n</label>
+              <textarea
+                id="deckDescriptionInput"
+                class="mazobar__textarea"
+                placeholder="DescripciÃ³n breve del mazo..."
+                rows="3"
+              ></textarea>
+            </div>
+
+            <div class="mazobar__field">
+              <span class="mazobar__label">Tipo de Joker</span>
+
+              <div class="mazobar__radio-group">
+                <label class="mazobar__radio-option">
+                  <input
+                    type="radio"
+                    name="jokerType"
+                    value="RED"
+                    checked
+                  />
+                  <span>Joker rojo</span>
+                </label>
+
+                <label class="mazobar__radio-option">
+                  <input
+                    type="radio"
+                    name="jokerType"
+                    value="BLUE"
+                  />
+                  <span>Joker azul</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="mazobar__field">
+              <label for="deckCurrencySelect" class="mazobar__label">Moneda base</label>
+              <select id="deckCurrencySelect" class="mazobar__select">
+                <option value="ARS" selected>ARS</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="BRL">BRL</option>
+                <option value="UYU">UYU</option>
+                <option value="CLP">CLP</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class="mazobar__footer">
+            <button
+              type="button"
+              class="mazobar__btn mazobar__btn--ghost"
+              id="mazobarCancelBtn"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="button"
+              class="mazobar__btn mazobar__btn--primary"
+              id="mazobarSaveBtn"
+            >
+              Crear mazo
+            </button>
+          </div>
+
+        </div>
       </div>
-
-      <div class="page-container" id="mazobar-ace-play-host"></div>
     </section>
   `;
 }
 
-function renderMazobar(mode = "create", deck = null) {
-  const container = document.getElementById("mazobar-container");
+function getSelectedJokerType() {
+  const checked = document.querySelector('input[name="jokerType"]:checked');
+  return checked?.value || "RED";
+}
 
+function buildNewDeckObject() {
+  const currentUser = getLoggedUser();
+  const nameInput = document.getElementById("deckNameInput");
+  const descriptionInput = document.getElementById("deckDescriptionInput");
+  const currencySelect = document.getElementById("deckCurrencySelect");
+
+  const name = normalizeDeckName(nameInput?.value);
+  const description = String(descriptionInput?.value || "").trim();
+  const jokerType = getSelectedJokerType();
+  const currencyCode = currencySelect?.value || "ARS";
+
+  if (!name) {
+    window.alert("EscribÃ­ un nombre para el mazo.");
+    nameInput?.focus();
+    return null;
+  }
+
+  const nowIso = new Date().toISOString();
+  const userId = currentUser?.id || null;
+
+  const currentUserCards =
+    jokerType === "RED"
+      ? ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"]
+      : ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"];
+
+  return {
+    id: generateLocalDeckId(),
+    name,
+    description,
+
+    createdByUserId: userId,
+    ownerUserId: userId,
+
+    createdByNickname: currentUser?.nickname || "Usuario",
+    ownerNickname: currentUser?.nickname || "Usuario",
+
+    profilePhotoUrl: getDefaultDeckImage(),
+    profile_photo_url: getDefaultDeckImage(),
+
+    isPrivate: false,
+    jokerType,
+    currencyCode,
+
+    createdAt: nowIso,
+    updatedAt: nowIso,
+
+    plays: [],
+    members: userId ? [userId] : [],
+    currentUserCards,
+
+    aces: ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"],
+    kings: [],
+
+    jokerRed: {
+      visibleToCreatorOnly: true,
+      staysWithCreatorUntilAceTransfer: true
+    },
+
+    jokerBlue: {
+      visibleToEveryone: true,
+      editableByOwnerOnly: true
+    }
+  };
+}
+
+function saveNewDeckLocally(deck) {
+  const decks = getStoredDecksSync();
+  decks.unshift(deck);
+  saveStoredDecksSync(decks);
+  return deck;
+}
+
+function openDeckPage(deck) {
+  if (!deck?.id) return;
+  window.location.href = `/mazo.html?id=${deck.id}`;
+}
+
+function handleMazobarSave() {
+  const newDeck = buildNewDeckObject();
+  if (!newDeck) return;
+
+  saveNewDeckLocally(newDeck);
+  clearMazobar();
+  openDeckPage(newDeck);
+}
+
+function handleMazobarCancel() {
+  clearMazobar();
+
+  const url = new URL(window.location.href);
+  url.searchParams.delete("view");
+  window.history.replaceState({}, "", url.toString());
+}
+
+function attachMazobarEvents() {
+  document.getElementById("mazobarSaveBtn")?.addEventListener("click", handleMazobarSave);
+  document.getElementById("mazobarCancelBtn")?.addEventListener("click", handleMazobarCancel);
+
+  document.getElementById("deckNameInput")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleMazobarSave();
+    }
+  });
+}
+
+function renderMazobar(mode = "create") {
+  const container = document.getElementById("mazobar-container");
   if (!container) {
     console.warn("mazobar-container no encontrado");
     return;
   }
 
-  let html = "";
+  container.innerHTML = buildMazobarHTML(mode);
+  attachMazobarEvents();
+}
 
-  if (mode === "create") {
-    html = `
-      <section class="mazobar">
-        <div class="page-container mazobar__inner">
 
-          <div class="mazobar__card">
-            <img src="/assets/icons/Acorazon.gif" alt="A corazÃ³n" />
-          </div>
 
-          <div class="mazobar__form">
-            <input
-              id="deckNameInput"
-              type="text"
-              placeholder="Nombre del mazo"
-            />
-          </div>
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\js\playform.js
+===============================
+async function getStoredDecks() {
+  try {
+    const token = localStorage.getItem("cooptrackToken");
 
-          <div class="mazobar__jokers">
-            <img
-              src="/assets/icons/Joker120.gif"
-              class="joker-option"
-              id="jokerRed"
-              title="Joker rojo"
-              alt="Joker rojo"
-            />
-
-            <img
-              src="/assets/icons/joker_blue.gif"
-              class="joker-option"
-              id="jokerBlue"
-              title="Joker azul"
-              alt="Joker azul"
-            />
-          </div>
-
-          <button class="mazobar__exit" id="mazoExitBtn" title="Salir">
-            EXIT
-          </button>
-
-        </div>
-      </section>
-    `;
-
-    container.innerHTML = html;
-
-    document.getElementById("mazoExitBtn")?.addEventListener("click", () => {
-      closeMazobar();
-    });
-
-    document.getElementById("jokerRed")?.addEventListener("click", () => {
-      const deckName =
-        document.getElementById("deckNameInput")?.value?.trim() || "Nuevo mazo";
-
-      renderMazobar("confirm", {
-        name: deckName,
-        joker: "red",
-        aces: ["A_HEART", "A_SPADE", "A_DIAMOND", "A_CLUB"]
-      });
-    });
-
-    document.getElementById("jokerBlue")?.addEventListener("click", () => {
-      const deckName =
-        document.getElementById("deckNameInput")?.value?.trim() || "Nuevo mazo";
-
-      renderMazobar("confirm", {
-        name: deckName,
-        joker: "blue",
-        aces: []
-      });
-    });
-
-    return;
-  }
-
-  if (mode === "confirm") {
-    const normalizedDeck = normalizeDeck(deck);
-    const jokerImage =
-      normalizedDeck?.joker === "blue"
-        ? "/assets/icons/joker_blue.gif"
-        : "/assets/icons/Joker120.gif";
-
-    const acesHTML = (normalizedDeck?.aces || [])
-      .map(
-        (aceType) => `
-          <img src="${getCardImage(aceType)}" alt="${getCardLabel(aceType)}" />
-        `
-      )
-      .join("");
-
-    html = `
-      <section class="mazobar">
-        <div class="page-container mazobar__inner">
-
-          <div class="mazobar__card">
-            <img src="/assets/icons/Acorazon.gif" alt="A corazÃ³n" />
-          </div>
-
-          <div class="mazobar__title">
-            ${normalizedDeck.name}
-          </div>
-
-          <div class="mazobar__cards">
-            <img src="${jokerImage}" alt="Joker" />
-            ${acesHTML}
-          </div>
-
-          <div class="mazobar__actions">
-
-            <button class="mazobar__action-btn" id="confirmDeckBtn" title="Aprobar mazo">
-              <img src="/assets/icons/Sello40.gif" alt="Aprobar mazo" />
-            </button>
-
-            <button class="mazobar__action-btn" id="editDeckBtn" title="Editar nombre">
-              <img src="/assets/icons/desarrollo40.gif" alt="Editar mazo" />
-            </button>
-
-            <button class="mazobar__action-btn" id="exitDeckBtn" title="Salir al home">
-              <img src="/assets/icons/exit120.gif" alt="Salir" />
-            </button>
-
-          </div>
-
-        </div>
-      </section>
-    `;
-
-    container.innerHTML = html;
-
-    document.getElementById("confirmDeckBtn")?.addEventListener("click", () => {
-      const storedDecks = getStoredDecks();
-
-      const newDeck = {
-        id: Date.now(),
-        name: normalizedDeck.name,
-        joker: normalizedDeck.joker || "red",
-        aces: normalizedDeck.aces || []
-      };
-
-      storedDecks.push(newDeck);
-      saveStoredDecks(storedDecks);
-
-      sessionStorage.setItem("activeDeckId", String(newDeck.id));
-      sessionStorage.setItem("activeDeckName", newDeck.name);
-
-      if (typeof renderTopbar === "function") {
-        renderTopbar();
+    const response = await fetch("/api/decks", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
       }
-
-      renderMazobar("deck", newDeck);
     });
 
-    document.getElementById("editDeckBtn")?.addEventListener("click", () => {
-      renderMazobar("create");
-    });
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}`);
+    }
 
-    document.getElementById("exitDeckBtn")?.addEventListener("click", () => {
-      goHome();
-    });
+    const decks = await response.json();
 
-    return;
-  }
+    if (!Array.isArray(decks)) {
+      console.warn("La API no devolviÃ³ un array de mazos");
+      return [];
+    }
 
-  if (mode === "deck") {
-    const normalizedDeck = normalizeDeck(deck);
-    html = buildDeckFinalRow(normalizedDeck);
-    container.innerHTML = html;
-    attachDeckAceEvents(normalizedDeck);
+    localStorage.setItem("cooptrackDecks", JSON.stringify(decks));
+    return decks;
+  } catch (error) {
+    console.error("Error trayendo mazos desde API:", error);
+
+    try {
+      const raw = localStorage.getItem("cooptrackDecks");
+      if (!raw) return [];
+      const decks = JSON.parse(raw);
+      return Array.isArray(decks) ? decks : [];
+    } catch (localError) {
+      console.error("Error leyendo cooptrackDecks desde localStorage:", localError);
+      return [];
+    }
   }
 }
+
+function saveStoredDecks(decks) {
+  localStorage.setItem("cooptrackDecks", JSON.stringify(decks));
+}
+
+function getLoggedUser() {
+  try {
+    const raw = localStorage.getItem("cooptrackUser");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("Error leyendo cooptrackUser:", error);
+    return null;
+  }
+}
+
+function clearPlayform() {
+  const container = document.getElementById("playform-container");
+  if (!container) return;
+  container.innerHTML = "";
+}
+
+function getDeckAuthorityCardsForCurrentUser(deck, currentUser = null) {
+  if (!deck) return [];
+
+  if (Array.isArray(deck.currentUserCards)) {
+    return deck.currentUserCards.filter(
+      (card) =>
+        typeof card === "string" &&
+        (card.startsWith("A_") || card.startsWith("K_"))
+    );
+  }
+
+  const aces = Array.isArray(deck.aces) ? deck.aces : [];
+  const kings = Array.isArray(deck.kings) ? deck.kings : [];
+
+  return [...aces, ...kings].filter(
+    (card) =>
+      typeof card === "string" &&
+      (card.startsWith("A_") || card.startsWith("K_"))
+  );
+}
+
+function userCanPlayInDeck(deck, currentUser = null) {
+  const cards = getDeckAuthorityCardsForCurrentUser(deck, currentUser);
+  return cards.length > 0;
+}
+
+function buildPlayformHTML(deck, currentUser = null) {
+  return `
+    <section class="playform">
+      <div class="page-container">
+        <div class="playform__inner">
+
+          <div class="playform__left">
+            <div class="playform__prefix">J</div>
+
+            <input
+              id="playformTextInput"
+              type="text"
+              class="playform__input"
+              placeholder="EscribÃ­ una jugada..."
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="playform__center">
+            <button
+              type="button"
+              class="playform__action-btn playform__action-btn--heart"
+              data-play-suit="HEART"
+              title="Salvar como nota (Jâ™¥)"
+            >
+              â™¥
+            </button>
+
+            <button
+              type="button"
+              class="playform__action-btn playform__action-btn--spade"
+              data-play-suit="SPADE"
+              title="Salvar como actividad (Jâ™ )"
+            >
+              â™ 
+            </button>
+
+            <button
+              type="button"
+              class="playform__action-btn playform__action-btn--club"
+              data-play-suit="CLUB"
+              title="Salvar como bien (Jâ™£)"
+            >
+              â™£
+            </button>
+          </div>
+
+          <div class="playform__right">
+            <button
+              type="button"
+              class="playform__exit-btn"
+              id="playformClearBtn"
+              title="Limpiar"
+            >
+              <img src="/assets/icons/exit40.gif" alt="Limpiar" />
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function getRecordCardTypeFromSuit(suit) {
+  const map = {
+    HEART: "J_HEART",
+    SPADE: "J_SPADE",
+    CLUB: "J_CLUB"
+  };
+
+  return map[suit] || "J_HEART";
+}
+
+function getRecordKindFromSuit(suit) {
+  const map = {
+    HEART: "NOTE",
+    SPADE: "ACTIVITY",
+    CLUB: "ASSET"
+  };
+
+  return map[suit] || "NOTE";
+}
+
+function buildLocalPlayRecord(deck, currentUser, suit, text) {
+  const nowIso = new Date().toISOString();
+
+  return {
+    id: Date.now(),
+    deckId: deck?.id || null,
+    cardType: getRecordCardTypeFromSuit(suit),
+    suit,
+    recordKind: getRecordKindFromSuit(suit),
+
+    title: text,
+    description: text,
+    text,
+
+    createdAt: nowIso,
+    updatedAt: nowIso,
+
+    createdByUserId: currentUser?.id || null,
+    createdByNickname: currentUser?.nickname || "Usuario",
+
+    lifecycleStatus: "SAVED",
+    governanceStatus: "NORMAL",
+    visibleToDeck: false,
+
+    approvalStatus: "PENDING",
+    isApproved: false,
+    isRejected: false,
+
+    parentRecordId: null,
+
+    startDate: null,
+    endDate: null,
+    location: null,
+
+    comments: [],
+    validations: [],
+    economicComponents: []
+  };
+}
+
+async function saveLocalPlayRecord(deckId, record) {
+  const decks = await getStoredDecks();
+  const deckIndex = decks.findIndex((item) => String(item.id) === String(deckId));
+
+  if (deckIndex === -1) {
+    console.warn("No se encontrÃ³ el mazo para guardar la jugada:", deckId);
+    return null;
+  }
+
+  if (!Array.isArray(decks[deckIndex].plays)) {
+    decks[deckIndex].plays = [];
+  }
+
+  decks[deckIndex].plays.unshift(record);
+  saveStoredDecks(decks);
+  return record;
+}
+
+async function handlePlayformSave(deck, suit) {
+  const input = document.getElementById("playformTextInput");
+  const currentUser = getLoggedUser();
+
+  if (!input) return;
+
+  const text = input.value.trim();
+
+  if (!text) {
+    window.alert("EscribÃ­ algo antes de guardar la jugada.");
+    input.focus();
+    return;
+  }
+
+  const record = buildLocalPlayRecord(deck, currentUser, suit, text);
+  const savedRecord = await saveLocalPlayRecord(deck.id, record);
+
+  if (!savedRecord) {
+    window.alert("No se pudo guardar la jugada.");
+    return;
+  }
+
+  input.value = "";
+
+  if (typeof renderPlaysView === "function") {
+    const updatedDecks = await getStoredDecks();
+    const updatedDeck =
+      updatedDecks.find((item) => String(item.id) === String(deck.id)) || deck;
+
+    renderPlaysView(updatedDeck);
+  }
+}
+
+function attachPlayformEvents(deck) {
+  document.querySelectorAll("[data-play-suit]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const suit = button.dataset.playSuit;
+      if (!suit) return;
+      await handlePlayformSave(deck, suit);
+    });
+  });
+
+  document.getElementById("playformClearBtn")?.addEventListener("click", () => {
+    const input = document.getElementById("playformTextInput");
+    if (input) input.value = "";
+  });
+
+  document.getElementById("playformTextInput")?.addEventListener("keydown", async (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      await handlePlayformSave(deck, "HEART");
+    }
+  });
+}
+
+function renderPlayform(deck) {
+  const container = document.getElementById("playform-container");
+  if (!container) {
+    console.warn("playform-container no encontrado");
+    return;
+  }
+
+  const currentUser = getLoggedUser();
+
+  if (!userCanPlayInDeck(deck, currentUser)) {
+    container.innerHTML = "";
+    return;
+  }
+
+  container.innerHTML = buildPlayformHTML(deck, currentUser);
+  attachPlayformEvents(deck);
+}
+
+
+
+===============================
+FILE: C:\Users\win10\Documents\cooptrack\public\js\plays-view.js
+===============================
+function getLoggedUser() {
+  try {
+    const raw = localStorage.getItem("cooptrackUser");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("Error leyendo cooptrackUser:", error);
+    return null;
+  }
+}
+
+function getStoredDecksSync() {
+  try {
+    const raw = localStorage.getItem("cooptrackDecks");
+    if (!raw) return [];
+    const decks = JSON.parse(raw);
+    return Array.isArray(decks) ? decks : [];
+  } catch (error) {
+    console.error("Error leyendo cooptrackDecks:", error);
+    return [];
+  }
+}
+
+function saveStoredDecksSync(decks) {
+  localStorage.setItem("cooptrackDecks", JSON.stringify(decks));
+}
+
+function clearPlaysView() {
+  const container = document.getElementById("plays-view-container");
+  if (!container) return;
+  container.innerHTML = "";
+}
+
+function normalizeDeckPlays(deck) {
+  if (!deck || !Array.isArray(deck.plays)) return [];
+  return deck.plays;
+}
+
+function formatPlayDate(value) {
+  if (!value) return "";
+
+  try {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) return "";
+
+    return date.toLocaleString("es-UY", {
+      day: "numeric",
+      month: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+  } catch (error) {
+    console.error("Error formateando fecha:", error);
+    return "";
+  }
+}
+
+function getSuitSymbolFromCardType(cardType) {
+  switch (cardType) {
+    case "J_HEART":
+      return "â™¥";
+    case "J_SPADE":
+      return "â™ ";
+    case "J_CLUB":
+      return "â™£";
+    case "J_DIAMOND":
+      return "â™¦";
+    default:
+      return "";
+  }
+}
+
+function getSuitClassFromCardType(cardType) {
+  switch (cardType) {
+    case "J_HEART":
+      return "heart";
+    case "J_SPADE":
+      return "spade";
+    case "J_CLUB":
+      return "club";
+    case "J_DIAMOND":
+      return "diamond";
+    default:
+      return "";
+  }
+}
+
+function getPlayMainText(play) {
+  if (!play) return "";
+  return play.title || play.description || play.text || "(sin texto)";
+}
+
+function isPlayApproved(play) {
+  return play?.isApproved === true || play?.approvalStatus === "APPROVED";
+}
+
+function isPlayRejected(play) {
+  return play?.isRejected === true || play?.approvalStatus === "REJECTED";
+}
+
+function getApprovalStatusLabel(play) {
+  if (isPlayApproved(play)) return "Aprobada";
+  if (isPlayRejected(play)) return "Rechazada";
+  return "Pendiente de aprobaciÃ³n";
+}
+
+function getAceTypeForPlay(play) {
+  switch (play?.cardType) {
+    case "J_HEART":
+      return "A_HEART";
+    case "J_SPADE":
+      return "A_SPADE";
+    case "J_CLUB":
+      return "A_CLUB";
+    case "J_DIAMOND":
+      return "A_DIAMOND";
+    default:
+      return null;
+  }
+}
+
+function getCurrentUserAuthorityCards(deck, currentUser) {
+  if (!deck || !currentUser) return [];
+
+  if (Array.isArray(deck.currentUserCards)) {
+    return deck.currentUserCards.filter((card) => typeof card === "string");
+  }
+
+  const cards = [];
+
+  if (Array.isArray(deck.aces)) {
+    cards.push(...deck.aces.filter((card) => typeof card === "string"));
+  }
+
+  if (Array.isArray(deck.kings)) {
+    cards.push(...deck.kings.filter((card) => typeof card === "string"));
+  }
+
+  return cards;
+}
+
+function currentUserHasRequiredAce(deck, currentUser, play) {
+  const aceType = getAceTypeForPlay(play);
+  if (!aceType) return false;
+
+  const currentUserCards = getCurrentUserAuthorityCards(deck, currentUser);
+  return currentUserCards.includes(aceType);
+}
+
+function isPlayAuthor(play, currentUser) {
+  if (!play || !currentUser) return false;
+  return String(play.createdByUserId) === String(currentUser.id);
+}
+
+function canCurrentUserManagePendingPlay(deck, play, currentUser) {
+  if (!play || !currentUser) return false;
+  if (isPlayApproved(play)) return false;
+
+  return (
+    isPlayAuthor(play, currentUser) ||
+    currentUserHasRequiredAce(deck, currentUser, play)
+  );
+}
+
+function canCurrentUserApprovePlay(deck, play, currentUser) {
+  if (!play || !currentUser) return false;
+  if (isPlayApproved(play)) return false;
+  return currentUserHasRequiredAce(deck, currentUser, play);
+}
+
+function canCurrentUserRejectPlay(deck, play, currentUser) {
+  if (!play || !currentUser) return false;
+  if (isPlayApproved(play)) return false;
+  if (isPlayAuthor(play, currentUser)) return false;
+
+  return currentUserHasRequiredAce(deck, currentUser, play);
+}
+
+function getDeckIndexById(decks, deckId) {
+  return decks.findIndex((item) => String(item.id) === String(deckId));
+}
+
+function getPlayIndexById(plays, playId) {
+  return plays.findIndex((item) => String(item.id) === String(playId));
+}
+
+function updatePlayInLocalDeck(deckId, playId, updater) {
+  const decks = getStoredDecksSync();
+  const deckIndex = getDeckIndexById(decks, deckId);
+
+  if (deckIndex === -1) {
+    console.warn("No se encontrÃ³ el mazo:", deckId);
+    return null;
+  }
+
+  if (!Array.isArray(decks[deckIndex].plays)) {
+    decks[deckIndex].plays = [];
+  }
+
+  const playIndex = getPlayIndexById(decks[deckIndex].plays, playId);
+
+  if (playIndex === -1) {
+    console.warn("No se encontrÃ³ la jugada:", playId);
+    return null;
+  }
+
+  const currentPlay = decks[deckIndex].plays[playIndex];
+  const updatedPlay = updater({ ...currentPlay });
+
+  decks[deckIndex].plays[playIndex] = updatedPlay;
+  saveStoredDecksSync(decks);
+
+  return {
+    updatedPlay,
+    updatedDeck: decks[deckIndex]
+  };
+}
+
+function removePlayFromLocalDeck(deckId, playId) {
+  const decks = getStoredDecksSync();
+  const deckIndex = getDeckIndexById(decks, deckId);
+
+  if (deckIndex === -1) {
+    console.warn("No se encontrÃ³ el mazo:", deckId);
+    return null;
+  }
+
+  if (!Array.isArray(decks[deckIndex].plays)) {
+    decks[deckIndex].plays = [];
+  }
+
+  decks[deckIndex].plays = decks[deckIndex].plays.filter(
+    (item) => String(item.id) !== String(playId)
+  );
+
+  saveStoredDecksSync(decks);
+
+  return decks[deckIndex];
+}
+
+function rerenderDeckAfterPlayChange(deckId) {
+  const decks = getStoredDecksSync();
+  const updatedDeck = decks.find((item) => String(item.id) === String(deckId));
+
+  if (!updatedDeck) {
+    console.warn("No se encontrÃ³ el mazo actualizado:", deckId);
+    return;
+  }
+
+  if (typeof renderPlaysView === "function") {
+    renderPlaysView(updatedDeck);
+  }
+
+  if (typeof renderPlayform === "function") {
+    renderPlayform(updatedDeck);
+  }
+
+  if (typeof renderDeckView === "function") {
+    renderDeckView(updatedDeck);
+  }
+}
+
+function handleEditPlay(deck, play) {
+  const currentUser = getLoggedUser();
+
+  if (!canCurrentUserManagePendingPlay(deck, play, currentUser)) return;
+
+  const nextText = window.prompt("Editar jugada", getPlayMainText(play));
+
+  if (nextText === null) return;
+
+  const trimmed = nextText.trim();
+
+  if (!trimmed) {
+    window.alert("La jugada no puede quedar vacÃ­a.");
+    return;
+  }
+
+  updatePlayInLocalDeck(deck.id, play.id, (currentPlay) => ({
+    ...currentPlay,
+    title: trimmed,
+    description: trimmed,
+    text: trimmed,
+    updatedAt: new Date().toISOString()
+  }));
+
+  rerenderDeckAfterPlayChange(deck.id);
+}
+
+function handleConvertHeartToClub(deck, play) {
+  const currentUser = getLoggedUser();
+
+  if (!canCurrentUserManagePendingPlay(deck, play, currentUser)) return;
+  if (play.cardType !== "J_HEART") return;
+
+  updatePlayInLocalDeck(deck.id, play.id, (currentPlay) => ({
+    ...currentPlay,
+    cardType: "J_CLUB",
+    suit: "CLUB",
+    recordKind: "ASSET",
+    updatedAt: new Date().toISOString()
+  }));
+
+  rerenderDeckAfterPlayChange(deck.id);
+}
+
+function handleConvertHeartToSpade(deck, play) {
+  const currentUser = getLoggedUser();
+
+  if (!canCurrentUserManagePendingPlay(deck, play, currentUser)) return;
+  if (play.cardType !== "J_HEART") return;
+
+  updatePlayInLocalDeck(deck.id, play.id, (currentPlay) => ({
+    ...currentPlay,
+    cardType: "J_SPADE",
+    suit: "SPADE",
+    recordKind: "ACTIVITY",
+    updatedAt: new Date().toISOString()
+  }));
+
+  rerenderDeckAfterPlayChange(deck.id);
+}
+
+function handleApprovePlay(deck, play) {
+  const currentUser = getLoggedUser();
+
+  if (!canCurrentUserApprovePlay(deck, play, currentUser)) return;
+
+  updatePlayInLocalDeck(deck.id, play.id, (currentPlay) => ({
+    ...currentPlay,
+    isApproved: true,
+    isRejected: false,
+    approvalStatus: "APPROVED",
+    lifecycleStatus: "APPROVED",
+    visibleToDeck: true,
+    approvedAt: new Date().toISOString(),
+    approvedByUserId: currentUser?.id || null,
+    updatedAt: new Date().toISOString()
+  }));
+
+  rerenderDeckAfterPlayChange(deck.id);
+}
+
+function handleRejectPlay(deck, play) {
+  const currentUser = getLoggedUser();
+
+  if (!canCurrentUserRejectPlay(deck, play, currentUser)) return;
+
+  updatePlayInLocalDeck(deck.id, play.id, (currentPlay) => ({
+    ...currentPlay,
+    isApproved: false,
+    isRejected: true,
+    approvalStatus: "REJECTED",
+    lifecycleStatus: "REJECTED",
+    visibleToDeck: false,
+    rejectedAt: new Date().toISOString(),
+    rejectedByUserId: currentUser?.id || null,
+    updatedAt: new Date().toISOString()
+  }));
+
+  rerenderDeckAfterPlayChange(deck.id);
+}
+
+function handleDeletePlay(deck, play) {
+  const currentUser = getLoggedUser();
+
+  if (!canCurrentUserManagePendingPlay(deck, play, currentUser)) return;
+
+  const confirmed = window.confirm("Â¿QuerÃ©s borrar esta jugada?");
+  if (!confirmed) return;
+
+  removePlayFromLocalDeck(deck.id, play.id);
+  rerenderDeckAfterPlayChange(deck.id);
+}
+
+function buildPlayActionsHTML(deck, play, currentUser) {
+  if (isPlayApproved(play)) {
+    return "";
+  }
+
+  const canManage = canCurrentUserManagePendingPlay(deck, play, currentUser);
+  const canApprove = canCurrentUserApprovePlay(deck, play, currentUser);
+  const canReject = canCurrentUserRejectPlay(deck, play, currentUser);
+
+  if (!canManage && !canApprove && !canReject) {
+    return "";
+  }
+
+  if (play.cardType === "J_HEART") {
+    return `
+      <div class="play-row__actions">
+        ${
+          canManage
+            ? `
+              <button type="button" class="play-row__action-btn" data-play-action="edit" data-play-id="${play.id}" title="Editar">
+                <img src="/assets/icons/desarrollo40.gif" alt="Editar" />
+              </button>
+
+              <button type="button" class="play-row__action-btn" data-play-action="to-club" data-play-id="${play.id}" title="Convertir en bien">
+                <img src="/assets/icons/tre40.gif" alt="Convertir en bien" />
+              </button>
+
+              <button type="button" class="play-row__action-btn" data-play-action="to-spade" data-play-id="${play.id}" title="Convertir en actividad">
+                <img src="/assets/icons/pik40.gif" alt="Convertir en actividad" />
+              </button>
+            `
+            : ""
+        }
+
+        ${
+          canApprove
+            ? `
+              <button type="button" class="play-row__action-btn" data-play-action="approve" data-play-id="${play.id}" title="Aprobar">
+                <img src="/assets/icons/Sello40.gif" alt="Aprobar" />
+              </button>
+            `
+            : ""
+        }
+
+        ${
+          canReject
+            ? `
+              <button type="button" class="play-row__action-btn" data-play-action="reject" data-play-id="${play.id}" title="Rechazar">
+                <img src="/assets/icons/stepback40.gif" alt="Rechazar" />
+              </button>
+            `
+            : ""
+        }
+
+        ${
+          canManage
+            ? `
+              <button type="button" class="play-row__action-btn" data-play-action="delete" data-play-id="${play.id}" title="Borrar">
+                <img src="/assets/icons/papelera80.gif" alt="Borrar" />
+              </button>
+            `
+            : ""
+        }
+      </div>
+    `;
+  }
+
+  if (play.cardType === "J_CLUB") {
+    return `
+      <div class="play-row__actions">
+        ${
+          canManage
+            ? `
+              <button type="button" class="play-row__action-btn" data-play-action="delete" data-play-id="${play.id}" title="Borrar">
+                <img src="/assets/icons/papelera80.gif" alt="Borrar" />
+              </button>
+            `
+            : ""
+        }
+
+        ${
+          canApprove
+            ? `
+              <button type="button" class="play-row__action-btn" data-play-action="approve" data-play-id="${play.id}" title="Aprobar">
+                <img src="/assets/icons/Sello40.gif" alt="Aprobar" />
+              </button>
+            `
+            : ""
+        }
+
+        ${
+          canReject
+            ? `
+              <button type="button" class="play-row__action-btn" data-play-action="reject" data-play-id="${play.id}" title="Rechazar">
+                <img src="/assets/icons/stepback40.gif" alt="Rechazar" />
+              </button>
+            `
+            : ""
+        }
+      </div>
+    `;
+  }
+
+  if (play.cardType === "J_SPADE") {
+    return `
+      <div class="play-row__actions">
+        ${
+          canManage
+            ? `
+              <button type="button" class="play-row__action-btn" data-play-action="delete" data-play-id="${play.id}" title="Borrar">
+                <img src="/assets/icons/papelera80.gif" alt="Borrar" />
+              </button>
+            `
+            : ""
+        }
+
+        ${
+          canApprove
+            ? `
+              <button type="button" class="play-row__action-btn" data-play-action="approve" data-play-id="${play.id}" title="Aprobar">
+                <img src="/assets/icons/Sello40.gif" alt="Aprobar" />
+              </button>
+            `
+            : ""
+        }
+
+        ${
+          canReject
+            ? `
+              <button type="button" class="play-row__action-btn" data-play-action="reject" data-play-id="${play.id}" title="Rechazar">
+                <img src="/assets/icons/stepback40.gif" alt="Rechazar" />
+              </button>
+            `
+            : ""
+        }
+      </div>
+    `;
+  }
+
+  return "";
+}
+
+function buildPlayRowHTML(deck, play, currentUser) {
+  const suitSymbol = getSuitSymbolFromCardType(play.cardType);
+  const suitClass = getSuitClassFromCardType(play.cardType);
+  const text = getPlayMainText(play);
+  const nickname = play.createdByNickname || "Usuario";
+  const createdAt = formatPlayDate(play.createdAt);
+  const statusLabel = getApprovalStatusLabel(play);
+
+  return `
+    <article class="play-row ${isPlayApproved(play) ? "play-row--approved" : "play-row--pending"}" data-play-id="${play.id}">
+      <div class="play-row__main">
+        <div class="play-row__card">
+          <span class="play-row__rank">J</span>
+          <span class="play-row__suit play-row__suit--${suitClass}">${suitSymbol}</span>
+        </div>
+
+        <div class="play-row__body">
+          <div class="play-row__text">${text}</div>
+
+          <div class="play-row__meta">
+            <span class="play-row__author">${nickname}</span>
+            <span class="play-row__date">${createdAt}</span>
+            <span class="play-row__status">${statusLabel}</span>
+          </div>
+        </div>
+      </div>
+
+      ${buildPlayActionsHTML(deck, play, currentUser)}
+    </article>
+  `;
+}
+
+function attachPlayRowEvents(deck) {
+  const container = document.getElementById("plays-view-container");
+  if (!container) return;
+
+  container.querySelectorAll("[data-play-action]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
+      const action = button.dataset.playAction;
+
+      if (!playId || !action) return;
+
+      const currentDecks = getStoredDecksSync();
+      const currentDeck =
+        currentDecks.find((item) => String(item.id) === String(deck.id)) || deck;
+
+      const plays = normalizeDeckPlays(currentDeck);
+      const play = plays.find((item) => String(item.id) === String(playId));
+
+      if (!play) return;
+
+      if (action === "edit") {
+        handleEditPlay(currentDeck, play);
+        return;
+      }
+
+      if (action === "to-club") {
+        handleConvertHeartToClub(currentDeck, play);
+        return;
+      }
+
+      if (action === "to-spade") {
+        handleConvertHeartToSpade(currentDeck, play);
+        return;
+      }
+
+      if (action === "approve") {
+        handleApprovePlay(currentDeck, play);
+        return;
+      }
+
+      if (action === "reject") {
+        handleRejectPlay(currentDeck, play);
+        return;
+      }
+
+      if (action === "delete") {
+        handleDeletePlay(currentDeck, play);
+      }
+    });
+  });
+}
+
+function buildEmptyPlaysHTML() {
+  return `
+    <section class="plays-view-empty">
+      <div class="page-container">
+        <div class="plays-view-empty__box">
+          TodavÃ­a no hay jugadas en este mazo.
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderPlaysView(deck) {
+  const container = document.getElementById("plays-view-container");
+  if (!container) {
+    console.warn("plays-view-container no encontrado");
+    return;
+  }
+
+  const currentUser = getLoggedUser();
+  const plays = normalizeDeckPlays(deck);
+
+  if (!plays.length) {
+    container.innerHTML = buildEmptyPlaysHTML();
+    return;
+  }
+
+  const rowsHTML = plays
+    .map((play) => buildPlayRowHTML(deck, play, currentUser))
+    .join("");
+
+  container.innerHTML = `
+    <section class="plays-view">
+      <div class="page-container">
+        <div class="plays-view__list">
+          ${rowsHTML}
+        </div>
+      </div>
+    </section>
+  `;
+
+  attachPlayRowEvents(deck);
+}
+
 
 
 ===============================
@@ -6420,35 +7866,30 @@ function hasDecks() {
   }
 }
 
-function isDecksViewOpen() {
-  return sessionStorage.getItem("cooptrackDecksViewOpen") === "true";
-}
+function hasPendingApprovals() {
+  try {
+    const raw = localStorage.getItem("cooptrackPendingApprovals");
+    if (!raw) return false;
 
-function setDecksViewOpen(value) {
-  sessionStorage.setItem("cooptrackDecksViewOpen", value ? "true" : "false");
-}
-
-function toggleDecksView() {
-  const open = isDecksViewOpen();
-  const next = !open;
-
-  setDecksViewOpen(next);
-
-  if (typeof renderDecksView === "function") {
-    if (next) {
-      renderDecksView();
-    } else {
-      clearDecksView();
-    }
+    const pending = JSON.parse(raw);
+    return Array.isArray(pending) && pending.length > 0;
+  } catch (error) {
+    console.error("Error leyendo aprobaciones pendientes:", error);
+    return false;
   }
+}
 
-  renderTopbar();
+/* ðŸ”¹ NUEVO: detectar si estamos en mazos.html */
+function isMazosPage() {
+  return window.location.pathname.endsWith("/mazos.html") ||
+         window.location.pathname === "/mazos.html";
 }
 
 function renderTopbar() {
   const user = getLoggedUser();
   const userHasDecks = hasDecks();
-  const decksViewOpen = isDecksViewOpen();
+  const userHasPendingApprovals = hasPendingApprovals();
+  const onMazosPage = isMazosPage();
 
   let topbarHTML = "";
 
@@ -6476,24 +7917,33 @@ function renderTopbar() {
             ${
               userHasDecks
                 ? `
-                  <button class="topbar__icon-btn" id="portfolioBtn" title="Mazos" aria-label="Mazos">
+                  <a href="${onMazosPage ? "/index.html" : "/mazos.html"}"
+                     class="topbar__icon-btn"
+                     title="Mazos"
+                     aria-label="Mazos">
                     <img
                       src="${
-                        decksViewOpen
+                        onMazosPage
                           ? "/assets/icons/portafolioAbierto.png"
                           : "/assets/icons/portafolios80.gif"
                       }"
                       alt="Mazos"
                       class="topbar__icon-img topbar__icon-img--portfolio"
                     />
-                  </button>
+                  </a>
                 `
                 : ""
             }
 
-            <a href="/notificaciones.html" class="topbar__icon-btn" title="Notificaciones" aria-label="Notificaciones">
-              <img src="/assets/icons/Dorso70.gif" alt="Notificaciones" class="topbar__icon-img" />
-            </a>
+            ${
+              userHasPendingApprovals
+                ? `
+                  <a href="/notificaciones.html" class="topbar__icon-btn" title="Notificaciones" aria-label="Notificaciones">
+                    <img src="/assets/icons/Dorso70.gif" alt="Notificaciones" class="topbar__icon-img" />
+                  </a>
+                `
+                : ""
+            }
 
             <a href="/almanaque.html" class="topbar__icon-btn" title="Almanaque" aria-label="Almanaque">
               <img src="/assets/icons/Schedule80.gif" alt="Almanaque" class="topbar__icon-img" />
@@ -6553,6 +8003,7 @@ function renderTopbar() {
 
   container.innerHTML = topbarHTML;
 
+  /* eventos */
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", logout);
@@ -6561,18 +8012,13 @@ function renderTopbar() {
   const newDeckBtn = document.getElementById("newDeckBtn");
   if (newDeckBtn) {
     newDeckBtn.addEventListener("click", () => {
-      if (typeof renderMazobar === "function") {
-        renderMazobar("create");
-      }
+     window.location.href = "/mazos.html?view=create";
     });
-  }
-
-  const portfolioBtn = document.getElementById("portfolioBtn");
-  if (portfolioBtn) {
-    portfolioBtn.addEventListener("click", toggleDecksView);
   }
 }
 
+/* render inicial */
 renderTopbar();
+
 
 
