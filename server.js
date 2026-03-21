@@ -2,12 +2,18 @@ const express = require('express');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET;
+
+// ✅ CORS FIX
+app.use(cors({
+  origin: "https://cooptrack.com",
+}));
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -16,41 +22,6 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
-
-// ================= HELPERS =================
-
-function isNonEmptyString(value) {
-  return typeof value === 'string' && value.trim() !== '';
-}
-
-function isProvided(value) {
-  return value !== undefined && value !== null && value !== '';
-}
-
-function isValidDateString(value) {
-  if (!isProvided(value)) return false;
-  const date = new Date(value);
-  return !Number.isNaN(date.getTime());
-}
-
-function normalizeString(value) {
-  return isNonEmptyString(value) ? value.trim() : null;
-}
-
-function normalizeDate(value) {
-  return isProvided(value) ? value : null;
-}
-
-function isValidNumber(value) {
-  if (!isProvided(value)) return false;
-  return !Number.isNaN(Number(value));
-}
-
-function normalizeAmount(value) {
-  if (!isProvided(value)) return null;
-  const num = Number(value);
-  return Number.isNaN(num) ? null : num;
-}
 
 // ================= AUTH =================
 
@@ -68,7 +39,7 @@ function requireAuth(req, res, next) {
     req.auth = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ ok: false, error: 'Token inválido o expirado' });
+    return res.status(401).json({ ok: false, error: 'Token inválido' });
   }
 }
 
@@ -83,29 +54,7 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// ================= USERS =================
-
-app.post('/users', async (req, res) => {
-  try {
-    const { nickname, email, phone, password } = req.body;
-
-    if (!nickname || !password || (!email && !phone)) {
-      return res.status(400).json({ ok: false });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-
-    const result = await pool.query(
-      `INSERT INTO users (nickname, email, phone, password_hash)
-       VALUES ($1,$2,$3,$4) RETURNING *`,
-      [nickname, email || null, phone || null, hashedPassword]
-    );
-
-    res.json({ ok: true, user: result.rows[0] });
-  } catch (error) {
-    res.status(500).json({ ok: false });
-  }
-});
+// ================= LOGIN =================
 
 app.post('/login', async (req, res) => {
   try {
@@ -130,6 +79,27 @@ app.post('/login', async (req, res) => {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET);
 
     res.json({ ok: true, token });
+  } catch (error) {
+    res.status(500).json({ ok: false });
+  }
+});
+
+// ================= ME =================
+
+app.get('/me', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const result = await pool.query(
+      `SELECT id, nickname, email, phone FROM users WHERE id=$1`,
+      [userId]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ ok: false });
+    }
+
+    res.json({ ok: true, user: result.rows[0] });
   } catch (error) {
     res.status(500).json({ ok: false });
   }
@@ -186,5 +156,5 @@ app.get('/decks', async (req, res) => {
 // ================= START =================
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`CoopTrack server running on port ${PORT}`);
 });
