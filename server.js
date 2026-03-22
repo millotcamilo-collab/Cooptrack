@@ -89,23 +89,108 @@ app.post('/login', async (req, res) => {
 
 // ================= ME =================
 
+// ================= ME =================
+
 app.get('/me', requireAuth, async (req, res) => {
   try {
     const userId = req.auth.userId;
 
     const result = await pool.query(
-      `SELECT id, nickname, email, phone FROM users WHERE id = $1`,
+      `SELECT
+        id,
+        nickname,
+        email,
+        phone,
+        profile_photo_url,
+        birth_date,
+        user_type
+       FROM users
+       WHERE id = $1`,
       [userId]
     );
 
     if (!result.rows.length) {
-      return res.status(404).json({ ok: false });
+      return res.status(404).json({
+        ok: false,
+        error: 'Usuario no encontrado',
+      });
     }
 
-    res.json({ ok: true, user: result.rows[0] });
+    res.json({
+      ok: true,
+      user: result.rows[0],
+    });
   } catch (error) {
-    console.error('Error en /me', error);
-    res.status(500).json({ ok: false });
+    console.error('Error en GET /me', error);
+    res.status(500).json({
+      ok: false,
+      error: 'Error al cargar perfil',
+    });
+  }
+});
+app.put('/me', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const {
+      nickname,
+      email,
+      phone,
+      birth_date,
+      profile_photo_url,
+    } = req.body;
+
+    if (!nickname || !nickname.trim()) {
+      return res.status(400).json({
+        ok: false,
+        error: 'nickname es obligatorio',
+      });
+    }
+
+    const result = await pool.query(
+      `UPDATE users
+       SET
+         nickname = $1,
+         email = $2,
+         phone = $3,
+         birth_date = $4,
+         profile_photo_url = $5,
+         updated_at = NOW()
+       WHERE id = $6
+       RETURNING
+         id,
+         nickname,
+         email,
+         phone,
+         profile_photo_url,
+         birth_date,
+         user_type`,
+      [
+        nickname.trim(),
+        email || null,
+        phone || null,
+        birth_date || null,
+        profile_photo_url || null,
+        userId,
+      ]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Usuario no encontrado',
+      });
+    }
+
+    res.json({
+      ok: true,
+      user: result.rows[0],
+    });
+  } catch (error) {
+    console.error('Error en PUT /me', error);
+    res.status(500).json({
+      ok: false,
+      error: 'Error al guardar perfil',
+    });
   }
 });
 
