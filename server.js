@@ -157,25 +157,26 @@ app.get('/decks', async (req, res) => {
 
 // ================= MAZO STATE =================
 
+// ================= MAZO STATE =================
+
 app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
   try {
     const { deckId } = req.params;
     const userId = req.auth.userId;
 
     const result = await pool.query(
-      `SELECT * FROM plays ORDER BY id ASC`
+      `SELECT * FROM plays WHERE deck_id = $1 ORDER BY id ASC`,
+      [deckId]
     );
 
-    const plays = result.rows
-      .map((row) => {
-        const parsed = parseAndValidatePlayCode(row.play_code);
+    const plays = result.rows.map((row) => {
+      const parsed = parseAndValidatePlayCode(row.play_code);
 
-        return {
-          ...row,
-          parsed,
-        };
-      })
-      .filter((row) => row.parsed.deckId === String(deckId));
+      return {
+        ...row,
+        parsed,
+      };
+    });
 
     const flags = {
       hasAHeart: plays.some(
@@ -184,17 +185,10 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
       hasBlueJoker: plays.some(
         (p) =>
           p.parsed.rank === 'JOKER' ||
-          p.parsed.suit === 'BLUE' ||
-          p.parsed.cardKey === 'JOKERBLUE'
+          p.parsed.suit === 'BLUE'
       ),
       hasCorporateCards: plays.some(
         (p) => p.parsed.suit === 'CLUB'
-      ),
-      canPlayQ: plays.some(
-        (p) =>
-          p.parsed.rank === 'Q' &&
-          p.parsed.authorized &&
-          p.parsed.authorized.includes(`U:${userId}`)
       ),
     };
 
