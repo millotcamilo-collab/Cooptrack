@@ -10,6 +10,8 @@ const PORT = process.env.PORT || 3000;
 const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET;
 
+const { parseAndValidatePlayCode } = require('./engine/playParser');
+
 // ✅ CORS FIX
 app.use(cors({
   origin: "https://cooptrack.com",
@@ -153,6 +155,65 @@ app.get('/decks', async (req, res) => {
   }
 });
 
+// ================= MAZO STATE =================
+
+app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
+  try {
+    const { deckId } = req.params;
+    const userId = req.auth.userId;
+
+    const result = await pool.query(
+      `SELECT * FROM plays ORDER BY id ASC`
+    );
+
+    const plays = result.rows
+      .map((row) => {
+        const parsed = parseAndValidatePlayCode(row.play_code);
+
+        return {
+          ...row,
+          parsed,
+        };
+      })
+      .filter((row) => row.parsed.deckId === String(deckId));
+
+    const flags = {
+      hasAHeart: plays.some(
+        (p) => p.parsed.rank === 'A' && p.parsed.suit === 'HEART'
+      ),
+      hasBlueJoker: plays.some(
+        (p) =>
+          p.parsed.rank === 'JOKER' ||
+          p.parsed.suit === 'BLUE' ||
+          p.parsed.cardKey === 'JOKERBLUE'
+      ),
+      hasCorporateCards: plays.some(
+        (p) => p.parsed.suit === 'CLUB'
+      ),
+      canPlayQ: plays.some(
+        (p) =>
+          p.parsed.rank === 'Q' &&
+          p.parsed.authorized &&
+          p.parsed.authorized.includes(`U:${userId}`)
+      ),
+    };
+
+    res.json({
+      ok: true,
+      deckId,
+      userId,
+      playsCount: plays.length,
+      plays,
+      flags,
+    });
+  } catch (error) {
+    console.error('Error en /mazo/:deckId/state', error);
+    res.status(500).json({
+      ok: false,
+      error: 'Error al construir estado del mazo',
+    });
+  }
+});
 // ================= START =================
 
 app.listen(PORT, () => {
