@@ -361,6 +361,29 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
   }
 });
 
+app.post('/plays', async (req, res) => {
+  const { user_id, description } = req.body;
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO plays (user_id, description) VALUES ($1, $2) RETURNING *',
+      [user_id, description]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error guardando play');
+  }
+});
+app.get('/plays', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM plays ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).send('Error obteniendo plays');
+  }
+});
 // ================= START =================
 
 app.listen(PORT, () => {
