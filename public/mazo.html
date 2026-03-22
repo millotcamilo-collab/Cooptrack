@@ -25,18 +25,30 @@
   <script>
     const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
-    async function fetchDeckById(deckId) {
+    function getToken() {
+      return localStorage.getItem("cooptrackToken");
+    }
+
+    async function fetchDeckState(deckId) {
       try {
-        const response = await fetch(`${API_BASE_URL}/decks/${deckId}`);
+        const token = getToken();
+
+        const response = await fetch(`${API_BASE_URL}/mazo/${deckId}/state`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
         const data = await response.json();
 
         if (!response.ok || !data.ok) {
-          throw new Error(data.message || "Error cargando mazo");
+          throw new Error(data.error || "Error cargando estado del mazo");
         }
 
-        return data.deck;
+        return data;
       } catch (error) {
-        console.error("Error trayendo deck:", error);
+        console.error("Error trayendo estado del mazo:", error);
         return null;
       }
     }
@@ -65,23 +77,26 @@
         return;
       }
 
-      const deck = await fetchDeckById(deckId);
+      const state = await fetchDeckState(deckId);
 
-      if (!deck) {
-        console.warn("No se pudo cargar el mazo");
+      if (!state) {
+        console.warn("No se pudo cargar el estado del mazo");
         return;
       }
 
+      console.log("state cargado:", state);
+      console.log("plays:", state.plays);
+
       if (typeof renderMazobar === "function") {
-        renderMazobar("deck", deck);
+        renderMazobar("deck", state);
       }
 
       if (typeof renderPlayform === "function") {
-        renderPlayform(deck);
+        renderPlayform(state);
       }
 
       if (typeof renderPlaysView === "function") {
-        renderPlaysView(deck);
+        renderPlaysView(state);
       }
     }
 
