@@ -31,7 +31,7 @@
     };
   }
 
-  function getSymbolForSuit(suit) {
+  function getSuitSymbol(suit) {
     switch (String(suit || "").toUpperCase()) {
       case "HEART":
         return "♥";
@@ -46,45 +46,46 @@
     }
   }
 
+  function getSuitFilePart(suit) {
+    switch (String(suit || "").toUpperCase()) {
+      case "HEART":
+        return "corazon";
+      case "SPADE":
+        return "pike";
+      case "DIAMOND":
+        return "diamante";
+      case "CLUB":
+        return "trebol";
+      default:
+        return null;
+    }
+  }
+
   function getCardLabel(rank, suit) {
-    return `${rank}${getSymbolForSuit(suit)}`;
+    return `${rank}${getSuitSymbol(suit)}`;
   }
 
   function getCardImageSrc(rank, suit) {
     const r = String(rank || "").toUpperCase();
-    const s = String(suit || "").toUpperCase();
+    const suitPart = getSuitFilePart(suit);
 
-    if (r === "K" && s === "HEART") return "/Kcorazon.gif";
-    if (r === "K" && s === "SPADE") return "/Kpike.gif";
-    if (r === "K" && s === "DIAMOND") return "/Kdiamante.gif";
-    if (r === "K" && s === "CLUB") return "/Ktrebol.gif";
+    if (!r || !suitPart) return null;
 
-    if (r === "Q" && s === "HEART") return "/Qcorazon.gif";
-    if (r === "Q" && s === "SPADE") return "/Qpike.gif";
-    if (r === "Q" && s === "DIAMOND") return "/Qdiamante.gif";
-    if (r === "Q" && s === "CLUB") return "/Qtrebol.gif";
-
-    if (r === "A" && s === "HEART") return "/Acorazon.gif";
-    if (r === "A" && s === "SPADE") return "/Apike.gif";
-    if (r === "A" && s === "DIAMOND") return "/Adiamante.gif";
-    if (r === "A" && s === "CLUB") return "/Atrebol.gif";
-
-    return null;
+    return `/${r}${suitPart}.gif`;
   }
 
   function getSuitButtonImageSrc(suit) {
-    switch (String(suit || "").toUpperCase()) {
-      case "HEART":
-        return "/cor40.gif";
-      case "SPADE":
-        return "/pik40.gif";
-      case "DIAMOND":
-        return "/dia40.gif";
-      case "CLUB":
-        return "/tre40.gif";
-      default:
-        return null;
-    }
+    const suitPart = getSuitFilePart(suit);
+    if (!suitPart) return null;
+
+    const map = {
+      corazon: "/cor40.gif",
+      pike: "/pik40.gif",
+      diamante: "/dia40.gif",
+      trebol: "/tre40.gif"
+    };
+
+    return map[suitPart] || null;
   }
 
   function getAvatarSrc() {
@@ -162,7 +163,7 @@
   function buildCommandButtonsHTML() {
     const suitButtons = getVisibleCommandSuits().map((suit) => {
       const imgSrc = getSuitButtonImageSrc(suit);
-      const symbol = getSymbolForSuit(suit);
+      const symbol = getSuitSymbol(suit);
 
       if (imgSrc) {
         return `
@@ -253,7 +254,6 @@
       <section class="mazobar">
         <div class="page-container">
           <div class="mazobar__shell">
-
             <div class="mazobar__row mazobar__row--top">
 
               <div class="mazobar__top-left">
@@ -298,7 +298,6 @@
               </div>
 
             </div>
-
           </div>
         </div>
       </section>
