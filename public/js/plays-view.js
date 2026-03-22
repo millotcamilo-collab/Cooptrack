@@ -130,3 +130,5 @@ function renderPlaysView(deck, plays = [], state = null) {
     </section>
   `;
 }
+
+window.renderPlaysView = renderPlaysView;
