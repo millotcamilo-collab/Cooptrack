@@ -1,3 +1,5 @@
+const API_BASE_URL = "https://cooptrack-backend.onrender.com";
+
 function goToMazoPage(deck) {
   if (!deck || !deck.id) {
     console.warn("Deck inválido", deck);
@@ -7,12 +9,9 @@ function goToMazoPage(deck) {
   window.location.href = `/mazo.html?id=${deck.id}`;
 }
 
-/**
- * Trae mazos del backend
- */
 async function fetchDecks() {
   try {
-    const response = await fetch("/decks");
+    const response = await fetch(`${API_BASE_URL}/decks`);
     const data = await response.json();
 
     if (!response.ok || !data.ok) {
@@ -32,26 +31,14 @@ function clearDecksView() {
   container.innerHTML = "";
 }
 
-/**
- * View model mínimo (sin inventar datos)
- */
 function buildDeckRowViewModel(deck) {
   return {
     id: deck.id,
     name: deck.name || "Mazo sin nombre",
-
-    // joker real del backend
     joker: String(deck.joker_type || "RED").toLowerCase(),
-
-    // imagen institucional (cuando la uses)
-    jokerImageUrl: deck.profile_photo_url || null,
-
-    // ⚠️ por ahora vacío (después lo conectamos a governance)
+    jokerImageUrl: deck.joker_image_url || null,
     currentUserCards: [],
-
-    // ⚠️ por ahora vacío (después viene de records)
     summaryCards: [],
-
     originalDeck: deck
   };
 }
@@ -68,7 +55,13 @@ async function renderDecksView() {
   const decks = await fetchDecks();
 
   if (!decks.length) {
-    container.innerHTML = "";
+    container.innerHTML = `
+      <section class="decks-view">
+        <div class="page-container">
+          <p>No hay mazos todavía.</p>
+        </div>
+      </section>
+    `;
     return;
   }
 
