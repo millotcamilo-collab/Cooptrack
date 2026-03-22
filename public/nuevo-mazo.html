@@ -9,28 +9,135 @@
   <link rel="stylesheet" href="/css/topbar.css" />
 
   <style>
-    .create-container {
-      max-width: 500px;
-      margin: 40px auto;
-      padding: 20px;
-    }
-
-    .create-container h1 {
-      margin-bottom: 20px;
-    }
-
-    .create-container input,
-    .create-container textarea {
+    .nuevo-mazo-page {
       width: 100%;
-      margin-bottom: 12px;
+      box-sizing: border-box;
       padding: 10px;
-      font-size: 16px;
     }
 
-    .create-container button {
-      padding: 10px 16px;
+    .nuevo-mazo-box {
+      width: 100%;
+      max-width: 860px;
+      margin: 18px auto 0;
+      border: 1px dotted #777;
+      padding: 12px 14px;
+      background: transparent;
+      box-sizing: border-box;
+    }
+
+    .nuevo-mazo-layout {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      align-items: center;
+      column-gap: 18px;
+    }
+
+    .nuevo-mazo-left {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      min-height: 110px;
+    }
+
+    .nuevo-mazo-card-icon {
+      height: 78px;
+      width: auto;
+      display: block;
+    }
+
+    .nuevo-mazo-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .nuevo-mazo-form-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .nuevo-mazo-form-table td {
+      padding: 4px 6px;
+      vertical-align: middle;
+    }
+
+    .nuevo-mazo-label {
+      width: 78px;
+      font-size: 18px;
+      color: #222;
+      white-space: nowrap;
+    }
+
+    .nuevo-mazo-input {
+      width: 100%;
+      height: 28px;
+      box-sizing: border-box;
+      padding: 4px 8px;
       font-size: 16px;
+      border: 1px solid #999;
+      background: #fff;
+    }
+
+    .nuevo-mazo-actions {
+      white-space: nowrap;
+      width: 110px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin: 0 4px 0 0;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn img {
+      height: 24px;
+      width: auto;
+      display: block;
+      transition: transform 0.12s ease;
+    }
+
+    .icon-btn:hover img {
+      transform: scale(1.08);
+    }
+
+    .status-row td {
+      padding-top: 8px;
+    }
+
+    .status-msg {
+      min-height: 20px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    @media (max-width: 700px) {
+      .nuevo-mazo-layout {
+        grid-template-columns: 1fr;
+        row-gap: 10px;
+      }
+
+      .nuevo-mazo-left {
+        justify-content: center;
+      }
+
+      .nuevo-mazo-form-table td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .nuevo-mazo-label {
+        margin-bottom: 4px;
+      }
+
+      .nuevo-mazo-actions {
+        width: auto;
+        padding-top: 8px;
+      }
     }
   </style>
 </head>
@@ -38,16 +145,77 @@
 <body>
   <div id="topbar-container"></div>
 
-  <div class="create-container">
-    <h1>Crear nuevo mazo</h1>
+  <main class="nuevo-mazo-page">
+    <div class="nuevo-mazo-box">
+      <div class="nuevo-mazo-layout">
+        <div class="nuevo-mazo-left">
+          <img
+            src="/assets/icons/Acorazon.gif"
+            alt="A corazón"
+            class="nuevo-mazo-card-icon"
+          />
+        </div>
 
-    <input id="deckName" placeholder="Nombre del mazo" />
-    <textarea id="deckDescription" placeholder="Descripción (opcional)"></textarea>
+        <div class="nuevo-mazo-right">
+          <table class="nuevo-mazo-form-table">
+            <tr>
+              <td class="nuevo-mazo-label">Título</td>
+              <td>
+                <input
+                  id="deckName"
+                  class="nuevo-mazo-input"
+                  type="text"
+                  placeholder=""
+                />
+              </td>
+              <td class="nuevo-mazo-actions"></td>
+            </tr>
 
-    <button id="createDeckBtn">Crear mazo</button>
+            <tr>
+              <td class="nuevo-mazo-label">Moneda</td>
+              <td>
+                <input
+                  id="deckCurrency"
+                  class="nuevo-mazo-input"
+                  type="text"
+                  value="ARS"
+                />
+              </td>
+              <td class="nuevo-mazo-actions">
+                <button
+                  id="createDeckBtn"
+                  class="icon-btn"
+                  type="button"
+                  title="Guardar mazo"
+                  aria-label="Guardar mazo"
+                >
+                  <img src="/assets/icons/salvar40.gif" alt="Guardar" />
+                </button>
 
-    <p id="statusMsg"></p>
-  </div>
+                <button
+                  id="cancelBtn"
+                  class="icon-btn"
+                  type="button"
+                  title="Salir"
+                  aria-label="Salir"
+                >
+                  <img src="/assets/icons/exit80.gif" alt="Salir" />
+                </button>
+              </td>
+            </tr>
+
+            <tr class="status-row">
+              <td></td>
+              <td>
+                <div id="statusMsg" class="status-msg"></div>
+              </td>
+              <td></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
 
   <script src="/js/topbar.js"></script>
 
@@ -58,26 +226,43 @@
       return localStorage.getItem("cooptrackToken");
     }
 
+    function setStatus(message, isError = false) {
+      const statusMsg = document.getElementById("statusMsg");
+      statusMsg.textContent = message || "";
+      statusMsg.style.color = isError ? "#b00020" : "#333";
+    }
+
+    function goBack() {
+      window.location.href = "/index.html";
+    }
+
     async function createDeck() {
       const name = document.getElementById("deckName").value.trim();
-      const description = document.getElementById("deckDescription").value.trim();
-      const statusMsg = document.getElementById("statusMsg");
+      const currency = document.getElementById("deckCurrency").value.trim().toUpperCase();
+      const token = getToken();
+
+      if (!token) {
+        setStatus("Falta sesión activa", true);
+        return;
+      }
 
       if (!name) {
-        statusMsg.textContent = "El nombre es obligatorio";
+        setStatus("El título es obligatorio", true);
         return;
       }
 
       try {
+        setStatus("Creando mazo...");
+
         const response = await fetch(`${API_BASE_URL}/decks`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${getToken()}`
+            "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify({
             name,
-            description
+            description: currency ? `Moneda:${currency}` : null
           })
         });
 
@@ -87,19 +272,31 @@
           throw new Error(data.error || "Error creando mazo");
         }
 
-        statusMsg.textContent = "Mazo creado correctamente";
+        setStatus("Mazo creado correctamente");
 
-        // 🔥 ir al mazo recién creado
         window.location.href = `/mazo.html?id=${data.deck.id}`;
-
       } catch (error) {
-        console.error(error);
-        statusMsg.textContent = "Error al crear mazo";
+        console.error("Error creando mazo:", error);
+        setStatus("Error al crear mazo", true);
       }
     }
 
-    document.getElementById("createDeckBtn")
-      .addEventListener("click", createDeck);
+    document.getElementById("createDeckBtn").addEventListener("click", createDeck);
+    document.getElementById("cancelBtn").addEventListener("click", goBack);
+
+    document.getElementById("deckName").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        createDeck();
+      }
+    });
+
+    document.getElementById("deckCurrency").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        createDeck();
+      }
+    });
   </script>
 </body>
 </html>
