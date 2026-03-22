@@ -623,7 +623,7 @@ app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
 });
 
 // ================= START =================
-
-app.listen(PORT, () => {
+console.log('PORT recibido:', PORT);
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`CoopTrack server running on port ${PORT}`);
 });
