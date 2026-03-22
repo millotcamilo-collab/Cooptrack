@@ -1,28 +1,13 @@
-const PLAY_SEPARATOR = "§";
-
-const PLAY_FIELDS = [
-  "deckId",
-  "userId",
-  "date",
-  "rank",
-  "suit",
-  "action",
-  "authorized",
-  "flow",
-  "recipients",
-];
-
-const MOTHER_RANKS = new Set(["A", "J", "K"]);
-const CHILD_RANKS = new Set(["Q"]);
+const PLAY_SEPARATOR = '§';
 
 function safeTrim(value) {
-  if (value === null || value === undefined) return "";
+  if (value === null || value === undefined) return '';
   return String(value).trim();
 }
 
 function normalizeEmpty(value) {
   const v = safeTrim(value);
-  return v === "" ? null : v;
+  return v === '' ? null : v;
 }
 
 function normalizeRank(rank) {
@@ -35,33 +20,26 @@ function normalizeSuit(suit) {
   return value || null;
 }
 
-function splitPlayCode(playCode) {
-  if (typeof playCode !== "string") {
-    throw new Error("play_code debe ser un string");
+function parsePlayCode(playCode) {
+  if (typeof playCode !== 'string') {
+    throw new Error('play_code debe ser un string');
   }
 
   const raw = playCode.trim();
+
   if (!raw) {
-    throw new Error("play_code vacío");
+    throw new Error('play_code vacío');
   }
 
   const parts = raw.split(PLAY_SEPARATOR);
 
-  if (parts.length > PLAY_FIELDS.length) {
-    throw new Error(
-      `play_code inválido: se esperaban como máximo ${PLAY_FIELDS.length} segmentos y llegaron ${parts.length}`
-    );
+  while (parts.length < 9) {
+    parts.push('');
   }
 
-  while (parts.length < PLAY_FIELDS.length) {
-    parts.push("");
+  if (parts.length > 9) {
+    throw new Error(`play_code inválido: tiene ${parts.length} segmentos`);
   }
-
-  return parts;
-}
-
-function parsePlayCode(playCode) {
-  const parts = splitPlayCode(playCode);
 
   const parsed = {
     raw: playCode,
@@ -76,8 +54,8 @@ function parsePlayCode(playCode) {
     recipients: normalizeEmpty(parts[8]),
   };
 
-  parsed.isMother = MOTHER_RANKS.has(parsed.rank);
-  parsed.isChild = CHILD_RANKS.has(parsed.rank);
+  parsed.isMother = ['A', 'J', 'K'].includes(parsed.rank);
+  parsed.isChild = parsed.rank === 'Q';
   parsed.cardKey = parsed.rank && parsed.suit ? `${parsed.rank}${parsed.suit}` : null;
 
   return parsed;
@@ -86,26 +64,16 @@ function parsePlayCode(playCode) {
 function validateParsedPlay(parsed) {
   const errors = [];
 
-  if (!parsed.deckId) errors.push("Falta deckId");
-  if (!parsed.rank) errors.push("Falta rank");
-  if (!parsed.suit) errors.push("Falta suit");
+  if (!parsed.deckId) errors.push('Falta deckId');
+  if (!parsed.rank) errors.push('Falta rank');
+  if (!parsed.suit) errors.push('Falta suit');
 
-  const validRanks = new Set(["A", "J", "Q", "K"]);
+  const validRanks = new Set(['A', 'J', 'Q', 'K', 'JOKER']);
   if (parsed.rank && !validRanks.has(parsed.rank)) {
     errors.push(`Rank inválido: ${parsed.rank}`);
   }
 
-  const validSuits = new Set([
-    "HEART",
-    "DIAMOND",
-    "CLUB",
-    "SPADE",
-    "JOKER",
-    "BLACK",
-    "RED",
-    "BLUE",
-  ]);
-
+  const validSuits = new Set(['HEART', 'SPADE', 'DIAMOND', 'CLUB', 'RED', 'BLUE']);
   if (parsed.suit && !validSuits.has(parsed.suit)) {
     errors.push(`Suit inválido: ${parsed.suit}`);
   }
@@ -128,8 +96,6 @@ function parseAndValidatePlayCode(playCode) {
 }
 
 module.exports = {
-  PLAY_SEPARATOR,
-  PLAY_FIELDS,
   parsePlayCode,
   validateParsedPlay,
   parseAndValidatePlayCode,
