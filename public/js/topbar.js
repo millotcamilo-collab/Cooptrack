@@ -67,6 +67,10 @@ function isMazosPage() {
          window.location.pathname === "/mazos.html";
 }
 
+function goToCreateDeckPage() {
+  window.location.href = "/create-deck.html";
+}
+
 async function renderTopbar() {
   const user = await getLoggedUser();
   const userHasDecks = await hasDecks();
@@ -192,9 +196,7 @@ async function renderTopbar() {
 
   const newDeckBtn = document.getElementById("newDeckBtn");
   if (newDeckBtn) {
-    newDeckBtn.addEventListener("click", () => {
-      window.location.href = "/mazo.html?view=create";
-    });
+    newDeckBtn.addEventListener("click", goToCreateDeckPage);
   }
 }
 
