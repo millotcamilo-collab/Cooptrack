@@ -68,7 +68,7 @@ function isMazosPage() {
 }
 
 function goToCreateDeckPage() {
-  window.location.href = "/create-deck.html";
+  window.location.href = "/nuevo-mazo.html";
 }
 
 async function renderTopbar() {
