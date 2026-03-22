@@ -52,13 +52,11 @@
         }
       }
 
-      // reglas Q
       if (p.rank === "Q" && p.action === "puedeJugar") {
         state.qRules[p.suit] = p;
       }
     });
 
-    // filtros
     state.visibleFilters = ["HEART", "SPADE", "DIAMOND"];
 
     if (state.corporateCards.length > 0) {
@@ -75,99 +73,90 @@
   }
 
   function renderMazobar(deck, plays, currentUserId) {
-  const container = document.getElementById("mazobar-container");
-  if (!container) return;
+    const container = document.getElementById("mazobar-container");
+    if (!container) return;
 
-  const state = deriveDeckState(plays, currentUserId);
+    const state = deriveDeckState(plays, currentUserId);
 
-  const filtersHTML = state.visibleFilters.map(f => {
-    const symbol = {
-      HEART: "♥",
-      SPADE: "♠",
-      DIAMOND: "♦",
-      CLUB: "♣"
-    }[f];
+    const filtersHTML = state.visibleFilters.map(f => {
+      const symbol = {
+        HEART: "♥",
+        SPADE: "♠",
+        DIAMOND: "♦",
+        CLUB: "♣"
+      }[f];
 
-    return `<button class="mazobar__btn">${symbol}</button>`;
-  }).join("");
+      return `<button class="mazobar__btn">${symbol}</button>`;
+    }).join("");
 
-  const corporateHTML = state.corporateCards.map(c => {
-    const map = {
-      A_HEART: "A♥",
-      A_SPADE: "A♠",
-      A_DIAMOND: "A♦",
-      A_CLUB: "A♣",
-      K_HEART: "K♥",
-      K_SPADE: "K♠",
-      K_DIAMOND: "K♦",
-      K_CLUB: "K♣"
-    };
+    const corporateHTML = state.corporateCards.map(c => {
+      const map = {
+        A_HEART: "A♥",
+        A_SPADE: "A♠",
+        A_DIAMOND: "A♦",
+        A_CLUB: "A♣",
+        K_HEART: "K♥",
+        K_SPADE: "K♠",
+        K_DIAMOND: "K♦",
+        K_CLUB: "K♣"
+      };
 
-    return `<span>${map[c] || c}</span>`;
-  }).join("");
+      return `<span>${map[c] || c}</span>`;
+    }).join("");
 
-  const jokersHTML = `
-    ${state.hasRedJoker ? "<span>🃏R</span>" : ""}
-    ${state.hasBlueJoker ? "<span>🃏B</span>" : ""}
-  `;
+    const jokersHTML = `
+      ${state.hasRedJoker ? "<span>🃏R</span>" : ""}
+      ${state.hasBlueJoker ? "<span>🃏B</span>" : ""}
+    `;
 
-  container.innerHTML = `
-    <section class="mazobar">
-      <div class="page-container">
+    container.innerHTML = `
+      <section class="mazobar">
+        <div class="page-container">
 
-        <div class="mazobar__card">
+          <div class="mazobar__card">
 
-          <div class="mazobar__header">
-            <h1 class="mazobar__title">
-              A♥ ${deck.name}
-            </h1>
-          </div>
-
-          <div class="mazobar__form">
-
-            <div class="mazobar__field">
-              <span class="mazobar__label">Balance</span>
-              <span>♦ ${deck.viewer_balance || 0}</span>
+            <div class="mazobar__header">
+              <h1 class="mazobar__title">
+                A♥ ${deck.name}
+              </h1>
             </div>
 
-            <div class="mazobar__field">
-              ${corporateHTML}
-              ${jokersHTML}
-            </div>
+            <div class="mazobar__form">
 
-            <div class="mazobar__actions">
-              <button id="btnAddJ" class="mazobar__btn mazobar__btn--primary">
-                +J
-              </button>
+              <div class="mazobar__field">
+                <span class="mazobar__label">Balance</span>
+                <span>♦ ${deck.viewer_balance || 0}</span>
+              </div>
 
-              ${filtersHTML}
+              <div class="mazobar__field">
+                ${corporateHTML}
+                ${jokersHTML}
+              </div>
 
-              <button id="btnExit" class="mazobar__btn mazobar__btn--secondary">
-                EXIT
-              </button>
+              <div class="mazobar__actions">
+                <button id="btnAddJ" class="mazobar__btn mazobar__btn--primary">
+                  +J
+                </button>
+
+                ${filtersHTML}
+
+                <button id="btnExit" class="mazobar__btn mazobar__btn--secondary">
+                  EXIT
+                </button>
+              </div>
+
             </div>
 
           </div>
 
         </div>
+      </section>
+    `;
 
-      </div>
-    </section>
-  `;
+    bindMazobarEvents(state, currentUserId);
+  }
 
-  bindMazobarEvents(state, currentUserId);
-}
   function bindMazobarEvents(state, userId) {
-
-    document.querySelectorAll(".filter-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const filter = btn.dataset.filter;
-
-        document.dispatchEvent(new CustomEvent("mazobar:filter", {
-          detail: { filter }
-        }));
-      });
-    });
 
     document.getElementById("btnAddJ")?.addEventListener("click", () => {
       document.dispatchEvent(new CustomEvent("mazobar:addJ"));
@@ -177,7 +166,6 @@
       window.location.href = "/mazos.html";
     });
 
-    // Q dinámicos
     document.querySelectorAll(".play-row").forEach(row => {
       const suit = row.dataset.suit;
 
@@ -197,5 +185,57 @@
   }
 
   window.renderMazobar = renderMazobar;
+
+  // ================= 🔥 ESTE ES EL BLOQUE NUEVO =================
+
+  document.addEventListener("playform:createPlay", async (event) => {
+    try {
+      const { deck, state, suit, text } = event.detail;
+
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const userId = payload.userId;
+      const deckId = deck.id;
+
+      const playCode =
+        `${deckId}§${userId}§${new Date().toISOString()}§J§${suit}§write_play§U:${userId}§manual§U:${userId}`;
+
+      const response = await fetch("/plays", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          deck_id: deckId,
+          parent_play_id: null,
+          play_code: playCode,
+          card_rank: "J",
+          card_suit: suit,
+          play_status: "ACTIVE"
+        })
+      });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        console.error(data);
+        alert("Error al guardar jugada");
+        return;
+      }
+
+      console.log("Play creada:", data.play);
+
+      window.location.reload();
+
+    } catch (error) {
+      console.error("Error creando play", error);
+    }
+  });
 
 })();
