@@ -1,163 +1,311 @@
 (function () {
-
   function parsePlayCode(code) {
     const parts = String(code || "").split("§");
 
     return {
-      deckId: parts[0],
-      userId: parts[1],
-      date: parts[2],
-      rank: parts[3],
-      suit: parts[4],
+      deckId: parts[0] || null,
+      userId: parts[1] || null,
+      date: parts[2] || null,
+      rank: parts[3] || null,
+      suit: parts[4] || null,
       action: parts[5] || null,
-      autorizados: parts[6] || null
+      autorizados: parts[6] || null,
+      flow: parts[7] || null,
+      recipients: parts[8] || null
     };
   }
 
-  function parseAutorizados(value) {
-    if (!value) return [];
+  function normalizePlay(play) {
+    if (!play) return null;
 
-    if (value === "ALL") return ["ALL"];
-    if (value === "CORP") return ["CORP"];
+    const parsed = play.parsed || parsePlayCode(play.play_code);
 
-    return value.split(",").map(v => v.trim());
-  }
-
-  function isUserAuthorized(rule, userId) {
-    const list = parseAutorizados(rule.autorizados);
-
-    if (list.includes("ALL")) return true;
-
-    return list.includes(`U:${userId}`);
-  }
-
-  function deriveDeckState(plays, currentUserId) {
-    const parsed = plays.map(parsePlayCode);
-
-    const state = {
-      hasBlueJoker: false,
-      hasRedJoker: false,
-      corporateCards: [],
-      qRules: {},
-      visibleFilters: ["HEART"],
+    return {
+      id: play.id || null,
+      rank: parsed.rank || play.card_rank || "",
+      suit: parsed.suit || play.card_suit || "",
+      action: parsed.action || "",
+      status: play.play_status || "",
+      parsed,
+      raw: play.play_code || ""
     };
+  }
 
-    parsed.forEach(p => {
-      if (p.rank === "JOKER" && p.suit === "BLUE") state.hasBlueJoker = true;
-      if (p.rank === "JOKER" && p.suit === "RED") state.hasRedJoker = true;
+  function getSymbolForSuit(suit) {
+    switch (String(suit || "").toUpperCase()) {
+      case "HEART":
+        return "♥";
+      case "SPADE":
+        return "♠";
+      case "DIAMOND":
+        return "♦";
+      case "CLUB":
+        return "♣";
+      default:
+        return "";
+    }
+  }
 
-      if (p.rank === "A" || p.rank === "K") {
-        if (p.autorizados && isUserAuthorized(p, currentUserId)) {
-          state.corporateCards.push(`${p.rank}_${p.suit}`);
-        }
-      }
+  function getCardLabel(rank, suit) {
+    return `${rank}${getSymbolForSuit(suit)}`;
+  }
 
-      if (p.rank === "Q" && p.action === "puedeJugar") {
-        state.qRules[p.suit] = p;
-      }
+  function getCardImageSrc(rank, suit) {
+    const r = String(rank || "").toUpperCase();
+    const s = String(suit || "").toUpperCase();
+
+    if (r === "K" && s === "HEART") return "/Kcorazon.gif";
+    if (r === "K" && s === "SPADE") return "/Kpike.gif";
+    if (r === "K" && s === "DIAMOND") return "/Kdiamante.gif";
+    if (r === "K" && s === "CLUB") return "/Ktrebol.gif";
+
+    if (r === "Q" && s === "HEART") return "/Qcorazon.gif";
+    if (r === "Q" && s === "SPADE") return "/Qpike.gif";
+    if (r === "Q" && s === "DIAMOND") return "/Qdiamante.gif";
+    if (r === "Q" && s === "CLUB") return "/Qtrebol.gif";
+
+    if (r === "A" && s === "HEART") return "/Acorazon.gif";
+    if (r === "A" && s === "SPADE") return "/Apike.gif";
+    if (r === "A" && s === "DIAMOND") return "/Adiamante.gif";
+    if (r === "A" && s === "CLUB") return "/Atrebol.gif";
+
+    return null;
+  }
+
+  function getSuitButtonImageSrc(suit) {
+    switch (String(suit || "").toUpperCase()) {
+      case "HEART":
+        return "/cor40.gif";
+      case "SPADE":
+        return "/pik40.gif";
+      case "DIAMOND":
+        return "/dia40.gif";
+      case "CLUB":
+        return "/tre40.gif";
+      default:
+        return null;
+    }
+  }
+
+  function getAvatarSrc() {
+    return "/singeta120.gif";
+  }
+
+  function getUserDisplayName(deck) {
+    return deck?.viewer_nickname || deck?.owner_nickname || "Fulano";
+  }
+
+  function getEnabledTopCards(plays) {
+    return plays.filter((p) => {
+      const rank = String(p.rank || "").toUpperCase();
+      const action = String(p.action || "");
+      const status = String(p.status || "").toUpperCase();
+
+      if (status !== "ACTIVE") return false;
+
+      return (rank === "K" || rank === "Q") && action === "puedeJugar";
     });
+  }
 
-    state.visibleFilters = ["HEART", "SPADE", "DIAMOND"];
+  function hasBlueJoker(plays) {
+    return plays.some((p) => {
+      const rank = String(p.rank || "").toUpperCase();
+      const suit = String(p.suit || "").toUpperCase();
+      const status = String(p.status || "").toUpperCase();
 
-    if (state.corporateCards.length > 0) {
-      state.visibleFilters.push("CLUB");
+      return status === "ACTIVE" && rank === "JOKER" && suit === "BLUE";
+    });
+  }
+
+  function hasRedJoker(plays) {
+    return plays.some((p) => {
+      const rank = String(p.rank || "").toUpperCase();
+      const suit = String(p.suit || "").toUpperCase();
+      const status = String(p.status || "").toUpperCase();
+
+      return status === "ACTIVE" && rank === "JOKER" && suit === "RED";
+    });
+  }
+
+  function getVisibleCommandSuits() {
+    return ["HEART", "SPADE", "DIAMOND", "CLUB"];
+  }
+
+  function buildTopCardsHTML(enabledCards) {
+    if (!enabledCards.length) {
+      return `<div class="mazobar__topcards-empty"></div>`;
     }
 
-    return state;
+    return enabledCards.map((card) => {
+      const imgSrc = getCardImageSrc(card.rank, card.suit);
+      const label = getCardLabel(card.rank, card.suit);
+
+      if (imgSrc) {
+        return `
+          <img
+            src="${imgSrc}"
+            alt="${label}"
+            title="${label}"
+            class="mazobar__topcard-image"
+          />
+        `;
+      }
+
+      return `
+        <div class="mazobar__topcard-fallback" title="${label}">
+          ${label}
+        </div>
+      `;
+    }).join("");
   }
 
-  function canPlayQ(state, suit, userId) {
-    const rule = state.qRules[suit];
-    if (!rule) return false;
-    return isUserAuthorized(rule, userId);
-  }
+  function buildCommandButtonsHTML() {
+    const suitButtons = getVisibleCommandSuits().map((suit) => {
+      const imgSrc = getSuitButtonImageSrc(suit);
+      const symbol = getSymbolForSuit(suit);
 
-  function renderMazobar(deck, plays, currentUserId) {
-    const container = document.getElementById("mazobar-container");
-    if (!container) return;
+      if (imgSrc) {
+        return `
+          <button
+            type="button"
+            class="mazobar__cmd-btn mazobar__cmd-btn--suit"
+            data-command-suit="${suit}"
+            title="${symbol}"
+            aria-label="${symbol}"
+          >
+            <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
+          </button>
+        `;
+      }
 
-    const state = deriveDeckState(plays, currentUserId);
-
-    const filtersHTML = state.visibleFilters.map(f => {
-      const symbol = {
-        HEART: "♥",
-        SPADE: "♠",
-        DIAMOND: "♦",
-        CLUB: "♣"
-      }[f];
-
-      return `<button class="mazobar__btn">${symbol}</button>`;
+      return `
+        <button
+          type="button"
+          class="mazobar__cmd-btn mazobar__cmd-btn--suit"
+          data-command-suit="${suit}"
+          title="${symbol}"
+          aria-label="${symbol}"
+        >
+          ${symbol}
+        </button>
+      `;
     }).join("");
 
-    const corporateHTML = state.corporateCards.map(c => {
-      const map = {
-        A_HEART: "A♥",
-        A_SPADE: "A♠",
-        A_DIAMOND: "A♦",
-        A_CLUB: "A♣",
-        K_HEART: "K♥",
-        K_SPADE: "K♠",
-        K_DIAMOND: "K♦",
-        K_CLUB: "K♣"
-      };
+    return `
+      <button
+        id="btnAddJ"
+        type="button"
+        class="mazobar__cmd-btn mazobar__cmd-btn--primary"
+        title="+J"
+        aria-label="+J"
+      >
+        +J
+      </button>
 
-      return `<span>${map[c] || c}</span>`;
-    }).join("");
+      ${suitButtons}
 
-    const jokersHTML = `
-      ${state.hasRedJoker ? "<span>🃏R</span>" : ""}
-      ${state.hasBlueJoker ? "<span>🃏B</span>" : ""}
+      <button
+        id="btnExit"
+        type="button"
+        class="mazobar__cmd-btn mazobar__cmd-btn--exit"
+        title="EXIT"
+        aria-label="EXIT"
+      >
+        EXIT
+      </button>
     `;
+  }
 
-    container.innerHTML = `
+  function buildJokersHTML(plays) {
+    const redActive = hasRedJoker(plays);
+    const blueActive = hasBlueJoker(plays);
+
+    return `
+      <div class="mazobar__jokers">
+        <img
+          src="/Joker120.gif"
+          alt="Joker rojo"
+          title="Joker rojo"
+          class="mazobar__joker ${redActive ? "is-active" : "is-inactive"}"
+        />
+        <img
+          src="/joker_blue.gif"
+          alt="Joker azul"
+          title="Joker azul"
+          class="mazobar__joker ${blueActive ? "is-active" : "is-inactive"}"
+        />
+      </div>
+    `;
+  }
+
+  function buildMazobarHTML(deck, plays, currentUserId) {
+    const normalizedPlays = Array.isArray(plays)
+      ? plays.map(normalizePlay).filter(Boolean)
+      : [];
+
+    const enabledCards = getEnabledTopCards(normalizedPlays);
+    const avatarSrc = getAvatarSrc();
+    const userName = getUserDisplayName(deck);
+    const deckName = deck?.name || "Mazo";
+    const balance = deck?.viewer_balance || 0;
+
+    return `
       <section class="mazobar">
         <div class="page-container">
+          <div class="mazobar__shell">
 
-          <div class="mazobar__card">
+            <div class="mazobar__row mazobar__row--top">
 
-            <div class="mazobar__header">
-              <h1 class="mazobar__title">
-                A♥ ${deck.name}
-              </h1>
-            </div>
+              <div class="mazobar__top-left">
+                <div class="mazobar__topcards">
+                  ${buildTopCardsHTML(enabledCards)}
+                </div>
 
-            <div class="mazobar__form">
-
-              <div class="mazobar__field">
-                <span class="mazobar__label">Balance</span>
-                <span>♦ ${deck.viewer_balance || 0}</span>
+                <div class="mazobar__userbox">
+                  <img
+                    src="${avatarSrc}"
+                    alt="${userName}"
+                    class="mazobar__avatar"
+                  />
+                  <div class="mazobar__username">${userName}</div>
+                </div>
               </div>
 
-              <div class="mazobar__field">
-                ${corporateHTML}
-                ${jokersHTML}
+              <div class="mazobar__top-center">
+                <div class="mazobar__titleline">
+                  <span class="mazobar__title-rank">A</span>
+                  <img
+                    src="/cor40.gif"
+                    alt="♥"
+                    class="mazobar__title-suit"
+                  />
+                  <span class="mazobar__title-name">${deckName}</span>
+                  <img
+                    src="/dia40.gif"
+                    alt="♦"
+                    class="mazobar__balance-icon"
+                  />
+                  <span class="mazobar__balance-value">${balance}</span>
+                </div>
+
+                <div class="mazobar__commands">
+                  ${buildCommandButtonsHTML()}
+                </div>
               </div>
 
-              <div class="mazobar__actions">
-                <button id="btnAddJ" class="mazobar__btn mazobar__btn--primary">
-                  +J
-                </button>
-
-                ${filtersHTML}
-
-                <button id="btnExit" class="mazobar__btn mazobar__btn--secondary">
-                  EXIT
-                </button>
+              <div class="mazobar__top-right">
+                ${buildJokersHTML(normalizedPlays)}
               </div>
 
             </div>
 
           </div>
-
         </div>
       </section>
     `;
-
-    bindMazobarEvents(state, currentUserId);
   }
 
-  function bindMazobarEvents(state, userId) {
-
+  function bindMazobarEvents() {
     document.getElementById("btnAddJ")?.addEventListener("click", () => {
       document.dispatchEvent(new CustomEvent("mazobar:addJ"));
     });
@@ -166,31 +314,29 @@
       window.location.href = "/mazos.html";
     });
 
-    document.querySelectorAll(".play-row").forEach(row => {
-      const suit = row.dataset.suit;
-
-      if (canPlayQ(state, suit, userId)) {
-        const btn = document.createElement("button");
-        btn.innerText = "+Q";
-
-        btn.addEventListener("click", () => {
-          document.dispatchEvent(new CustomEvent("mazobar:addQ", {
-            detail: { suit }
-          }));
-        });
-
-        row.appendChild(btn);
-      }
+    document.querySelectorAll("[data-command-suit]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const suit = button.dataset.commandSuit;
+        document.dispatchEvent(new CustomEvent("mazobar:filter", {
+          detail: { filter: suit }
+        }));
+      });
     });
+  }
+
+  function renderMazobar(deck, plays, currentUserId) {
+    const container = document.getElementById("mazobar-container");
+    if (!container) return;
+
+    container.innerHTML = buildMazobarHTML(deck, plays, currentUserId);
+    bindMazobarEvents();
   }
 
   window.renderMazobar = renderMazobar;
 
-  // ================= 🔥 ESTE ES EL BLOQUE NUEVO =================
-
   document.addEventListener("playform:createPlay", async (event) => {
     try {
-      const { deck, state, suit, text } = event.detail;
+      const { deck, suit, text } = event.detail;
 
       const token = localStorage.getItem("cooptrackToken");
       if (!token) {
@@ -198,14 +344,14 @@
         return;
       }
 
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = JSON.parse(atob(token.split(".")[1]));
       const userId = payload.userId;
       const deckId = deck.id;
 
       const playCode =
         `${deckId}§${userId}§${new Date().toISOString()}§J§${suit}§write_play§U:${userId}§manual§U:${userId}`;
 
-      const response = await fetch("/plays", {
+      const response = await fetch("https://cooptrack-backend.onrender.com/plays", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -224,18 +370,14 @@
       const data = await response.json();
 
       if (!data.ok) {
-        console.error(data);
+        console.error("Error backend:", data);
         alert("Error al guardar jugada");
         return;
       }
 
-      console.log("Play creada:", data.play);
-
       window.location.reload();
-
     } catch (error) {
-      console.error("Error creando play", error);
+      console.error("Error creando play:", error);
     }
   });
-
 })();
