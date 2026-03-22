@@ -75,69 +75,88 @@
   }
 
   function renderMazobar(deck, plays, currentUserId) {
-    const container = document.getElementById("mazobar-container");
-    if (!container) return;
+  const container = document.getElementById("mazobar-container");
+  if (!container) return;
 
-    const state = deriveDeckState(plays, currentUserId);
+  const state = deriveDeckState(plays, currentUserId);
 
-    const filtersHTML = state.visibleFilters.map(f => {
-      const symbol = {
-        HEART: "♥",
-        SPADE: "♠",
-        DIAMOND: "♦",
-        CLUB: "♣"
-      }[f];
+  const filtersHTML = state.visibleFilters.map(f => {
+    const symbol = {
+      HEART: "♥",
+      SPADE: "♠",
+      DIAMOND: "♦",
+      CLUB: "♣"
+    }[f];
 
-      return `<button class="filter-btn" data-filter="${f}">${symbol}</button>`;
-    }).join("");
+    return `<button class="mazobar__btn">${symbol}</button>`;
+  }).join("");
 
-    const corporateHTML = state.corporateCards.map(c => {
-      const map = {
-        A_HEART: "A♥",
-        A_SPADE: "A♠",
-        A_DIAMOND: "A♦",
-        A_CLUB: "A♣",
-        K_HEART: "K♥",
-        K_SPADE: "K♠",
-        K_DIAMOND: "K♦",
-        K_CLUB: "K♣"
-      };
+  const corporateHTML = state.corporateCards.map(c => {
+    const map = {
+      A_HEART: "A♥",
+      A_SPADE: "A♠",
+      A_DIAMOND: "A♦",
+      A_CLUB: "A♣",
+      K_HEART: "K♥",
+      K_SPADE: "K♠",
+      K_DIAMOND: "K♦",
+      K_CLUB: "K♣"
+    };
 
-      return `<span class="corp-card">${map[c] || c}</span>`;
-    }).join("");
+    return `<span>${map[c] || c}</span>`;
+  }).join("");
 
-    const jokersHTML = `
-      ${state.hasRedJoker ? "<span>🃏R</span>" : ""}
-      ${state.hasBlueJoker ? "<span>🃏B</span>" : ""}
-    `;
+  const jokersHTML = `
+    ${state.hasRedJoker ? "<span>🃏R</span>" : ""}
+    ${state.hasBlueJoker ? "<span>🃏B</span>" : ""}
+  `;
 
-    container.innerHTML = `
-      <div class="mazobar">
-        <div class="left">
-          ${corporateHTML}
-          <img src="${deck.profile_photo_url || '/assets/icons/singeta120.gif'}" />
-          ${jokersHTML}
-        </div>
+  container.innerHTML = `
+    <section class="mazobar">
+      <div class="page-container">
 
-        <div class="right">
-          <div class="title-row">
-            <span>A♥</span>
-            <span>${deck.name}</span>
-            <span>♦ ${deck.viewer_balance || 0}</span>
+        <div class="mazobar__card">
+
+          <div class="mazobar__header">
+            <h1 class="mazobar__title">
+              A♥ ${deck.name}
+            </h1>
           </div>
 
-          <div class="actions">
-            <button id="btnAddJ">+J</button>
-            ${filtersHTML}
-            <button id="btnExit">EXIT</button>
+          <div class="mazobar__form">
+
+            <div class="mazobar__field">
+              <span class="mazobar__label">Balance</span>
+              <span>♦ ${deck.viewer_balance || 0}</span>
+            </div>
+
+            <div class="mazobar__field">
+              ${corporateHTML}
+              ${jokersHTML}
+            </div>
+
+            <div class="mazobar__actions">
+              <button id="btnAddJ" class="mazobar__btn mazobar__btn--primary">
+                +J
+              </button>
+
+              ${filtersHTML}
+
+              <button id="btnExit" class="mazobar__btn mazobar__btn--secondary">
+                EXIT
+              </button>
+            </div>
+
           </div>
+
         </div>
+
       </div>
-    `;
+    </section>
+  `;
 
-    bindMazobarEvents(state, currentUserId);
-  }
-
+  bindMazobarEvents(state, currentUserId);
+}
   function bindMazobarEvents(state, userId) {
 
     document.querySelectorAll(".filter-btn").forEach(btn => {
