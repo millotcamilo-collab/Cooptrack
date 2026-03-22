@@ -295,33 +295,70 @@ app.post('/decks', requireAuth, async (req, res) => {
       [deck.id, userId]
     );
 
-    const playCode =
-      `${deck.id}§${userId}§${new Date().toISOString()}§A§HEART§create_deck§U:${userId}§system§U:${userId}`;
+    const nowIso = new Date().toISOString();
 
-    const createdPlay = await insertValidatedPlay(client, {
-      deckId: deck.id,
-      createdByUserId: userId,
-      parentPlayId: null,
-      playCode,
-      cardRank: 'A',
-      cardSuit: 'HEART',
-      playStatus: 'ACTIVE',
-    });
+    const buildPlayCode = (rank, suit, action) =>
+      `${deck.id}§${userId}§${nowIso}§${rank}§${suit}§${action}§U:${userId}§system§U:${userId}`;
+
+    const seedPlays = [
+      // 4 ases fundacionales
+      { rank: 'A', suit: 'HEART', action: 'init_ace', status: 'ACTIVE' },
+      { rank: 'A', suit: 'SPADE', action: 'init_ace', status: 'ACTIVE' },
+      { rank: 'A', suit: 'DIAMOND', action: 'init_ace', status: 'ACTIVE' },
+      { rank: 'A', suit: 'CLUB', action: 'init_ace', status: 'ACTIVE' },
+
+      // 4 K estructurales
+      { rank: 'K', suit: 'HEART', action: 'puedeJugar', status: 'ACTIVE' },
+      { rank: 'K', suit: 'SPADE', action: 'puedeJugar', status: 'ACTIVE' },
+      { rank: 'K', suit: 'DIAMOND', action: 'puedeJugar', status: 'BLOCKED' },
+      { rank: 'K', suit: 'CLUB', action: 'puedeJugar', status: 'BLOCKED' },
+
+      // 4 Q estructurales
+      { rank: 'Q', suit: 'HEART', action: 'puedeJugar', status: 'BLOCKED' },
+      { rank: 'Q', suit: 'SPADE', action: 'puedeJugar', status: 'ACTIVE' },
+      { rank: 'Q', suit: 'DIAMOND', action: 'puedeJugar', status: 'BLOCKED' },
+      { rank: 'Q', suit: 'CLUB', action: 'puedeJugar', status: 'BLOCKED' },
+    ];
+
+    for (const p of seedPlays) {
+      const playCode = buildPlayCode(p.rank, p.suit, p.action);
+
+      await client.query(
+        `INSERT INTO plays (
+          deck_id,
+          created_by_user_id,
+          parent_play_id,
+          play_code,
+          card_rank,
+          card_suit,
+          play_status
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [
+          deck.id,
+          userId,
+          null,
+          playCode,
+          p.rank,
+          p.suit,
+          p.status,
+        ]
+      );
+    }
 
     await client.query('COMMIT');
 
     res.json({
       ok: true,
       deck,
-      createdPlay,
-      createdPlayCode: playCode,
+      seededPlaysCount: seedPlays.length,
     });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error en POST /decks', error);
-    res.status(error.statusCode || 500).json({
+    res.status(500).json({
       ok: false,
-      error: error.message || 'Error al crear mazo',
+      error: 'Error al crear mazo',
     });
   } finally {
     client.release();
