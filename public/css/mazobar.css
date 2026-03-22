@@ -1,6 +1,6 @@
 .mazobar {
   width: 100%;
-  padding: 18px 0 10px;
+  padding: 14px 0 10px;
   background: #f5f5f5;
   border-bottom: 1px solid #d8d8d8;
   box-sizing: border-box;
@@ -13,133 +13,238 @@
   box-sizing: border-box;
 }
 
-.mazobar__card {
-  display: flex;
-  align-items: flex-end;
-  gap: 22px;
-  flex-wrap: wrap;
+.mazobar__shell {
+  width: 100%;
+}
+
+.mazobar__row--top {
+  display: grid;
+  grid-template-columns: 1.15fr 1.4fr auto;
+  align-items: start;
+  gap: 20px;
   width: 100%;
   box-sizing: border-box;
 }
 
-.mazobar__header {
-  flex: 0 0 auto;
-}
+/* IZQUIERDA: cartas habilitadas + usuario */
 
-.mazobar__title {
-  margin: 0;
-  font-size: 2rem;
-  line-height: 1.1;
-  font-weight: 700;
-  color: #111;
-}
-
-.mazobar__form {
+.mazobar__top-left {
   display: flex;
-  align-items: flex-end;
-  gap: 18px;
-  flex: 1 1 auto;
-  flex-wrap: wrap;
-  min-width: 280px;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 14px;
+  min-height: 88px;
 }
 
-.mazobar__field {
+.mazobar__topcards {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  min-height: 72px;
+}
+
+.mazobar__topcards-empty {
+  min-width: 10px;
+  min-height: 72px;
+}
+
+.mazobar__topcard-image {
+  height: 70px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.mazobar__topcard-fallback {
+  min-width: 44px;
+  height: 68px;
+  padding: 8px 6px;
+  border: 1px solid #bdb39f;
+  background: #fff;
+  border-radius: 4px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 40px;
-}
-
-.mazobar__label {
-  font-size: 0.98rem;
+  justify-content: center;
+  font-weight: 700;
   color: #111;
-  white-space: nowrap;
-}
-
-.mazobar__input,
-.mazobar__select {
-  font: inherit;
-  color: #111;
-  background: #fff;
-  border: 1px solid #c5bca8;
-  border-radius: 4px;
   box-sizing: border-box;
 }
 
-.mazobar__input {
-  width: 250px;
-  height: 40px;
-  padding: 8px 10px;
+.mazobar__userbox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 78px;
 }
 
-.mazobar__select {
-  min-width: 90px;
-  height: 40px;
-  padding: 0 10px;
+.mazobar__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
+  background: #ddd;
 }
 
-.mazobar__radio-group {
+.mazobar__username {
+  margin-top: 4px;
+  font-size: 0.92rem;
+  color: #222;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* CENTRO: título y comandos */
+
+.mazobar__top-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mazobar__titleline {
   display: flex;
   align-items: center;
-  gap: 14px;
   flex-wrap: wrap;
+  gap: 8px;
+  min-height: 32px;
 }
 
-.mazobar__radio-option {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.98rem;
+.mazobar__title-rank {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #7d0000;
+}
+
+.mazobar__title-suit {
+  height: 22px;
+  width: auto;
+  display: block;
+}
+
+.mazobar__title-name {
+  font-size: 1.1rem;
+  font-weight: 500;
   color: #111;
-  white-space: nowrap;
+  line-height: 1.2;
 }
 
-.mazobar__radio-option input {
-  margin: 0;
+.mazobar__balance-icon {
+  height: 18px;
+  width: auto;
+  display: block;
+  margin-left: 8px;
 }
 
-.mazobar__actions {
+.mazobar__balance-value {
+  font-size: 1rem;
+  color: #7d0000;
+  font-weight: 500;
+}
+
+.mazobar__commands {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-left: auto;
+  flex-wrap: wrap;
+  min-height: 36px;
 }
 
-.mazobar__btn {
+.mazobar__cmd-btn {
   appearance: none;
   border: 1px solid #bdb39f;
   border-radius: 4px;
   background: #fff;
   color: #111;
   font: inherit;
-  padding: 10px 16px;
-  cursor: pointer;
   line-height: 1;
+  cursor: pointer;
+  padding: 7px 12px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
-.mazobar__btn:hover {
+.mazobar__cmd-btn:hover {
   opacity: 0.92;
 }
 
-.mazobar__btn--primary {
+.mazobar__cmd-btn--primary {
   background: #f7f0e2;
+  font-size: 1.1rem;
+  padding: 7px 14px;
 }
 
-.mazobar__btn--secondary {
+.mazobar__cmd-btn--exit {
   background: #fff;
+  font-weight: 500;
+  padding-left: 14px;
+  padding-right: 14px;
 }
 
-@media (max-width: 960px) {
-  .mazobar__card {
-    align-items: flex-start;
+.mazobar__cmd-btn--suit {
+  width: 46px;
+  padding: 4px;
+}
+
+.mazobar__cmd-icon {
+  height: 24px;
+  width: auto;
+  display: block;
+}
+
+/* DERECHA: jokers */
+
+.mazobar__top-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.mazobar__jokers {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.mazobar__joker {
+  height: 60px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+.mazobar__joker.is-inactive {
+  opacity: 0.28;
+  filter: grayscale(100%);
+}
+
+.mazobar__joker.is-active {
+  opacity: 1;
+  filter: none;
+}
+
+/* Responsive */
+
+@media (max-width: 1024px) {
+  .mazobar__row--top {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
-  .mazobar__form {
-    width: 100%;
+  .mazobar__top-left {
+    justify-content: flex-start;
   }
 
-  .mazobar__actions {
-    margin-left: 0;
+  .mazobar__top-right {
+    justify-content: flex-start;
   }
 }
 
@@ -148,22 +253,31 @@
     padding: 0 16px;
   }
 
-  .mazobar__title {
+  .mazobar__top-left {
+    flex-wrap: wrap;
+  }
+
+  .mazobar__title-rank {
     font-size: 1.6rem;
   }
 
-  .mazobar__field {
-    width: 100%;
-    align-items: flex-start;
-    flex-direction: column;
+  .mazobar__title-name {
+    font-size: 1rem;
   }
 
-  .mazobar__input,
-  .mazobar__select {
-    width: 100%;
+  .mazobar__commands {
+    gap: 8px;
   }
 
-  .mazobar__actions {
-    width: 100%;
+  .mazobar__cmd-btn--suit {
+    width: 42px;
+  }
+
+  .mazobar__topcard-image {
+    height: 58px;
+  }
+
+  .mazobar__joker {
+    height: 50px;
   }
 }
