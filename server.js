@@ -5,16 +5,15 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 require('dotenv').config();
 
+const { parseAndValidatePlayCode } = require('./engine/playParser');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const { parseAndValidatePlayCode } = require('./engine/playParser');
-
-// ✅ CORS FIX
 app.use(cors({
-  origin: "https://cooptrack.com",
+  origin: 'https://cooptrack.com',
 }));
 
 app.use(express.json());
@@ -52,6 +51,7 @@ app.get('/health', async (req, res) => {
     const result = await pool.query('SELECT NOW()');
     res.json({ ok: true, databaseTime: result.rows[0].now });
   } catch (error) {
+    console.error('Error en /health', error);
     res.status(500).json({ ok: false });
   }
 });
@@ -63,7 +63,7 @@ app.post('/login', async (req, res) => {
     const { login, password } = req.body;
 
     const result = await pool.query(
-      `SELECT * FROM users WHERE email=$1 OR phone=$1 LIMIT 1`,
+      `SELECT * FROM users WHERE email = $1 OR phone = $1 LIMIT 1`,
       [login]
     );
 
@@ -82,6 +82,7 @@ app.post('/login', async (req, res) => {
 
     res.json({ ok: true, token });
   } catch (error) {
+    console.error('Error en /login', error);
     res.status(500).json({ ok: false });
   }
 });
@@ -93,7 +94,7 @@ app.get('/me', requireAuth, async (req, res) => {
     const userId = req.auth.userId;
 
     const result = await pool.query(
-      `SELECT id, nickname, email, phone FROM users WHERE id=$1`,
+      `SELECT id, nickname, email, phone FROM users WHERE id = $1`,
       [userId]
     );
 
@@ -103,6 +104,7 @@ app.get('/me', requireAuth, async (req, res) => {
 
     res.json({ ok: true, user: result.rows[0] });
   } catch (error) {
+    console.error('Error en /me', error);
     res.status(500).json({ ok: false });
   }
 });
@@ -114,7 +116,10 @@ app.post('/decks', requireAuth, async (req, res) => {
   const userId = req.auth.userId;
 
   if (!name) {
-    return res.status(400).json({ ok: false });
+    return res.status(400).json({
+      ok: false,
+      error: 'Falta name',
+    });
   }
 
   const client = await pool.connect();
@@ -124,23 +129,58 @@ app.post('/decks', requireAuth, async (req, res) => {
 
     const deckResult = await client.query(
       `INSERT INTO decks (name, description, created_by_user_id, owner_user_id)
-       VALUES ($1,$2,$3,$3) RETURNING *`,
+       VALUES ($1, $2, $3, $3)
+       RETURNING *`,
       [name, description || null, userId]
     );
 
     const deck = deckResult.rows[0];
 
     await client.query(
-      `INSERT INTO deck_members (deck_id, user_id) VALUES ($1,$2)`,
+      `INSERT INTO deck_members (deck_id, user_id)
+       VALUES ($1, $2)`,
       [deck.id, userId]
+    );
+
+    const playCode =
+      `${deck.id}§${userId}§${new Date().toISOString()}§A§HEART§create_deck§U:${userId}§system§U:${userId}`;
+
+    await client.query(
+      `INSERT INTO plays (
+        deck_id,
+        created_by_user_id,
+        parent_play_id,
+        play_code,
+        card_rank,
+        card_suit,
+        play_status
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        deck.id,
+        userId,
+        null,
+        playCode,
+        'A',
+        'HEART',
+        'ACTIVE',
+      ]
     );
 
     await client.query('COMMIT');
 
-    res.json({ ok: true, deck });
+    res.json({
+      ok: true,
+      deck,
+      createdPlayCode: playCode,
+    });
   } catch (error) {
     await client.query('ROLLBACK');
-    res.status(500).json({ ok: false });
+    console.error('Error en POST /decks', error);
+    res.status(500).json({
+      ok: false,
+      error: 'Error al crear mazo',
+    });
   } finally {
     client.release();
   }
@@ -148,14 +188,16 @@ app.post('/decks', requireAuth, async (req, res) => {
 
 app.get('/decks', async (req, res) => {
   try {
-    const result = await pool.query(`SELECT * FROM decks ORDER BY id DESC`);
+    const result = await pool.query(
+      `SELECT * FROM decks ORDER BY id DESC`
+    );
+
     res.json({ ok: true, decks: result.rows });
   } catch (error) {
+    console.error('Error en GET /decks', error);
     res.status(500).json({ ok: false });
   }
 });
-
-// ================= MAZO STATE =================
 
 // ================= MAZO STATE =================
 
@@ -183,9 +225,7 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
         (p) => p.parsed.rank === 'A' && p.parsed.suit === 'HEART'
       ),
       hasBlueJoker: plays.some(
-        (p) =>
-          p.parsed.rank === 'JOKER' ||
-          p.parsed.suit === 'BLUE'
+        (p) => p.parsed.rank === 'JOKER' || p.parsed.suit === 'BLUE'
       ),
       hasCorporateCards: plays.some(
         (p) => p.parsed.suit === 'CLUB'
@@ -201,13 +241,14 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
       flags,
     });
   } catch (error) {
-    console.error('Error en /mazo/:deckId/state', error);
+    console.error('Error en GET /mazo/:deckId/state', error);
     res.status(500).json({
       ok: false,
       error: 'Error al construir estado del mazo',
     });
   }
 });
+
 // ================= START =================
 
 app.listen(PORT, () => {
