@@ -51,8 +51,32 @@ function normalizePlayRow(play) {
     authorized: parsed.authorized || parsed.autorizados || "",
     date: parsed.date || play.created_at || "",
     raw: play.play_code || "",
+    status: play.play_status || "",
     parsed
   };
+}
+
+function isStructuralBookLine(play) {
+  if (!play) return true;
+
+  const rank = String(play.rank || "").toUpperCase();
+  const action = String(play.action || "").trim();
+
+  // Oculta las 4 líneas iniciales de A
+  if (rank === "A" && action === "init_ace") {
+    return true;
+  }
+
+  // Oculta las líneas estructurales K/Q del libro inicial
+  if ((rank === "K" || rank === "Q") && action === "puedeJugar") {
+    return true;
+  }
+
+  return false;
+}
+
+function getVisiblePlays(plays) {
+  return plays.filter((play) => !isStructuralBookLine(play));
 }
 
 function buildEmptyPlaysHTML() {
@@ -60,18 +84,51 @@ function buildEmptyPlaysHTML() {
     <section class="plays-view">
       <div class="page-container">
         <div class="plays-view__empty">
-          Todavía no hay jugadas en este mazo.
+          Todavía no hay jugadas visibles en este mazo.
         </div>
       </div>
     </section>
   `;
 }
 
+function getHumanActionText(play) {
+  const rank = String(play.rank || "").toUpperCase();
+  const suitSymbol = getSuitSymbol(play.suit);
+  const action = play.action || "";
+
+  if (rank === "J") {
+    if (action === "write_play") {
+      return `J${suitSymbol} nueva jugada`;
+    }
+
+    return `J${suitSymbol} ${action || "jugada"}`;
+  }
+
+  if (rank === "Q") {
+    return `Q${suitSymbol} ${action || "derivada"}`;
+  }
+
+  if (rank === "K") {
+    return `K${suitSymbol} ${action || "permiso"}`;
+  }
+
+  if (rank === "A") {
+    return `A${suitSymbol} ${action || "fundación"}`;
+  }
+
+  if (rank === "JOKER") {
+    return `${suitSymbol} ${action || "joker"}`;
+  }
+
+  return `${rank}${suitSymbol} ${action || ""}`.trim();
+}
+
 function buildPlayRowHTML(play) {
   const suitSymbol = getSuitSymbol(play.suit);
-  const actionText = play.action || "(sin acción)";
+  const titleText = getHumanActionText(play);
   const dateText = formatPlayDate(play.date);
   const authorizedText = play.authorized ? ` · ${play.authorized}` : "";
+  const statusText = play.status ? ` · ${play.status}` : "";
 
   return `
     <article class="play-row" data-play-id="${play.id || ""}" data-suit="${play.suit || ""}">
@@ -83,7 +140,7 @@ function buildPlayRowHTML(play) {
 
         <div class="play-row__body">
           <div class="play-row__text">
-            ${actionText}${authorizedText}
+            ${titleText}${authorizedText}${statusText}
           </div>
 
           <div class="play-row__meta">
@@ -111,12 +168,14 @@ function renderPlaysView(deck, plays = [], state = null) {
     ? plays.map(normalizePlayRow).filter(Boolean)
     : [];
 
-  if (!normalizedPlays.length) {
+  const visiblePlays = getVisiblePlays(normalizedPlays);
+
+  if (!visiblePlays.length) {
     container.innerHTML = buildEmptyPlaysHTML();
     return;
   }
 
-  const rowsHTML = normalizedPlays
+  const rowsHTML = visiblePlays
     .map(buildPlayRowHTML)
     .join("");
 
