@@ -44,6 +44,75 @@ function requireAuth(req, res, next) {
   }
 }
 
+// ================= HELPERS =================
+
+async function insertValidatedPlay(client, {
+  deckId,
+  createdByUserId,
+  parentPlayId = null,
+  playCode,
+  cardRank,
+  cardSuit,
+  playStatus = 'ACTIVE',
+}) {
+  const parsed = parseAndValidatePlayCode(playCode);
+
+  if (!parsed.ok) {
+    const err = new Error(`play_code inválido: ${parsed.errors.join(', ')}`);
+    err.statusCode = 400;
+    throw err;
+  }
+
+  if (String(parsed.deckId) !== String(deckId)) {
+    const err = new Error('play_code.deckId no coincide con deck_id');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  if (parsed.userId && String(parsed.userId) !== String(createdByUserId)) {
+    const err = new Error('play_code.userId no coincide con created_by_user_id');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  if (parsed.rank !== String(cardRank).toUpperCase()) {
+    const err = new Error('play_code.rank no coincide con card_rank');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  if (parsed.suit !== String(cardSuit).toUpperCase()) {
+    const err = new Error('play_code.suit no coincide con card_suit');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const result = await client.query(
+    `INSERT INTO plays (
+      deck_id,
+      created_by_user_id,
+      parent_play_id,
+      play_code,
+      card_rank,
+      card_suit,
+      play_status
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    RETURNING *`,
+    [
+      deckId,
+      createdByUserId,
+      parentPlayId,
+      playCode,
+      cardRank,
+      cardSuit,
+      playStatus,
+    ]
+  );
+
+  return result.rows[0];
+}
+
 // ================= HEALTH =================
 
 app.get('/health', async (req, res) => {
@@ -89,8 +158,6 @@ app.post('/login', async (req, res) => {
 
 // ================= ME =================
 
-// ================= ME =================
-
 app.get('/me', requireAuth, async (req, res) => {
   try {
     const userId = req.auth.userId;
@@ -128,6 +195,7 @@ app.get('/me', requireAuth, async (req, res) => {
     });
   }
 });
+
 app.put('/me', requireAuth, async (req, res) => {
   try {
     const userId = req.auth.userId;
@@ -200,7 +268,7 @@ app.post('/decks', requireAuth, async (req, res) => {
   const { name, description } = req.body;
   const userId = req.auth.userId;
 
-  if (!name) {
+  if (!name || !name.trim()) {
     return res.status(400).json({
       ok: false,
       error: 'Falta name',
@@ -216,7 +284,7 @@ app.post('/decks', requireAuth, async (req, res) => {
       `INSERT INTO decks (name, description, created_by_user_id, owner_user_id)
        VALUES ($1, $2, $3, $3)
        RETURNING *`,
-      [name, description || null, userId]
+      [name.trim(), description || null, userId]
     );
 
     const deck = deckResult.rows[0];
@@ -230,41 +298,30 @@ app.post('/decks', requireAuth, async (req, res) => {
     const playCode =
       `${deck.id}§${userId}§${new Date().toISOString()}§A§HEART§create_deck§U:${userId}§system§U:${userId}`;
 
-    await client.query(
-      `INSERT INTO plays (
-        deck_id,
-        created_by_user_id,
-        parent_play_id,
-        play_code,
-        card_rank,
-        card_suit,
-        play_status
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        deck.id,
-        userId,
-        null,
-        playCode,
-        'A',
-        'HEART',
-        'ACTIVE',
-      ]
-    );
+    const createdPlay = await insertValidatedPlay(client, {
+      deckId: deck.id,
+      createdByUserId: userId,
+      parentPlayId: null,
+      playCode,
+      cardRank: 'A',
+      cardSuit: 'HEART',
+      playStatus: 'ACTIVE',
+    });
 
     await client.query('COMMIT');
 
     res.json({
       ok: true,
       deck,
+      createdPlay,
       createdPlayCode: playCode,
     });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error en POST /decks', error);
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       ok: false,
-      error: 'Error al crear mazo',
+      error: error.message || 'Error al crear mazo',
     });
   } finally {
     client.release();
@@ -283,6 +340,7 @@ app.get('/decks', async (req, res) => {
     res.status(500).json({ ok: false });
   }
 });
+
 app.get('/decks/:deckId', async (req, res) => {
   try {
     const { deckId } = req.params;
@@ -311,6 +369,7 @@ app.get('/decks/:deckId', async (req, res) => {
     });
   }
 });
+
 // ================= MAZO STATE =================
 
 app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
@@ -361,29 +420,171 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/plays', async (req, res) => {
-  const { user_id, description } = req.body;
+// ================= PLAYS =================
+
+// Crear play real, validando play_code antes de guardar
+app.post('/plays', requireAuth, async (req, res) => {
+  const userId = req.auth.userId;
+  const {
+    deck_id,
+    parent_play_id = null,
+    play_code,
+    card_rank,
+    card_suit,
+    play_status = 'ACTIVE',
+  } = req.body;
+
+  if (!deck_id) {
+    return res.status(400).json({
+      ok: false,
+      error: 'Falta deck_id',
+    });
+  }
+
+  if (!play_code) {
+    return res.status(400).json({
+      ok: false,
+      error: 'Falta play_code',
+    });
+  }
+
+  if (!card_rank) {
+    return res.status(400).json({
+      ok: false,
+      error: 'Falta card_rank',
+    });
+  }
+
+  if (!card_suit) {
+    return res.status(400).json({
+      ok: false,
+      error: 'Falta card_suit',
+    });
+  }
+
+  const client = await pool.connect();
 
   try {
-    const result = await pool.query(
-      'INSERT INTO plays (user_id, description) VALUES ($1, $2) RETURNING *',
-      [user_id, description]
+    await client.query('BEGIN');
+
+    // Verifica que el deck exista
+    const deckCheck = await client.query(
+      `SELECT id FROM decks WHERE id = $1 LIMIT 1`,
+      [deck_id]
     );
 
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error guardando play');
+    if (!deckCheck.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        ok: false,
+        error: 'Deck no encontrado',
+      });
+    }
+
+    // Si viene parent_play_id, valida que exista y pertenezca al mismo deck
+    if (parent_play_id) {
+      const parentCheck = await client.query(
+        `SELECT id, deck_id FROM plays WHERE id = $1 LIMIT 1`,
+        [parent_play_id]
+      );
+
+      if (!parentCheck.rows.length) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({
+          ok: false,
+          error: 'parent_play_id no encontrado',
+        });
+      }
+
+      if (String(parentCheck.rows[0].deck_id) !== String(deck_id)) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'parent_play_id pertenece a otro deck',
+        });
+      }
+    }
+
+    const createdPlay = await insertValidatedPlay(client, {
+      deckId: deck_id,
+      createdByUserId: userId,
+      parentPlayId: parent_play_id,
+      playCode: play_code,
+      cardRank: String(card_rank).toUpperCase(),
+      cardSuit: String(card_suit).toUpperCase(),
+      playStatus: play_status,
+    });
+
+    await client.query('COMMIT');
+
+    res.json({
+      ok: true,
+      play: createdPlay,
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error en POST /plays', error);
+    res.status(error.statusCode || 500).json({
+      ok: false,
+      error: error.message || 'Error guardando play',
+    });
+  } finally {
+    client.release();
   }
 });
-app.get('/plays', async (req, res) => {
+
+// Listado general de plays
+app.get('/plays', requireAuth, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM plays ORDER BY created_at DESC');
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).send('Error obteniendo plays');
+    const result = await pool.query(
+      `SELECT * FROM plays ORDER BY created_at DESC`
+    );
+
+    res.json({
+      ok: true,
+      plays: result.rows,
+    });
+  } catch (error) {
+    console.error('Error en GET /plays', error);
+    res.status(500).json({
+      ok: false,
+      error: 'Error obteniendo plays',
+    });
   }
 });
+
+// Plays de un deck
+app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
+  try {
+    const { deckId } = req.params;
+
+    const result = await pool.query(
+      `SELECT * FROM plays
+       WHERE deck_id = $1
+       ORDER BY id ASC`,
+      [deckId]
+    );
+
+    const plays = result.rows.map((row) => ({
+      ...row,
+      parsed: parseAndValidatePlayCode(row.play_code),
+    }));
+
+    res.json({
+      ok: true,
+      deckId,
+      playsCount: plays.length,
+      plays,
+    });
+  } catch (error) {
+    console.error('Error en GET /decks/:deckId/plays', error);
+    res.status(500).json({
+      ok: false,
+      error: 'Error obteniendo plays del deck',
+    });
+  }
+});
+
 // ================= START =================
 
 app.listen(PORT, () => {
