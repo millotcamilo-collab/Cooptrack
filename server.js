@@ -198,7 +198,34 @@ app.get('/decks', async (req, res) => {
     res.status(500).json({ ok: false });
   }
 });
+app.get('/decks/:deckId', async (req, res) => {
+  try {
+    const { deckId } = req.params;
 
+    const result = await pool.query(
+      `SELECT * FROM decks WHERE id = $1 LIMIT 1`,
+      [deckId]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({
+        ok: false,
+        message: 'Mazo no encontrado',
+      });
+    }
+
+    res.json({
+      ok: true,
+      deck: result.rows[0],
+    });
+  } catch (error) {
+    console.error('Error en GET /decks/:deckId', error);
+    res.status(500).json({
+      ok: false,
+      message: 'Error al cargar mazo',
+    });
+  }
+});
 // ================= MAZO STATE =================
 
 app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
