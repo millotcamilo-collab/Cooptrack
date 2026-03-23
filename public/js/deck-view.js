@@ -1,5 +1,9 @@
 const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
+function getToken() {
+  return localStorage.getItem("cooptrackToken");
+}
+
 function goToMazoPage(deck) {
   if (!deck || !deck.id) {
     console.warn("Deck inválido", deck);
@@ -11,11 +15,23 @@ function goToMazoPage(deck) {
 
 async function fetchDecks() {
   try {
-    const response = await fetch(`${API_BASE_URL}/decks`);
+    const token = getToken();
+
+    if (!token) {
+      throw new Error("Token no encontrado");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/decks`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
     const data = await response.json();
 
     if (!response.ok || !data.ok) {
-      throw new Error(data.message || "Error cargando mazos");
+      throw new Error(data.message || data.error || "Error cargando mazos");
     }
 
     return data.decks || [];
