@@ -58,6 +58,7 @@ function normalizePlayRow(play) {
     date: parsed.date || play.created_at || "",
     raw: play.play_code || "",
     status: play.play_status || "",
+    play_text: play.play_text || "",
     parsed
   };
 }
@@ -83,7 +84,10 @@ function isChildOfSpadeJack(play, allPlays) {
   if (!play || String(play.rank || "").toUpperCase() !== "Q") return false;
   if (!play.parentPlayId) return false;
 
-  const mother = allPlays.find((candidate) => String(candidate.id) === String(play.parentPlayId));
+  const mother = allPlays.find(
+    (candidate) => String(candidate.id) === String(play.parentPlayId)
+  );
+
   if (!mother) return false;
 
   const motherRank = String(mother.rank || "").toUpperCase();
