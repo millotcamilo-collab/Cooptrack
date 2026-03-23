@@ -1,9 +1,11 @@
+const API_BASE_URL = "https://cooptrack-backend.onrender.com";
+
 async function getLoggedUser() {
   try {
     const token = localStorage.getItem("cooptrackToken");
     if (!token) return null;
 
-    const response = await fetch("https://cooptrack-backend.onrender.com/me", {
+    const response = await fetch(`${API_BASE_URL}/me`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`
@@ -41,11 +43,18 @@ function getProfileImage(user) {
 
 async function hasDecks() {
   try {
-    const response = await fetch("/decks", {
-      method: "GET"
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) return false;
+
+    const response = await fetch(`${API_BASE_URL}/decks`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     });
 
     if (!response.ok) {
+      if (response.status === 401) return false;
       throw new Error(`Error HTTP ${response.status}`);
     }
 
