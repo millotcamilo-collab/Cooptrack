@@ -79,11 +79,11 @@
     if (!suitPart) return null;
 
     const map = {
-      corazon: "/cor40.gif",
-      pike: "/pik40.gif",
-      diamante: "/dia40.gif",
-      trebol: "/tre40.gif"
-    };
+  corazon: "/assets/icons/cor40.gif",
+  pike: "/assets/icons/pik40.gif",
+  diamante: "/assets/icons/dia40.gif",
+  trebol: "/assets/icons/tre40.gif"
+};
 
     return map[suitPart] || null;
   }
@@ -224,13 +224,13 @@
     return `
       <div class="mazobar__jokers">
         <img
-          src="/Joker120.gif"
+          src="/assets/icons/Joker120.gif"
           alt="Joker rojo"
           title="Joker rojo"
           class="mazobar__joker ${redActive ? "is-active" : "is-inactive"}"
         />
         <img
-          src="/joker_blue.gif"
+          src="/assets/icons/joker_blue.gif"
           alt="Joker azul"
           title="Joker azul"
           class="mazobar__joker ${blueActive ? "is-active" : "is-inactive"}"
