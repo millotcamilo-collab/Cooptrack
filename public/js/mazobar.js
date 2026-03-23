@@ -362,7 +362,8 @@
           play_code: playCode,
           card_rank: "J",
           card_suit: suit,
-          play_status: "ACTIVE"
+          play_status: "ACTIVE",
+          text: text
         })
       });
 
