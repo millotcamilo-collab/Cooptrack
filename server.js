@@ -67,6 +67,7 @@ async function insertValidatedPlay(client, {
   cardRank,
   cardSuit,
   playStatus = 'ACTIVE',
+  playText = '',
 }) {
   const parsed = parseAndValidatePlayCode(playCode);
 
@@ -108,9 +109,10 @@ async function insertValidatedPlay(client, {
       play_code,
       card_rank,
       card_suit,
-      play_status
+      play_status,
+      play_text
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     RETURNING *`,
     [
       deckId,
@@ -120,6 +122,7 @@ async function insertValidatedPlay(client, {
       cardRank,
       cardSuit,
       playStatus,
+      playText || null,
     ]
   );
 
