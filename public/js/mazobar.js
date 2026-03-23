@@ -89,11 +89,11 @@
   }
 
   function getAvatarSrc() {
-    return "/singeta120.gif";
+    return "/assets/icons/singeta120.gif";
   }
 
   function getUserDisplayName(deck) {
-    return deck?.viewer_nickname || deck?.owner_nickname || "Fulano";
+    return deck?.viewer_nickname || deck?.owner_nickname || "fulano";
   }
 
   function getEnabledTopCards(plays) {
