@@ -79,11 +79,11 @@
     if (!suitPart) return null;
 
     const map = {
-  corazon: "/assets/icons/cor40.gif",
-  pike: "/assets/icons/pik40.gif",
-  diamante: "/assets/icons/dia40.gif",
-  trebol: "/assets/icons/tre40.gif"
-};
+      corazon: "/assets/icons/cor40.gif",
+      pike: "/assets/icons/pik40.gif",
+      diamante: "/assets/icons/dia40.gif",
+      trebol: "/assets/icons/tre40.gif"
+    };
 
     return map[suitPart] || null;
   }
@@ -281,7 +281,7 @@
                   />
                   <span class="mazobar__title-name">${deckName}</span>
                   <img
-                    src="/assets/icons//dia40.gif"
+                    src="/assets/icons/dia40.gif"
                     alt="♦"
                     class="mazobar__balance-icon"
                   />
@@ -375,9 +375,9 @@
         return;
       }
 
-      windodocument.dispatchEvent(new CustomEvent("plays:changed", {
-  detail: { deckId }
-}));w.location.reload();
+      document.dispatchEvent(new CustomEvent("plays:changed", {
+        detail: { deckId }
+      }));
     } catch (error) {
       console.error("Error creando play:", error);
     }
