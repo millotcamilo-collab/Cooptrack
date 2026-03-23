@@ -521,6 +521,7 @@ app.post('/plays', requireAuth, async (req, res) => {
     card_rank,
     card_suit,
     play_status = 'ACTIVE',
+    text = '',
   } = req.body;
 
   if (!deck_id) {
@@ -610,6 +611,7 @@ app.post('/plays', requireAuth, async (req, res) => {
       cardRank: String(card_rank).toUpperCase(),
       cardSuit: String(card_suit).toUpperCase(),
       playStatus: play_status,
+      playText: text,
     });
 
     await client.query('COMMIT');
