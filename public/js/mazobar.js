@@ -104,7 +104,7 @@
 
       if (status !== "ACTIVE") return false;
 
-      return (rank === "K" || rank === "Q") && action === "puedeJugar";
+      return (rank === "A" || rank === "K") && action === "puedeJugar";
     });
   }
 
