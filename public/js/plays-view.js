@@ -4,7 +4,7 @@ let lastPlays = [];
 let lastState = null;
 
 function getSuitSymbol(suit) {
-  switch (suit) {
+  switch (String(suit || "").toUpperCase()) {
     case "HEART":
       return "♥";
     case "SPADE":
@@ -68,18 +68,13 @@ function isStructuralBookLine(play) {
   const rank = String(play.rank || "").toUpperCase();
   const action = String(play.action || "").trim();
 
-  // Oculta las 4 líneas iniciales de A no jugadas
   if (rank === "A" && action === "init_ace") {
     return true;
   }
 
-  // Oculta las líneas estructurales Q del libro inicial
   if (rank === "Q" && action === "puedeJugar") {
     return true;
   }
-
-  // Las K con puedeJugar se muestran solo en filtro trébol
-  // así que NO las ocultamos acá de forma permanente
 
   return false;
 }
@@ -101,35 +96,29 @@ function shouldShowPlayByFilter(play, allPlays, activeFilter) {
   const rank = String(play.rank || "").toUpperCase();
   const suit = String(play.suit || "").toUpperCase();
 
-  // Vista general
   if (!activeFilter) {
-    // Mostrar todo menos corporativas A/K
     if (rank === "A" || rank === "K") {
       return false;
     }
     return true;
   }
 
-  // Corazón: solo J♥
   if (activeFilter === "HEART") {
     return rank === "J" && suit === "HEART";
   }
 
-  // Pique: J♠ y sus hijas Q
   if (activeFilter === "SPADE") {
     if (rank === "J" && suit === "SPADE") return true;
     if (isChildOfSpadeJack(play, allPlays)) return true;
     return false;
   }
 
-  // Diamante: J♦ y Q♦
   if (activeFilter === "DIAMOND") {
     if (rank === "J" && suit === "DIAMOND") return true;
     if (rank === "Q" && suit === "DIAMOND") return true;
     return false;
   }
 
-  // Trébol: corporativas visibles
   if (activeFilter === "CLUB") {
     return rank === "A" || rank === "K";
   }
@@ -157,69 +146,238 @@ function buildEmptyPlaysHTML() {
   `;
 }
 
-function getHumanActionText(play) {
-  const rank = String(play.rank || "").toUpperCase();
-  const suitSymbol = getSuitSymbol(play.suit);
-  const action = play.action || "";
+function getHumanStatus(status) {
+  const normalized = String(status || "").toUpperCase();
 
-  if (rank === "J") {
-    if (action === "write_play") {
-      return `J${suitSymbol} nueva jugada`;
-    }
-
-    return `J${suitSymbol} ${action || "jugada"}`;
+  switch (normalized) {
+    case "ACTIVE":
+      return "Activa";
+    case "PENDING":
+      return "Pendiente";
+    case "APPROVED":
+      return "Aprobada";
+    case "REJECTED":
+      return "Rechazada";
+    case "CANCELLED":
+      return "Cancelada";
+    default:
+      return status || "";
   }
-
-  if (rank === "Q") {
-    return `Q${suitSymbol} ${action || "derivada"}`;
-  }
-
-  if (rank === "K") {
-    return `K${suitSymbol} ${action || "permiso"}`;
-  }
-
-  if (rank === "A") {
-    return `A${suitSymbol} ${action || "fundación"}`;
-  }
-
-  if (rank === "JOKER") {
-    return `${suitSymbol} ${action || "joker"}`;
-  }
-
-  return `${rank}${suitSymbol} ${action || ""}`.trim();
 }
 
-function buildPlayRowHTML(play) {
-  const suitSymbol = getSuitSymbol(play.suit);
-  const titleText = getHumanActionText(play);
+function escapeHTML(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function extractPlayText(play) {
+  const parsed = play.parsed || {};
+
+  return (
+    parsed.text ||
+    parsed.description ||
+    parsed.label ||
+    parsed.title ||
+    parsed.name ||
+    ""
+  );
+}
+
+function getDefaultTitle(play) {
+  const rank = String(play.rank || "").toUpperCase();
+  const suit = String(play.suit || "").toUpperCase();
+
+  if (rank === "J" && suit === "HEART") return "Nueva nota";
+  if (rank === "J" && suit === "SPADE") return "Nueva actividad";
+  if (rank === "J" && suit === "CLUB") return "Nuevo bien";
+  if (rank === "J" && suit === "DIAMOND") return "Nuevo registro económico";
+  if (rank === "Q") return "Participación";
+  if (rank === "K") return "Permiso";
+  if (rank === "A") return "Autoridad";
+
+  return "Jugada";
+}
+
+function getPlayTitle(play) {
+  const extracted = extractPlayText(play);
+  if (extracted && extracted.trim()) {
+    return extracted.trim();
+  }
+
+  return getDefaultTitle(play);
+}
+
+function getPlaySubtitle(play) {
+  const parts = [];
+
+  if (play.authorized) {
+    parts.push(play.authorized);
+  }
+
   const dateText = formatPlayDate(play.date);
-  const authorizedText = play.authorized ? ` · ${play.authorized}` : "";
-  const statusText = play.status ? ` · ${play.status}` : "";
+  if (dateText) {
+    parts.push(dateText);
+  }
+
+  return parts.join(" · ");
+}
+
+function buildStatusBadge(play) {
+  const status = getHumanStatus(play.status);
+  if (!status) return "";
+
+  const statusClass = `play-row__status--${String(play.status || "").toLowerCase()}`;
+
+  return `<span class="play-row__status ${statusClass}">${escapeHTML(status)}</span>`;
+}
+
+function buildCardHTML(play) {
+  return `
+    <div class="play-row__card">
+      <span class="play-row__rank">${escapeHTML(play.rank)}</span>
+      <span class="play-row__suit">${escapeHTML(getSuitSymbol(play.suit))}</span>
+    </div>
+  `;
+}
+
+function buildJHeartRowHTML(play) {
+  const title = getPlayTitle(play);
+  const subtitle = getPlaySubtitle(play);
 
   return `
-    <article class="play-row" data-play-id="${play.id || ""}" data-suit="${play.suit || ""}">
+    <article class="play-row play-row--heart" data-play-id="${play.id || ""}">
       <div class="play-row__main">
-        <div class="play-row__card">
-          <span class="play-row__rank">${play.rank}</span>
-          <span class="play-row__suit">${suitSymbol}</span>
-        </div>
+        ${buildCardHTML(play)}
 
         <div class="play-row__body">
-          <div class="play-row__text">
-            ${titleText}${authorizedText}${statusText}
-          </div>
+          <div class="play-row__title">${escapeHTML(title)}</div>
+          ${subtitle ? `<div class="play-row__meta">${escapeHTML(subtitle)}</div>` : ""}
+        </div>
 
-          <div class="play-row__meta">
-            <span>${dateText}</span>
-          </div>
-
-          <div class="play-row__code">
-            ${play.raw}
-          </div>
+        <div class="play-row__side">
+          ${buildStatusBadge(play)}
         </div>
       </div>
     </article>
   `;
+}
+
+function buildJSpadeRowHTML(play) {
+  const parsed = play.parsed || {};
+  const title = getPlayTitle(play);
+  const subtitle = getPlaySubtitle(play);
+
+  const startAt = parsed.start_at || parsed.startDate || parsed.start || "";
+  const endAt = parsed.end_at || parsed.endDate || parsed.end || "";
+  const location = parsed.location || parsed.place || parsed.address || "";
+
+  const detailParts = [];
+
+  if (startAt) detailParts.push(`Inicio: ${formatPlayDate(startAt)}`);
+  if (endAt) detailParts.push(`Fin: ${formatPlayDate(endAt)}`);
+  if (location) detailParts.push(`Lugar: ${location}`);
+
+  return `
+    <article class="play-row play-row--spade" data-play-id="${play.id || ""}">
+      <div class="play-row__main">
+        ${buildCardHTML(play)}
+
+        <div class="play-row__body">
+          <div class="play-row__title">${escapeHTML(title)}</div>
+          ${subtitle ? `<div class="play-row__meta">${escapeHTML(subtitle)}</div>` : ""}
+          ${detailParts.length
+            ? `<div class="play-row__details">${detailParts.map(escapeHTML).join(" · ")}</div>`
+            : ""
+          }
+        </div>
+
+        <div class="play-row__side">
+          ${buildStatusBadge(play)}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function buildJClubRowHTML(play) {
+  const parsed = play.parsed || {};
+  const title = getPlayTitle(play);
+  const subtitle = getPlaySubtitle(play);
+
+  const amount =
+    parsed.amount ||
+    parsed.price ||
+    parsed.total ||
+    parsed.value ||
+    "";
+
+  const quantity =
+    parsed.quantity ||
+    parsed.qty ||
+    "";
+
+  const detailParts = [];
+
+  if (quantity) detailParts.push(`Cantidad: ${quantity}`);
+  if (amount) detailParts.push(`Monto: ${amount}`);
+
+  return `
+    <article class="play-row play-row--club" data-play-id="${play.id || ""}">
+      <div class="play-row__main">
+        ${buildCardHTML(play)}
+
+        <div class="play-row__body">
+          <div class="play-row__title">${escapeHTML(title)}</div>
+          ${subtitle ? `<div class="play-row__meta">${escapeHTML(subtitle)}</div>` : ""}
+          ${detailParts.length
+            ? `<div class="play-row__details">${detailParts.map(escapeHTML).join(" · ")}</div>`
+            : ""
+          }
+        </div>
+
+        <div class="play-row__side">
+          ${buildStatusBadge(play)}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function buildGenericPlayRowHTML(play) {
+  const title = getPlayTitle(play);
+  const subtitle = getPlaySubtitle(play);
+
+  return `
+    <article class="play-row" data-play-id="${play.id || ""}">
+      <div class="play-row__main">
+        ${buildCardHTML(play)}
+
+        <div class="play-row__body">
+          <div class="play-row__title">${escapeHTML(title)}</div>
+          ${subtitle ? `<div class="play-row__meta">${escapeHTML(subtitle)}</div>` : ""}
+        </div>
+
+        <div class="play-row__side">
+          ${buildStatusBadge(play)}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function buildPlayRowHTML(play) {
+  const rank = String(play.rank || "").toUpperCase();
+  const suit = String(play.suit || "").toUpperCase();
+
+  if (rank === "J" && suit === "HEART") return buildJHeartRowHTML(play);
+  if (rank === "J" && suit === "SPADE") return buildJSpadeRowHTML(play);
+  if (rank === "J" && suit === "CLUB") return buildJClubRowHTML(play);
+
+  return buildGenericPlayRowHTML(play);
 }
 
 function renderPlaysView(deck, plays = [], state = null) {
@@ -262,10 +420,7 @@ function renderPlaysView(deck, plays = [], state = null) {
 
 document.addEventListener("mazobar:filter", (event) => {
   const incomingFilter = event.detail?.filter || null;
-
-  // tocar el mismo botón apaga el filtro
   currentSuitFilter = currentSuitFilter === incomingFilter ? null : incomingFilter;
-
   renderPlaysView(lastDeck, lastPlays, lastState);
 });
 
