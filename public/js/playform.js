@@ -3,6 +3,45 @@
     return localStorage.getItem("cooptrackToken");
   }
 
+  function setActivePlayform(value) {
+    sessionStorage.setItem("activePlayform", value || "");
+  }
+
+  function getActivePlayform() {
+    return sessionStorage.getItem("activePlayform") || "";
+  }
+
+  function isJPlayformOpen() {
+    return getActivePlayform() === "J";
+  }
+
+  function openJPlayform() {
+    const form = document.getElementById("playform-j");
+    if (!form) return;
+
+    form.classList.remove("is-hidden");
+    setActivePlayform("J");
+
+    const input = document.getElementById("playformTextInput");
+    if (input) input.focus();
+  }
+
+  function closeJPlayform() {
+    const form = document.getElementById("playform-j");
+    if (!form) return;
+
+    form.classList.add("is-hidden");
+    setActivePlayform("");
+  }
+
+  function toggleJPlayform() {
+    if (isJPlayformOpen()) {
+      closeJPlayform();
+    } else {
+      openJPlayform();
+    }
+  }
+
   function clearPlayform() {
     const container = document.getElementById("playform-container");
     if (!container) return;
@@ -16,8 +55,6 @@
       return true;
     }
 
-    // Por ahora simple:
-    // si existe el mazo y hay sesión, puede usar +J
     return true;
   }
 
@@ -112,6 +149,7 @@
 
     dispatchCreatePlay(deck, state, suit, text);
     input.value = "";
+    input.focus();
   }
 
   function attachPlayformEvents(deck, state) {
@@ -125,7 +163,10 @@
 
     document.getElementById("playformClearBtn")?.addEventListener("click", () => {
       const input = document.getElementById("playformTextInput");
-      if (input) input.value = "";
+      if (input) {
+        input.value = "";
+        input.focus();
+      }
     });
 
     document.getElementById("playformTextInput")?.addEventListener("keydown", (event) => {
@@ -137,15 +178,7 @@
   }
 
   document.addEventListener("mazobar:addJ", () => {
-    const form = document.getElementById("playform-j");
-    if (!form) return;
-
-    form.classList.toggle("is-hidden");
-
-    if (!form.classList.contains("is-hidden")) {
-      const input = document.getElementById("playformTextInput");
-      if (input) input.focus();
-    }
+    toggleJPlayform();
   });
 
   function renderPlayform(deck, state = null) {
@@ -163,6 +196,12 @@
 
     container.innerHTML = buildPlayformHTML();
     attachPlayformEvents(deck, state);
+
+    if (isJPlayformOpen()) {
+      openJPlayform();
+    } else {
+      closeJPlayform();
+    }
   }
 
   window.renderPlayform = renderPlayform;
