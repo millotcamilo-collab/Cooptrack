@@ -1,3 +1,8 @@
+let currentSuitFilter = null;
+let lastDeck = null;
+let lastPlays = [];
+let lastState = null;
+
 function getSuitSymbol(suit) {
   switch (suit) {
     case "HEART":
@@ -45,6 +50,7 @@ function normalizePlayRow(play) {
 
   return {
     id: play.id || null,
+    parentPlayId: play.parent_play_id || null,
     rank: parsed.rank || play.card_rank || "",
     suit: parsed.suit || play.card_suit || "",
     action: parsed.action || "",
@@ -62,21 +68,81 @@ function isStructuralBookLine(play) {
   const rank = String(play.rank || "").toUpperCase();
   const action = String(play.action || "").trim();
 
-  // Oculta las 4 líneas iniciales de A
+  // Oculta las 4 líneas iniciales de A no jugadas
   if (rank === "A" && action === "init_ace") {
     return true;
   }
 
-  // Oculta las líneas estructurales K/Q del libro inicial
-  if ((rank === "K" || rank === "Q") && action === "puedeJugar") {
+  // Oculta las líneas estructurales Q del libro inicial
+  if (rank === "Q" && action === "puedeJugar") {
     return true;
   }
+
+  // Las K con puedeJugar se muestran solo en filtro trébol
+  // así que NO las ocultamos acá de forma permanente
 
   return false;
 }
 
-function getVisiblePlays(plays) {
-  return plays.filter((play) => !isStructuralBookLine(play));
+function isChildOfSpadeJack(play, allPlays) {
+  if (!play || String(play.rank || "").toUpperCase() !== "Q") return false;
+  if (!play.parentPlayId) return false;
+
+  const mother = allPlays.find((candidate) => String(candidate.id) === String(play.parentPlayId));
+  if (!mother) return false;
+
+  const motherRank = String(mother.rank || "").toUpperCase();
+  const motherSuit = String(mother.suit || "").toUpperCase();
+
+  return motherRank === "J" && motherSuit === "SPADE";
+}
+
+function shouldShowPlayByFilter(play, allPlays, activeFilter) {
+  const rank = String(play.rank || "").toUpperCase();
+  const suit = String(play.suit || "").toUpperCase();
+
+  // Vista general
+  if (!activeFilter) {
+    // Mostrar todo menos corporativas A/K
+    if (rank === "A" || rank === "K") {
+      return false;
+    }
+    return true;
+  }
+
+  // Corazón: solo J♥
+  if (activeFilter === "HEART") {
+    return rank === "J" && suit === "HEART";
+  }
+
+  // Pique: J♠ y sus hijas Q
+  if (activeFilter === "SPADE") {
+    if (rank === "J" && suit === "SPADE") return true;
+    if (isChildOfSpadeJack(play, allPlays)) return true;
+    return false;
+  }
+
+  // Diamante: J♦ y Q♦
+  if (activeFilter === "DIAMOND") {
+    if (rank === "J" && suit === "DIAMOND") return true;
+    if (rank === "Q" && suit === "DIAMOND") return true;
+    return false;
+  }
+
+  // Trébol: corporativas visibles
+  if (activeFilter === "CLUB") {
+    return rank === "A" || rank === "K";
+  }
+
+  return true;
+}
+
+function getVisiblePlays(plays, activeFilter = null) {
+  const nonStructural = plays.filter((play) => !isStructuralBookLine(play));
+
+  return nonStructural.filter((play) =>
+    shouldShowPlayByFilter(play, nonStructural, activeFilter)
+  );
 }
 
 function buildEmptyPlaysHTML() {
@@ -164,11 +230,15 @@ function renderPlaysView(deck, plays = [], state = null) {
     return;
   }
 
+  lastDeck = deck;
+  lastPlays = plays;
+  lastState = state;
+
   const normalizedPlays = Array.isArray(plays)
     ? plays.map(normalizePlayRow).filter(Boolean)
     : [];
 
-  const visiblePlays = getVisiblePlays(normalizedPlays);
+  const visiblePlays = getVisiblePlays(normalizedPlays, currentSuitFilter);
 
   if (!visiblePlays.length) {
     container.innerHTML = buildEmptyPlaysHTML();
@@ -189,5 +259,14 @@ function renderPlaysView(deck, plays = [], state = null) {
     </section>
   `;
 }
+
+document.addEventListener("mazobar:filter", (event) => {
+  const incomingFilter = event.detail?.filter || null;
+
+  // tocar el mismo botón apaga el filtro
+  currentSuitFilter = currentSuitFilter === incomingFilter ? null : incomingFilter;
+
+  renderPlaysView(lastDeck, lastPlays, lastState);
+});
 
 window.renderPlaysView = renderPlaysView;
