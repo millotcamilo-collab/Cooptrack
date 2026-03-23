@@ -275,13 +275,13 @@
                 <div class="mazobar__titleline">
                   <span class="mazobar__title-rank">A</span>
                   <img
-                    src="/cor40.gif"
+                    src="/assets/icons/cor40.gif"
                     alt="♥"
                     class="mazobar__title-suit"
                   />
                   <span class="mazobar__title-name">${deckName}</span>
                   <img
-                    src="/dia40.gif"
+                    src="/assets/icons//dia40.gif"
                     alt="♦"
                     class="mazobar__balance-icon"
                   />
