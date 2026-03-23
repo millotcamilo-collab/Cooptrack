@@ -23,7 +23,7 @@
 
   function buildPlayformHTML() {
     return `
-      <section class="playform">
+      <section id="playform-j" class="playform is-hidden">
         <div class="page-container">
           <div class="playform__inner">
 
@@ -135,6 +135,18 @@
       }
     });
   }
+
+  document.addEventListener("mazobar:addJ", () => {
+    const form = document.getElementById("playform-j");
+    if (!form) return;
+
+    form.classList.toggle("is-hidden");
+
+    if (!form.classList.contains("is-hidden")) {
+      const input = document.getElementById("playformTextInput");
+      if (input) input.focus();
+    }
+  });
 
   function renderPlayform(deck, state = null) {
     const container = document.getElementById("playform-container");
