@@ -23,108 +23,124 @@
   <script src="/js/topbar.js"></script>
 
   <script>
-    const API_BASE_URL = "https://cooptrack-backend.onrender.com";
+  const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
-    function getToken() {
-      return localStorage.getItem("cooptrackToken");
-    }
+  function getToken() {
+    return localStorage.getItem("cooptrackToken");
+  }
 
-    async function fetchDeckById(deckId) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/decks/${deckId}`);
-        const data = await response.json();
+  async function fetchDeckById(deckId) {
+    try {
+      const token = getToken();
 
-        if (!response.ok || !data.ok) {
-          throw new Error(data.message || "Error cargando mazo");
-        }
-
-        return data.deck;
-      } catch (error) {
-        console.error("Error trayendo deck:", error);
-        return null;
+      if (!token) {
+        throw new Error("Token no encontrado");
       }
-    }
 
-    async function fetchDeckState(deckId) {
-      try {
-        const token = getToken();
-
-        const response = await fetch(`${API_BASE_URL}/mazo/${deckId}/state`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || "Error cargando estado del mazo");
+      const response = await fetch(`${API_BASE_URL}/decks/${deckId}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`
         }
-
-        return data;
-      } catch (error) {
-        console.error("Error trayendo estado del mazo:", error);
-        return null;
-      }
-    }
-
-    function clearDeckView() {
-      const ids = [
-        "mazobar-container",
-        "playform-container",
-        "plays-view-container"
-      ];
-
-      ids.forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = "";
       });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        throw new Error(data.message || "Error cargando mazo");
+      }
+
+      return data.deck;
+    } catch (error) {
+      console.error("Error trayendo deck:", error);
+      return null;
+    }
+  }
+
+  async function fetchDeckState(deckId) {
+    try {
+      const token = getToken();
+
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+
+      const response = await fetch(`${API_BASE_URL}/mazo/${deckId}/state`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "Error cargando estado del mazo");
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error trayendo estado del mazo:", error);
+      return null;
+    }
+  }
+
+  function clearDeckView() {
+    const ids = [
+      "mazobar-container",
+      "playform-container",
+      "plays-view-container"
+    ];
+
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = "";
+    });
+  }
+
+  async function initMazoPage() {
+    const params = new URLSearchParams(window.location.search);
+    const deckId = params.get("id");
+
+    clearDeckView();
+
+    if (!deckId) {
+      console.warn("Mazo sin id");
+      return;
     }
 
-    async function initMazoPage() {
-      const params = new URLSearchParams(window.location.search);
-      const deckId = params.get("id");
+    const [deck, state] = await Promise.all([
+      fetchDeckById(deckId),
+      fetchDeckState(deckId)
+    ]);
 
-      clearDeckView();
+    console.log("deck:", deck);
+    console.log("state:", state);
 
-      if (!deckId) {
-        console.warn("Mazo sin id");
-        return;
-      }
-
-      const [deck, state] = await Promise.all([
-        fetchDeckById(deckId),
-        fetchDeckState(deckId)
-      ]);
-
-      console.log("deck:", deck);
-      console.log("state:", state);
-
-      if (!deck) {
-        console.warn("No se pudo cargar el mazo");
-        return;
-      }
-
-      if (!state) {
-        console.warn("No se pudo cargar el estado del mazo");
-        return;
-      }
-
-      if (typeof renderMazobar === "function") {
-        renderMazobar(deck, state.plays || [], state.userId);
-      }
-
-      if (typeof renderPlayform === "function") {
-        renderPlayform(deck, state);
-      }
-
-      if (typeof renderPlaysView === "function") {
-        renderPlaysView(deck, state.plays || [], state);
-      }
+    if (!deck) {
+      console.warn("No se pudo cargar el mazo");
+      return;
     }
 
-    initMazoPage();
-  </script>
+    if (!state) {
+      console.warn("No se pudo cargar el estado del mazo");
+      return;
+    }
+
+    if (typeof renderMazobar === "function") {
+      renderMazobar(deck, state.plays || [], state.userId);
+    }
+
+    if (typeof renderPlayform === "function") {
+      renderPlayform(deck, state);
+    }
+
+    if (typeof renderPlaysView === "function") {
+      renderPlaysView(deck, state.plays || [], state);
+    }
+  }
+
+  initMazoPage();
+</script>
 </body>
 </html>
