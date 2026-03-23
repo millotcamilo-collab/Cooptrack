@@ -139,7 +139,15 @@
       renderPlaysView(deck, state.plays || [], state);
     }
   }
+    
+document.addEventListener("plays:changed", async (event) => {
+  const deckId = event.detail?.deckId;
+  if (!deckId) return;
 
+  console.log("REFRESCANDO MAZO", deckId);
+
+  await initMazoPage();
+});
   initMazoPage();
 </script>
 </body>
