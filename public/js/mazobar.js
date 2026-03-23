@@ -374,7 +374,9 @@
         return;
       }
 
-      window.location.reload();
+      windodocument.dispatchEvent(new CustomEvent("plays:changed", {
+  detail: { deckId }
+}));w.location.reload();
     } catch (error) {
       console.error("Error creando play:", error);
     }
