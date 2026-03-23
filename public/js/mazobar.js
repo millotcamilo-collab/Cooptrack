@@ -71,7 +71,7 @@
 
     if (!r || !suitPart) return null;
 
-    return `/icons/${r}${suitPart}.gif`;
+    return `/assets/icons/${r}${suitPart}.gif`;
   }
 
   function getSuitButtonImageSrc(suit) {
