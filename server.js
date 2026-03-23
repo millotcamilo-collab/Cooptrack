@@ -46,6 +46,19 @@ function requireAuth(req, res, next) {
 
 // ================= HELPERS =================
 
+async function userIsDeckMember(client, deckId, userId) {
+  const result = await client.query(
+    `SELECT 1
+     FROM deck_members
+     WHERE deck_id = $1
+       AND user_id = $2
+     LIMIT 1`,
+    [deckId, userId]
+  );
+
+  return result.rows.length > 0;
+}
+
 async function insertValidatedPlay(client, {
   deckId,
   createdByUserId,
@@ -306,6 +319,7 @@ app.post('/decks', requireAuth, async (req, res) => {
       { rank: 'A', suit: 'SPADE', action: 'init_ace', status: 'ACTIVE' },
       { rank: 'A', suit: 'DIAMOND', action: 'init_ace', status: 'ACTIVE' },
       { rank: 'A', suit: 'CLUB', action: 'puedeJugar', status: 'ACTIVE' },
+
       // 4 K estructurales
       { rank: 'K', suit: 'HEART', action: 'puedeJugar', status: 'ACTIVE' },
       { rank: 'K', suit: 'SPADE', action: 'puedeJugar', status: 'ACTIVE' },
@@ -364,26 +378,44 @@ app.post('/decks', requireAuth, async (req, res) => {
   }
 });
 
-app.get('/decks', async (req, res) => {
+app.get('/decks', requireAuth, async (req, res) => {
   try {
+    const userId = req.auth.userId;
+
     const result = await pool.query(
-      `SELECT * FROM decks ORDER BY id DESC`
+      `SELECT d.*
+       FROM decks d
+       INNER JOIN deck_members dm
+         ON dm.deck_id = d.id
+       WHERE dm.user_id = $1
+       ORDER BY d.id DESC`,
+      [userId]
     );
 
-    res.json({ ok: true, decks: result.rows });
+    res.json({
+      ok: true,
+      decks: result.rows,
+    });
   } catch (error) {
     console.error('Error en GET /decks', error);
     res.status(500).json({ ok: false });
   }
 });
 
-app.get('/decks/:deckId', async (req, res) => {
+app.get('/decks/:deckId', requireAuth, async (req, res) => {
   try {
     const { deckId } = req.params;
+    const userId = req.auth.userId;
 
     const result = await pool.query(
-      `SELECT * FROM decks WHERE id = $1 LIMIT 1`,
-      [deckId]
+      `SELECT d.*
+       FROM decks d
+       INNER JOIN deck_members dm
+         ON dm.deck_id = d.id
+       WHERE d.id = $1
+         AND dm.user_id = $2
+       LIMIT 1`,
+      [deckId, userId]
     );
 
     if (!result.rows.length) {
@@ -413,9 +445,31 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
     const { deckId } = req.params;
     const userId = req.auth.userId;
 
+    const memberCheck = await pool.query(
+      `SELECT 1
+       FROM deck_members
+       WHERE deck_id = $1
+         AND user_id = $2
+       LIMIT 1`,
+      [deckId, userId]
+    );
+
+    if (!memberCheck.rows.length) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Mazo no encontrado',
+      });
+    }
+
     const result = await pool.query(
-      `SELECT * FROM plays WHERE deck_id = $1 ORDER BY id ASC`,
-      [deckId]
+      `SELECT p.*
+       FROM plays p
+       INNER JOIN deck_members dm
+         ON dm.deck_id = p.deck_id
+       WHERE p.deck_id = $1
+         AND dm.user_id = $2
+       ORDER BY p.id ASC`,
+      [deckId, userId]
     );
 
     const plays = result.rows.map((row) => {
@@ -432,7 +486,7 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
         (p) => p.parsed.rank === 'A' && p.parsed.suit === 'HEART'
       ),
       hasBlueJoker: plays.some(
-        (p) => p.parsed.rank === 'JOKER' || p.parsed.suit === 'BLUE'
+        (p) => p.parsed.rank === 'JOKER' && p.parsed.suit === 'BLUE'
       ),
       hasCorporateCards: plays.some(
         (p) => p.parsed.suit === 'CLUB'
@@ -458,7 +512,6 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
 
 // ================= PLAYS =================
 
-// Crear play real, validando play_code antes de guardar
 app.post('/plays', requireAuth, async (req, res) => {
   const userId = req.auth.userId;
   const {
@@ -503,7 +556,6 @@ app.post('/plays', requireAuth, async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // Verifica que el deck exista
     const deckCheck = await client.query(
       `SELECT id FROM decks WHERE id = $1 LIMIT 1`,
       [deck_id]
@@ -517,7 +569,16 @@ app.post('/plays', requireAuth, async (req, res) => {
       });
     }
 
-    // Si viene parent_play_id, valida que exista y pertenezca al mismo deck
+    const isMember = await userIsDeckMember(client, deck_id, userId);
+
+    if (!isMember) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({
+        ok: false,
+        error: 'No pertenecés a este mazo',
+      });
+    }
+
     if (parent_play_id) {
       const parentCheck = await client.query(
         `SELECT id, deck_id FROM plays WHERE id = $1 LIMIT 1`,
@@ -572,8 +633,16 @@ app.post('/plays', requireAuth, async (req, res) => {
 // Listado general de plays
 app.get('/plays', requireAuth, async (req, res) => {
   try {
+    const userId = req.auth.userId;
+
     const result = await pool.query(
-      `SELECT * FROM plays ORDER BY created_at DESC`
+      `SELECT p.*
+       FROM plays p
+       INNER JOIN deck_members dm
+         ON dm.deck_id = p.deck_id
+       WHERE dm.user_id = $1
+       ORDER BY p.created_at DESC`,
+      [userId]
     );
 
     res.json({
@@ -593,12 +662,33 @@ app.get('/plays', requireAuth, async (req, res) => {
 app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
   try {
     const { deckId } = req.params;
+    const userId = req.auth.userId;
+
+    const memberCheck = await pool.query(
+      `SELECT 1
+       FROM deck_members
+       WHERE deck_id = $1
+         AND user_id = $2
+       LIMIT 1`,
+      [deckId, userId]
+    );
+
+    if (!memberCheck.rows.length) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Mazo no encontrado',
+      });
+    }
 
     const result = await pool.query(
-      `SELECT * FROM plays
-       WHERE deck_id = $1
-       ORDER BY id ASC`,
-      [deckId]
+      `SELECT p.*
+       FROM plays p
+       INNER JOIN deck_members dm
+         ON dm.deck_id = p.deck_id
+       WHERE p.deck_id = $1
+         AND dm.user_id = $2
+       ORDER BY p.id ASC`,
+      [deckId, userId]
     );
 
     const plays = result.rows.map((row) => ({
@@ -622,6 +712,7 @@ app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
 });
 
 // ================= START =================
+
 console.log('PORT recibido:', PORT);
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`CoopTrack server running on port ${PORT}`);
