@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CoopTrack · Help</title>
- <link rel="stylesheet" href="/css/topbar.css">
+  <link rel="stylesheet" href="/css/topbar.css">
   <style>
     :root {
       --bg: #f7f4ee;
@@ -26,10 +26,6 @@
       color: var(--ink);
       line-height: 1.5;
     }
-
-    /* =========================
-       TOPBAR
-    ========================= */
 
     .topbar {
       display: flex;
@@ -95,14 +91,10 @@
       font-weight: 600;
     }
 
-    /* =========================
-       CONTENT (desplazado por topbar)
-    ========================= */
-
     header {
       border-bottom: 1px solid var(--line);
       background: var(--card);
-      padding: 90px 22px 18px; /* 👈 clave para no tapar contenido */
+      padding: 90px 22px 18px;
     }
 
     header h1 {
@@ -189,19 +181,36 @@
     }
 
     a { color: inherit; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: #fff;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f3efe8;
+      font-weight: 600;
+    }
   </style>
 </head>
 
 <body>
-
-  <!-- ✅ TOPBAR -->
   <div id="topbar-container"></div>
 
   <header>
     <h1>CoopTrack · Help</h1>
     <p>
       CoopTrack organiza trabajo, autoridad, participación y validación mediante cartas dentro de mazos.
-      Este help resume cómo leer la interfaz, cómo se compone una jugada y qué cambia entre Joker rojo y Joker azul.
+      Este help resume cómo leer la interfaz, cómo se compone una jugada, qué es el libro de jugadas y qué cambia entre Joker rojo y Joker azul.
     </p>
   </header>
 
@@ -210,15 +219,17 @@
       <h2>Índice rápido</h2>
       <div class="grid">
         <div><a href="#idea">1. Idea central</a></div>
-        <div><a href="#palos">2. Palos y cartas</a></div>
-        <div><a href="#joker">3. Joker rojo y azul</a></div>
-        <div><a href="#renglon">4. El renglón jugada</a></div>
-        <div><a href="#j">5. Jugadas que empiezan con J</a></div>
-        <div><a href="#q">6. Participaciones Q</a></div>
-        <div><a href="#autoridad">7. Ases y Reyes</a></div>
-        <div><a href="#comments">8. Comentarios y evidencia</a></div>
-        <div><a href="#awards">9. Awards y quejas</a></div>
-        <div><a href="#iconos">10. Íconos y hover</a></div>
+        <div><a href="#libro">2. Qué es el libro de jugadas</a></div>
+        <div><a href="#palos">3. Palos y cartas</a></div>
+        <div><a href="#tabla-cartas">4. Tabla fija de cartas</a></div>
+        <div><a href="#joker">5. Joker rojo y azul</a></div>
+        <div><a href="#renglon">6. El renglón jugada</a></div>
+        <div><a href="#j">7. Jugadas que empiezan con J</a></div>
+        <div><a href="#q">8. Participaciones Q</a></div>
+        <div><a href="#autoridad">9. Ases y Reyes</a></div>
+        <div><a href="#comments">10. Comentarios y evidencia</a></div>
+        <div><a href="#awards">11. Awards y quejas</a></div>
+        <div><a href="#iconos">12. Íconos y hover</a></div>
       </div>
     </section>
 
@@ -234,24 +245,60 @@
       </p>
     </section>
 
+    <section id="libro">
+      <h2>2. Qué es el libro de jugadas</h2>
+      <p>
+        Cada mazo tiene un libro de jugadas. Ese libro no es solamente una lista de objetos: es una secuencia ordenada de líneas.
+        Cada línea representa una carta del mazo o una jugada realizada dentro del mazo.
+      </p>
+      <p>
+        La verdad del mazo no surge de un único registro actual, sino de la lectura acumulada de sus líneas.
+        Por eso CoopTrack no se entiende solamente mirando “el último estado”, sino leyendo qué cartas existen,
+        cuáles están habilitadas y qué jugadas efectivamente se hicieron.
+      </p>
+      <pre>Libro = líneas fijas + jugadas concretas</pre>
+      <p>
+        Todo mazo nace con una cabecera fija de doce líneas:
+      </p>
+      <ul>
+        <li>4 Ases: A♥, A♠, A♦, A♣</li>
+        <li>4 Reyes: K♥, K♠, K♦, K♣</li>
+        <li>4 Reinas: Q♥, Q♠, Q♦, Q♣</li>
+      </ul>
+      <p>
+        Esas líneas no son todas “actividad”. Algunas fundan el mazo y otras establecen qué cartas están disponibles
+        y quién puede ejecutarlas. Después de esa cabecera fija empiezan las jugadas reales del mazo.
+      </p>
+      <p>
+        En términos simples:
+      </p>
+      <ul>
+        <li><strong>las líneas fijas</strong> dicen qué estructura existe</li>
+        <li><strong>las jugadas</strong> dicen qué pasó realmente</li>
+      </ul>
+      <p class="small">
+        La interfaz muestra solo una parte del libro a la vez. El help intenta explicar la lógica completa que hay detrás.
+      </p>
+    </section>
+
     <section id="palos">
-      <h2>2. Palos y cartas</h2>
+      <h2>3. Palos y cartas</h2>
       <div class="grid">
         <div class="card">
           <h3 class="red">♥ Corazones</h3>
-          <p>Creatividad, sentido, vínculo, fundación.</p>
+          <p>Creatividad, sentido, vínculo, edición, validación humana.</p>
         </div>
         <div class="card">
           <h3 class="black">♠ Picas</h3>
-          <p>Ejecución, actividad, presencia, cumplimiento.</p>
+          <p>Agenda, actividad, ejecución, presencia, fechas, cumplimiento.</p>
         </div>
         <div class="card">
           <h3 class="red">♦ Diamantes</h3>
-          <p>Inversión, pago, valor económico, cuentas.</p>
+          <p>Valor económico, inversión, pago, registro de montos y cuentas.</p>
         </div>
         <div class="card">
           <h3 class="black">♣ Tréboles</h3>
-          <p>Bienes, producción, publicación, entrega, integración.</p>
+          <p>Bienes, estructura corporativa, publicación, activos, producción e integración.</p>
         </div>
       </div>
       <div style="margin-top:12px;">
@@ -262,8 +309,110 @@
       </div>
     </section>
 
+    <section id="tabla-cartas">
+      <h2>4. Tabla fija de cartas</h2>
+      <p>
+        Esta tabla resume el sentido general de cada familia de carta dentro de CoopTrack.
+        Puede servir como base futura para un help dinámico, tooltips o ayuda contextual por carta.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Carta</th>
+            <th>Plano</th>
+            <th>Qué representa</th>
+            <th>Uso general</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>A</td>
+            <td>Autoridad / estructura</td>
+            <td>Fundación o autoridad primaria</td>
+            <td>Define el marco originario del mazo o habilita actos de autoridad</td>
+          </tr>
+          <tr>
+            <td>K</td>
+            <td>Autoridad / estructura</td>
+            <td>Delegación o potestad activa</td>
+            <td>Distribuye capacidad de actuar dentro de un palo</td>
+          </tr>
+          <tr>
+            <td>J</td>
+            <td>Actividad / producción</td>
+            <td>Jugada madre</td>
+            <td>Registra una acción, hecho, nota, propuesta, evento o componente económico</td>
+          </tr>
+          <tr>
+            <td>Q</td>
+            <td>Actividad / derivación</td>
+            <td>Jugada hija</td>
+            <td>Invita, deriva, participa, acepta o responde a una jugada previa</td>
+          </tr>
+          <tr>
+            <td>Joker</td>
+            <td>Gobernanza especial</td>
+            <td>Condición excepcional del mazo</td>
+            <td>Amplía, restringe o modifica el régimen general del mazo</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Carta</th>
+            <th>Ejemplo de sentido por palo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>A♥</td>
+            <td>Define el mazo desde su eje humano, editorial o sensible</td>
+          </tr>
+          <tr>
+            <td>A♠</td>
+            <td>Autoridad originaria sobre agenda, hechos, tiempo y eventos</td>
+          </tr>
+          <tr>
+            <td>A♦</td>
+            <td>Autoridad originaria sobre valor, montos y economía del mazo</td>
+          </tr>
+          <tr>
+            <td>A♣</td>
+            <td>Autoridad originaria sobre bienes, estructura, activos y dimensión corporativa</td>
+          </tr>
+          <tr>
+            <td>J♥</td>
+            <td>Nota, publicación, texto o pieza humana/editorial</td>
+          </tr>
+          <tr>
+            <td>J♠</td>
+            <td>Evento, cita, deadline o jugada de agenda</td>
+          </tr>
+          <tr>
+            <td>J♦</td>
+            <td>Monto, costo, pago, inversión o registro económico</td>
+          </tr>
+          <tr>
+            <td>J♣</td>
+            <td>Bien, activo, oferta, pieza corporativa o relación institucional</td>
+          </tr>
+          <tr>
+            <td>Q</td>
+            <td>Participación derivada sobre una jugada madre previa</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="small">
+        Esta tabla no reemplaza las reglas completas del sistema. Sirve para orientar al usuario y dar una lectura rápida de la gramática de CoopTrack.
+      </p>
+    </section>
+
     <section id="joker">
-      <h2>3. Joker rojo y Joker azul</h2>
+      <h2>5. Joker rojo y azul</h2>
       <div class="grid">
         <div class="card">
           <h3>Joker rojo</h3>
@@ -292,7 +441,7 @@
     </section>
 
     <section id="renglon">
-      <h2>4. El renglón jugada</h2>
+      <h2>6. El renglón jugada</h2>
       <p>
         El renglón es la unidad visible principal del mazo. Muestra una jugada y sus derivaciones.
       </p>
@@ -309,7 +458,7 @@ Y = jugada derivada derecha</pre>
     </section>
 
     <section id="j">
-      <h2>5. Jugadas que empiezan con J</h2>
+      <h2>7. Jugadas que empiezan con J</h2>
       <p>
         Las jugadas J abren renglones de trabajo. Una vez que una jugada arranca con J, no mezcla K ni A dentro de la misma jugada.
         Las jugadas J producen realidad; las jugadas K/A gobiernan esa realidad desde otra capa.
@@ -325,7 +474,7 @@ Y = jugada derivada derecha</pre>
         </div>
         <div class="card">
           <h3>J♣ Bien</h3>
-          <p>Oferta o descripción de un bien. Puede vincularse con J♦.</p>
+          <p>Oferta, activo, pieza corporativa o descripción de un bien. Puede vincularse con J♦.</p>
         </div>
         <div class="card">
           <h3>J♦ Registro económico</h3>
@@ -335,16 +484,19 @@ Y = jugada derivada derecha</pre>
     </section>
 
     <section id="q">
-      <h2>6. Participaciones Q</h2>
+      <h2>8. Participaciones Q</h2>
       <p>
         Las Q siempre existen sobre una jugada previa. No existen solas.
       </p>
       <ul>
-        <li><strong>J♠</strong> puede tener múltiples Q♠.</li>
-        <li><strong>J♣</strong> solo admite una única Q♣.</li>
-        <li><strong>Q♥</strong> expresa intención económica.</li>
-        <li><strong>Q♦</strong> concreta la transferencia de valor.</li>
+        <li><strong>Q</strong> es una jugada hija.</li>
+        <li><strong>J</strong> suele ser la madre.</li>
+        <li>Puede expresar invitación, aceptación, rechazo o derivación.</li>
+        <li>Puede incorporar a un tercero a una jugada ya abierta.</li>
       </ul>
+      <p>
+        En lenguaje simple: una J abre una realidad y una Q incorpora una participación sobre esa realidad.
+      </p>
       <p>
         Si no hay Joker azul, Q♥ y Q♦ quedan inhabilitadas.
       </p>
@@ -354,80 +506,5 @@ Y = jugada derivada derecha</pre>
     </section>
 
     <section id="autoridad">
-      <h2>7. Ases y Reyes</h2>
+      <h2>9. Ases y Reyes</h2>
       <p>
-        Los Ases se juegan desde la carta visible al lado de la foto del usuario. Al hacer click se abre un subform institucional.
-      </p>
-      <ul>
-        <li>Elegir destinatario.</li>
-        <li>Transferir el As.</li>
-        <li>O asignar K del palo correspondiente.</li>
-      </ul>
-      <p>
-        Una jugada iniciada desde un As puede pedir intervención de otro palo. En ese caso queda salvada y pendiente de aprobación
-        del As correspondiente antes de notificarse al destinatario.
-      </p>
-      <p>
-        Si alguien renuncia a un As, ese As vuelve al propietario del Joker azul. Si no existe, vuelve al titular de A♥.
-      </p>
-    </section>
-
-    <section id="comments">
-      <h2>8. Comentarios y evidencia</h2>
-      <p>
-        Los comments son documentos hijos del renglón. No gobiernan la jugada, pero aportan conversación, prueba y contexto.
-      </p>
-      <ul>
-        <li>Pueden incluir texto.</li>
-        <li>Pueden incluir attachments, fotos y multimedia.</li>
-        <li>Sirven como evidencia en disputas.</li>
-      </ul>
-      <p class="small">Las cartas dicen qué pasó. Los comentarios muestran cómo pasó.</p>
-    </section>
-
-    <section id="awards">
-      <h2>9. Awards y quejas</h2>
-      <p>
-        Awards y quejas solo afectan perfiles cuando la jugada pertenece a un mazo con Joker azul.
-      </p>
-      <div class="grid">
-        <div class="card">
-          <h3>♠ Award</h3>
-          <p>Reconoce actividad cumplida o prestación efectiva.</p>
-        </div>
-        <div class="card">
-          <h3>♦ Award</h3>
-          <p>Reconoce inversión, pago o transferencia de valor.</p>
-        </div>
-        <div class="card">
-          <h3>♣ Award</h3>
-          <p>Reconoce entrega o provisión de un bien.</p>
-        </div>
-        <div class="card">
-          <h3>Queja</h3>
-          <p>Expresa incumplimiento o conflicto confirmado por el sistema.</p>
-        </div>
-      </div>
-      <p>
-        Las quejas detalladas pueden quedar visibles solo para los involucrados, mientras que el público ve reputación neta.
-      </p>
-    </section>
-
-    <section id="iconos">
-      <h2>10. Íconos, hover y ayuda contextual</h2>
-      <p>
-        La interfaz debe intentar explicarse sola. Cuando hace falta detalle, aparece por hover o mouse over.
-      </p>
-      <ul>
-        <li><strong>Sello</strong> → indica que hay algo pendiente de aprobación.</li>
-        <li><strong>Hover sobre una Q</strong> → muestra el nombre del propietario de esa Q.</li>
-        <li><strong>Hover sobre una carta</strong> → muestra rol, estado o sentido.</li>
-      </ul>
-      <p>
-        Lo importante debe verse. Lo complejo aparece cuando el usuario lo busca.
-      </p>
-    </section>
-  </main>
-  <script src="/js/topbar.js"></script>
-</body>
-</html>
