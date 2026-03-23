@@ -178,6 +178,7 @@ function extractPlayText(play) {
   const parsed = play.parsed || {};
 
   return (
+    play.play_text ||
     parsed.text ||
     parsed.description ||
     parsed.label ||
