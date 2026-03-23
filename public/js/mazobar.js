@@ -92,10 +92,6 @@
     return "/assets/icons/singeta120.gif";
   }
 
-  function getUserDisplayName(deck) {
-    return deck?.viewer_nickname || deck?.owner_nickname || "fulano";
-  }
-
   function getEnabledTopCards(plays) {
     return plays.filter((p) => {
       const rank = String(p.rank || "").toUpperCase();
@@ -246,7 +242,7 @@
 
     const enabledCards = getEnabledTopCards(normalizedPlays);
     const avatarSrc = getAvatarSrc();
-    const userName = getUserDisplayName(deck);
+    const userName = "";
     const deckName = deck?.name || "Mazo";
     const balance = deck?.viewer_balance || 0;
 
@@ -267,7 +263,7 @@
                     alt="${userName}"
                     class="mazobar__avatar"
                   />
-                  <div class="mazobar__username">${userName}</div>
+                 
                 </div>
               </div>
 
