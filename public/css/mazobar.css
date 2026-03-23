@@ -222,8 +222,8 @@
 }
 
 .mazobar__joker.is-inactive {
-  opacity: 0.28;
-  filter: grayscale(100%);
+    opacity: 1;
+  filter: none;
 }
 
 .mazobar__joker.is-active {
