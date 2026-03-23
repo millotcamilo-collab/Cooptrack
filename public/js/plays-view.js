@@ -21,7 +21,18 @@ function getSuitSymbol(suit) {
       return suit || "";
   }
 }
-
+function getPlaysViewTitle(filter) {
+  switch (filter) {
+    case "SPADE":
+      return "Actividades";
+    case "DIAMOND":
+      return "Contabilidad";
+    case "CLUB":
+      return "Autoridades";
+    default:
+      return "Jugadas generales";
+  }
+}
 function formatPlayDate(value) {
   if (!value) return "";
 
@@ -412,15 +423,21 @@ function renderPlaysView(deck, plays = [], state = null) {
     .map(buildPlayRowHTML)
     .join("");
 
-  container.innerHTML = `
-    <section class="plays-view">
-      <div class="page-container">
-        <div class="plays-view__list">
-          ${rowsHTML}
-        </div>
+const title = getPlaysViewTitle(currentSuitFilter);
+
+container.innerHTML = `
+  <section class="plays-view">
+    <div class="plays-view__header">
+      ${title}
+    </div>
+
+    <div class="page-container">
+      <div class="plays-view__list">
+        ${rowsHTML}
       </div>
-    </section>
-  `;
+    </div>
+  </section>
+`;
 }
 
 document.addEventListener("mazobar:filter", (event) => {
