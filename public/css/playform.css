@@ -6,7 +6,9 @@
   top: 72px; /* ajustá según altura del topbar + mazobar */
   z-index: 900;
 }
-
+.is-hidden {
+  display: none;
+}
 .playform__inner {
   display: grid;
   grid-template-columns: 1fr auto auto;
