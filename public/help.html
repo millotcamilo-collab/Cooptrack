@@ -4,508 +4,117 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CoopTrack · Help</title>
+
   <link rel="stylesheet" href="/css/topbar.css">
+
   <style>
-    :root {
-      --bg: #f7f4ee;
-      --card: #fffdf8;
-      --ink: #1f1f1f;
-      --muted: #6b675f;
-      --line: #d8d1c5;
-      --red: #b63a3a;
-      --black: #2e3138;
-      --gold: #8a6a1d;
-    }
-
-    * { box-sizing: border-box; }
-
     body {
       margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
-      background: var(--bg);
-      color: var(--ink);
+      font-family: Georgia, serif;
+      background: #f7f4ee;
+      color: #1f1f1f;
       line-height: 1.5;
     }
 
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 20px;
-      background: white;
-      border-bottom: 1px solid #e5e7eb;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 1000;
-    }
-
-    .topbar__inner {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-      align-items: center;
-    }
-
-    .topbar__left,
-    .topbar__right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .topbar__logo-img {
-      height: 36px;
-      width: auto;
-      display: block;
-    }
-
-    .topbar__icon-img {
-      height: 28px;
-      width: auto;
-      display: block;
-    }
-
-    .topbar__icon-img--profile {
-      height: 32px;
-      width: 32px;
-      border-radius: 50%;
-    }
-
-    .topbar__icon-btn {
-      background: none;
-      border: none;
-      padding: 6px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .topbar__icon-btn:hover {
-      background: #f3f4f6;
-    }
-
-    .topbar__login-link {
-      text-decoration: none;
-      color: #111827;
-      font-weight: 600;
-    }
-
     header {
-      border-bottom: 1px solid var(--line);
-      background: var(--card);
-      padding: 90px 22px 18px;
-    }
-
-    header h1 {
-      margin: 0 0 8px;
-      font-size: 32px;
-      font-weight: 600;
-    }
-
-    header p {
-      margin: 0;
-      color: var(--muted);
-      max-width: 860px;
+      padding: 100px 20px 20px;
+      border-bottom: 1px solid #ddd;
+      background: #fff;
     }
 
     main {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 24px 18px 56px;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
     }
 
-    .toc,
     section {
-      background: var(--card);
-      border: 1px solid var(--line);
-      padding: 18px 20px;
-      margin-bottom: 18px;
+      background: #fff;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid #ddd;
     }
 
-    h2 {
+    h1, h2 {
       margin-top: 0;
-      font-size: 24px;
-    }
-
-    h3 {
-      margin-bottom: 8px;
-      font-size: 18px;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border: 1px solid var(--line);
-      margin-right: 6px;
-      margin-bottom: 6px;
-      border-radius: 999px;
-      font-size: 14px;
-      background: #faf7f1;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 12px;
-    }
-
-    .card {
-      border: 1px solid var(--line);
-      padding: 14px;
-      background: #fff;
-    }
-
-    code, pre {
-      font-family: "Courier New", monospace;
-      font-size: 14px;
-    }
-
-    pre {
-      background: #f3efe8;
-      border: 1px solid var(--line);
-      padding: 12px;
-      overflow: auto;
-      white-space: pre-wrap;
-    }
-
-    ul { margin-top: 8px; }
-
-    .red { color: var(--red); }
-    .black { color: var(--black); }
-    .gold { color: var(--gold); }
-
-    .small {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    a { color: inherit; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      background: #fff;
-    }
-
-    th, td {
-      border: 1px solid var(--line);
-      padding: 10px 12px;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      background: #f3efe8;
-      font-weight: 600;
     }
   </style>
 </head>
 
 <body>
+
+  <!-- 🔝 TOPBAR -->
   <div id="topbar-container"></div>
 
   <header>
-    <h1>CoopTrack · Help</h1>
-    <p>
-      Cooptrack es una agenda de trabajo con visión cooperativa, donde cada anotacion o permiso o notificacion se ejecuta con una carta cuyo flujo documental es secuencial entre los participantes.
-      Todas las cartas pertenecen a un mazo particular, de forma que el usuario sepa si esta revisando la agenda parsonal o la que comparte con sus amigos, o compañeros de trabajo.
-      Este help resume cómo leer la interfaz, cómo se compone una jugada, qué es el libro de jugadas y qué cambia entre Joker rojo y Joker azul.
-    </p>
+    <h1>CoopTrack · Guía simple</h1>
+    <p>Cómo usar CoopTrack en 1 minuto.</p>
   </header>
 
   <main>
-    <section class="toc">
-      <h2>Índice rápido</h2>
-      <div class="grid">
-        <div><a href="#idea">1. Idea central</a></div>
-        <div><a href="#libro">2. Qué es el libro de jugadas</a></div>
-        <div><a href="#palos">3. Palos y cartas</a></div>
-        <div><a href="#tabla-cartas">4. Tabla fija de cartas</a></div>
-        <div><a href="#joker">5. Joker rojo y azul</a></div>
-        <div><a href="#renglon">6. El renglón jugada</a></div>
-        <div><a href="#j">7. Jugadas que empiezan con J</a></div>
-        <div><a href="#q">8. Participaciones Q</a></div>
-        <div><a href="#autoridad">9. Ases y Reyes</a></div>
-        <div><a href="#comments">10. Comentarios y evidencia</a></div>
-        <div><a href="#awards">11. Awards y quejas</a></div>
-        <div><a href="#iconos">12. Íconos y hover</a></div>
-      </div>
-    </section>
 
-    <section id="idea">
-      <h2>1. Idea central</h2>
-      <p>
-        Las cartas comprenden el flujo documental de la agenda ordenando y distribuyendo accesos entre los participantes.
-        Una carta jugada ya es una jugada, pasa a integrarse como el historial de registros del mazo. Esas jugadas componen las filas de la vista del libro de jugadas.
-      </p>
-      <pre>Carta → Jugada → Renglón</pre>
-      <p>
-        Un mazo es un espacio compartido. Dentro del mazo conviven trabajo, gobernanza, conversación, economía y memoria.
-      </p>
-    </section>
-
-    <section id="libro">
-      <h2>2. Qué es el libro de jugadas</h2>
-      <p>
-        Cada mazo tiene un libro de jugadas. Ese libro no es solamente una lista de objetos: es una secuencia ordenada de líneas.
-        Cada línea representa una carta del mazo o una jugada realizada dentro del mazo.
-      </p>
-      <p>
-        La verdad del mazo no surge de un único registro actual, sino de la lectura acumulada de sus líneas.
-        Por eso CoopTrack no se entiende solamente mirando “el último estado”, sino leyendo qué cartas existen,
-        cuáles están habilitadas y qué jugadas efectivamente se hicieron.
-      </p>
-      <pre>Libro = líneas fijas + jugadas concretas</pre>
-      <p>
-        Todo mazo nace con una cabecera fija de doce líneas:
-      </p>
+    <section>
+      <h2>🧭 Qué es CoopTrack</h2>
+      <p>CoopTrack organiza trabajo usando cartas.</p>
       <ul>
-        <li>4 Ases: A♥, A♠, A♦, A♣</li>
-        <li>4 Reyes: K♥, K♠, K♦, K♣</li>
-        <li>4 Reinas: Q♥, Q♠, Q♦, Q♣</li>
+        <li>Carta → acción</li>
+        <li>Acción → jugada</li>
+        <li>Jugada → línea</li>
       </ul>
-      <p>
-        Esas líneas no son todas “actividad”. Algunas fundan el mazo y otras establecen qué cartas están disponibles
-        y quién puede ejecutarlas. Después de esa cabecera fija empiezan las jugadas reales del mazo.
-      </p>
-      <p>
-        En términos simples:
-      </p>
+    </section>
+
+    <section>
+      <h2>🃏 Las cartas</h2>
       <ul>
-        <li><strong>las líneas fijas</strong> dicen qué estructura existe</li>
-        <li><strong>las jugadas</strong> dicen qué pasó realmente</li>
+        <li><b>J</b> → crea algo</li>
+        <li><b>Q</b> → suma personas</li>
+        <li><b>K</b> → delega</li>
+        <li><b>A</b> → valida</li>
       </ul>
-      <p class="small">
-        La interfaz muestra solo una parte del libro a la vez. El help intenta explicar la lógica completa que hay detrás.
-      </p>
     </section>
 
-    <section id="palos">
-      <h2>3. Palos y cartas</h2>
-      <div class="grid">
-        <div class="card">
-          <h3 class="red">♥ Corazones</h3>
-          <p>Editorial</p>
-        </div>
-        <div class="card">
-          <h3 class="black">♠ Picas</h3>
-          <p>Agenda y ejecución</p>
-        </div>
-        <div class="card">
-          <h3 class="red">♦ Diamantes</h3>
-          <p>Contabilidad</p>
-        </div>
-        <div class="card">
-          <h3 class="black">♣ Tréboles</h3>
-          <p>Relaciones públicas</p>
-        </div>
-      </div>
-      <div style="margin-top:12px;">
-        <span class="badge">J = registro / apertura</span>
-        <span class="badge">Q = participación / oferta / invitación</span>
-        <span class="badge">K = gestión delegada</span>
-        <span class="badge">A = autoridad / validación</span>
-      </div>
-    </section>
-
-    <section id="tabla-cartas">
-      <h2>4. Tabla fija de cartas</h2>
-      <p>
-        Esta tabla resume el sentido general de cada familia de carta dentro de CoopTrack.
-        Puede servir como base futura para un help dinámico, tooltips o ayuda contextual por carta.
-      </p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Carta</th>
-            <th>Plano</th>
-            <th>Qué representa</th>
-            <th>Uso general</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>A</td>
-            <td>Autoridad / estructura</td>
-            <td>Fundación o autoridad primaria</td>
-            <td>Define el marco originario del mazo o habilita actos de autoridad</td>
-          </tr>
-          <tr>
-            <td>K</td>
-            <td>Autoridad / estructura</td>
-            <td>Delegación o potestad activa</td>
-            <td>Distribuye capacidad de actuar dentro de un palo</td>
-          </tr>
-          <tr>
-            <td>J</td>
-            <td>Actividad / producción</td>
-            <td>Jugada madre</td>
-            <td>Registra una acción, hecho, nota, propuesta, evento o componente económico</td>
-          </tr>
-          <tr>
-            <td>Q</td>
-            <td>Actividad / derivación</td>
-            <td>Jugada hija</td>
-            <td>Invita, deriva, participa, acepta o responde a una jugada previa</td>
-          </tr>
-          <tr>
-            <td>Joker</td>
-            <td>Gobernanza especial</td>
-            <td>Condición excepcional del mazo</td>
-            <td>Amplía, restringe o modifica el régimen general del mazo</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Carta</th>
-            <th>Ejemplo de sentido por palo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>A♥</td>
-            <td>Es la primer y jugada del mazo y define el nombre del mazo. Esa jugadas se puede hacer una sola vez por mazo. No es transferible</td>
-          </tr>
-          <tr>
-            <td>A♠</td>
-            <td>La autoridad a cargo de aprobar fechas y cumplimientos. El propietario de esta carta la puede transferir. Solo se permite un as de espadas por mazo.</td>
-          </tr>
-          <tr>
-            <td>A♦</td>
-            <td>La autoridad a cargo de aprobar transacciones que impliquen dinero. El propietario de esta carta la puede transferir. Solo se permite un as de diamantes por mazo.</td>
-          </tr>
-          <tr>
-            <td>A♣</td>
-            <td>Autoridad encargada de las aprobar comunicaciones. Esta carta es portadora además de la imagen del mazo. El propietario de esta carta la puede transferir. Solo se permite un as trebol por mazo.</td>
-          </tr>
-          <tr>
-            <td>J♥</td>
-            <td>Nota</td>
-          </tr>
-          <tr>
-            <td>J♠</td>
-            <td>Evento o deadline</td>
-          </tr>
-          <tr>
-            <td>J♦</td>
-            <td>Monto</td>
-          </tr>
-          <tr>
-            <td>J♣</td>
-            <td>Descripciín de factura</td>
-          </tr>
-          <tr>
-            <td>Q</td>
-            <td>Participación derivada sobre una jugada madre previa</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <p class="small">
-        Esta tabla no reemplaza las reglas completas del sistema. Sirve para orientar al usuario y dar una lectura rápida de la gramática de CoopTrack.
-      </p>
-    </section>
-
-    <section id="joker">
-      <h2>5. Joker rojo y azul</h2>
-      <div class="grid">
-        <div class="card">
-          <h3>Joker rojo</h3>
-          <p>Mazo de agenda personal o coordinación liviana.</p>
-          <ul>
-            <li>Las jugadas existen.</li>
-            <li>No afectan el perfil de los involucrados.</li>
-            <li>No hay Q♥ ni Q♦.</li>
-            <li>No hay awards ni quejas.</li>
-            <li>No tiene sentido estructura societaria.</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Joker azul</h3>
-          <p>Mazo propietario con consecuencias reales.</p>
-          <ul>
-            <li>Habilita dimensión económica completa.</li>
-            <li>Permite Q♥ y Q♦.</li>
-            <li>Las jugadas afectan perfiles.</li>
-            <li>Puede generar awards y quejas.</li>
-            <li>Permite socios, conflictos y gobernanza plena.</li>
-          </ul>
-        </div>
-      </div>
-      <p class="small">Todo costo de activación de un Joker debe registrarse como J♦ del mazo.</p>
-    </section>
-
-    <section id="renglon">
-      <h2>6. El renglón jugada</h2>
-      <p>
-        El renglón es la unidad visible principal del mazo. Muestra una jugada y sus derivaciones.
-      </p>
-      <pre>L = (O, D, R, X, Y)
-O = jugada de origen
-D = descripción
-R = componente rojo
-X = jugada derivada izquierda
-Y = jugada derivada derecha</pre>
-      <p>
-        En la práctica, el renglón puede mostrarse en vista compacta o en foco. En foco aparecen acciones,
-        comentarios, participantes y estados pendientes.
-      </p>
-    </section>
-
-    <section id="j">
-      <h2>7. Jugadas que empiezan con J</h2>
-      <p>
-        Las jugadas J abren renglones de trabajo. Una vez que una jugada arranca con J, no mezcla K ni A dentro de la misma jugada.
-        Las jugadas J producen realidad; las jugadas K/A gobiernan esa realidad desde otra capa.
-      </p>
-      <div class="grid">
-        <div class="card">
-          <h3>J♥ Nota</h3>
-          <p>Texto, descripción, contexto. Si está aprobada, la pueden leer quienes tengan acceso al mazo.</p>
-        </div>
-        <div class="card">
-          <h3>J♠ Actividad</h3>
-          <p>Evento, tarea o deadline. Puede requerir fecha, fin y lugar.</p>
-        </div>
-        <div class="card">
-          <h3>J♣ Bien</h3>
-          <p>Oferta, activo, pieza corporativa o descripción de un bien. Puede vincularse con J♦.</p>
-        </div>
-        <div class="card">
-          <h3>J♦ Registro económico</h3>
-          <p>Costo, inversión, gasto o valor económico dentro del mazo.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="q">
-      <h2>8. Participaciones Q</h2>
-      <p>
-        Las Q siempre existen sobre una jugada previa. No existen solas.
-      </p>
+    <section>
+      <h2>♥ ♠ ♦ ♣ Palos</h2>
       <ul>
-        <li><strong>Q</strong> es una jugada hija.</li>
-        <li><strong>J</strong> suele ser la madre.</li>
-        <li>Puede expresar invitación, aceptación, rechazo o derivación.</li>
-        <li>Puede incorporar a un tercero a una jugada ya abierta.</li>
+        <li>♥ texto</li>
+        <li>♠ tareas</li>
+        <li>♦ dinero</li>
+        <li>♣ bienes</li>
       </ul>
-      <p>
-        En lenguaje simple: una J abre una realidad y una Q incorpora una participación sobre esa realidad.
-      </p>
-      <p>
-        Si no hay Joker azul, Q♥ y Q♦ quedan inhabilitadas.
-      </p>
-      <p>
-        El invitado ve solo su Q y el contexto mínimo necesario. Puede aceptar o rechazar según el estado de la jugada.
-      </p>
     </section>
 
-    <section id="autoridad">
-      <h2>9. Ases y Reyes</h2>
-      <p>
+    <section>
+      <h2>🔴🔵 Tipo de mazo</h2>
+
+      <p><b>🔴 Rojo:</b> simple, sin impacto real</p>
+      <p><b>🔵 Azul:</b> real, con dinero y roles</p>
+    </section>
+
+    <section>
+      <h2>🧾 Ejemplo</h2>
+      <ol>
+        <li>J♠ → creo evento</li>
+        <li>Q♠ → invito gente</li>
+        <li>J♦ → agrego costo</li>
+        <li>Q♦ → alguien paga</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>📌 Cómo leer una línea</h2>
+      <p>Es como una conversación:</p>
+      <ul>
+        <li>qué pasó</li>
+        <li>qué dice</li>
+        <li>quién participa</li>
+        <li>respuestas</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <!-- JS -->
+  <script src="/js/topbar.js"></script>
+
+</body>
+</html>
