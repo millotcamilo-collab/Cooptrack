@@ -207,7 +207,9 @@ display: flex;
 align-items: center;
 gap: 4px;
 }
-
+.plays-view__spade-mode {
+  font-weight: 700;
+}
 .plays-view__mini-icon {
 width: 16px;
 height: 16px;
