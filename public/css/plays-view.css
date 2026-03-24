@@ -248,4 +248,8 @@ display: none;
 .plays-view__text {
 font-size: 14px;
 }
+.plays-view__row--child {
+  margin-left: 36px;
+  background: #fcfaf5;
+}
 }
