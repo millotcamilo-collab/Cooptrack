@@ -57,7 +57,7 @@ function formatDate(value) {
   }
 }
 
-function getPlaySuit(play) {
+function get(play) {
   return String(play?.card_suit || play?.suit || "").toUpperCase();
 }
 
@@ -123,7 +123,7 @@ function isChildPlay(play) {
 function isVisibleJPlay(play, filter = null) {
   if (!isJPlay(play)) return false;
   if (!filter) return true;
-  return getPlaySuit(play) === filter;
+  return get(play) === filter;
 }
 
 function getVisiblePlays(plays, filter = null) {
@@ -161,14 +161,7 @@ function buildIconButton({ src, alt, title, action, playId, extraData = "" }) {
 }
 
 function buildSuitBadge(play) {
-  let suit = getPlaySuit(play);
-
-  // ✅ excepción visual:
-  // si es un trébol hijo, se muestra como diamante
-  if (isChildPlay(play) && suit === "CLUB") {
-    suit = "DIAMOND";
-  }
-
+  const suit = getPlaySuit(play);
   const suitIcon = ICONS?.suits?.[suit];
 
   if (!suitIcon) {
@@ -425,8 +418,19 @@ function buildChildClubBody(play) {
         <div class="plays-view__child-club-concept">
           ${escapeHTML(text || "Sin concepto")}
         </div>
-        <div class="plays-view__child-club-amount">
-          ${escapeHTML(amount || "$ 0")}
+
+        <div class="plays-view__child-club-money">
+          <div class="plays-view__child-club-money-label">
+            <span class="plays-view__badge-rank">J</span>
+            <img
+              src="${escapeHTML(ICONS.suits.DIAMOND)}"
+              alt="DIAMOND"
+              class="plays-view__badge-suit"
+            />
+          </div>
+          <div class="plays-view__child-club-amount">
+            ${escapeHTML(amount || "$ 0")}
+          </div>
         </div>
       </div>
     `;
@@ -443,16 +447,27 @@ function buildChildClubBody(play) {
         data-play-id="${escapeHTML(play.id)}"
       />
 
-      <input
-        type="number"
-        step="0.01"
-        min="0"
-        class="plays-view__amount-input"
-        placeholder="Monto"
-        value="${escapeHTML(amount)}"
-        data-field="amount"
-        data-play-id="${escapeHTML(play.id)}"
-      />
+      <div class="plays-view__child-club-money">
+        <div class="plays-view__child-club-money-label">
+          <span class="plays-view__badge-rank">J</span>
+          <img
+            src="${escapeHTML(ICONS.suits.DIAMOND)}"
+            alt="DIAMOND"
+            class="plays-view__badge-suit"
+          />
+        </div>
+
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          class="plays-view__amount-input"
+          placeholder="Monto"
+          value="${escapeHTML(amount)}"
+          data-field="amount"
+          data-play-id="${escapeHTML(play.id)}"
+        />
+      </div>
     </div>
   `;
 }
