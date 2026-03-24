@@ -197,14 +197,12 @@ function buildApproveButton(play) {
     const text = getPlayText(play);
     const amount = getPlayAmount(play);
 
-    // ✅ Trébol hijo: requiere concepto + monto
     if (isChild) {
       if (!text || !amount || Number(amount) <= 0) {
         canApprove = false;
         tooltip = "La factura requiere concepto y monto";
       }
     } else {
-      // ✅ Trébol raíz: solo monto
       if (!amount || Number(amount) <= 0) {
         canApprove = false;
         tooltip = "Ingrese monto";
@@ -213,13 +211,7 @@ function buildApproveButton(play) {
   }
 
   if (suit === "SPADE") {
-    const spadeMode = String(
-      play?.spade_mode ||
-      play?.mode ||
-      play?.spadeMode ||
-      ""
-    ).toUpperCase();
-
+    const spadeMode = getSpadeMode(play);
     const startDate = getPlayStartDate(play);
     const endDate = getPlayEndDate(play);
     const location = getPlayLocation(play);
@@ -298,9 +290,7 @@ function buildHeartBody(play) {
     `;
   }
 
-  const isEditing = !!play.__editing;
-
-  if (isEditing) {
+  if (play.__editing) {
     return `
       <textarea
         class="plays-view__textarea"
@@ -388,7 +378,7 @@ function buildHeartActions(play) {
   `;
 }
 
-function buildClubBody(play) {
+function buildRootClubBody(play) {
   const text = getPlayText(play);
   const amount = getPlayAmount(play);
 
@@ -416,14 +406,6 @@ function buildClubBody(play) {
       />
     </div>
   `;
-}
-
-function buildClubBody(play) {
-  if (isChildPlay(play)) {
-    return buildChildClubBody(play);
-  }
-
-  return buildRootClubBody(play);
 }
 
 function buildChildClubBody(play) {
@@ -468,6 +450,14 @@ function buildChildClubBody(play) {
   `;
 }
 
+function buildClubBody(play) {
+  if (isChildPlay(play)) {
+    return buildChildClubBody(play);
+  }
+
+  return buildRootClubBody(play);
+}
+
 function buildClubActions(play) {
   if (isApproved(play)) {
     return buildApprovedMeta(play);
@@ -496,8 +486,6 @@ function buildSpadeBody(play) {
   const location = getPlayLocation(play);
   const spadeMode = getSpadeMode(play);
 
-  const isEditingSchedule = !!play.__editingSchedule;
-
   if (isApproved(play)) {
     if (spadeMode === "DEADLINE") {
       return `
@@ -524,12 +512,11 @@ function buildSpadeBody(play) {
     `;
   }
 
-  if (isEditingSchedule) {
+  if (play.__editingSchedule) {
     if (spadeMode === "DEADLINE") {
       return `
         <div class="plays-view__spade-edit">
           <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
-
           <div class="plays-view__schedule-fields">
             <div class="plays-view__schedule-field">
               <img src="${escapeHTML(ICONS.actions.end)}" alt="Fin" class="plays-view__mini-icon" />
@@ -549,7 +536,6 @@ function buildSpadeBody(play) {
     return `
       <div class="plays-view__spade-edit">
         <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
-
         <div class="plays-view__schedule-fields">
           <div class="plays-view__schedule-field">
             <img src="${escapeHTML(ICONS.actions.start)}" alt="Inicio" class="plays-view__mini-icon" />
@@ -625,8 +611,6 @@ function buildSpadeBody(play) {
 function buildSpadeActions(play) {
   const spadeMode = getSpadeMode(play);
 
-  // ✅ PICA APROBADA EN MODO CITA:
-  // mostrar botones hijo J♦ y Q♠
   if (isApproved(play) && (spadeMode === "CITA" || spadeMode === "APPOINTMENT")) {
     return `
       <div class="plays-view__actions">
@@ -1031,14 +1015,29 @@ function bindPlaysViewEvents() {
     });
   });
 
+  containerSafeQueryAll('.plays-view__child-text-input').forEach((input) => {
+    input.addEventListener("change", async () => {
+      const playId = input.dataset.playId;
+      const playText = input.value;
+
+      updateLocalPlay(playId, {
+        play_text: playText
+      });
+
+      renderPlaysView(lastDeck, lastPlays, lastState);
+
+      await savePlayPatch(playId, {
+        play_text: playText
+      });
+    });
+  });
+
   containerSafeQueryAll('[data-action="delete"]').forEach((button) => {
     button.addEventListener("click", async () => {
       const playId = button.dataset.playId;
       const confirmed = window.confirm("¿Seguro que querés borrar esta jugada?");
 
-      if (!confirmed) {
-        return;
-      }
+      if (!confirmed) return;
 
       removeLocalPlay(playId);
       renderPlaysView(lastDeck, lastPlays, lastState);
@@ -1066,10 +1065,9 @@ function bindPlaysViewEvents() {
     });
   });
 
-    containerSafeQueryAll('[data-action="add-child-diamond"]').forEach((button) => {
+  containerSafeQueryAll('[data-action="add-child-diamond"]').forEach((button) => {
     button.addEventListener("click", () => {
       const playId = button.dataset.playId;
-
       document.dispatchEvent(
         new CustomEvent("plays:add-child-diamond-requested", {
           detail: { parentPlayId: playId }
@@ -1081,28 +1079,11 @@ function bindPlaysViewEvents() {
   containerSafeQueryAll('[data-action="add-child-qspade"]').forEach((button) => {
     button.addEventListener("click", () => {
       const playId = button.dataset.playId;
-
       document.dispatchEvent(
         new CustomEvent("plays:add-child-qspade-requested", {
           detail: { parentPlayId: playId }
         })
       );
-    });
-  });
-    containerSafeQueryAll('.plays-view__child-text-input').forEach((input) => {
-    input.addEventListener("change", async () => {
-      const playId = input.dataset.playId;
-      const playText = input.value;
-
-      updateLocalPlay(playId, {
-        play_text: playText
-      });
-
-      renderPlaysView(lastDeck, lastPlays, lastState);
-
-      await savePlayPatch(playId, {
-        play_text: playText
-      });
     });
   });
 }
