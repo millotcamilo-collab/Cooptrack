@@ -273,6 +273,11 @@ function proveButton(play) {
 function buildApprovedMeta(play) {
   if (!isApproved(play)) return "";
 
+  // ❌ NO mostrar nada en J de picas
+  if (getPlaySuit(play) === "SPADE") {
+    return "";
+  }
+
   const approvedAt = formatDate(play.updated_at || play.approved_at || play.created_at);
 
   return `
