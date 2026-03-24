@@ -141,12 +141,16 @@ function buildApproveButton(play) {
   return `
     <button
       type="button"
-      class="plays-view__approve-btn"
+      class="plays-view__icon-btn"
       data-action="approve"
       data-play-id="${escapeHTML(play.id)}"
       title="Aprobar"
     >
-      Aprobar
+      <img 
+        src="/assets/icons/Sello40.gif" 
+        alt="Aprobar" 
+        class="plays-view__icon-img"
+      />
     </button>
   `;
 }
