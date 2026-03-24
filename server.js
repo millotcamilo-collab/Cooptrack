@@ -635,6 +635,137 @@ app.post('/plays', requireAuth, async (req, res) => {
   }
 });
 
+app.patch('/plays/:playId', requireAuth, async (req, res) => {
+  const { playId } = req.params;
+  const userId = req.auth.userId;
+
+  const {
+    play_text,
+    card_suit,
+    play_status,
+    amount,
+    start_date,
+    end_date,
+    location,
+    spade_mode
+  } = req.body;
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const playCheck = await client.query(
+      `SELECT * FROM plays WHERE id = $1 LIMIT 1`,
+      [playId]
+    );
+
+    if (!playCheck.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ ok: false, error: 'Play no encontrada' });
+    }
+
+    const play = playCheck.rows[0];
+
+    const isMember = await userIsDeckMember(client, play.deck_id, userId);
+
+    if (!isMember) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ ok: false, error: 'Sin acceso' });
+    }
+
+    const result = await client.query(
+      `UPDATE plays
+       SET
+         play_text = COALESCE($2, play_text),
+         card_suit = COALESCE($3, card_suit),
+         play_status = COALESCE($4, play_status),
+         amount = COALESCE($5, amount),
+         start_date = COALESCE($6, start_date),
+         end_date = COALESCE($7, end_date),
+         location = COALESCE($8, location),
+         spade_mode = COALESCE($9, spade_mode),
+         approved_at = CASE
+           WHEN $4 = 'APPROVED' AND approved_at IS NULL THEN NOW()
+           ELSE approved_at
+         END
+       WHERE id = $1
+       RETURNING *`,
+      [
+        playId,
+        play_text,
+        card_suit,
+        play_status,
+        amount,
+        start_date,
+        end_date,
+        location,
+        spade_mode
+      ]
+    );
+
+    await client.query('COMMIT');
+
+    res.json({
+      ok: true,
+      play: result.rows[0]
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error en PATCH /plays/:id', error);
+    res.status(500).json({ ok: false, error: 'Error actualizando play' });
+  } finally {
+    client.release();
+  }
+});
+
+app.delete('/plays/:playId', requireAuth, async (req, res) => {
+  const { playId } = req.params;
+  const userId = req.auth.userId;
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const playCheck = await client.query(
+      `SELECT * FROM plays WHERE id = $1 LIMIT 1`,
+      [playId]
+    );
+
+    if (!playCheck.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ ok: false });
+    }
+
+    const play = playCheck.rows[0];
+
+    const isMember = await userIsDeckMember(client, play.deck_id, userId);
+
+    if (!isMember) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ ok: false });
+    }
+
+    await client.query(
+      `DELETE FROM plays WHERE id = $1`,
+      [playId]
+    );
+
+    await client.query('COMMIT');
+
+    res.json({ ok: true });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error en DELETE /plays/:id', error);
+    res.status(500).json({ ok: false });
+  } finally {
+    client.release();
+  }
+});
+
 // Listado general de plays
 app.get('/plays', requireAuth, async (req, res) => {
   try {
