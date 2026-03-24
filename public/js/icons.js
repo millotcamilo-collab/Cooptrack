@@ -22,5 +22,6 @@ window.ICONS = {
 
     stop: "/assets/icons/stop60.gif",
     boom: "/assets/icons/Boom80.gif"
+    approve: "/assets/icons/Sello40.gif"
   }
 };
