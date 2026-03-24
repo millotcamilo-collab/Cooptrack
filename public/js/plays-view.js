@@ -180,26 +180,22 @@ function buildApproveButton(play) {
   let canApprove = true;
   let tooltip = "Aprobar";
 
-  // ❤️ HEART
   if (suit === "HEART") {
     const text = getPlayText(play);
-
     if (!text) {
       canApprove = false;
       tooltip = "Debe tener descripción";
     }
   }
 
-  // ♣ CLUB
   if (suit === "CLUB") {
     const amount = getPlayAmount(play);
-
     if (!amount || Number(amount) <= 0) {
       canApprove = false;
       tooltip = "Ingrese monto";
     }
   }
-  // ♠ SPADE
+
   if (suit === "SPADE") {
     const spadeMode = String(
       play?.spade_mode ||
@@ -212,13 +208,11 @@ function buildApproveButton(play) {
     const endDate = getPlayEndDate(play);
     const location = getPlayLocation(play);
 
-    // Si todavía no definió si es cita o deadline
     if (!spadeMode) {
       canApprove = false;
       tooltip = "Defina cita o deadline";
     }
 
-    // CITA / APPOINTMENT
     if (spadeMode === "CITA" || spadeMode === "APPOINTMENT") {
       if (!startDate || !location) {
         canApprove = false;
@@ -226,7 +220,6 @@ function buildApproveButton(play) {
       }
     }
 
-    // DEADLINE
     if (spadeMode === "DEADLINE") {
       if (!endDate) {
         canApprove = false;
@@ -322,6 +315,13 @@ function buildHeartActions(play) {
           playId: play.id
         })}
         ${buildIconButton({
+          src: ICONS.actions.exit,
+          alt: "Salir edición",
+          title: "Salir edición",
+          action: "cancel-edit",
+          playId: play.id
+        })}
+        ${buildIconButton({
           src: ICONS.actions.delete,
           alt: "Borrar",
           title: "Borrar",
@@ -401,6 +401,7 @@ function buildClubBody(play) {
     </div>
   `;
 }
+
 function buildClubActions(play) {
   if (isApproved(play)) {
     return buildApprovedMeta(play);
@@ -573,6 +574,13 @@ function buildSpadeActions(play) {
           playId: play.id
         })}
         ${buildIconButton({
+          src: ICONS.actions.exit,
+          alt: "Salir edición",
+          title: "Salir edición",
+          action: "cancel-schedule-edit",
+          playId: play.id
+        })}
+        ${buildIconButton({
           src: ICONS.actions.delete,
           alt: "Borrar",
           title: "Borrar",
@@ -586,7 +594,6 @@ function buildSpadeActions(play) {
     `;
   }
 
-  // Pica recién creada: elegir modo
   if (!spadeMode) {
     return `
       <div class="plays-view__actions">
@@ -618,7 +625,6 @@ function buildSpadeActions(play) {
     `;
   }
 
-  // Pica ya configurada, todavía editable
   return `
     <div class="plays-view__actions">
       ${buildIconButton({
@@ -775,6 +781,14 @@ function bindPlaysViewEvents() {
     });
   });
 
+  containerSafeQueryAll('[data-action="cancel-edit"]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
+      updateLocalPlay(playId, { __editing: false });
+      renderPlaysView(lastDeck, lastPlays, lastState);
+    });
+  });
+
   containerSafeQueryAll('[data-action="save-edit"]').forEach((button) => {
     button.addEventListener("click", async () => {
       const playId = button.dataset.playId;
@@ -807,6 +821,7 @@ function bindPlaysViewEvents() {
       await transformSuit(playId, "SPADE");
     });
   });
+
   containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
     button.addEventListener("click", async () => {
       const playId = button.dataset.playId;
@@ -842,6 +857,7 @@ function bindPlaysViewEvents() {
       });
     });
   });
+
   containerSafeQueryAll('[data-action="edit-schedule"]').forEach((button) => {
     button.addEventListener("click", () => {
       const playId = button.dataset.playId;
@@ -850,7 +866,15 @@ function bindPlaysViewEvents() {
     });
   });
 
-    containerSafeQueryAll('[data-action="save-schedule"]').forEach((button) => {
+  containerSafeQueryAll('[data-action="cancel-schedule-edit"]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
+      updateLocalPlay(playId, { __editingSchedule: false });
+      renderPlaysView(lastDeck, lastPlays, lastState);
+    });
+  });
+
+  containerSafeQueryAll('[data-action="save-schedule"]').forEach((button) => {
     button.addEventListener("click", async () => {
       const playId = button.dataset.playId;
 
@@ -895,7 +919,7 @@ function bindPlaysViewEvents() {
       });
     });
   });
-  
+
   containerSafeQueryAll('[data-field="amount"]').forEach((input) => {
     input.addEventListener("change", async () => {
       const playId = input.dataset.playId;
@@ -913,9 +937,16 @@ function bindPlaysViewEvents() {
       });
     });
   });
+
   containerSafeQueryAll('[data-action="delete"]').forEach((button) => {
     button.addEventListener("click", async () => {
       const playId = button.dataset.playId;
+      const confirmed = window.confirm("¿Seguro que querés borrar esta jugada?");
+
+      if (!confirmed) {
+        return;
+      }
+
       removeLocalPlay(playId);
       renderPlaysView(lastDeck, lastPlays, lastState);
       await deletePlay(playId);
