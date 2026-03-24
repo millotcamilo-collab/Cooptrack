@@ -3,181 +3,8 @@ let lastDeck = null;
 let lastPlays = [];
 let lastState = null;
 
-function getSuitSymbol(suit) {
-  switch (String(suit || "").toUpperCase()) {
-    case "HEART":
-      return "♥";
-    case "SPADE":
-      return "♠";
-    case "DIAMOND":
-      return "♦";
-    case "CLUB":
-      return "♣";
-    case "RED":
-      return "🃏R";
-    case "BLUE":
-      return "🃏B";
-    default:
-      return suit || "";
-  }
-}
-function getPlaysViewTitle(filter) {
-  switch (filter) {
-    case "SPADE":
-      return "Actividades";
-    case "DIAMOND":
-      return "Contabilidad";
-    case "CLUB":
-      return "Autoridades";
-    default:
-      return "Jugadas generales";
-  }
-}
-function formatPlayDate(value) {
-  if (!value) return "";
-
-  try {
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) return String(value);
-
-    return date.toLocaleString("es-UY", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-  } catch (error) {
-    console.error("Error formateando fecha:", error);
-    return String(value);
-  }
-}
-
-function normalizePlayRow(play) {
-  if (!play) return null;
-
-  const parsed = play.parsed || {};
-
-  return {
-    id: play.id || null,
-    parentPlayId: play.parent_play_id || null,
-    rank: parsed.rank || play.card_rank || "",
-    suit: parsed.suit || play.card_suit || "",
-    action: parsed.action || "",
-    authorized: parsed.authorized || parsed.autorizados || "",
-    date: parsed.date || play.created_at || "",
-    raw: play.play_code || "",
-    status: play.play_status || "",
-    play_text: play.play_text || "",
-    parsed
-  };
-}
-
-function isStructuralBookLine(play) {
-  if (!play) return true;
-
-  const rank = String(play.rank || "").toUpperCase();
-  const action = String(play.action || "").trim();
-
-  if (rank === "A" && action === "init_ace") {
-    return true;
-  }
-
-  if (rank === "Q" && action === "puedeJugar") {
-    return true;
-  }
-
-  return false;
-}
-
-function isChildOfSpadeJack(play, allPlays) {
-  if (!play || String(play.rank || "").toUpperCase() !== "Q") return false;
-  if (!play.parentPlayId) return false;
-
-  const mother = allPlays.find(
-    (candidate) => String(candidate.id) === String(play.parentPlayId)
-  );
-
-  if (!mother) return false;
-
-  const motherRank = String(mother.rank || "").toUpperCase();
-  const motherSuit = String(mother.suit || "").toUpperCase();
-
-  return motherRank === "J" && motherSuit === "SPADE";
-}
-
-function shouldShowPlayByFilter(play, allPlays, activeFilter) {
-  const rank = String(play.rank || "").toUpperCase();
-  const suit = String(play.suit || "").toUpperCase();
-
-  if (!activeFilter) {
-    if (rank === "A" || rank === "K") {
-      return false;
-    }
-    return true;
-  }
-
-  if (activeFilter === "HEART") {
-    return rank === "J" && suit === "HEART";
-  }
-
-  if (activeFilter === "SPADE") {
-    if (rank === "J" && suit === "SPADE") return true;
-    if (isChildOfSpadeJack(play, allPlays)) return true;
-    return false;
-  }
-
-  if (activeFilter === "DIAMOND") {
-    if (rank === "J" && suit === "DIAMOND") return true;
-    if (rank === "Q" && suit === "DIAMOND") return true;
-    return false;
-  }
-
-  if (activeFilter === "CLUB") {
-    return rank === "A" || rank === "K";
-  }
-
-  return true;
-}
-
-function getVisiblePlays(plays, activeFilter = null) {
-  const nonStructural = plays.filter((play) => !isStructuralBookLine(play));
-
-  return nonStructural.filter((play) =>
-    shouldShowPlayByFilter(play, nonStructural, activeFilter)
-  );
-}
-
-function buildEmptyPlaysHTML() {
-  return `
-    <section class="plays-view">
-      <div class="page-container">
-        <div class="plays-view__empty">
-          Todavía no hay jugadas visibles en este mazo.
-        </div>
-      </div>
-    </section>
-  `;
-}
-
-function getHumanStatus(status) {
-  const normalized = String(status || "").toUpperCase();
-
-  switch (normalized) {
-    case "ACTIVE":
-      return "Activa";
-    case "PENDING":
-      return "Pendiente";
-    case "APPROVED":
-      return "Aprobada";
-    case "REJECTED":
-      return "Rechazada";
-    case "CANCELLED":
-      return "Cancelada";
-    default:
-      return status || "";
-  }
+function normalizeText(value) {
+  return String(value || "").trim();
 }
 
 function escapeHTML(value) {
@@ -189,255 +16,658 @@ function escapeHTML(value) {
     .replaceAll("'", "&#39;");
 }
 
-function extractPlayText(play) {
-  const parsed = play.parsed || {};
+function formatDate(value) {
+  if (!value) return "";
+  try {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    return date.toLocaleString("es-UY", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  } catch (error) {
+    console.error("Error formateando fecha:", error);
+    return String(value);
+  }
+}
 
-  return (
-    play.play_text ||
-    parsed.text ||
-    parsed.description ||
-    parsed.label ||
-    parsed.title ||
-    parsed.name ||
+function getPlaySuit(play) {
+  return String(play?.card_suit || play?.suit || "").toUpperCase();
+}
+
+function getPlayRank(play) {
+  return String(play?.card_rank || play?.rank || "").toUpperCase();
+}
+
+function getPlayStatus(play) {
+  return String(play?.play_status || play?.status || "").toUpperCase();
+}
+
+function getPlayText(play) {
+  return normalizeText(
+    play?.play_text ||
+    play?.text ||
+    play?.description ||
     ""
   );
 }
 
-function getDefaultTitle(play) {
-  const rank = String(play.rank || "").toUpperCase();
-  const suit = String(play.suit || "").toUpperCase();
-
-  if (rank === "J" && suit === "HEART") return "Nueva nota";
-  if (rank === "J" && suit === "SPADE") return "Nueva actividad";
-  if (rank === "J" && suit === "CLUB") return "Nuevo bien";
-  if (rank === "J" && suit === "DIAMOND") return "Nuevo registro económico";
-  if (rank === "Q") return "Participación";
-  if (rank === "K") return "Permiso";
-  if (rank === "A") return "Autoridad";
-
-  return "Jugada";
+function getPlayAmount(play) {
+  return normalizeText(play?.amount || play?.play_amount || "");
 }
 
-function getPlayTitle(play) {
-  const extracted = extractPlayText(play);
-  if (extracted && extracted.trim()) {
-    return extracted.trim();
+function getPlayStartDate(play) {
+  return play?.start_date || play?.startDate || "";
+}
+
+function getPlayEndDate(play) {
+  return play?.end_date || play?.endDate || "";
+}
+
+function getPlayLocation(play) {
+  return normalizeText(play?.location || "");
+}
+
+function isApproved(play) {
+  return getPlayStatus(play) === "APPROVED";
+}
+
+function isJPlay(play) {
+  return getPlayRank(play) === "J";
+}
+
+function isVisibleJPlay(play, filter = null) {
+  if (!isJPlay(play)) return false;
+  if (!filter) return true;
+  return getPlaySuit(play) === filter;
+}
+
+function getVisiblePlays(plays, filter = null) {
+  return (Array.isArray(plays) ? plays : []).filter((play) => isVisibleJPlay(play, filter));
+}
+
+function getFilterTitle(filter) {
+  switch (filter) {
+    case "HEART":
+      return "Notas";
+    case "SPADE":
+      return "Actividades";
+    case "CLUB":
+      return "Bienes";
+    case "DIAMOND":
+      return "Contabilidad";
+    default:
+      return "Jugadas";
   }
-
-  return getDefaultTitle(play);
 }
 
-function getPlaySubtitle(play) {
-  const parts = [];
-
-  if (play.authorized) {
-    parts.push(play.authorized);
-  }
-
-  const dateText = formatPlayDate(play.date);
-  if (dateText) {
-    parts.push(dateText);
-  }
-
-  return parts.join(" · ");
-}
-
-function buildStatusBadge(play) {
-  const status = getHumanStatus(play.status);
-  if (!status) return "";
-
-  const statusClass = `play-row__status--${String(play.status || "").toLowerCase()}`;
-
-  return `<span class="play-row__status ${statusClass}">${escapeHTML(status)}</span>`;
-}
-
-function buildCardHTML(play) {
+function buildIconButton({ src, alt, title, action, playId, extraData = "" }) {
   return `
-    <div class="play-row__card">
-      <span class="play-row__rank">${escapeHTML(play.rank)}</span>
-      <span class="play-row__suit">${escapeHTML(getSuitSymbol(play.suit))}</span>
+    <button
+      type="button"
+      class="plays-view__icon-btn"
+      data-action="${escapeHTML(action)}"
+      data-play-id="${escapeHTML(playId)}"
+      ${extraData}
+      title="${escapeHTML(title || alt || "")}"
+    >
+      <img src="${escapeHTML(src)}" alt="${escapeHTML(alt || "")}" class="plays-view__icon-img" />
+    </button>
+  `;
+}
+
+function buildSuitBadge(play) {
+  const suit = getPlaySuit(play);
+  const suitIcon = ICONS?.suits?.[suit];
+
+  if (!suitIcon) {
+    return `<div class="plays-view__badge">J ${escapeHTML(suit)}</div>`;
+  }
+
+  return `
+    <div class="plays-view__badge">
+      <span class="plays-view__badge-rank">J</span>
+      <img src="${escapeHTML(suitIcon)}" alt="${escapeHTML(suit)}" class="plays-view__badge-suit" />
     </div>
   `;
 }
 
-function buildJHeartRowHTML(play) {
-  const title = getPlayTitle(play);
-  const subtitle = getPlaySubtitle(play);
+function buildApproveButton(play) {
+  if (isApproved(play)) return "";
 
   return `
-    <article class="play-row play-row--heart" data-play-id="${play.id || ""}">
-      <div class="play-row__main">
-        ${buildCardHTML(play)}
-
-        <div class="play-row__body">
-          <div class="play-row__title">${escapeHTML(title)}</div>
-          ${subtitle ? `<div class="play-row__meta">${escapeHTML(subtitle)}</div>` : ""}
-        </div>
-
-        <div class="play-row__side">
-          ${buildStatusBadge(play)}
-        </div>
-      </div>
-    </article>
+    <button
+      type="button"
+      class="plays-view__approve-btn"
+      data-action="approve"
+      data-play-id="${escapeHTML(play.id)}"
+      title="Aprobar"
+    >
+      Aprobar
+    </button>
   `;
 }
 
-function buildJSpadeRowHTML(play) {
-  const parsed = play.parsed || {};
-  const title = getPlayTitle(play);
-  const subtitle = getPlaySubtitle(play);
+function buildApprovedMeta(play) {
+  if (!isApproved(play)) return "";
 
-  const startAt = parsed.start_at || parsed.startDate || parsed.start || "";
-  const endAt = parsed.end_at || parsed.endDate || parsed.end || "";
-  const location = parsed.location || parsed.place || parsed.address || "";
-
-  const detailParts = [];
-
-  if (startAt) detailParts.push(`Inicio: ${formatPlayDate(startAt)}`);
-  if (endAt) detailParts.push(`Fin: ${formatPlayDate(endAt)}`);
-  if (location) detailParts.push(`Lugar: ${location}`);
-
+  const approvedAt = formatDate(play.updated_at || play.approved_at || play.created_at);
   return `
-    <article class="play-row play-row--spade" data-play-id="${play.id || ""}">
-      <div class="play-row__main">
-        ${buildCardHTML(play)}
-
-        <div class="play-row__body">
-          <div class="play-row__title">${escapeHTML(title)}</div>
-          ${subtitle ? `<div class="play-row__meta">${escapeHTML(subtitle)}</div>` : ""}
-          ${detailParts.length
-            ? `<div class="play-row__details">${detailParts.map(escapeHTML).join(" · ")}</div>`
-            : ""
-          }
-        </div>
-
-        <div class="play-row__side">
-          ${buildStatusBadge(play)}
-        </div>
-      </div>
-    </article>
+    <div class="plays-view__approved-meta">
+      ${approvedAt ? `Fecha de aprobado: ${escapeHTML(approvedAt)}` : "Aprobada"}
+    </div>
   `;
 }
 
-function buildJClubRowHTML(play) {
-  const parsed = play.parsed || {};
-  const title = getPlayTitle(play);
-  const subtitle = getPlaySubtitle(play);
+function buildHeartBody(play) {
+  const text = getPlayText(play);
 
-  const amount =
-    parsed.amount ||
-    parsed.price ||
-    parsed.total ||
-    parsed.value ||
-    "";
+  if (isApproved(play)) {
+    return `
+      <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+    `;
+  }
 
-  const quantity =
-    parsed.quantity ||
-    parsed.qty ||
-    "";
+  const isEditing = !!play.__editing;
 
-  const detailParts = [];
-
-  if (quantity) detailParts.push(`Cantidad: ${quantity}`);
-  if (amount) detailParts.push(`Monto: ${amount}`);
+  if (isEditing) {
+    return `
+      <textarea
+        class="plays-view__textarea"
+        data-field="text"
+        data-play-id="${escapeHTML(play.id)}"
+      >${escapeHTML(text)}</textarea>
+    `;
+  }
 
   return `
-    <article class="play-row play-row--club" data-play-id="${play.id || ""}">
-      <div class="play-row__main">
-        ${buildCardHTML(play)}
-
-        <div class="play-row__body">
-          <div class="play-row__title">${escapeHTML(title)}</div>
-          ${subtitle ? `<div class="play-row__meta">${escapeHTML(subtitle)}</div>` : ""}
-          ${detailParts.length
-            ? `<div class="play-row__details">${detailParts.map(escapeHTML).join(" · ")}</div>`
-            : ""
-          }
-        </div>
-
-        <div class="play-row__side">
-          ${buildStatusBadge(play)}
-        </div>
-      </div>
-    </article>
+    <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
   `;
 }
 
-function buildGenericPlayRowHTML(play) {
-  const title = getPlayTitle(play);
-  const subtitle = getPlaySubtitle(play);
+function buildHeartActions(play) {
+  if (isApproved(play)) {
+    return buildApprovedMeta(play);
+  }
+
+  if (play.__editing) {
+    return `
+      <div class="plays-view__actions">
+        ${buildIconButton({
+          src: ICONS.actions.save,
+          alt: "Guardar",
+          title: "Guardar",
+          action: "save-edit",
+          playId: play.id
+        })}
+        ${buildIconButton({
+          src: ICONS.actions.delete,
+          alt: "Borrar",
+          title: "Borrar",
+          action: "delete",
+          playId: play.id
+        })}
+      </div>
+      <div class="plays-view__approve-wrap">
+        ${buildApproveButton(play)}
+      </div>
+    `;
+  }
 
   return `
-    <article class="play-row" data-play-id="${play.id || ""}">
-      <div class="play-row__main">
-        ${buildCardHTML(play)}
-
-        <div class="play-row__body">
-          <div class="play-row__title">${escapeHTML(title)}</div>
-          ${subtitle ? `<div class="play-row__meta">${escapeHTML(subtitle)}</div>` : ""}
-        </div>
-
-        <div class="play-row__side">
-          ${buildStatusBadge(play)}
-        </div>
-      </div>
-    </article>
+    <div class="plays-view__actions">
+      ${buildIconButton({
+        src: ICONS.actions.edit,
+        alt: "Editar",
+        title: "Editar texto",
+        action: "edit-heart",
+        playId: play.id
+      })}
+      ${buildIconButton({
+        src: ICONS.suits.CLUB,
+        alt: "Pasar a trébol",
+        title: "Transformar en J trébol",
+        action: "to-club",
+        playId: play.id
+      })}
+      ${buildIconButton({
+        src: ICONS.suits.SPADE,
+        alt: "Pasar a picas",
+        title: "Transformar en J picas",
+        action: "to-spade",
+        playId: play.id
+      })}
+      ${buildIconButton({
+        src: ICONS.actions.delete,
+        alt: "Borrar",
+        title: "Borrar",
+        action: "delete",
+        playId: play.id
+      })}
+    </div>
+    <div class="plays-view__approve-wrap">
+      ${buildApproveButton(play)}
+    </div>
   `;
 }
 
-function buildPlayRowHTML(play) {
-  const rank = String(play.rank || "").toUpperCase();
-  const suit = String(play.suit || "").toUpperCase();
+function buildClubBody(play) {
+  const text = getPlayText(play);
+  const amount = getPlayAmount(play);
 
-  if (rank === "J" && suit === "HEART") return buildJHeartRowHTML(play);
-  if (rank === "J" && suit === "SPADE") return buildJSpadeRowHTML(play);
-  if (rank === "J" && suit === "CLUB") return buildJClubRowHTML(play);
+  if (isApproved(play)) {
+    return `
+      <div class="plays-view__club-row">
+        <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+        <div class="plays-view__amount">${escapeHTML(amount || "")}</div>
+      </div>
+    `;
+  }
 
-  return buildGenericPlayRowHTML(play);
+  return `
+    <div class="plays-view__club-row">
+      <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+      <input
+        type="text"
+        class="plays-view__amount-input"
+        placeholder="$ monto"
+        value="${escapeHTML(amount)}"
+        data-field="amount"
+        data-play-id="${escapeHTML(play.id)}"
+      />
+    </div>
+  `;
+}
+
+function buildClubActions(play) {
+  if (isApproved(play)) {
+    return buildApprovedMeta(play);
+  }
+
+  return `
+    <div class="plays-view__actions">
+      ${buildIconButton({
+        src: ICONS.actions.delete,
+        alt: "Borrar",
+        title: "Borrar",
+        action: "delete",
+        playId: play.id
+      })}
+    </div>
+    <div class="plays-view__approve-wrap">
+      ${buildApproveButton(play)}
+    </div>
+  `;
+}
+
+function buildSpadeBody(play) {
+  const text = getPlayText(play);
+  const startDate = getPlayStartDate(play);
+  const endDate = getPlayEndDate(play);
+  const location = getPlayLocation(play);
+
+  const isEditingSchedule = !!play.__editingSchedule;
+
+  if (isApproved(play)) {
+    return `
+      <div class="plays-view__spade-main">
+        <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+        <div class="plays-view__spade-data">
+          ${startDate ? `<span>${escapeHTML(formatDate(startDate))}</span>` : ""}
+          ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
+          ${location ? `<span>${escapeHTML(location)}</span>` : ""}
+        </div>
+      </div>
+    `;
+  }
+
+  if (isEditingSchedule) {
+    return `
+      <div class="plays-view__spade-edit">
+        <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+
+        <div class="plays-view__schedule-fields">
+          <div class="plays-view__schedule-field">
+            <img src="${escapeHTML(ICONS.actions.start)}" alt="Inicio" class="plays-view__mini-icon" />
+            <input
+              type="datetime-local"
+              class="plays-view__datetime-input"
+              data-field="start_date"
+              data-play-id="${escapeHTML(play.id)}"
+              value="${escapeHTML(startDate)}"
+            />
+          </div>
+
+          <div class="plays-view__schedule-field">
+            <img src="${escapeHTML(ICONS.actions.end)}" alt="Fin" class="plays-view__mini-icon" />
+            <input
+              type="datetime-local"
+              class="plays-view__datetime-input"
+              data-field="end_date"
+              data-play-id="${escapeHTML(play.id)}"
+              value="${escapeHTML(endDate)}"
+            />
+          </div>
+
+          <div class="plays-view__schedule-field">
+            <img src="${escapeHTML(ICONS.actions.location)}" alt="Lugar" class="plays-view__mini-icon" />
+            <input
+              type="text"
+              class="plays-view__location-input"
+              data-field="location"
+              data-play-id="${escapeHTML(play.id)}"
+              value="${escapeHTML(location)}"
+              placeholder="Ubicación"
+            />
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="plays-view__spade-main">
+      <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+      <div class="plays-view__spade-data">
+        ${startDate ? `<span>${escapeHTML(formatDate(startDate))}</span>` : ""}
+        ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
+        ${location ? `<span>${escapeHTML(location)}</span>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+function buildSpadeActions(play) {
+  if (isApproved(play)) {
+    return buildApprovedMeta(play);
+  }
+
+  if (play.__editingSchedule) {
+    return `
+      <div class="plays-view__actions">
+        ${buildIconButton({
+          src: ICONS.actions.save,
+          alt: "Guardar",
+          title: "Guardar fecha y lugar",
+          action: "save-schedule",
+          playId: play.id
+        })}
+        ${buildIconButton({
+          src: ICONS.actions.delete,
+          alt: "Borrar",
+          title: "Borrar",
+          action: "delete",
+          playId: play.id
+        })}
+      </div>
+      <div class="plays-view__approve-wrap">
+        ${buildApproveButton(play)}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="plays-view__actions">
+      ${buildIconButton({
+        src: ICONS.actions.start,
+        alt: "Cita",
+        title: "Definir fecha y lugar",
+        action: "edit-schedule",
+        playId: play.id
+      })}
+      ${buildIconButton({
+        src: ICONS.actions.deadline,
+        alt: "Deadline",
+        title: "Deadline",
+        action: "deadline",
+        playId: play.id
+      })}
+      ${buildIconButton({
+        src: ICONS.actions.delete,
+        alt: "Borrar",
+        title: "Borrar",
+        action: "delete",
+        playId: play.id
+      })}
+    </div>
+    <div class="plays-view__approve-wrap">
+      ${buildApproveButton(play)}
+    </div>
+  `;
+}
+
+function buildPlayRow(play) {
+  const suit = getPlaySuit(play);
+
+  let bodyHTML = "";
+  let actionsHTML = "";
+
+  if (suit === "HEART") {
+    bodyHTML = buildHeartBody(play);
+    actionsHTML = buildHeartActions(play);
+  } else if (suit === "CLUB") {
+    bodyHTML = buildClubBody(play);
+    actionsHTML = buildClubActions(play);
+  } else if (suit === "SPADE") {
+    bodyHTML = buildSpadeBody(play);
+    actionsHTML = buildSpadeActions(play);
+  } else {
+    bodyHTML = `<div class="plays-view__text">${escapeHTML(getPlayText(play) || "Jugada")}</div>`;
+    actionsHTML = isApproved(play) ? buildApprovedMeta(play) : buildApproveButton(play);
+  }
+
+  return `
+    <article class="plays-view__row ${isApproved(play) ? "plays-view__row--approved" : ""}" data-play-id="${escapeHTML(play.id)}">
+      <div class="plays-view__left">
+        ${buildSuitBadge(play)}
+      </div>
+
+      <div class="plays-view__center">
+        ${bodyHTML}
+      </div>
+
+      <div class="plays-view__right">
+        ${actionsHTML}
+      </div>
+    </article>
+  `;
 }
 
 function renderPlaysView(deck, plays = [], state = null) {
   const container = document.getElementById("plays-view-container");
-
-  if (!container) {
-    console.warn("plays-view-container no encontrado");
-    return;
-  }
+  if (!container) return;
 
   lastDeck = deck;
-  lastPlays = plays;
+  lastPlays = Array.isArray(plays) ? plays : [];
   lastState = state;
 
-  const normalizedPlays = Array.isArray(plays)
-    ? plays.map(normalizePlayRow).filter(Boolean)
-    : [];
-
-  const visiblePlays = getVisiblePlays(normalizedPlays, currentSuitFilter);
+  const visiblePlays = getVisiblePlays(lastPlays, currentSuitFilter);
 
   if (!visiblePlays.length) {
-    container.innerHTML = buildEmptyPlaysHTML();
+    container.innerHTML = `
+      <section class="plays-view">
+        <div class="page-container">
+          <div class="plays-view__empty">No hay jugadas visibles.</div>
+        </div>
+      </section>
+    `;
     return;
   }
 
-  const rowsHTML = visiblePlays
-    .map(buildPlayRowHTML)
-    .join("");
+  const rowsHTML = visiblePlays.map(buildPlayRow).join("");
 
-const title = getPlaysViewTitle(currentSuitFilter);
-
-container.innerHTML = `
-  <section class="plays-view">
-    <div class="plays-view__header">
-      ${title}
-    </div>
-
-    <div class="page-container">
-      <div class="plays-view__list">
-        ${rowsHTML}
+  container.innerHTML = `
+    <section class="plays-view">
+      <div class="page-container">
+        <div class="plays-view__header">
+          <h2 class="plays-view__title">${escapeHTML(getFilterTitle(currentSuitFilter))}</h2>
+        </div>
+        <div class="plays-view__list">
+          ${rowsHTML}
+        </div>
       </div>
-    </div>
-  </section>
-`;
+    </section>
+  `;
+
+  bindPlaysViewEvents();
+}
+
+function updateLocalPlay(playId, patch = {}) {
+  lastPlays = lastPlays.map((play) => {
+    if (String(play.id) !== String(playId)) return play;
+    return { ...play, ...patch };
+  });
+}
+
+function removeLocalPlay(playId) {
+  lastPlays = lastPlays.filter((play) => String(play.id) !== String(playId));
+}
+
+function getFieldValue(playId, fieldName) {
+  const field = document.querySelector(`[data-field="${fieldName}"][data-play-id="${playId}"]`);
+  return field ? field.value : "";
+}
+
+async function savePlayPatch(playId, patch) {
+  document.dispatchEvent(
+    new CustomEvent("plays:patch-requested", {
+      detail: { playId, patch }
+    })
+  );
+}
+
+async function deletePlay(playId) {
+  document.dispatchEvent(
+    new CustomEvent("plays:delete-requested", {
+      detail: { playId }
+    })
+  );
+}
+
+async function approvePlay(playId) {
+  document.dispatchEvent(
+    new CustomEvent("plays:approve-requested", {
+      detail: { playId }
+    })
+  );
+}
+
+async function transformSuit(playId, suit) {
+  document.dispatchEvent(
+    new CustomEvent("plays:transform-suit-requested", {
+      detail: { playId, suit }
+    })
+  );
+}
+
+function bindPlaysViewEvents() {
+  containerSafeQueryAll('[data-action="edit-heart"]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
+      updateLocalPlay(playId, { __editing: true });
+      renderPlaysView(lastDeck, lastPlays, lastState);
+    });
+  });
+
+  containerSafeQueryAll('[data-action="save-edit"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
+      const playText = getFieldValue(playId, "text");
+
+      updateLocalPlay(playId, {
+        play_text: playText,
+        __editing: false
+      });
+
+      renderPlaysView(lastDeck, lastPlays, lastState);
+      await savePlayPatch(playId, { play_text: playText });
+    });
+  });
+
+  containerSafeQueryAll('[data-action="to-club"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
+      updateLocalPlay(playId, { card_suit: "CLUB" });
+      renderPlaysView(lastDeck, lastPlays, lastState);
+      await transformSuit(playId, "CLUB");
+    });
+  });
+
+  containerSafeQueryAll('[data-action="to-spade"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
+      updateLocalPlay(playId, { card_suit: "SPADE" });
+      renderPlaysView(lastDeck, lastPlays, lastState);
+      await transformSuit(playId, "SPADE");
+    });
+  });
+
+  containerSafeQueryAll('[data-action="edit-schedule"]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
+      updateLocalPlay(playId, { __editingSchedule: true });
+      renderPlaysView(lastDeck, lastPlays, lastState);
+    });
+  });
+
+  containerSafeQueryAll('[data-action="save-schedule"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
+      const startDate = getFieldValue(playId, "start_date");
+      const endDate = getFieldValue(playId, "end_date");
+      const location = getFieldValue(playId, "location");
+
+      updateLocalPlay(playId, {
+        start_date: startDate,
+        end_date: endDate,
+        location,
+        __editingSchedule: false
+      });
+
+      renderPlaysView(lastDeck, lastPlays, lastState);
+      await savePlayPatch(playId, {
+        start_date: startDate,
+        end_date: endDate,
+        location
+      });
+    });
+  });
+
+  containerSafeQueryAll('[data-action="delete"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
+      removeLocalPlay(playId);
+      renderPlaysView(lastDeck, lastPlays, lastState);
+      await deletePlay(playId);
+    });
+  });
+
+  containerSafeQueryAll('[data-action="approve"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
+      updateLocalPlay(playId, { play_status: "APPROVED", status: "APPROVED" });
+      renderPlaysView(lastDeck, lastPlays, lastState);
+      await approvePlay(playId);
+    });
+  });
+
+  containerSafeQueryAll('[data-action="deadline"]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
+      document.dispatchEvent(
+        new CustomEvent("plays:deadline-requested", {
+          detail: { playId }
+        })
+      );
+    });
+  });
+}
+
+function containerSafeQueryAll(selector) {
+  return Array.from(document.querySelectorAll(selector));
 }
 
 document.addEventListener("mazobar:filter", (event) => {
