@@ -146,9 +146,9 @@ function buildApproveButton(play) {
       data-play-id="${escapeHTML(play.id)}"
       title="Aprobar"
     >
-      <img 
-        src="/assets/icons/Sello40.gif" 
-        alt="Aprobar" 
+      <img
+        src="${escapeHTML(ICONS.actions.approve)}"
+        alt="Aprobar"
         class="plays-view__icon-img"
       />
     </button>
