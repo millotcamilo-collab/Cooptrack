@@ -57,7 +57,7 @@ function formatDate(value) {
   }
 }
 
-function get(play) {
+function getPlaySuit(play) {
   return String(play?.card_suit || play?.suit || "").toUpperCase();
 }
 
@@ -123,7 +123,7 @@ function isChildPlay(play) {
 function isVisibleJPlay(play, filter = null) {
   if (!isJPlay(play)) return false;
   if (!filter) return true;
-  return get(play) === filter;
+  return getPlaySuit(play) === filter;
 }
 
 function getVisiblePlays(plays, filter = null) {
