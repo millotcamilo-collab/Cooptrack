@@ -116,6 +116,10 @@ function isJPlay(play) {
   return getPlayRank(play) === "J";
 }
 
+function isChildPlay(play) {
+  return !!play?.parent_play_id;
+}
+
 function isVisibleJPlay(play, filter = null) {
   if (!isJPlay(play)) return false;
   if (!filter) return true;
@@ -176,6 +180,7 @@ function buildApproveButton(play) {
   if (isApproved(play)) return "";
 
   const suit = getPlaySuit(play);
+  const isChild = isChildPlay(play);
 
   let canApprove = true;
   let tooltip = "Aprobar";
@@ -189,10 +194,21 @@ function buildApproveButton(play) {
   }
 
   if (suit === "CLUB") {
+    const text = getPlayText(play);
     const amount = getPlayAmount(play);
-    if (!amount || Number(amount) <= 0) {
-      canApprove = false;
-      tooltip = "Ingrese monto";
+
+    // ✅ Trébol hijo: requiere concepto + monto
+    if (isChild) {
+      if (!text || !amount || Number(amount) <= 0) {
+        canApprove = false;
+        tooltip = "La factura requiere concepto y monto";
+      }
+    } else {
+      // ✅ Trébol raíz: solo monto
+      if (!amount || Number(amount) <= 0) {
+        canApprove = false;
+        tooltip = "Ingrese monto";
+      }
     }
   }
 
@@ -676,6 +692,7 @@ function buildSpadeActions(play) {
 
 function buildPlayRow(play) {
   const suit = getPlaySuit(play);
+  const childClass = isChildPlay(play) ? "plays-view__row--child" : "";
 
   let bodyHTML = "";
   let actionsHTML = "";
@@ -695,7 +712,7 @@ function buildPlayRow(play) {
   }
 
   return `
-    <article class="plays-view__row ${isApproved(play) ? "plays-view__row--approved" : ""}" data-play-id="${escapeHTML(play.id)}">
+    <article class="plays-view__row ${isApproved(play) ? "plays-view__row--approved" : ""} ${childClass}" data-play-id="${escapeHTML(play.id)}">
       <div class="plays-view__left">
         ${buildSuitBadge(play)}
       </div>
