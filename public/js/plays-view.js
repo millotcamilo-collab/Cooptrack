@@ -418,6 +418,56 @@ function buildClubBody(play) {
   `;
 }
 
+function buildClubBody(play) {
+  if (isChildPlay(play)) {
+    return buildChildClubBody(play);
+  }
+
+  return buildRootClubBody(play);
+}
+
+function buildChildClubBody(play) {
+  const text = getPlayText(play);
+  const amount = getPlayAmount(play);
+
+  if (isApproved(play)) {
+    return `
+      <div class="plays-view__child-club">
+        <div class="plays-view__child-club-concept">
+          ${escapeHTML(text || "Sin concepto")}
+        </div>
+        <div class="plays-view__child-club-amount">
+          ${escapeHTML(amount || "$ 0")}
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="plays-view__child-club">
+      <input
+        type="text"
+        class="plays-view__child-text-input"
+        placeholder="Concepto / descripción de factura"
+        value="${escapeHTML(text)}"
+        data-field="text"
+        data-play-id="${escapeHTML(play.id)}"
+      />
+
+      <input
+        type="number"
+        step="0.01"
+        min="0"
+        class="plays-view__amount-input"
+        placeholder="Monto"
+        value="${escapeHTML(amount)}"
+        data-field="amount"
+        data-play-id="${escapeHTML(play.id)}"
+      />
+    </div>
+  `;
+}
+
 function buildClubActions(play) {
   if (isApproved(play)) {
     return buildApprovedMeta(play);
@@ -1037,6 +1087,22 @@ function bindPlaysViewEvents() {
           detail: { parentPlayId: playId }
         })
       );
+    });
+  });
+    containerSafeQueryAll('.plays-view__child-text-input').forEach((input) => {
+    input.addEventListener("change", async () => {
+      const playId = input.dataset.playId;
+      const playText = input.value;
+
+      updateLocalPlay(playId, {
+        play_text: playText
+      });
+
+      renderPlaysView(lastDeck, lastPlays, lastState);
+
+      await savePlayPatch(playId, {
+        play_text: playText
+      });
     });
   });
 }
