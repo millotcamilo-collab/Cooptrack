@@ -94,6 +94,15 @@ function getPlayEndDate(play) {
   return play?.end_date || play?.endDate || "";
 }
 
+function getSpadeMode(play) {
+  return String(
+    play?.spade_mode ||
+    play?.mode ||
+    play?.spadeMode ||
+    ""
+  ).toUpperCase();
+}
+
 function getPlayLocation(play) {
   return normalizeText(play?.location || "");
 }
@@ -417,15 +426,29 @@ function buildSpadeBody(play) {
   const startDate = getPlayStartDate(play);
   const endDate = getPlayEndDate(play);
   const location = getPlayLocation(play);
+  const spadeMode = getSpadeMode(play);
 
   const isEditingSchedule = !!play.__editingSchedule;
 
   if (isApproved(play)) {
+    if (spadeMode === "DEADLINE") {
+      return `
+        <div class="plays-view__spade-main">
+          <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+          <div class="plays-view__spade-data">
+            <span class="plays-view__spade-mode">Deadline</span>
+            ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
+          </div>
+        </div>
+      `;
+    }
+
     return `
       <div class="plays-view__spade-main">
         <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
         <div class="plays-view__spade-data">
-          ${startDate ? `<span>${escapeHTML(formatDate(startDate))}</span>` : ""}
+          ${spadeMode ? `<span class="plays-view__spade-mode">Cita</span>` : ""}
+          ${startDate ? `<span>Inicio: ${escapeHTML(formatDate(startDate))}</span>` : ""}
           ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
           ${location ? `<span>${escapeHTML(location)}</span>` : ""}
         </div>
@@ -434,6 +457,27 @@ function buildSpadeBody(play) {
   }
 
   if (isEditingSchedule) {
+    if (spadeMode === "DEADLINE") {
+      return `
+        <div class="plays-view__spade-edit">
+          <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+
+          <div class="plays-view__schedule-fields">
+            <div class="plays-view__schedule-field">
+              <img src="${escapeHTML(ICONS.actions.end)}" alt="Fin" class="plays-view__mini-icon" />
+              <input
+                type="datetime-local"
+                class="plays-view__datetime-input"
+                data-field="end_date"
+                data-play-id="${escapeHTML(play.id)}"
+                value="${escapeHTML(endDate)}"
+              />
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     return `
       <div class="plays-view__spade-edit">
         <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
@@ -477,14 +521,35 @@ function buildSpadeBody(play) {
     `;
   }
 
+  if (spadeMode === "DEADLINE") {
+    return `
+      <div class="plays-view__spade-main">
+        <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+        <div class="plays-view__spade-data">
+          <span class="plays-view__spade-mode">Deadline</span>
+          ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
+        </div>
+      </div>
+    `;
+  }
+
+  if (spadeMode === "CITA" || spadeMode === "APPOINTMENT") {
+    return `
+      <div class="plays-view__spade-main">
+        <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+        <div class="plays-view__spade-data">
+          <span class="plays-view__spade-mode">Cita</span>
+          ${startDate ? `<span>Inicio: ${escapeHTML(formatDate(startDate))}</span>` : ""}
+          ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
+          ${location ? `<span>${escapeHTML(location)}</span>` : ""}
+        </div>
+      </div>
+    `;
+  }
+
   return `
     <div class="plays-view__spade-main">
       <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
-      <div class="plays-view__spade-data">
-        ${startDate ? `<span>${escapeHTML(formatDate(startDate))}</span>` : ""}
-        ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
-        ${location ? `<span>${escapeHTML(location)}</span>` : ""}
-      </div>
     </div>
   `;
 }
@@ -494,13 +559,15 @@ function buildSpadeActions(play) {
     return buildApprovedMeta(play);
   }
 
+  const spadeMode = getSpadeMode(play);
+
   if (play.__editingSchedule) {
     return `
       <div class="plays-view__actions">
         ${buildIconButton({
           src: ICONS.actions.save,
           alt: "Guardar",
-          title: "Guardar fecha y lugar",
+          title: "Guardar",
           action: "save-schedule",
           playId: play.id
         })}
@@ -518,20 +585,46 @@ function buildSpadeActions(play) {
     `;
   }
 
+  // Pica recién creada: elegir modo
+  if (!spadeMode) {
+    return `
+      <div class="plays-view__actions">
+        ${buildIconButton({
+          src: ICONS.actions.start,
+          alt: "Cita",
+          title: "Appointment / Cita",
+          action: "set-appointment",
+          playId: play.id
+        })}
+        ${buildIconButton({
+          src: ICONS.actions.bomb,
+          alt: "Deadline",
+          title: "Deadline",
+          action: "set-deadline",
+          playId: play.id
+        })}
+        ${buildIconButton({
+          src: ICONS.actions.delete,
+          alt: "Borrar",
+          title: "Borrar",
+          action: "delete",
+          playId: play.id
+        })}
+      </div>
+      <div class="plays-view__approve-wrap">
+        ${buildApproveButton(play)}
+      </div>
+    `;
+  }
+
+  // Pica ya configurada, todavía editable
   return `
     <div class="plays-view__actions">
       ${buildIconButton({
-        src: ICONS.actions.start,
-        alt: "Cita",
-        title: "Definir fecha y lugar",
+        src: ICONS.actions.edit,
+        alt: "Editar",
+        title: spadeMode === "DEADLINE" ? "Editar deadline" : "Editar cita",
         action: "edit-schedule",
-        playId: play.id
-      })}
-      ${buildIconButton({
-        src: ICONS.actions.deadline,
-        alt: "Deadline",
-        title: "Deadline",
-        action: "deadline",
         playId: play.id
       })}
       ${buildIconButton({
@@ -713,7 +806,41 @@ function bindPlaysViewEvents() {
       await transformSuit(playId, "SPADE");
     });
   });
+  containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
 
+      updateLocalPlay(playId, {
+        spade_mode: "APPOINTMENT",
+        __editingSchedule: true
+      });
+
+      renderPlaysView(lastDeck, lastPlays, lastState);
+
+      await savePlayPatch(playId, {
+        spade_mode: "APPOINTMENT"
+      });
+    });
+  });
+
+  containerSafeQueryAll('[data-action="set-deadline"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
+
+      updateLocalPlay(playId, {
+        spade_mode: "DEADLINE",
+        __editingSchedule: true,
+        start_date: "",
+        location: ""
+      });
+
+      renderPlaysView(lastDeck, lastPlays, lastState);
+
+      await savePlayPatch(playId, {
+        spade_mode: "DEADLINE"
+      });
+    });
+  });
   containerSafeQueryAll('[data-action="edit-schedule"]').forEach((button) => {
     button.addEventListener("click", () => {
       const playId = button.dataset.playId;
@@ -722,14 +849,35 @@ function bindPlaysViewEvents() {
     });
   });
 
-  containerSafeQueryAll('[data-action="save-schedule"]').forEach((button) => {
+    containerSafeQueryAll('[data-action="save-schedule"]').forEach((button) => {
     button.addEventListener("click", async () => {
       const playId = button.dataset.playId;
+
+      const play = lastPlays.find((item) => String(item.id) === String(playId)) || {};
+      const spadeMode = getSpadeMode(play);
+
       const startDate = getFieldValue(playId, "start_date");
       const endDate = getFieldValue(playId, "end_date");
       const location = getFieldValue(playId, "location");
 
+      if (spadeMode === "DEADLINE") {
+        updateLocalPlay(playId, {
+          end_date: endDate,
+          __editingSchedule: false
+        });
+
+        renderPlaysView(lastDeck, lastPlays, lastState);
+
+        await savePlayPatch(playId, {
+          spade_mode: "DEADLINE",
+          end_date: endDate
+        });
+
+        return;
+      }
+
       updateLocalPlay(playId, {
+        spade_mode: "APPOINTMENT",
         start_date: startDate,
         end_date: endDate,
         location,
@@ -737,7 +885,9 @@ function bindPlaysViewEvents() {
       });
 
       renderPlaysView(lastDeck, lastPlays, lastState);
+
       await savePlayPatch(playId, {
+        spade_mode: "APPOINTMENT",
         start_date: startDate,
         end_date: endDate,
         location
