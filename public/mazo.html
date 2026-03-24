@@ -141,7 +141,65 @@
         throw error;
       }
     }
+    function getDeckIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("id");
+    }
 
+    function getCurrentUserIdFromToken() {
+      const token = getToken();
+      if (!token) return null;
+
+      try {
+        const payloadBase64 = token.split(".")[1];
+        const payloadJson = atob(payloadBase64);
+        const payload = JSON.parse(payloadJson);
+        return payload.userId || null;
+      } catch (error) {
+        console.error("Error leyendo token:", error);
+        return null;
+      }
+    }
+
+    function buildChildDiamondPlayCode(deckId, userId) {
+      const nowIso = new Date().toISOString();
+      return `${deckId}§${userId}§${nowIso}§J§CLUB§child_expense§U:${userId}§child§U:${userId}`;
+    }
+
+    async function createChildDiamondPlay(parentPlayId) {
+      const deckId = getDeckIdFromUrl();
+      const userId = getCurrentUserIdFromToken();
+
+      if (!deckId) {
+        throw new Error("No se encontró deckId en la URL");
+      }
+
+      if (!userId) {
+        throw new Error("No se encontró userId en el token");
+      }
+
+      const response = await fetch(`${API_BASE_URL}/plays`, {
+        method: "POST",
+        headers: getAuthHeaders(true),
+        body: JSON.stringify({
+          deck_id: Number(deckId),
+          parent_play_id: Number(parentPlayId),
+          play_code: buildChildDiamondPlayCode(deckId, userId),
+          card_rank: "J",
+          card_suit: "CLUB",
+          play_status: "ACTIVE",
+          text: ""
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "Error creando J♦ hija");
+      }
+
+      return data.play;
+    }
     function clearDeckView() {
       const ids = [
         "mazobar-container",
@@ -262,7 +320,20 @@
         console.error("Error en plays:delete-requested", error);
       }
     });
+    
+    document.addEventListener("plays:add-child-diamond-requested", async (event) => {
+      try {
+        const parentPlayId = event.detail?.parentPlayId;
+        if (!parentPlayId) return;
 
+        console.log("ADD CHILD DIAMOND", parentPlayId);
+
+        await createChildDiamondPlay(parentPlayId);
+        await initMazoPage();
+      } catch (error) {
+        console.error("Error en plays:add-child-diamond-requested", error);
+      }
+    });
     document.addEventListener("plays:deadline-requested", async (event) => {
       try {
         const playId = event.detail?.playId;
