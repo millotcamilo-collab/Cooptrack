@@ -176,7 +176,7 @@ function buildSuitBadge(play) {
   `;
 }
 
-function buildApproveButton(play) {
+function proveButton(play) {
   if (isApproved(play)) return "";
 
   const suit = getPlaySuit(play);
@@ -274,9 +274,10 @@ function buildApprovedMeta(play) {
   if (!isApproved(play)) return "";
 
   const approvedAt = formatDate(play.updated_at || play.approved_at || play.created_at);
+
   return `
     <div class="plays-view__approved-meta">
-      ${approvedAt ? `Fecha de aprobado: ${escapeHTML(approvedAt)}` : "Aprobada"}
+      ${approvedAt ? `${escapeHTML(approvedAt)}` : ""}
     </div>
   `;
 }
