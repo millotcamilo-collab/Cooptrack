@@ -557,11 +557,37 @@ function buildSpadeBody(play) {
 }
 
 function buildSpadeActions(play) {
+  const spadeMode = getSpadeMode(play);
+
+  // ✅ PICA APROBADA EN MODO CITA:
+  // mostrar botones hijo J♦ y Q♠
+  if (isApproved(play) && (spadeMode === "CITA" || spadeMode === "APPOINTMENT")) {
+    return `
+      <div class="plays-view__actions">
+        ${buildIconButton({
+          src: ICONS.suits.DIAMOND,
+          alt: "Nuevo gasto hijo",
+          title: "Agregar J♦ hija",
+          action: "add-child-diamond",
+          playId: play.id
+        })}
+        ${buildIconButton({
+          src: ICONS.suits.SPADE,
+          alt: "Nueva Q♠",
+          title: "Agregar Q♠ hija",
+          action: "add-child-qspade",
+          playId: play.id
+        })}
+      </div>
+      <div class="plays-view__approve-wrap">
+        ${buildApprovedMeta(play)}
+      </div>
+    `;
+  }
+
   if (isApproved(play)) {
     return buildApprovedMeta(play);
   }
-
-  const spadeMode = getSpadeMode(play);
 
   if (play.__editingSchedule) {
     return `
@@ -968,6 +994,30 @@ function bindPlaysViewEvents() {
       document.dispatchEvent(
         new CustomEvent("plays:deadline-requested", {
           detail: { playId }
+        })
+      );
+    });
+  });
+
+    containerSafeQueryAll('[data-action="add-child-diamond"]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
+
+      document.dispatchEvent(
+        new CustomEvent("plays:add-child-diamond-requested", {
+          detail: { parentPlayId: playId }
+        })
+      );
+    });
+  });
+
+  containerSafeQueryAll('[data-action="add-child-qspade"]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
+
+      document.dispatchEvent(
+        new CustomEvent("plays:add-child-qspade-requested", {
+          detail: { parentPlayId: playId }
         })
       );
     });
