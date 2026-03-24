@@ -16,7 +16,8 @@ const ICONS = window.ICONS || {
     bomb: "/assets/icons/bombaRedonda60.gif",
     stop: "/assets/icons/stop60.gif",
     boom: "/assets/icons/Boom80.gif",
-    approve: "/assets/icons/Sello40.gif"
+    approve: "/assets/icons/Sello40.gif",
+    exit: "/assets/icons/exit40.gif"
   }
 };
 
