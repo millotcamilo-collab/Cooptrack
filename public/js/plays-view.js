@@ -161,7 +161,14 @@ function buildIconButton({ src, alt, title, action, playId, extraData = "" }) {
 }
 
 function buildSuitBadge(play) {
-  const suit = getPlaySuit(play);
+  let suit = getPlaySuit(play);
+
+  // ✅ excepción visual:
+  // si es un trébol hijo, se muestra como diamante
+  if (isChildPlay(play) && suit === "CLUB") {
+    suit = "DIAMOND";
+  }
+
   const suitIcon = ICONS?.suits?.[suit];
 
   if (!suitIcon) {
