@@ -78,7 +78,12 @@ function getPlayText(play) {
 }
 
 function getPlayAmount(play) {
-  return normalizeText(play?.amount || play?.play_amount || "");
+  return normalizeText(
+    play?.amount ||
+    play?.play_amount ||
+    play?.monto ||
+    ""
+  );
 }
 
 function getPlayStartDate(play) {
@@ -179,12 +184,11 @@ function buildApproveButton(play) {
   if (suit === "CLUB") {
     const amount = getPlayAmount(play);
 
-    if (!amount) {
+    if (!amount || Number(amount) <= 0) {
       canApprove = false;
       tooltip = "Ingrese monto";
     }
   }
-
   // ♠ SPADE
   if (suit === "SPADE") {
     const spadeMode = String(
@@ -366,7 +370,7 @@ function buildClubBody(play) {
     return `
       <div class="plays-view__club-row">
         <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
-        <div class="plays-view__amount">${escapeHTML(amount || "")}</div>
+        <div class="plays-view__amount">${escapeHTML(amount || "$ 0")}</div>
       </div>
     `;
   }
@@ -375,9 +379,11 @@ function buildClubBody(play) {
     <div class="plays-view__club-row">
       <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
       <input
-        type="text"
+        type="number"
+        step="0.01"
+        min="0"
         class="plays-view__amount-input"
-        placeholder="$ monto"
+        placeholder="Monto"
         value="${escapeHTML(amount)}"
         data-field="amount"
         data-play-id="${escapeHTML(play.id)}"
@@ -385,7 +391,6 @@ function buildClubBody(play) {
     </div>
   `;
 }
-
 function buildClubActions(play) {
   if (isApproved(play)) {
     return buildApprovedMeta(play);
@@ -739,7 +744,24 @@ function bindPlaysViewEvents() {
       });
     });
   });
+  
+  containerSafeQueryAll('[data-field="amount"]').forEach((input) => {
+    input.addEventListener("change", async () => {
+      const playId = input.dataset.playId;
+      const amount = input.value;
 
+      updateLocalPlay(playId, {
+        amount: amount,
+        play_amount: amount
+      });
+
+      renderPlaysView(lastDeck, lastPlays, lastState);
+
+      await savePlayPatch(playId, {
+        amount: amount
+      });
+    });
+  });
   containerSafeQueryAll('[data-action="delete"]').forEach((button) => {
     button.addEventListener("click", async () => {
       const playId = button.dataset.playId;
