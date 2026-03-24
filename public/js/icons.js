@@ -1,4 +1,6 @@
-const ICONS = {
+// /js/icons.js
+
+window.ICONS = {
   suits: {
     HEART: "/assets/icons/cor40.gif",
     SPADE: "/assets/icons/pik40.gif",
@@ -11,11 +13,11 @@ const ICONS = {
     save: "/assets/icons/salvar40.gif",
     delete: "/assets/icons/papelera30.gif",
 
-    start: "/assets/icons/reloj60.gif",     // fecha inicio
-    end: "/assets/icons/Campana80.gif",     // fecha fin
+    start: "/assets/icons/reloj60.gif",
+    end: "/assets/icons/Campana80.gif",
     location: "/assets/icons/LocGlobito.gif",
 
-    deadline: "/assets/icons/META60.gif",   // bandera
+    deadline: "/assets/icons/META60.gif",
     bomb: "/assets/icons/bombaRedonda60.gif",
 
     stop: "/assets/icons/stop60.gif",
