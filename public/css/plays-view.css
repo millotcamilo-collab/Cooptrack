@@ -270,7 +270,20 @@ font-size: 14px;
   font-size: 13px;
   background: #fff;
 }
+.plays-view__child-club-money {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+  justify-content: flex-end;
+}
 
+.plays-view__child-club-money-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+}
 /* RESPONSIVE */
 @media (max-width: 640px) {
   .plays-view__row {
