@@ -160,13 +160,91 @@ function buildSuitBadge(play) {
 function buildApproveButton(play) {
   if (isApproved(play)) return "";
 
+  const suit = getPlaySuit(play);
+
+  let canApprove = true;
+  let tooltip = "Aprobar";
+
+  // ❤️ HEART
+  if (suit === "HEART") {
+    const text = getPlayText(play);
+
+    if (!text) {
+      canApprove = false;
+      tooltip = "Debe tener descripción";
+    }
+  }
+
+  // ♣ CLUB
+  if (suit === "CLUB") {
+    const amount = getPlayAmount(play);
+
+    if (!amount) {
+      canApprove = false;
+      tooltip = "Ingrese monto";
+    }
+  }
+
+  // ♠ SPADE
+  if (suit === "SPADE") {
+    const spadeMode = String(
+      play?.spade_mode ||
+      play?.mode ||
+      play?.spadeMode ||
+      ""
+    ).toUpperCase();
+
+    const startDate = getPlayStartDate(play);
+    const endDate = getPlayEndDate(play);
+    const location = getPlayLocation(play);
+
+    // Si todavía no definió si es cita o deadline
+    if (!spadeMode) {
+      canApprove = false;
+      tooltip = "Defina cita o deadline";
+    }
+
+    // CITA / APPOINTMENT
+    if (spadeMode === "CITA" || spadeMode === "APPOINTMENT") {
+      if (!startDate || !location) {
+        canApprove = false;
+        tooltip = "La cita requiere inicio y locación";
+      }
+    }
+
+    // DEADLINE
+    if (spadeMode === "DEADLINE") {
+      if (!endDate) {
+        canApprove = false;
+        tooltip = "El deadline requiere fecha fin";
+      }
+    }
+  }
+
+  if (!canApprove) {
+    return `
+      <button
+        type="button"
+        class="plays-view__icon-btn plays-view__icon-btn--disabled"
+        title="${escapeHTML(tooltip)}"
+        disabled
+      >
+        <img
+          src="${escapeHTML(ICONS.actions.approve)}"
+          alt="Aprobar"
+          class="plays-view__icon-img"
+        />
+      </button>
+    `;
+  }
+
   return `
     <button
       type="button"
       class="plays-view__icon-btn"
       data-action="approve"
       data-play-id="${escapeHTML(play.id)}"
-      title="Aprobar"
+      title="${escapeHTML(tooltip)}"
     >
       <img
         src="${escapeHTML(ICONS.actions.approve)}"
