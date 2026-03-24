@@ -152,26 +152,28 @@ text-align: right;
 
 /* J TREBOL */
 .plays-view__club-row {
-display: flex;
-justify-content: space-between;
-align-items: center;
-gap: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 .plays-view__amount {
-font-weight: bold;
-color: #8a6a1d;
+  min-width: 80px;
+  text-align: right;
+  font-weight: 700;
+  color: #8a6a1d;
 }
 
 .plays-view__amount-input {
-width: 100px;
-padding: 4px;
-border: 1px solid #cfc7b8;
-border-radius: 4px;
-text-align: right;
-font-size: 13px;
+  width: 110px;
+  padding: 4px 6px;
+  border: 1px solid #cfc7b8;
+  border-radius: 4px;
+  text-align: right;
+  font-size: 13px;
+  background: #fff;
 }
-
 /* J PICAS */
 .plays-view__spade-main {
 display: flex;
