@@ -92,10 +92,10 @@ background: #fff;
 
 /* DERECHA */
 .plays-view__right {
-display: flex;
-flex-direction: column;
-align-items: flex-end;
-gap: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 /* ACCIONES */
@@ -123,8 +123,7 @@ height: 22px;
 
 /* BOTON APROBAR */
 .plays-view__approve-wrap {
-display: flex;
-justify-content: flex-end;
+  margin-left: 6px;
 }
 
 .plays-view__approve-btn {
