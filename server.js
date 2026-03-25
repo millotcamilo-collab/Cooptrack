@@ -846,7 +846,73 @@ app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
     });
   }
 });
+// Recurrencias
+app.post("/plays/:id/recurrence", requireAuth, async (req, res) => {
+  const playId = parseInt(req.params.id, 10);
+  const {
+    recurrence_type,
+    weekdays,
+    day_of_month,
+    months,
+    start_time,
+    end_time,
+    until_date,
+    timezone
+  } = req.body;
 
+  try {
+    // eliminar anterior (MVP: una sola regla por play)
+    await pool.query(
+      "DELETE FROM play_recurrences WHERE play_id = $1",
+      [playId]
+    );
+
+    const result = await pool.query(
+      `INSERT INTO play_recurrences
+      (play_id, recurrence_type, weekdays, day_of_month, months,
+       start_time, end_time, until_date, timezone)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      RETURNING *`,
+      [
+        playId,
+        recurrence_type,
+        weekdays || null,
+        day_of_month || null,
+        months || null,
+        start_time || null,
+        end_time || null,
+        until_date || null,
+        timezone || null
+      ]
+    );
+
+    res.json({ ok: true, recurrence: result.rows[0] });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, message: "Error saving recurrence" });
+  }
+});
+
+app.get("/plays/:id/recurrence", requireAuth, async (req, res) => {
+  const playId = parseInt(req.params.id, 10);
+
+  try {
+    const result = await pool.query(
+      "SELECT * FROM play_recurrences WHERE play_id = $1",
+      [playId]
+    );
+
+    res.json({
+      ok: true,
+      recurrence: result.rows[0] || null
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false });
+  }
+});
 // ================= START =================
 
 console.log('PORT recibido:', PORT);
