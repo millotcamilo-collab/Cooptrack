@@ -209,42 +209,59 @@ function bindPlaysViewEvents() {
     });
   });
 
-  containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
-    button.addEventListener("click", async () => {
-      const playId = button.dataset.playId;
+containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
+  button.addEventListener("click", async () => {
+    const playId = button.dataset.playId;
 
-      updateLocalPlay(playId, {
-        spade_mode: "APPOINTMENT",
-        __editingSchedule: true
-      });
+    updateLocalPlay(playId, {
+      spade_mode: "APPOINTMENT",
+      __editingSchedule: true
+    });
 
-      renderPlaysView(lastDeck, lastPlays, lastState);
+    renderPlaysView(lastDeck, lastPlays, lastState);
 
-      await savePlayPatch(playId, {
-        spade_mode: "APPOINTMENT"
-      });
+    requestAnimationFrame(() => {
+      const firstField = document.querySelector(
+        `[data-field="start_date"][data-play-id="${playId}"]`
+      );
+      if (firstField) {
+        firstField.focus();
+      }
+    });
+
+    await savePlayPatch(playId, {
+      spade_mode: "APPOINTMENT"
     });
   });
+});
 
   containerSafeQueryAll('[data-action="set-deadline"]').forEach((button) => {
-    button.addEventListener("click", async () => {
-      const playId = button.dataset.playId;
+  button.addEventListener("click", async () => {
+    const playId = button.dataset.playId;
 
-      updateLocalPlay(playId, {
-        spade_mode: "DEADLINE",
-        __editingSchedule: true,
-        start_date: "",
-        location: ""
-      });
+    updateLocalPlay(playId, {
+      spade_mode: "DEADLINE",
+      __editingSchedule: true,
+      start_date: "",
+      location: ""
+    });
 
-      renderPlaysView(lastDeck, lastPlays, lastState);
+    renderPlaysView(lastDeck, lastPlays, lastState);
 
-      await savePlayPatch(playId, {
-        spade_mode: "DEADLINE"
-      });
+    requestAnimationFrame(() => {
+      const firstField = document.querySelector(
+        `[data-field="end_date"][data-play-id="${playId}"]`
+      );
+      if (firstField) {
+        firstField.focus();
+      }
+    });
+
+    await savePlayPatch(playId, {
+      spade_mode: "DEADLINE"
     });
   });
-
+});
   containerSafeQueryAll('[data-action="edit-schedule"]').forEach((button) => {
     button.addEventListener("click", () => {
       const playId = button.dataset.playId;
