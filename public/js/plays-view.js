@@ -24,7 +24,7 @@ const ICONS = window.ICONS || {
     send: "/assets/icons/buzon60.gif",
     register: "/assets/icons/lacre80.gif",
     reject: "/assets/icons/stepback40.gif",
-    quit: "/assets/icons/step60.gif",
+    quit: "/assets/icons/step60.gif"
   }
 };
 
@@ -151,17 +151,14 @@ function getFilterTitle(filter) {
       return "Jugadas";
   }
 }
-// =============================
-// 1. NUEVO HELPER
-// =============================
+
 function buildRecurrencePanel(play) {
   if (!play.__showRecurrence) return "";
 
   return `
     <div class="plays-view__recurrence">
       <div class="plays-view__recurrence-box">
-
-        <select data-field="recurrence_type" data-play-id="${play.id}">
+        <select data-field="recurrence_type" data-play-id="${escapeHTML(play.id)}">
           <option value="WEEKLY">Semanal</option>
           <option value="MONTHLY">Mensual</option>
         </select>
@@ -183,17 +180,30 @@ function buildRecurrencePanel(play) {
             max="31"
             placeholder="Día del mes"
             data-field="day_of_month"
-            data-play-id="${play.id}"
+            data-play-id="${escapeHTML(play.id)}"
           />
         </div>
 
         <div class="plays-view__recurrence-actions">
-          <button type="button" data-action="save-recurrence" data-play-id="${play.id}">Guardar</button>
-          <button type="button" data-action="cancel-recurrence" data-play-id="${play.id}">Cancelar</button>
+          <button type="button" data-action="save-recurrence" data-play-id="${escapeHTML(play.id)}">Guardar</button>
+          <button type="button" data-action="cancel-recurrence" data-play-id="${escapeHTML(play.id)}">Cancelar</button>
         </div>
-
       </div>
     </div>
+  `;
+}
+
+function buildRecurrenceMarker(play) {
+  if (!play.__hasRecurrence) return "";
+
+  return `
+    <span class="plays-view__recurrence-marker" title="Tiene rutina">
+      <img
+        src="${escapeHTML(ICONS.actions.routine)}"
+        alt="Rutina"
+        class="plays-view__mini-icon"
+      />
+    </span>
   `;
 }
 
@@ -325,7 +335,6 @@ function buildApproveButton(play) {
 function buildApprovedMeta(play) {
   if (!isApproved(play)) return "";
 
-  // ❌ NO mostrar nada en J de picas
   if (getPlaySuit(play) === "SPADE") {
     return "";
   }
@@ -443,7 +452,10 @@ function buildRootClubBody(play) {
   if (isApproved(play)) {
     return `
       <div class="plays-view__club-row">
-        <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+        <div class="plays-view__text">
+          ${escapeHTML(text || "Sin descripción")}
+          ${buildRecurrenceMarker(play)}
+        </div>
         <div class="plays-view__amount">${escapeHTML(amount || "$ 0")}</div>
       </div>
     `;
@@ -451,7 +463,10 @@ function buildRootClubBody(play) {
 
   return `
     <div class="plays-view__club-row">
-      <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+      <div class="plays-view__text">
+        ${escapeHTML(text || "Sin descripción")}
+        ${buildRecurrenceMarker(play)}
+      </div>
       <input
         type="number"
         step="0.01"
@@ -475,6 +490,7 @@ function buildChildClubBody(play) {
       <div class="plays-view__child-club">
         <div class="plays-view__child-club-concept">
           ${escapeHTML(text || "Sin concepto")}
+          ${buildRecurrenceMarker(play)}
         </div>
 
         <div class="plays-view__child-club-money">
@@ -533,15 +549,15 @@ function buildChildClubBody(play) {
 function buildClubBody(play) {
   if (isChildPlay(play)) {
     return `
-  ${buildChildClubBody(play)}
-  ${buildRecurrencePanel(play)}
-`;
+      ${buildChildClubBody(play)}
+      ${buildRecurrencePanel(play)}
+    `;
   }
 
   return `
-  ${buildRootClubBody(play)}
-  ${buildRecurrencePanel(play)}
-`;
+    ${buildRootClubBody(play)}
+    ${buildRecurrencePanel(play)}
+  `;
 }
 
 function buildClubActions(play) {
@@ -551,13 +567,13 @@ function buildClubActions(play) {
 
   return `
     <div class="plays-view__actions">
-     ${buildIconButton({
-      src: ICONS.actions.routine,
-      alt: "Recurrencia",
-      title: "Definir recurrencia",
-      action: "set-recurrence",
-      playId: play.id
-    })}
+      ${buildIconButton({
+        src: ICONS.actions.routine,
+        alt: "Recurrencia",
+        title: "Definir recurrencia",
+        action: "set-recurrence",
+        playId: play.id
+      })}
       ${buildIconButton({
         src: ICONS.actions.delete,
         alt: "Borrar",
@@ -583,7 +599,10 @@ function buildSpadeBody(play) {
     if (spadeMode === "DEADLINE") {
       return `
         <div class="plays-view__spade-main">
-          <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+          <div class="plays-view__text">
+            ${escapeHTML(text || "Sin descripción")}
+            ${buildRecurrenceMarker(play)}
+          </div>
           <div class="plays-view__spade-data">
             <span class="plays-view__spade-mode">Deadline</span>
             ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
@@ -595,7 +614,10 @@ function buildSpadeBody(play) {
 
     return `
       <div class="plays-view__spade-main">
-        <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+        <div class="plays-view__text">
+          ${escapeHTML(text || "Sin descripción")}
+          ${buildRecurrenceMarker(play)}
+        </div>
         <div class="plays-view__spade-data">
           ${spadeMode ? `<span class="plays-view__spade-mode">Cita</span>` : ""}
           ${startDate ? `<span>Inicio: ${escapeHTML(formatDate(startDate))}</span>` : ""}
@@ -611,7 +633,10 @@ function buildSpadeBody(play) {
     if (spadeMode === "DEADLINE") {
       return `
         <div class="plays-view__spade-edit">
-          <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+          <div class="plays-view__text">
+            ${escapeHTML(text || "Sin descripción")}
+            ${buildRecurrenceMarker(play)}
+          </div>
           <div class="plays-view__schedule-fields">
             <div class="plays-view__schedule-field">
               <img src="${escapeHTML(ICONS.actions.end)}" alt="Fin" class="plays-view__mini-icon" />
@@ -631,7 +656,10 @@ function buildSpadeBody(play) {
 
     return `
       <div class="plays-view__spade-edit">
-        <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+        <div class="plays-view__text">
+          ${escapeHTML(text || "Sin descripción")}
+          ${buildRecurrenceMarker(play)}
+        </div>
         <div class="plays-view__schedule-fields">
           <div class="plays-view__schedule-field">
             <img src="${escapeHTML(ICONS.actions.start)}" alt="Inicio" class="plays-view__mini-icon" />
@@ -675,7 +703,10 @@ function buildSpadeBody(play) {
   if (spadeMode === "DEADLINE") {
     return `
       <div class="plays-view__spade-main">
-        <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+        <div class="plays-view__text">
+          ${escapeHTML(text || "Sin descripción")}
+          ${buildRecurrenceMarker(play)}
+        </div>
         <div class="plays-view__spade-data">
           <span class="plays-view__spade-mode">Deadline</span>
           ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
@@ -688,7 +719,10 @@ function buildSpadeBody(play) {
   if (spadeMode === "CITA" || spadeMode === "APPOINTMENT") {
     return `
       <div class="plays-view__spade-main">
-        <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+        <div class="plays-view__text">
+          ${escapeHTML(text || "Sin descripción")}
+          ${buildRecurrenceMarker(play)}
+        </div>
         <div class="plays-view__spade-data">
           <span class="plays-view__spade-mode">Cita</span>
           ${startDate ? `<span>Inicio: ${escapeHTML(formatDate(startDate))}</span>` : ""}
@@ -702,7 +736,10 @@ function buildSpadeBody(play) {
 
   return `
     <div class="plays-view__spade-main">
-      <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
+      <div class="plays-view__text">
+        ${escapeHTML(text || "Sin descripción")}
+        ${buildRecurrenceMarker(play)}
+      </div>
     </div>
     ${buildRecurrencePanel(play)}
   `;
@@ -757,12 +794,12 @@ function buildSpadeActions(play) {
           playId: play.id
         })}
         ${buildIconButton({
-  src: ICONS.actions.routine,
-  alt: "Recurrencia",
-  title: "Definir recurrencia",
-  action: "set-recurrence",
-  playId: play.id
-})}
+          src: ICONS.actions.routine,
+          alt: "Recurrencia",
+          title: "Definir recurrencia",
+          action: "set-recurrence",
+          playId: play.id
+        })}
         ${buildIconButton({
           src: ICONS.actions.delete,
           alt: "Borrar",
@@ -778,20 +815,50 @@ function buildSpadeActions(play) {
   }
 
   if (!spadeMode) {
+    return `
+      <div class="plays-view__actions">
+        ${buildIconButton({
+          src: ICONS.actions.start,
+          alt: "Cita",
+          title: "Appointment / Cita",
+          action: "set-appointment",
+          playId: play.id
+        })}
+        ${buildIconButton({
+          src: ICONS.actions.bomb,
+          alt: "Deadline",
+          title: "Deadline",
+          action: "set-deadline",
+          playId: play.id
+        })}
+        ${buildIconButton({
+          src: ICONS.actions.routine,
+          alt: "Recurrencia",
+          title: "Definir recurrencia",
+          action: "set-recurrence",
+          playId: play.id
+        })}
+        ${buildIconButton({
+          src: ICONS.actions.delete,
+          alt: "Borrar",
+          title: "Borrar",
+          action: "delete",
+          playId: play.id
+        })}
+      </div>
+      <div class="plays-view__approve-wrap">
+        ${buildApproveButton(play)}
+      </div>
+    `;
+  }
+
   return `
     <div class="plays-view__actions">
       ${buildIconButton({
-        src: ICONS.actions.start,
-        alt: "Cita",
-        title: "Appointment / Cita",
-        action: "set-appointment",
-        playId: play.id
-      })}
-      ${buildIconButton({
-        src: ICONS.actions.bomb,
-        alt: "Deadline",
-        title: "Deadline",
-        action: "set-deadline",
+        src: ICONS.actions.edit,
+        alt: "Editar",
+        title: spadeMode === "DEADLINE" ? "Editar deadline" : "Editar cita",
+        action: "edit-schedule",
         playId: play.id
       })}
       ${buildIconButton({
@@ -813,36 +880,6 @@ function buildSpadeActions(play) {
       ${buildApproveButton(play)}
     </div>
   `;
-}
-
-  return `
-  <div class="plays-view__actions">
-    ${buildIconButton({
-      src: ICONS.actions.edit,
-      alt: "Editar",
-      title: spadeMode === "DEADLINE" ? "Editar deadline" : "Editar cita",
-      action: "edit-schedule",
-      playId: play.id
-    })}
-    ${buildIconButton({
-      src: ICONS.actions.routine,
-      alt: "Recurrencia",
-      title: "Definir recurrencia",
-      action: "set-recurrence",
-      playId: play.id
-    })}
-    ${buildIconButton({
-      src: ICONS.actions.delete,
-      alt: "Borrar",
-      title: "Borrar",
-      action: "delete",
-      playId: play.id
-    })}
-  </div>
-  <div class="plays-view__approve-wrap">
-    ${buildApproveButton(play)}
-  </div>
-`;
 }
 
 function buildPlayRow(play) {
@@ -1207,67 +1244,68 @@ function bindPlaysViewEvents() {
       );
     });
   });
-  // =============================
-// 5. EVENTOS
-// =============================
 
-// abrir panel
-containerSafeQueryAll('[data-action="set-recurrence"]').forEach((button) => {
-  button.addEventListener("click", () => {
-    const playId = button.dataset.playId;
+  containerSafeQueryAll('[data-action="set-recurrence"]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
 
-    updateLocalPlay(playId, {
-      __showRecurrence: true
+      updateLocalPlay(playId, {
+        __showRecurrence: true
+      });
+
+      renderPlaysView(lastDeck, lastPlays, lastState);
     });
-
-    renderPlaysView(lastDeck, lastPlays, lastState);
   });
-});
 
-// guardar
-containerSafeQueryAll('[data-action="save-recurrence"]').forEach((button) => {
-  button.addEventListener("click", async () => {
-    const playId = button.dataset.playId;
-    
-    const row = document.querySelector(`.plays-view__row[data-play-id="${playId}"]`);
-    const typeField = row?.querySelector(`[data-field="recurrence_type"][data-play-id="${playId}"]`);
-    const dayField = row?.querySelector(`[data-field="day_of_month"][data-play-id="${playId}"]`);
-    const checkboxes = row ? row.querySelectorAll('.plays-view__recurrence-weekly input') : [];
+  containerSafeQueryAll('[data-action="save-recurrence"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
 
-    const weekdays = Array.from(checkboxes)
-      .filter(cb => cb.checked)
-      .map(cb => cb.value)
-      .join(",");
+      const row = document.querySelector(`.plays-view__row[data-play-id="${playId}"]`);
+      const typeField = row?.querySelector(`[data-field="recurrence_type"][data-play-id="${playId}"]`);
+      const dayField = row?.querySelector(`[data-field="day_of_month"][data-play-id="${playId}"]`);
+      const checkboxes = row ? row.querySelectorAll(".plays-view__recurrence-weekly input") : [];
 
-    const payload = {
-      recurrence_type: typeField?.value,
-      weekdays: weekdays || null,
-      day_of_month: dayField?.value || null
-    };
+      const weekdays = Array.from(checkboxes)
+        .filter((cb) => cb.checked)
+        .map((cb) => cb.value)
+        .join(",");
 
-    await fetch(`${API_BASE_URL}/plays/${playId}/recurrence`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("cooptrackToken")}`
-      },
-      body: JSON.stringify(payload)
+      const payload = {
+        recurrence_type: typeField?.value,
+        weekdays: weekdays || null,
+        day_of_month: dayField?.value || null
+      };
+
+      await fetch(`${API_BASE_URL}/plays/${playId}/recurrence`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("cooptrackToken")}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      updateLocalPlay(playId, {
+        __showRecurrence: false,
+        __hasRecurrence: true
+      });
+
+      renderPlaysView(lastDeck, lastPlays, lastState);
     });
-
-    updateLocalPlay(playId, { __showRecurrence: false });
-    renderPlaysView(lastDeck, lastPlays, lastState);
   });
-});
 
-// cancelar
-containerSafeQueryAll('[data-action="cancel-recurrence"]').forEach((button) => {
-  button.addEventListener("click", () => {
-    const playId = button.dataset.playId;
+  containerSafeQueryAll('[data-action="cancel-recurrence"]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
 
-    updateLocalPlay(playId, { __showRecurrence: false });
-    renderPlaysView(lastDeck, lastPlays, lastState);
+      updateLocalPlay(playId, {
+        __showRecurrence: false
+      });
+
+      renderPlaysView(lastDeck, lastPlays, lastState);
+    });
   });
-});
 }
 
 function containerSafeQueryAll(selector) {
