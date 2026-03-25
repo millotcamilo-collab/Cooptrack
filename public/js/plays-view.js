@@ -210,7 +210,7 @@ function bindPlaysViewEvents() {
   });
 
 containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
-  button.addEventListener("click", async () => {
+  button.addEventListener("click", () => {
     const playId = button.dataset.playId;
 
     updateLocalPlay(playId, {
@@ -224,19 +224,13 @@ containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
       const firstField = document.querySelector(
         `[data-field="start_date"][data-play-id="${playId}"]`
       );
-      if (firstField) {
-        firstField.focus();
-      }
-    });
-
-    await savePlayPatch(playId, {
-      spade_mode: "APPOINTMENT"
+      if (firstField) firstField.focus();
     });
   });
 });
 
   containerSafeQueryAll('[data-action="set-deadline"]').forEach((button) => {
-  button.addEventListener("click", async () => {
+  button.addEventListener("click", () => {
     const playId = button.dataset.playId;
 
     updateLocalPlay(playId, {
@@ -252,31 +246,10 @@ containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
       const firstField = document.querySelector(
         `[data-field="end_date"][data-play-id="${playId}"]`
       );
-      if (firstField) {
-        firstField.focus();
-      }
-    });
-
-    await savePlayPatch(playId, {
-      spade_mode: "DEADLINE"
+      if (firstField) firstField.focus();
     });
   });
 });
-  containerSafeQueryAll('[data-action="edit-schedule"]').forEach((button) => {
-    button.addEventListener("click", () => {
-      const playId = button.dataset.playId;
-      updateLocalPlay(playId, { __editingSchedule: true });
-      renderPlaysView(lastDeck, lastPlays, lastState);
-    });
-  });
-
-  containerSafeQueryAll('[data-action="cancel-schedule-edit"]').forEach((button) => {
-    button.addEventListener("click", () => {
-      const playId = button.dataset.playId;
-      updateLocalPlay(playId, { __editingSchedule: false });
-      renderPlaysView(lastDeck, lastPlays, lastState);
-    });
-  });
 
   containerSafeQueryAll('[data-action="save-schedule"]').forEach((button) => {
     button.addEventListener("click", async () => {
