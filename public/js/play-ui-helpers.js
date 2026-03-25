@@ -348,7 +348,13 @@ function formatSpadeScheduleInline(play) {
   if (spadeMode === "DEADLINE") {
     return `
       <span class="plays-view__spade-inline">
-        <span class="plays-view__spade-inline-icon">💣</span>
+        <span class="plays-view__spade-inline-icon">
+        <img
+  src="${escapeHTML(window.ICONS.actions.bomb)}"
+  alt="Deadline"
+  class="plays-view__mini-icon"
+/>
+        </span>
         <span class="plays-view__spade-inline-text">${escapeHTML(formatShortWeekdayDate(endDate))}</span>
       </span>
     `;
@@ -374,7 +380,13 @@ function formatSpadeScheduleInline(play) {
 
     return `
       <span class="plays-view__spade-inline">
-        <span class="plays-view__spade-inline-icon">🕒</span>
+        <span class="plays-view__spade-inline-icon">
+        <img
+  src="${escapeHTML(window.ICONS.actions.start)}"
+  alt="Inicio"
+  class="plays-view__mini-icon"
+/>
+        </span>
         <span class="plays-view__spade-inline-text">
           ${escapeHTML(startText)}
           ${endTime ? `a ${escapeHTML(endTime)}` : ""}
