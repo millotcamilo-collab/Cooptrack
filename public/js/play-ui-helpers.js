@@ -318,7 +318,7 @@ function buildApprovedMeta(play) {
 }
 
 function formatShortWeekdayDate(value) {
-  if (!value) return "";
+ if (!value) return "";
 
   try {
     const date = new Date(value);
@@ -326,15 +326,21 @@ function formatShortWeekdayDate(value) {
 
     const weekday = date.toLocaleDateString("es-UY", { weekday: "short" });
     const day = date.toLocaleDateString("es-UY", { day: "numeric" });
-    const month = date.toLocaleDateString("es-UY", { month: "long" });
+    const month = date.toLocaleDateString("es-UY", { month: "short" });
+
     const time = date.toLocaleTimeString("es-UY", {
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
+      hour12: false
     });
 
-    return `${weekday} ${day} ${month} ${time}`;
+    // Capitalizar primera letra
+    const weekdayCap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+    const monthCap = month.charAt(0).toUpperCase() + month.slice(1);
+
+    return `${weekdayCap} ${day} ${monthCap} ${time}`;
   } catch (error) {
-    console.error("Error formateando fecha corta:", error);
+    console.error("Error formateando fecha compacta:", error);
     return String(value);
   }
 }
