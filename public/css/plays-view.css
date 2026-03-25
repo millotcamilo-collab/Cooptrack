@@ -264,6 +264,31 @@
   font-size: 13px;
   background: #fff;
 }
+.plays-view__spade-main--inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.plays-view__spade-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.plays-view__spade-inline-location {
+  margin-left: 8px;
+}
+
+.plays-view__spade-inline-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
 
 @media (max-width: 640px) {
   .plays-view__row {
