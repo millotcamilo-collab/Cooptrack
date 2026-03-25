@@ -188,8 +188,8 @@ function buildRecurrencePanel(play) {
         </div>
 
         <div class="plays-view__recurrence-actions">
-          <button data-action="save-recurrence" data-play-id="${play.id}">Guardar</button>
-          <button data-action="cancel-recurrence" data-play-id="${play.id}">Cancelar</button>
+          <button type="button" data-action="save-recurrence" data-play-id="${play.id}">Guardar</button>
+          <button type="button" data-action="cancel-recurrence" data-play-id="${play.id}">Cancelar</button>
         </div>
 
       </div>
@@ -228,7 +228,7 @@ function buildSuitBadge(play) {
   `;
 }
 
-function proveButton(play) {
+function buildApproveButton(play) {
   if (isApproved(play)) return "";
 
   const suit = getPlaySuit(play);
@@ -385,13 +385,6 @@ function buildHeartActions(play) {
           action: "cancel-edit",
           playId: play.id
         })}
-        ${buildIconButton({
-           src: ICONS.actions.routine,
-          alt: "Recurrencia",
-        title: "Definir recurrencia",
-      action: "set-recurrence",
-      playId: play.id
-      })}
         ${buildIconButton({
           src: ICONS.actions.delete,
           alt: "Borrar",
@@ -596,6 +589,7 @@ function buildSpadeBody(play) {
             ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
           </div>
         </div>
+        ${buildRecurrencePanel(play)}
       `;
     }
 
@@ -609,6 +603,7 @@ function buildSpadeBody(play) {
           ${location ? `<span>${escapeHTML(location)}</span>` : ""}
         </div>
       </div>
+      ${buildRecurrencePanel(play)}
     `;
   }
 
@@ -630,6 +625,7 @@ function buildSpadeBody(play) {
             </div>
           </div>
         </div>
+        ${buildRecurrencePanel(play)}
       `;
     }
 
@@ -672,6 +668,7 @@ function buildSpadeBody(play) {
           </div>
         </div>
       </div>
+      ${buildRecurrencePanel(play)}
     `;
   }
 
@@ -684,6 +681,7 @@ function buildSpadeBody(play) {
           ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
         </div>
       </div>
+      ${buildRecurrencePanel(play)}
     `;
   }
 
@@ -698,6 +696,7 @@ function buildSpadeBody(play) {
           ${location ? `<span>${escapeHTML(location)}</span>` : ""}
         </div>
       </div>
+      ${buildRecurrencePanel(play)}
     `;
   }
 
@@ -705,6 +704,7 @@ function buildSpadeBody(play) {
     <div class="plays-view__spade-main">
       <div class="plays-view__text">${escapeHTML(text || "Sin descripción")}</div>
     </div>
+    ${buildRecurrencePanel(play)}
   `;
 }
 
@@ -757,6 +757,13 @@ function buildSpadeActions(play) {
           playId: play.id
         })}
         ${buildIconButton({
+  src: ICONS.actions.routine,
+  alt: "Recurrencia",
+  title: "Definir recurrencia",
+  action: "set-recurrence",
+  playId: play.id
+})}
+        ${buildIconButton({
           src: ICONS.actions.delete,
           alt: "Borrar",
           title: "Borrar",
@@ -771,43 +778,27 @@ function buildSpadeActions(play) {
   }
 
   if (!spadeMode) {
-    return `
-      <div class="plays-view__actions">
-        ${buildIconButton({
-          src: ICONS.actions.start,
-          alt: "Cita",
-          title: "Appointment / Cita",
-          action: "set-appointment",
-          playId: play.id
-        })}
-        ${buildIconButton({
-          src: ICONS.actions.bomb,
-          alt: "Deadline",
-          title: "Deadline",
-          action: "set-deadline",
-          playId: play.id
-        })}
-        ${buildIconButton({
-          src: ICONS.actions.delete,
-          alt: "Borrar",
-          title: "Borrar",
-          action: "delete",
-          playId: play.id
-        })}
-      </div>
-      <div class="plays-view__approve-wrap">
-        ${buildApproveButton(play)}
-      </div>
-    `;
-  }
-
   return `
     <div class="plays-view__actions">
       ${buildIconButton({
-        src: ICONS.actions.edit,
-        alt: "Editar",
-        title: spadeMode === "DEADLINE" ? "Editar deadline" : "Editar cita",
-        action: "edit-schedule",
+        src: ICONS.actions.start,
+        alt: "Cita",
+        title: "Appointment / Cita",
+        action: "set-appointment",
+        playId: play.id
+      })}
+      ${buildIconButton({
+        src: ICONS.actions.bomb,
+        alt: "Deadline",
+        title: "Deadline",
+        action: "set-deadline",
+        playId: play.id
+      })}
+      ${buildIconButton({
+        src: ICONS.actions.routine,
+        alt: "Recurrencia",
+        title: "Definir recurrencia",
+        action: "set-recurrence",
         playId: play.id
       })}
       ${buildIconButton({
@@ -822,6 +813,36 @@ function buildSpadeActions(play) {
       ${buildApproveButton(play)}
     </div>
   `;
+}
+
+  return `
+  <div class="plays-view__actions">
+    ${buildIconButton({
+      src: ICONS.actions.edit,
+      alt: "Editar",
+      title: spadeMode === "DEADLINE" ? "Editar deadline" : "Editar cita",
+      action: "edit-schedule",
+      playId: play.id
+    })}
+    ${buildIconButton({
+      src: ICONS.actions.routine,
+      alt: "Recurrencia",
+      title: "Definir recurrencia",
+      action: "set-recurrence",
+      playId: play.id
+    })}
+    ${buildIconButton({
+      src: ICONS.actions.delete,
+      alt: "Borrar",
+      title: "Borrar",
+      action: "delete",
+      playId: play.id
+    })}
+  </div>
+  <div class="plays-view__approve-wrap">
+    ${buildApproveButton(play)}
+  </div>
+`;
 }
 
 function buildPlayRow(play) {
@@ -1207,13 +1228,11 @@ containerSafeQueryAll('[data-action="set-recurrence"]').forEach((button) => {
 containerSafeQueryAll('[data-action="save-recurrence"]').forEach((button) => {
   button.addEventListener("click", async () => {
     const playId = button.dataset.playId;
-
-    const typeField = document.querySelector(`[data-field="recurrence_type"][data-play-id="${playId}"]`);
-    const dayField = document.querySelector(`[data-field="day_of_month"][data-play-id="${playId}"]`);
-
-    const container = document.querySelector(`[data-play-id="${playId}"]`);
-
-const checkboxes = container.querySelectorAll('.plays-view__recurrence-weekly input');
+    
+    const row = document.querySelector(`.plays-view__row[data-play-id="${playId}"]`);
+    const typeField = row?.querySelector(`[data-field="recurrence_type"][data-play-id="${playId}"]`);
+    const dayField = row?.querySelector(`[data-field="day_of_month"][data-play-id="${playId}"]`);
+    const checkboxes = row ? row.querySelectorAll('.plays-view__recurrence-weekly input') : [];
 
     const weekdays = Array.from(checkboxes)
       .filter(cb => cb.checked)
