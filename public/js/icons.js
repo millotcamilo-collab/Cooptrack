@@ -19,6 +19,13 @@ window.ICONS = {
     stop: "/assets/icons/stop60.gif",
     boom: "/assets/icons/Boom80.gif",
     approve: "/assets/icons/Sello40.gif",
-    exit: "/assets/icons/exit40.gif"
+    exit: "/assets/icons/exit40.gif",
+    cancel: "/assets/icons/stop60.gif",
+    routine: "/assets/icons/ActividadIterativa80.gif",
+    fired: "/assets/icons/pistola60.gif",
+    send: "/assets/icons/buzon60.gif",
+    register: "/assets/icons/lacre80.gif",
+    reject: "/assets/icons/stepback40.gif",
+    quit: "/assets/icons/step60.gif",
   }
 };
