@@ -55,6 +55,15 @@ const {
   buildApprovedMeta
 } = window.PlayUIHelpers;
 
+const {
+  buildHeartBody,
+  buildHeartActions,
+  buildClubBody,
+  buildClubActions,
+  buildSpadeBody,
+  buildSpadeActions
+} = window.JRenderer;
+
 function buildPlayRow(play) {
   const suit = getPlaySuit(play);
   const childClass = isChildPlay(play) ? "plays-view__row--child" : "";
