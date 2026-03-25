@@ -418,6 +418,11 @@ function buildSpadeBody(play) {
 
 function buildSpadeActions(play) {
   const spadeMode = getSpadeMode(play);
+  const startDate = getPlayStartDate(play);
+
+  const canSetRecurrence =
+    (spadeMode === "CITA" || spadeMode === "APPOINTMENT") &&
+    !!startDate;
 
   if (isApproved(play) && (spadeMode === "CITA" || spadeMode === "APPOINTMENT")) {
     return `
@@ -465,13 +470,6 @@ function buildSpadeActions(play) {
           playId: play.id
         })}
         ${buildIconButton({
-          src: window.ICONS.actions.routine,
-          alt: "Recurrencia",
-          title: "Definir recurrencia",
-          action: "set-recurrence",
-          playId: play.id
-        })}
-        ${buildIconButton({
           src: window.ICONS.actions.delete,
           alt: "Borrar",
           title: "Borrar",
@@ -503,13 +501,6 @@ function buildSpadeActions(play) {
           playId: play.id
         })}
         ${buildIconButton({
-          src: window.ICONS.actions.routine,
-          alt: "Recurrencia",
-          title: "Definir recurrencia",
-          action: "set-recurrence",
-          playId: play.id
-        })}
-        ${buildIconButton({
           src: window.ICONS.actions.delete,
           alt: "Borrar",
           title: "Borrar",
@@ -532,13 +523,13 @@ function buildSpadeActions(play) {
         action: "edit-schedule",
         playId: play.id
       })}
-      ${buildIconButton({
+      ${canSetRecurrence ? buildIconButton({
         src: window.ICONS.actions.routine,
         alt: "Recurrencia",
         title: "Definir recurrencia",
         action: "set-recurrence",
         playId: play.id
-      })}
+      }) : ""}
       ${buildIconButton({
         src: window.ICONS.actions.delete,
         alt: "Borrar",
