@@ -316,6 +316,77 @@ function buildApprovedMeta(play) {
     </div>
   `;
 }
+
+function formatShortWeekdayDate(value) {
+  if (!value) return "";
+
+  try {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+
+    const weekday = date.toLocaleDateString("es-UY", { weekday: "short" });
+    const day = date.toLocaleDateString("es-UY", { day: "numeric" });
+    const month = date.toLocaleDateString("es-UY", { month: "long" });
+    const time = date.toLocaleTimeString("es-UY", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    return `${weekday} ${day} ${month} ${time}`;
+  } catch (error) {
+    console.error("Error formateando fecha corta:", error);
+    return String(value);
+  }
+}
+
+function formatSpadeScheduleInline(play) {
+  const spadeMode = getSpadeMode(play);
+  const startDate = getPlayStartDate(play);
+  const endDate = getPlayEndDate(play);
+  const location = getPlayLocation(play);
+
+  if (spadeMode === "DEADLINE") {
+    return `
+      <span class="plays-view__spade-inline">
+        <span class="plays-view__spade-inline-icon">💣</span>
+        <span class="plays-view__spade-inline-text">${escapeHTML(formatShortWeekdayDate(endDate))}</span>
+      </span>
+    `;
+  }
+
+  if (spadeMode === "CITA" || spadeMode === "APPOINTMENT") {
+    const startText = formatShortWeekdayDate(startDate);
+
+    let endTime = "";
+    if (endDate) {
+      try {
+        const end = new Date(endDate);
+        if (!Number.isNaN(end.getTime())) {
+          endTime = end.toLocaleTimeString("es-UY", {
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+        }
+      } catch (error) {
+        console.error("Error formateando hora fin:", error);
+      }
+    }
+
+    return `
+      <span class="plays-view__spade-inline">
+        <span class="plays-view__spade-inline-icon">🕒</span>
+        <span class="plays-view__spade-inline-text">
+          ${escapeHTML(startText)}
+          ${endTime ? `a ${escapeHTML(endTime)}` : ""}
+        </span>
+        ${location ? `<span class="plays-view__spade-inline-location">${escapeHTML(location)}</span>` : ""}
+      </span>
+    `;
+  }
+
+  return "";
+}
+  
 window.PlayUIHelpers = {
   escapeHTML,
   formatDate,
@@ -337,6 +408,8 @@ window.PlayUIHelpers = {
   buildApproveButton,
   buildApprovedMeta,
   hasRecurrence,
+  formatShortWeekdayDate,
+  formatSpadeScheduleInline,
   normalizeText, getPlayRank, getPlayStatus, isJPlay, isVisibleJPlay
 };
 
