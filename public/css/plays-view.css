@@ -49,16 +49,22 @@
 }
 
 .plays-view__badge {
-  display: flex;
+    display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  font-weight: bold;
-  font-size: 16px;
+  min-width: 42px;
 }
-
+.plays-view__badge-rank {
+  font-family: "Baskerville", "Times New Roman", "Georgia", serif;
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 700;
+}
 .plays-view__badge-suit {
-  width: 20px;
-  height: 20px;
+  height: 28px;
+  width: auto;
+  display: inline-block;
 }
 
 .plays-view__center {
