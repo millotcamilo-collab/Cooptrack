@@ -89,7 +89,7 @@
   }
 
   function getAvatarSrc() {
-    return "/assets/icons/singeta120.gif";
+    return "/assets/icons/sinPicture.gif";
   }
 
   function getEnabledTopCards(plays) {
