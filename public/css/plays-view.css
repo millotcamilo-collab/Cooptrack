@@ -56,13 +56,13 @@
   min-width: 42px;
 }
 .plays-view__badge-rank {
-  font-family: "Baskerville", "Times New Roman", "Georgia", serif;
-  font-size: 32px;
+  font-family: "Garamond", "Times New Roman", "Georgia", serif;
+  font-size: 28px;
   line-height: 1;
   font-weight: 700;
 }
 .plays-view__badge-suit {
-  height: 28px;
+  height: 22px;
   width: auto;
   display: inline-block;
 }
