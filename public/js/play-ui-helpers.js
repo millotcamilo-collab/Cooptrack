@@ -194,15 +194,25 @@ function buildIconButton({ src, alt, title, action, playId, extraData = "" }) {
 function buildSuitBadge(play) {
   const suit = getPlaySuit(play);
   const suitIcon = window.ICONS?.suits?.[suit];
+  const suitClass = suit ? `plays-view__badge--${suit.toLowerCase()}` : "";
 
   if (!suitIcon) {
-    return `<div class="plays-view__badge">J ${escapeHTML(suit)}</div>`;
+    return `
+      <div class="plays-view__badge ${suitClass}">
+        <span class="plays-view__badge-rank">J</span>
+        <span class="plays-view__badge-fallback">${escapeHTML(suit)}</span>
+      </div>
+    `;
   }
 
   return `
-    <div class="plays-view__badge">
+    <div class="plays-view__badge ${suitClass}">
       <span class="plays-view__badge-rank">J</span>
-      <img src="${escapeHTML(suitIcon)}" alt="${escapeHTML(suit)}" class="plays-view__badge-suit" />
+      <img
+        src="${escapeHTML(suitIcon)}"
+        alt="${escapeHTML(suit)}"
+        class="plays-view__badge-suit"
+      />
     </div>
   `;
 }
