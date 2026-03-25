@@ -1,4 +1,4 @@
-const ICONS = window.ICONS;
+
 
 function normalizeText(value) {
   return String(value || "").trim();
@@ -166,7 +166,7 @@ function buildRecurrenceMarker(play) {
   return `
     <span class="plays-view__recurrence-marker" title="Tiene rutina">
       <img
-        src="${escapeHTML(ICONS.actions.routine)}"
+        src="${escapeHTML(window.ICONS.actions.routine)}"
         alt="Rutina"
         class="plays-view__mini-icon"
       />
@@ -191,7 +191,7 @@ function buildIconButton({ src, alt, title, action, playId, extraData = "" }) {
 
 function buildSuitBadge(play) {
   const suit = getPlaySuit(play);
-  const suitIcon = ICONS?.suits?.[suit];
+  const suitIcon = window.ICONS?.suits?.[suit];
 
   if (!suitIcon) {
     return `<div class="plays-view__badge">J ${escapeHTML(suit)}</div>`;
@@ -274,7 +274,7 @@ function buildApproveButton(play) {
         disabled
       >
         <img
-          src="${escapeHTML(ICONS.actions.approve)}"
+          src="${escapeHTML(window.ICONS.actions.approve)}"
           alt="Aprobar"
           class="plays-view__icon-img"
         />
@@ -291,7 +291,7 @@ function buildApproveButton(play) {
       title="${escapeHTML(tooltip)}"
     >
       <img
-        src="${escapeHTML(ICONS.actions.approve)}"
+        src="${escapeHTML(window.ICONS.actions.approve)}"
         alt="Aprobar"
         class="plays-view__icon-img"
       />
