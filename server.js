@@ -445,27 +445,24 @@ app.get('/decks/:deckId', requireAuth, async (req, res) => {
 
 app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
   try {
-    const { deckId } = req.params;
     const userId = req.auth.userId;
+    const deckId = Number(req.params.deckId);
 
-    const memberCheck = await pool.query(
-      `SELECT 1
-       FROM deck_members
-       WHERE deck_id = $1
-         AND user_id = $2
-       LIMIT 1`,
-      [deckId, userId]
-    );
-
-    if (!memberCheck.rows.length) {
-      return res.status(404).json({
+    if (!Number.isInteger(deckId) || deckId <= 0) {
+      return res.status(400).json({
         ok: false,
-        error: 'Mazo no encontrado',
+        error: 'deckId inválido',
       });
     }
 
     const result = await pool.query(
-      `SELECT p.*
+      `SELECT
+         p.*,
+         EXISTS (
+           SELECT 1
+           FROM play_recurrences pr
+           WHERE pr.play_id = p.id
+         ) AS has_recurrence
        FROM plays p
        INNER JOIN deck_members dm
          ON dm.deck_id = p.deck_id
@@ -475,40 +472,18 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
       [deckId, userId]
     );
 
-    const plays = result.rows.map((row) => {
-      const parsed = parseAndValidatePlayCode(row.play_code);
-
-      return {
-        ...row,
-        parsed,
-      };
-    });
-
-    const flags = {
-      hasAHeart: plays.some(
-        (p) => p.parsed.rank === 'A' && p.parsed.suit === 'HEART'
-      ),
-      hasBlueJoker: plays.some(
-        (p) => p.parsed.rank === 'JOKER' && p.parsed.suit === 'BLUE'
-      ),
-      hasCorporateCards: plays.some(
-        (p) => p.parsed.suit === 'CLUB'
-      ),
-    };
+    const plays = result.rows;
 
     res.json({
       ok: true,
       deckId,
-      userId,
-      playsCount: plays.length,
       plays,
-      flags,
     });
   } catch (error) {
     console.error('Error en GET /mazo/:deckId/state', error);
     res.status(500).json({
       ok: false,
-      error: 'Error al construir estado del mazo',
+      error: 'Error obteniendo estado del mazo',
     });
   }
 });
@@ -810,27 +785,24 @@ app.get('/plays', requireAuth, async (req, res) => {
 // Plays de un deck
 app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
   try {
-    const { deckId } = req.params;
     const userId = req.auth.userId;
+    const deckId = Number(req.params.deckId);
 
-    const memberCheck = await pool.query(
-      `SELECT 1
-       FROM deck_members
-       WHERE deck_id = $1
-         AND user_id = $2
-       LIMIT 1`,
-      [deckId, userId]
-    );
-
-    if (!memberCheck.rows.length) {
-      return res.status(404).json({
+    if (!Number.isInteger(deckId) || deckId <= 0) {
+      return res.status(400).json({
         ok: false,
-        error: 'Mazo no encontrado',
+        error: 'deckId inválido',
       });
     }
 
     const result = await pool.query(
-      `SELECT p.*
+      `SELECT
+         p.*,
+         EXISTS (
+           SELECT 1
+           FROM play_recurrences pr
+           WHERE pr.play_id = p.id
+         ) AS has_recurrence
        FROM plays p
        INNER JOIN deck_members dm
          ON dm.deck_id = p.deck_id
@@ -840,22 +812,15 @@ app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
       [deckId, userId]
     );
 
-    const plays = result.rows.map((row) => ({
-      ...row,
-      parsed: parseAndValidatePlayCode(row.play_code),
-    }));
-
     res.json({
       ok: true,
-      deckId,
-      playsCount: plays.length,
-      plays,
+      plays: result.rows,
     });
   } catch (error) {
     console.error('Error en GET /decks/:deckId/plays', error);
     res.status(500).json({
       ok: false,
-      error: 'Error obteniendo plays del deck',
+      error: 'Error obteniendo plays del mazo',
     });
   }
 });
