@@ -4,117 +4,430 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CoopTrack · Help</title>
-
-  <link rel="stylesheet" href="/css/topbar.css">
-
+ <link rel="stylesheet" href="/css/topbar.css">
   <style>
+    :root {
+      --bg: #f7f4ee;
+      --card: #fffdf8;
+      --ink: #1f1f1f;
+      --muted: #6b675f;
+      --line: #d8d1c5;
+      --red: #b63a3a;
+      --black: #2e3138;
+      --gold: #8a6a1d;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      font-family: Georgia, serif;
-      background: #f7f4ee;
-      color: #1f1f1f;
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--ink);
       line-height: 1.5;
     }
 
+    /* =========================
+       TOPBAR
+    ========================= */
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    .topbar__inner {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      align-items: center;
+    }
+
+    .topbar__left,
+    .topbar__right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar__logo-img {
+      height: 36px;
+      width: auto;
+      display: block;
+    }
+
+    .topbar__icon-img {
+      height: 28px;
+      width: auto;
+      display: block;
+    }
+
+    .topbar__icon-img--profile {
+      height: 32px;
+      width: 32px;
+      border-radius: 50%;
+    }
+
+    .topbar__icon-btn {
+      background: none;
+      border: none;
+      padding: 6px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .topbar__icon-btn:hover {
+      background: #f3f4f6;
+    }
+
+    .topbar__login-link {
+      text-decoration: none;
+      color: #111827;
+      font-weight: 600;
+    }
+
+    /* =========================
+       CONTENT (desplazado por topbar)
+    ========================= */
+
     header {
-      padding: 100px 20px 20px;
-      border-bottom: 1px solid #ddd;
-      background: #fff;
+      border-bottom: 1px solid var(--line);
+      background: var(--card);
+      padding: 90px 22px 18px; /* 👈 clave para no tapar contenido */
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      font-weight: 600;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 860px;
     }
 
     main {
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 18px 56px;
     }
 
+    .toc,
     section {
-      background: #fff;
-      padding: 16px;
-      margin-bottom: 16px;
-      border: 1px solid #ddd;
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 18px 20px;
+      margin-bottom: 18px;
     }
 
-    h1, h2 {
+    h2 {
       margin-top: 0;
+      font-size: 24px;
     }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border: 1px solid var(--line);
+      margin-right: 6px;
+      margin-bottom: 6px;
+      border-radius: 999px;
+      font-size: 14px;
+      background: #faf7f1;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      padding: 14px;
+      background: #fff;
+    }
+
+    code, pre {
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+    }
+
+    pre {
+      background: #f3efe8;
+      border: 1px solid var(--line);
+      padding: 12px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    ul { margin-top: 8px; }
+
+    .red { color: var(--red); }
+    .black { color: var(--black); }
+    .gold { color: var(--gold); }
+
+    .small {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    a { color: inherit; }
   </style>
 </head>
 
 <body>
 
-  <!-- 🔝 TOPBAR -->
+  <!-- ✅ TOPBAR -->
   <div id="topbar-container"></div>
 
   <header>
-    <h1>CoopTrack · Guía simple</h1>
-    <p>Cómo usar CoopTrack en 1 minuto.</p>
+    <h1>CoopTrack · Help</h1>
+    <p>
+      CoopTrack organiza trabajo, autoridad, participación y validación mediante cartas dentro de mazos.
+      Este help resume cómo leer la interfaz, cómo se compone una jugada y qué cambia entre Joker rojo y Joker azul.
+    </p>
   </header>
 
   <main>
+    <section class="toc">
+      <h2>Índice rápido</h2>
+      <div class="grid">
+        <div><a href="#idea">1. Idea central</a></div>
+        <div><a href="#palos">2. Palos y cartas</a></div>
+        <div><a href="#joker">3. Joker rojo y azul</a></div>
+        <div><a href="#renglon">4. El renglón jugada</a></div>
+        <div><a href="#j">5. Jugadas que empiezan con J</a></div>
+        <div><a href="#q">6. Participaciones Q</a></div>
+        <div><a href="#autoridad">7. Ases y Reyes</a></div>
+        <div><a href="#comments">8. Comentarios y evidencia</a></div>
+        <div><a href="#awards">9. Awards y quejas</a></div>
+        <div><a href="#iconos">10. Íconos y hover</a></div>
+      </div>
+    </section>
 
-    <section>
-      <h2>🧭 Qué es CoopTrack</h2>
-      <p>CoopTrack organiza trabajo usando cartas.</p>
+    <section id="idea">
+      <h2>1. Idea central</h2>
+      <p>
+        CoopTrack no usa las cartas como decoración. Las cartas son la sintaxis institucional del sistema.
+        Una carta jugada ya es una jugada. Los renglones muestran esas jugadas y sus efectos.
+      </p>
+      <pre>Carta → Jugada → Renglón</pre>
+      <p>
+        Un mazo es un espacio compartido. Dentro del mazo conviven trabajo, gobernanza, conversación, economía y memoria.
+      </p>
+    </section>
+
+    <section id="palos">
+      <h2>2. Palos y cartas</h2>
+      <div class="grid">
+        <div class="card">
+          <h3 class="red">♥ Corazones</h3>
+          <p>Creatividad, sentido, vínculo, fundación.</p>
+        </div>
+        <div class="card">
+          <h3 class="black">♠ Picas</h3>
+          <p>Ejecución, actividad, presencia, cumplimiento.</p>
+        </div>
+        <div class="card">
+          <h3 class="red">♦ Diamantes</h3>
+          <p>Inversión, pago, valor económico, cuentas.</p>
+        </div>
+        <div class="card">
+          <h3 class="black">♣ Tréboles</h3>
+          <p>Bienes, producción, publicación, entrega, integración.</p>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <span class="badge">J = registro / apertura</span>
+        <span class="badge">Q = participación / oferta / invitación</span>
+        <span class="badge">K = gestión delegada</span>
+        <span class="badge">A = autoridad / validación</span>
+      </div>
+    </section>
+
+    <section id="joker">
+      <h2>3. Joker rojo y Joker azul</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Joker rojo</h3>
+          <p>Mazo de agenda personal o coordinación liviana.</p>
+          <ul>
+            <li>Las jugadas existen.</li>
+            <li>No afectan el perfil de los involucrados.</li>
+            <li>No hay Q♥ ni Q♦.</li>
+            <li>No hay awards ni quejas.</li>
+            <li>No tiene sentido estructura societaria.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Joker azul</h3>
+          <p>Mazo propietario con consecuencias reales.</p>
+          <ul>
+            <li>Habilita dimensión económica completa.</li>
+            <li>Permite Q♥ y Q♦.</li>
+            <li>Las jugadas afectan perfiles.</li>
+            <li>Puede generar awards y quejas.</li>
+            <li>Permite socios, conflictos y gobernanza plena.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="small">Todo costo de activación de un Joker debe registrarse como J♦ del mazo.</p>
+    </section>
+
+    <section id="renglon">
+      <h2>4. El renglón jugada</h2>
+      <p>
+        El renglón es la unidad visible principal del mazo. Muestra una jugada y sus derivaciones.
+      </p>
+      <pre>L = (O, D, R, X, Y)
+O = jugada de origen
+D = descripción
+R = componente rojo
+X = jugada derivada izquierda
+Y = jugada derivada derecha</pre>
+      <p>
+        En la práctica, el renglón puede mostrarse en vista compacta o en foco. En foco aparecen acciones,
+        comentarios, participantes y estados pendientes.
+      </p>
+    </section>
+
+    <section id="j">
+      <h2>5. Jugadas que empiezan con J</h2>
+      <p>
+        Las jugadas J abren renglones de trabajo. Una vez que una jugada arranca con J, no mezcla K ni A dentro de la misma jugada.
+        Las jugadas J producen realidad; las jugadas K/A gobiernan esa realidad desde otra capa.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <h3>J♥ Nota</h3>
+          <p>Texto, descripción, contexto. Si está aprobada, la pueden leer quienes tengan acceso al mazo.</p>
+        </div>
+        <div class="card">
+          <h3>J♠ Actividad</h3>
+          <p>Evento, tarea o deadline. Puede requerir fecha, fin y lugar.</p>
+        </div>
+        <div class="card">
+          <h3>J♣ Bien</h3>
+          <p>Oferta o descripción de un bien. Puede vincularse con J♦.</p>
+        </div>
+        <div class="card">
+          <h3>J♦ Registro económico</h3>
+          <p>Costo, inversión, gasto o valor económico dentro del mazo.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="q">
+      <h2>6. Participaciones Q</h2>
+      <p>
+        Las Q siempre existen sobre una jugada previa. No existen solas.
+      </p>
       <ul>
-        <li>Carta → acción</li>
-        <li>Acción → jugada</li>
-        <li>Jugada → línea</li>
+        <li><strong>J♠</strong> puede tener múltiples Q♠.</li>
+        <li><strong>J♣</strong> solo admite una única Q♣.</li>
+        <li><strong>Q♥</strong> expresa intención económica.</li>
+        <li><strong>Q♦</strong> concreta la transferencia de valor.</li>
       </ul>
+      <p>
+        Si no hay Joker azul, Q♥ y Q♦ quedan inhabilitadas.
+      </p>
+      <p>
+        El invitado ve solo su Q y el contexto mínimo necesario. Puede aceptar o rechazar según el estado de la jugada.
+      </p>
     </section>
 
-    <section>
-      <h2>🃏 Las cartas</h2>
+    <section id="autoridad">
+      <h2>7. Ases y Reyes</h2>
+      <p>
+        Los Ases se juegan desde la carta visible al lado de la foto del usuario. Al hacer click se abre un subform institucional.
+      </p>
       <ul>
-        <li><b>J</b> → crea algo</li>
-        <li><b>Q</b> → suma personas</li>
-        <li><b>K</b> → delega</li>
-        <li><b>A</b> → valida</li>
+        <li>Elegir destinatario.</li>
+        <li>Transferir el As.</li>
+        <li>O asignar K del palo correspondiente.</li>
       </ul>
+      <p>
+        Una jugada iniciada desde un As puede pedir intervención de otro palo. En ese caso queda salvada y pendiente de aprobación
+        del As correspondiente antes de notificarse al destinatario.
+      </p>
+      <p>
+        Si alguien renuncia a un As, ese As vuelve al propietario del Joker azul. Si no existe, vuelve al titular de A♥.
+      </p>
     </section>
 
-    <section>
-      <h2>♥ ♠ ♦ ♣ Palos</h2>
+    <section id="comments">
+      <h2>8. Comentarios y evidencia</h2>
+      <p>
+        Los comments son documentos hijos del renglón. No gobiernan la jugada, pero aportan conversación, prueba y contexto.
+      </p>
       <ul>
-        <li>♥ texto</li>
-        <li>♠ tareas</li>
-        <li>♦ dinero</li>
-        <li>♣ bienes</li>
+        <li>Pueden incluir texto.</li>
+        <li>Pueden incluir attachments, fotos y multimedia.</li>
+        <li>Sirven como evidencia en disputas.</li>
       </ul>
+      <p class="small">Las cartas dicen qué pasó. Los comentarios muestran cómo pasó.</p>
     </section>
 
-    <section>
-      <h2>🔴🔵 Tipo de mazo</h2>
-
-      <p><b>🔴 Rojo:</b> simple, sin impacto real</p>
-      <p><b>🔵 Azul:</b> real, con dinero y roles</p>
+    <section id="awards">
+      <h2>9. Awards y quejas</h2>
+      <p>
+        Awards y quejas solo afectan perfiles cuando la jugada pertenece a un mazo con Joker azul.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <h3>♠ Award</h3>
+          <p>Reconoce actividad cumplida o prestación efectiva.</p>
+        </div>
+        <div class="card">
+          <h3>♦ Award</h3>
+          <p>Reconoce inversión, pago o transferencia de valor.</p>
+        </div>
+        <div class="card">
+          <h3>♣ Award</h3>
+          <p>Reconoce entrega o provisión de un bien.</p>
+        </div>
+        <div class="card">
+          <h3>Queja</h3>
+          <p>Expresa incumplimiento o conflicto confirmado por el sistema.</p>
+        </div>
+      </div>
+      <p>
+        Las quejas detalladas pueden quedar visibles solo para los involucrados, mientras que el público ve reputación neta.
+      </p>
     </section>
 
-    <section>
-      <h2>🧾 Ejemplo</h2>
-      <ol>
-        <li>J♠ → creo evento</li>
-        <li>Q♠ → invito gente</li>
-        <li>J♦ → agrego costo</li>
-        <li>Q♦ → alguien paga</li>
-      </ol>
-    </section>
-
-    <section>
-      <h2>📌 Cómo leer una línea</h2>
-      <p>Es como una conversación:</p>
+    <section id="iconos">
+      <h2>10. Íconos, hover y ayuda contextual</h2>
+      <p>
+        La interfaz debe intentar explicarse sola. Cuando hace falta detalle, aparece por hover o mouse over.
+      </p>
       <ul>
-        <li>qué pasó</li>
-        <li>qué dice</li>
-        <li>quién participa</li>
-        <li>respuestas</li>
+        <li><strong>Sello</strong> → indica que hay algo pendiente de aprobación.</li>
+        <li><strong>Hover sobre una Q</strong> → muestra el nombre del propietario de esa Q.</li>
+        <li><strong>Hover sobre una carta</strong> → muestra rol, estado o sentido.</li>
       </ul>
+      <p>
+        Lo importante debe verse. Lo complejo aparece cuando el usuario lo busca.
+      </p>
     </section>
-
   </main>
-
-  <!-- JS -->
   <script src="/js/topbar.js"></script>
-
 </body>
 </html>
