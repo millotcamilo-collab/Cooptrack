@@ -262,44 +262,7 @@ function buildClubActions(play) {
 
 function buildSpadeBody(play) {
   const text = getPlayText(play);
-  const startDate = getPlayStartDate(play);
-  const endDate = getPlayEndDate(play);
-  const location = getPlayLocation(play);
   const spadeMode = getSpadeMode(play);
-
-  if (isApproved(play)) {
-    if (spadeMode === "DEADLINE") {
-      return `
-        <div class="plays-view__spade-main">
-          <div class="plays-view__text">
-            ${escapeHTML(text || "Sin descripción")}
-            ${buildRecurrenceMarker(play)}
-          </div>
-          <div class="plays-view__spade-data">
-            <span class="plays-view__spade-mode">Deadline</span>
-            ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
-          </div>
-        </div>
-        ${buildRecurrencePanel(play)}
-      `;
-    }
-
-    return `
-      <div class="plays-view__spade-main">
-        <div class="plays-view__text">
-          ${escapeHTML(text || "Sin descripción")}
-          ${buildRecurrenceMarker(play)}
-        </div>
-        <div class="plays-view__spade-data">
-          ${spadeMode ? `<span class="plays-view__spade-mode">Cita</span>` : ""}
-          ${startDate ? `<span>Inicio: ${escapeHTML(formatDate(startDate))}</span>` : ""}
-          ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
-          ${location ? `<span>${escapeHTML(location)}</span>` : ""}
-        </div>
-      </div>
-      ${buildRecurrencePanel(play)}
-    `;
-  }
 
   if (play.__editingSchedule) {
     if (spadeMode === "DEADLINE") {
@@ -317,7 +280,7 @@ function buildSpadeBody(play) {
                 class="plays-view__datetime-input"
                 data-field="end_date"
                 data-play-id="${escapeHTML(play.id)}"
-                value="${escapeHTML(endDate)}"
+                value="${escapeHTML(getPlayEndDate(play))}"
               />
             </div>
           </div>
@@ -340,7 +303,7 @@ function buildSpadeBody(play) {
               class="plays-view__datetime-input"
               data-field="start_date"
               data-play-id="${escapeHTML(play.id)}"
-              value="${escapeHTML(startDate)}"
+              value="${escapeHTML(getPlayStartDate(play))}"
             />
           </div>
 
@@ -351,7 +314,7 @@ function buildSpadeBody(play) {
               class="plays-view__datetime-input"
               data-field="end_date"
               data-play-id="${escapeHTML(play.id)}"
-              value="${escapeHTML(endDate)}"
+              value="${escapeHTML(getPlayEndDate(play))}"
             />
           </div>
 
@@ -362,7 +325,7 @@ function buildSpadeBody(play) {
               class="plays-view__location-input"
               data-field="location"
               data-play-id="${escapeHTML(play.id)}"
-              value="${escapeHTML(location)}"
+              value="${escapeHTML(getPlayLocation(play))}"
               placeholder="Ubicación"
             />
           </div>
@@ -372,46 +335,13 @@ function buildSpadeBody(play) {
     `;
   }
 
-  if (spadeMode === "DEADLINE") {
-    return `
-      <div class="plays-view__spade-main">
-        <div class="plays-view__text">
-          ${escapeHTML(text || "Sin descripción")}
-          ${buildRecurrenceMarker(play)}
-        </div>
-        <div class="plays-view__spade-data">
-          <span class="plays-view__spade-mode">Deadline</span>
-          ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
-        </div>
-      </div>
-      ${buildRecurrencePanel(play)}
-    `;
-  }
-
-  if (spadeMode === "CITA" || spadeMode === "APPOINTMENT") {
-    return `
-      <div class="plays-view__spade-main">
-        <div class="plays-view__text">
-          ${escapeHTML(text || "Sin descripción")}
-          ${buildRecurrenceMarker(play)}
-        </div>
-        <div class="plays-view__spade-data">
-          <span class="plays-view__spade-mode">Cita</span>
-          ${startDate ? `<span>Inicio: ${escapeHTML(formatDate(startDate))}</span>` : ""}
-          ${endDate ? `<span>Fin: ${escapeHTML(formatDate(endDate))}</span>` : ""}
-          ${location ? `<span>${escapeHTML(location)}</span>` : ""}
-        </div>
-      </div>
-      ${buildRecurrencePanel(play)}
-    `;
-  }
-
   return `
-    <div class="plays-view__spade-main">
+    <div class="plays-view__spade-main plays-view__spade-main--inline">
       <div class="plays-view__text">
         ${escapeHTML(text || "Sin descripción")}
         ${buildRecurrenceMarker(play)}
       </div>
+      ${formatSpadeScheduleInline(play)}
     </div>
     ${buildRecurrencePanel(play)}
   `;
