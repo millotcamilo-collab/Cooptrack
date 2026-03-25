@@ -1,4 +1,4 @@
-
+(() => {
 const {
   escapeHTML,
   formatDate,
@@ -562,3 +562,4 @@ window.JRenderer = {
   buildSpadeBody,
   buildSpadeActions
 };
+})();
