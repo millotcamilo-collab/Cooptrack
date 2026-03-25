@@ -1,4 +1,4 @@
-
+(() => {
 
 function normalizeText(value) {
   return String(value || "").trim();
@@ -337,4 +337,4 @@ window.PlayUIHelpers = {
   normalizeText, getPlayRank, getPlayStatus, isJPlay, isVisibleJPlay
 };
 
-
+})();
