@@ -1,5 +1,3 @@
-const ICONS = window.ICONS;
-
 let currentSuitFilter = null;
 let lastDeck = null;
 let lastPlays = [];
