@@ -361,7 +361,8 @@ window.PlayUIHelpers = {
   buildIconButton,
   buildSuitBadge,
   buildApproveButton,
-  buildApprovedMeta
+  buildApprovedMeta,
+  normalizeText, getPlayRank, getPlayStatus, isJPlay, isVisibleJPlay
 };
 
 
