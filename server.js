@@ -769,16 +769,29 @@ app.delete('/plays/:playId', requireAuth, async (req, res) => {
 // Listado general de plays
 app.get('/plays', requireAuth, async (req, res) => {
   try {
-    const userId = req.auth.userId;
+    const deckId = req.query.deckId;
+
+    if (!deckId) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Falta deckId',
+      });
+    }
 
     const result = await pool.query(
-      `SELECT p.*
-       FROM plays p
-       INNER JOIN deck_members dm
-         ON dm.deck_id = p.deck_id
-       WHERE dm.user_id = $1
-       ORDER BY p.created_at DESC`,
-      [userId]
+      `
+      SELECT 
+        p.*,
+        EXISTS (
+          SELECT 1
+          FROM play_recurrences pr
+          WHERE pr.play_id = p.id
+        ) AS has_recurrence
+      FROM plays p
+      WHERE p.deck_id = $1
+      ORDER BY p.created_at DESC
+      `,
+      [deckId]
     );
 
     res.json({
