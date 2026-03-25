@@ -342,6 +342,26 @@ function buildApprovedMeta(play) {
     </div>
   `;
 }
-
+window.PlayUIHelpers = {
+  escapeHTML,
+  formatDate,
+  getPlaySuit,
+  getPlayText,
+  getPlayAmount,
+  getPlayStartDate,
+  getPlayEndDate,
+  getSpadeMode,
+  getPlayLocation,
+  isApproved,
+  isChildPlay,
+  getVisiblePlays,
+  getFilterTitle,
+  buildRecurrencePanel,
+  buildRecurrenceMarker,
+  buildIconButton,
+  buildSuitBadge,
+  buildApproveButton,
+  buildApprovedMeta
+};
 
 
