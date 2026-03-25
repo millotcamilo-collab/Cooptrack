@@ -16,7 +16,8 @@ const {
   buildIconButton,
   buildSuitBadge,
   buildApproveButton,
-  buildApprovedMeta
+  buildApprovedMeta,
+  formatSpadeScheduleInline,
 } = window.PlayUIHelpers;
 
 function buildHeartBody(play) {
