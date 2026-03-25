@@ -67,6 +67,18 @@
   display: inline-block;
 }
 
+/* J roja */
+.plays-view__badge--heart .plays-view__badge-rank,
+.plays-view__badge--diamond .plays-view__badge-rank {
+  color: #d32f2f;
+}
+
+/* J negra */
+.plays-view__badge--spade .plays-view__badge-rank,
+.plays-view__badge--club .plays-view__badge-rank {
+  color: #111;
+}
+
 .plays-view__center {
   display: flex;
   flex-direction: column;
