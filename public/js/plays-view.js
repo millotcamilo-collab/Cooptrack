@@ -17,7 +17,14 @@ const ICONS = window.ICONS || {
     stop: "/assets/icons/stop60.gif",
     boom: "/assets/icons/Boom80.gif",
     approve: "/assets/icons/Sello40.gif",
-    exit: "/assets/icons/exit40.gif"
+    exit: "/assets/icons/exit40.gif",
+    cancel: "/assets/icons/stop60.gif",
+    routine: "/assets/icons/ActividadIterativa80.gif",
+    fired: "/assets/icons/pistola60.gif",
+    send: "/assets/icons/buzon60.gif",
+    register: "/assets/icons/lacre80.gif",
+    reject: "/assets/icons/stepback40.gif",
+    quit: "/assets/icons/step60.gif",
   }
 };
 
@@ -143,6 +150,51 @@ function getFilterTitle(filter) {
     default:
       return "Jugadas";
   }
+}
+// =============================
+// 1. NUEVO HELPER
+// =============================
+function buildRecurrencePanel(play) {
+  if (!play.__showRecurrence) return "";
+
+  return `
+    <div class="plays-view__recurrence">
+      <div class="plays-view__recurrence-box">
+
+        <select data-field="recurrence_type" data-play-id="${play.id}">
+          <option value="WEEKLY">Semanal</option>
+          <option value="MONTHLY">Mensual</option>
+        </select>
+
+        <div class="plays-view__recurrence-weekly">
+          <label><input type="checkbox" value="MON">L</label>
+          <label><input type="checkbox" value="TUE">M</label>
+          <label><input type="checkbox" value="WED">X</label>
+          <label><input type="checkbox" value="THU">J</label>
+          <label><input type="checkbox" value="FRI">V</label>
+          <label><input type="checkbox" value="SAT">S</label>
+          <label><input type="checkbox" value="SUN">D</label>
+        </div>
+
+        <div class="plays-view__recurrence-monthly">
+          <input
+            type="number"
+            min="1"
+            max="31"
+            placeholder="Día del mes"
+            data-field="day_of_month"
+            data-play-id="${play.id}"
+          />
+        </div>
+
+        <div class="plays-view__recurrence-actions">
+          <button data-action="save-recurrence" data-play-id="${play.id}">Guardar</button>
+          <button data-action="cancel-recurrence" data-play-id="${play.id}">Cancelar</button>
+        </div>
+
+      </div>
+    </div>
+  `;
 }
 
 function buildIconButton({ src, alt, title, action, playId, extraData = "" }) {
@@ -1114,6 +1166,67 @@ function bindPlaysViewEvents() {
       );
     });
   });
+  // =============================
+// 5. EVENTOS
+// =============================
+
+// abrir panel
+containerSafeQueryAll('[data-action="set-recurrence"]').forEach((button) => {
+  button.addEventListener("click", () => {
+    const playId = button.dataset.playId;
+
+    updateLocalPlay(playId, {
+      __showRecurrence: true
+    });
+
+    renderPlaysView(lastDeck, lastPlays, lastState);
+  });
+});
+
+// guardar
+containerSafeQueryAll('[data-action="save-recurrence"]').forEach((button) => {
+  button.addEventListener("click", async () => {
+    const playId = button.dataset.playId;
+
+    const typeField = document.querySelector(`[data-field="recurrence_type"][data-play-id="${playId}"]`);
+    const dayField = document.querySelector(`[data-field="day_of_month"][data-play-id="${playId}"]`);
+
+    const checkboxes = document.querySelectorAll(`.plays-view__recurrence-weekly input[type="checkbox"]`);
+
+    const weekdays = Array.from(checkboxes)
+      .filter(cb => cb.checked)
+      .map(cb => cb.value)
+      .join(",");
+
+    const payload = {
+      recurrence_type: typeField?.value,
+      weekdays: weekdays || null,
+      day_of_month: dayField?.value || null
+    };
+
+    await fetch(`${API_BASE_URL}/plays/${playId}/recurrence`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("cooptrackToken")}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    updateLocalPlay(playId, { __showRecurrence: false });
+    renderPlaysView(lastDeck, lastPlays, lastState);
+  });
+});
+
+// cancelar
+containerSafeQueryAll('[data-action="cancel-recurrence"]').forEach((button) => {
+  button.addEventListener("click", () => {
+    const playId = button.dataset.playId;
+
+    updateLocalPlay(playId, { __showRecurrence: false });
+    renderPlaysView(lastDeck, lastPlays, lastState);
+  });
+});
 }
 
 function containerSafeQueryAll(selector) {
