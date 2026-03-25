@@ -159,7 +159,9 @@ function buildRecurrencePanel(play) {
     </div>
   `;
 }
-
+function hasRecurrence(play) {
+  return !!(play?.__hasRecurrence || play?.has_recurrence || play?.recurrence);
+}
 function buildRecurrenceMarker(play) {
   if (!play.__hasRecurrence) return "";
 
@@ -334,6 +336,7 @@ window.PlayUIHelpers = {
   buildSuitBadge,
   buildApproveButton,
   buildApprovedMeta,
+  hasRecurrence,
   normalizeText, getPlayRank, getPlayStatus, isJPlay, isVisibleJPlay
 };
 
