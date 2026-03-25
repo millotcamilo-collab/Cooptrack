@@ -386,6 +386,13 @@ function buildHeartActions(play) {
           playId: play.id
         })}
         ${buildIconButton({
+           src: ICONS.actions.routine,
+          alt: "Recurrencia",
+        title: "Definir recurrencia",
+      action: "set-recurrence",
+      playId: play.id
+      })}
+        ${buildIconButton({
           src: ICONS.actions.delete,
           alt: "Borrar",
           title: "Borrar",
@@ -532,10 +539,16 @@ function buildChildClubBody(play) {
 
 function buildClubBody(play) {
   if (isChildPlay(play)) {
-    return buildChildClubBody(play);
+    return `
+  ${buildChildClubBody(play)}
+  ${buildRecurrencePanel(play)}
+`;
   }
 
-  return buildRootClubBody(play);
+  return `
+  ${buildRootClubBody(play)}
+  ${buildRecurrencePanel(play)}
+`;
 }
 
 function buildClubActions(play) {
@@ -545,6 +558,13 @@ function buildClubActions(play) {
 
   return `
     <div class="plays-view__actions">
+     ${buildIconButton({
+      src: ICONS.actions.routine,
+      alt: "Recurrencia",
+      title: "Definir recurrencia",
+      action: "set-recurrence",
+      playId: play.id
+    })}
       ${buildIconButton({
         src: ICONS.actions.delete,
         alt: "Borrar",
@@ -1191,7 +1211,9 @@ containerSafeQueryAll('[data-action="save-recurrence"]').forEach((button) => {
     const typeField = document.querySelector(`[data-field="recurrence_type"][data-play-id="${playId}"]`);
     const dayField = document.querySelector(`[data-field="day_of_month"][data-play-id="${playId}"]`);
 
-    const checkboxes = document.querySelectorAll(`.plays-view__recurrence-weekly input[type="checkbox"]`);
+    const container = document.querySelector(`[data-play-id="${playId}"]`);
+
+const checkboxes = container.querySelectorAll('.plays-view__recurrence-weekly input');
 
     const weekdays = Array.from(checkboxes)
       .filter(cb => cb.checked)
