@@ -551,3 +551,13 @@ function buildSpadeActions(play) {
     </div>
   `;
 }
+window.JRenderer = {
+  buildHeartBody,
+  buildHeartActions,
+  buildRootClubBody,
+  buildChildClubBody,
+  buildClubBody,
+  buildClubActions,
+  buildSpadeBody,
+  buildSpadeActions
+};
