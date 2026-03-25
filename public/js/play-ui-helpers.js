@@ -327,31 +327,45 @@ function buildApprovedMeta(play) {
   `;
 }
 
-function formatShortWeekdayDate(value) {
- if (!value) return "";
+function formatShortWeekdayDate(startValue, endValue = "") {
+  if (!startValue) return "";
 
   try {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return String(value);
+    const startDate = new Date(startValue);
+    if (Number.isNaN(startDate.getTime())) return String(startValue);
 
-    const weekday = date.toLocaleDateString("es-UY", { weekday: "short" });
-    const day = date.toLocaleDateString("es-UY", { day: "numeric" });
-    const month = date.toLocaleDateString("es-UY", { month: "short" });
+    const weekday = startDate.toLocaleDateString("es-UY", { weekday: "short" });
+    const day = startDate.toLocaleDateString("es-UY", { day: "numeric" });
+    const month = startDate.toLocaleDateString("es-UY", { month: "short" });
 
-    const time = date.toLocaleTimeString("es-UY", {
+    const time = startDate.toLocaleTimeString("es-UY", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false
     });
 
-    // Capitalizar primera letra
     const weekdayCap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
     const monthCap = month.charAt(0).toUpperCase() + month.slice(1);
 
-    return `${weekdayCap} ${day} ${monthCap} ${time}`;
+    let result = `${weekdayCap} ${day} ${monthCap} ${time}`;
+
+    if (endValue) {
+      const endDate = new Date(endValue);
+
+      if (!Number.isNaN(endDate.getTime()) && endDate > startDate) {
+        const diffMs = endDate.getTime() - startDate.getTime();
+        const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+
+        if (diffHours > 0) {
+          result += ` ${diffHours} hs`;
+        }
+      }
+    }
+
+    return result;
   } catch (error) {
     console.error("Error formateando fecha compacta:", error);
-    return String(value);
+    return String(startValue);
   }
 }
 
