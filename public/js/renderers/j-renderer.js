@@ -1,4 +1,3 @@
-const ICONS = window.ICONS;
 
 const {
   escapeHTML,
@@ -53,21 +52,21 @@ function buildHeartActions(play) {
     return `
       <div class="plays-view__actions">
         ${buildIconButton({
-          src: ICONS.actions.save,
+          src: window.ICONS.actions.save,
           alt: "Guardar",
           title: "Guardar",
           action: "save-edit",
           playId: play.id
         })}
         ${buildIconButton({
-          src: ICONS.actions.exit,
+          src: window.ICONS.actions.exit,
           alt: "Salir edición",
           title: "Salir edición",
           action: "cancel-edit",
           playId: play.id
         })}
         ${buildIconButton({
-          src: ICONS.actions.delete,
+          src: window.ICONS.actions.delete,
           alt: "Borrar",
           title: "Borrar",
           action: "delete",
@@ -83,28 +82,28 @@ function buildHeartActions(play) {
   return `
     <div class="plays-view__actions">
       ${buildIconButton({
-        src: ICONS.actions.edit,
+        src: window.ICONS.actions.edit,
         alt: "Editar",
         title: "Editar texto",
         action: "edit-heart",
         playId: play.id
       })}
       ${buildIconButton({
-        src: ICONS.suits.CLUB,
+        src: window.ICONS.suits.CLUB,
         alt: "Pasar a trébol",
         title: "Transformar en J trébol",
         action: "to-club",
         playId: play.id
       })}
       ${buildIconButton({
-        src: ICONS.suits.SPADE,
+        src: window.ICONS.suits.SPADE,
         alt: "Pasar a picas",
         title: "Transformar en J picas",
         action: "to-spade",
         playId: play.id
       })}
       ${buildIconButton({
-        src: ICONS.actions.delete,
+        src: window.ICONS.actions.delete,
         alt: "Borrar",
         title: "Borrar",
         action: "delete",
@@ -169,7 +168,7 @@ function buildChildClubBody(play) {
           <div class="plays-view__child-club-money-label">
             <span class="plays-view__badge-rank">J</span>
             <img
-              src="${escapeHTML(ICONS.suits.DIAMOND)}"
+              src="${escapeHTML(window.ICONS.suits.DIAMOND)}"
               alt="DIAMOND"
               class="plays-view__badge-suit"
             />
@@ -197,7 +196,7 @@ function buildChildClubBody(play) {
         <div class="plays-view__child-club-money-label">
           <span class="plays-view__badge-rank">J</span>
           <img
-            src="${escapeHTML(ICONS.suits.DIAMOND)}"
+            src="${escapeHTML(window.ICONS.suits.DIAMOND)}"
             alt="DIAMOND"
             class="plays-view__badge-suit"
           />
@@ -240,14 +239,14 @@ function buildClubActions(play) {
   return `
     <div class="plays-view__actions">
       ${buildIconButton({
-        src: ICONS.actions.routine,
+        src: window.ICONS.actions.routine,
         alt: "Recurrencia",
         title: "Definir recurrencia",
         action: "set-recurrence",
         playId: play.id
       })}
       ${buildIconButton({
-        src: ICONS.actions.delete,
+        src: window.ICONS.actions.delete,
         alt: "Borrar",
         title: "Borrar",
         action: "delete",
@@ -311,7 +310,7 @@ function buildSpadeBody(play) {
           </div>
           <div class="plays-view__schedule-fields">
             <div class="plays-view__schedule-field">
-              <img src="${escapeHTML(ICONS.actions.end)}" alt="Fin" class="plays-view__mini-icon" />
+              <img src="${escapeHTML(window.ICONS.actions.end)}" alt="Fin" class="plays-view__mini-icon" />
               <input
                 type="datetime-local"
                 class="plays-view__datetime-input"
@@ -334,7 +333,7 @@ function buildSpadeBody(play) {
         </div>
         <div class="plays-view__schedule-fields">
           <div class="plays-view__schedule-field">
-            <img src="${escapeHTML(ICONS.actions.start)}" alt="Inicio" class="plays-view__mini-icon" />
+            <img src="${escapeHTML(window.ICONS.actions.start)}" alt="Inicio" class="plays-view__mini-icon" />
             <input
               type="datetime-local"
               class="plays-view__datetime-input"
@@ -345,7 +344,7 @@ function buildSpadeBody(play) {
           </div>
 
           <div class="plays-view__schedule-field">
-            <img src="${escapeHTML(ICONS.actions.end)}" alt="Fin" class="plays-view__mini-icon" />
+            <img src="${escapeHTML(window.ICONS.actions.end)}" alt="Fin" class="plays-view__mini-icon" />
             <input
               type="datetime-local"
               class="plays-view__datetime-input"
@@ -356,7 +355,7 @@ function buildSpadeBody(play) {
           </div>
 
           <div class="plays-view__schedule-field">
-            <img src="${escapeHTML(ICONS.actions.location)}" alt="Lugar" class="plays-view__mini-icon" />
+            <img src="${escapeHTML(window.ICONS.actions.location)}" alt="Lugar" class="plays-view__mini-icon" />
             <input
               type="text"
               class="plays-view__location-input"
@@ -424,14 +423,14 @@ function buildSpadeActions(play) {
     return `
       <div class="plays-view__actions">
         ${buildIconButton({
-          src: ICONS.suits.DIAMOND,
+          src: window.ICONS.suits.DIAMOND,
           alt: "Nuevo gasto hijo",
           title: "Agregar J♦ hija",
           action: "add-child-diamond",
           playId: play.id
         })}
         ${buildIconButton({
-          src: ICONS.suits.SPADE,
+          src: window.ICONS.suits.SPADE,
           alt: "Nueva Q♠",
           title: "Agregar Q♠ hija",
           action: "add-child-qspade",
@@ -452,28 +451,28 @@ function buildSpadeActions(play) {
     return `
       <div class="plays-view__actions">
         ${buildIconButton({
-          src: ICONS.actions.save,
+          src: window.ICONS.actions.save,
           alt: "Guardar",
           title: "Guardar",
           action: "save-schedule",
           playId: play.id
         })}
         ${buildIconButton({
-          src: ICONS.actions.exit,
+          src: window.ICONS.actions.exit,
           alt: "Salir edición",
           title: "Salir edición",
           action: "cancel-schedule-edit",
           playId: play.id
         })}
         ${buildIconButton({
-          src: ICONS.actions.routine,
+          src: window.ICONS.actions.routine,
           alt: "Recurrencia",
           title: "Definir recurrencia",
           action: "set-recurrence",
           playId: play.id
         })}
         ${buildIconButton({
-          src: ICONS.actions.delete,
+          src: window.ICONS.actions.delete,
           alt: "Borrar",
           title: "Borrar",
           action: "delete",
@@ -490,28 +489,28 @@ function buildSpadeActions(play) {
     return `
       <div class="plays-view__actions">
         ${buildIconButton({
-          src: ICONS.actions.start,
+          src: window.ICONS.actions.start,
           alt: "Cita",
           title: "Appointment / Cita",
           action: "set-appointment",
           playId: play.id
         })}
         ${buildIconButton({
-          src: ICONS.actions.bomb,
+          src: window.ICONS.actions.bomb,
           alt: "Deadline",
           title: "Deadline",
           action: "set-deadline",
           playId: play.id
         })}
         ${buildIconButton({
-          src: ICONS.actions.routine,
+          src: window.ICONS.actions.routine,
           alt: "Recurrencia",
           title: "Definir recurrencia",
           action: "set-recurrence",
           playId: play.id
         })}
         ${buildIconButton({
-          src: ICONS.actions.delete,
+          src: window.ICONS.actions.delete,
           alt: "Borrar",
           title: "Borrar",
           action: "delete",
@@ -527,21 +526,21 @@ function buildSpadeActions(play) {
   return `
     <div class="plays-view__actions">
       ${buildIconButton({
-        src: ICONS.actions.edit,
+        src: window.ICONS.actions.edit,
         alt: "Editar",
         title: spadeMode === "DEADLINE" ? "Editar deadline" : "Editar cita",
         action: "edit-schedule",
         playId: play.id
       })}
       ${buildIconButton({
-        src: ICONS.actions.routine,
+        src: window.ICONS.actions.routine,
         alt: "Recurrencia",
         title: "Definir recurrencia",
         action: "set-recurrence",
         playId: play.id
       })}
       ${buildIconButton({
-        src: ICONS.actions.delete,
+        src: window.ICONS.actions.delete,
         alt: "Borrar",
         title: "Borrar",
         action: "delete",
