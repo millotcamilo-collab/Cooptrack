@@ -68,8 +68,31 @@
     }
   }
 
- async function hasPendingApprovals() {
-  return true; // para probar
+async function hasPendingApprovals() {
+  try {
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) return false;
+
+    const response = await fetch(`${API_BASE_URL}/plays/pending`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) return false;
+      throw new Error(`Error HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const plays = Array.isArray(data?.plays) ? data.plays : [];
+
+    return plays.length > 0;
+  } catch (error) {
+    console.error("Error leyendo pendientes:", error);
+    return false;
+  }
 }
 
   function isMazosPage() {
