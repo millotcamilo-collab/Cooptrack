@@ -331,10 +331,11 @@ function renderUsersPicker(containerId, options = {}) {
 
   function rerender() {
     const html = `
-      ${getUsersStyles()}
-      <section class="users-picker">
-        ${state.selectedUser ? renderSelectedState() : renderResultsState()}
-      </section>
+      const html = `
+  <section class="users-picker">
+    ${state.selectedUser ? renderSelectedState() : renderResultsState()}
+  </section>
+`;
     `;
 
     container.innerHTML = html;
