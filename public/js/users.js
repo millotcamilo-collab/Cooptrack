@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://cooptrack-backend.onrender.com";
+window.API_BASE_URL = window.API_BASE_URL || "https://cooptrack-backend.onrender.com";
 
 function getAuthToken() {
   return localStorage.getItem("cooptrackToken") || "";
