@@ -247,7 +247,7 @@ function renderUsersPicker(containerId, options = {}) {
           data-users-exit-btn
           title="Salir"
         >
-          <img src="${escapeHtml(options.exitIcon || "/assets/icons/exit80.gif")}" alt="Salir" />
+          <img src="${escapeHtml(options.exitIcon || "/assets/icons/desarrollo40.gif")}" alt="Salir" />
         </button>
       </div>
     </div>
@@ -326,7 +326,7 @@ function renderUsersPicker(containerId, options = {}) {
           data-users-exit-btn
           title="Salir"
         >
-          <img src="${escapeHtml(options.exitIcon || "/assets/icons/exit80.gif")}" alt="Salir" />
+          <img src="${escapeHtml(options.exitIcon || "/assets/icons/desarrollo40.gif")}" alt="Salir" />
         </button>
       </div>
     </div>
