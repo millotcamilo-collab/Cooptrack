@@ -41,6 +41,9 @@ function getUserDisplayName(user) {
   return user.nickname || user.full_name || user.name || `Usuario ${user.id}`;
 }
 
+function getUserPhoto(user) {
+  return user.profile_photo_url || "/assets/icons/singeta120.gif";
+}
 async function fetchUsers() {
   const token = getAuthToken();
 
@@ -270,19 +273,26 @@ function renderUsersPicker(containerId, options = {}) {
       resultsHtml = `<div class="users-picker__empty">No se encontraron usuarios.</div>`;
     } else {
       resultsHtml = state.filteredUsers.map((user) => `
-        <button
-          type="button"
-          class="users-picker__row"
-          data-users-row-id="${escapeHtml(user.id)}"
-        >
-          <img
-            class="users-picker__row-icon"
-            src="${escapeHtml(getUserTypeIcon(user))}"
-            alt="${escapeHtml(user.qCategory || user.user_type || "Usuario")}"
-          />
-          <span class="users-picker__row-name">${escapeHtml(getUserDisplayName(user))}</span>
-        </button>
-      `).join("");
+  <button
+    type="button"
+    class="users-picker__row"
+    data-users-row-id="${escapeHtml(user.id)}"
+  >
+    <img
+      class="users-picker__row-type-icon"
+      src="${escapeHtml(getUserTypeIcon(user))}"
+      alt="${escapeHtml(user.qCategory || user.user_type || "Usuario")}"
+    />
+
+    <img
+      class="users-picker__row-photo"
+      src="${escapeHtml(getUserPhoto(user))}"
+      alt="${escapeHtml(getUserDisplayName(user))}"
+    />
+
+    <span class="users-picker__row-name">${escapeHtml(getUserDisplayName(user))}</span>
+  </button>
+`).join("");
     }
 
     return `
