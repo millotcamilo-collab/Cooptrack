@@ -733,7 +733,7 @@ app.post('/plays', requireAuth, async (req, res) => {
   const {
     deck_id,
     parent_play_id = null,
-     target_user_id = null,   // 👈 NUEVO
+    target_user_id = null,
     play_code,
     card_rank,
     card_suit,
@@ -769,6 +769,9 @@ app.post('/plays', requireAuth, async (req, res) => {
     });
   }
 
+  const normalizedRank = String(card_rank).toUpperCase();
+  const normalizedSuit = String(card_suit).toUpperCase();
+
   const client = await pool.connect();
 
   try {
@@ -799,7 +802,10 @@ app.post('/plays', requireAuth, async (req, res) => {
 
     if (parent_play_id) {
       const parentCheck = await client.query(
-        `SELECT id, deck_id FROM plays WHERE id = $1 LIMIT 1`,
+        `SELECT id, deck_id, card_rank, card_suit
+         FROM plays
+         WHERE id = $1
+         LIMIT 1`,
         [parent_play_id]
       );
 
@@ -818,30 +824,70 @@ app.post('/plays', requireAuth, async (req, res) => {
           error: 'parent_play_id pertenece a otro deck',
         });
       }
+
+      // regla mínima: una Q♠ debe colgar de una J♠
+      if (normalizedRank === 'Q' && normalizedSuit === 'SPADE') {
+        const parent = parentCheck.rows[0];
+
+        if (
+          String(parent.card_rank || '').toUpperCase() !== 'J' ||
+          String(parent.card_suit || '').toUpperCase() !== 'SPADE'
+        ) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({
+            ok: false,
+            error: 'La Q♠ debe tener una J♠ como madre',
+          });
+        }
+      }
+    }
+
+    if (target_user_id) {
+      const targetCheck = await client.query(
+        `SELECT id FROM users WHERE id = $1 LIMIT 1`,
+        [target_user_id]
+      );
+
+      if (!targetCheck.rows.length) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({
+          ok: false,
+          error: 'target_user_id no encontrado',
+        });
+      }
+    }
+
+    // regla mínima: solo Q♠ debería usar target_user_id
+    if (target_user_id && !(normalizedRank === 'Q' && normalizedSuit === 'SPADE')) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        ok: false,
+        error: 'target_user_id solo está permitido para Q♠',
+      });
     }
 
     const createdPlay = await insertValidatedPlay(client, {
       deckId: deck_id,
       createdByUserId: userId,
       parentPlayId: parent_play_id,
-       targetUserId: target_user_id,   // 👈 NUEVO
+      targetUserId: target_user_id,
       playCode: play_code,
-      cardRank: String(card_rank).toUpperCase(),
-      cardSuit: String(card_suit).toUpperCase(),
+      cardRank: normalizedRank,
+      cardSuit: normalizedSuit,
       playStatus: play_status,
       playText: text,
     });
 
     await client.query('COMMIT');
 
-    res.json({
+    return res.json({
       ok: true,
       play: createdPlay,
     });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error en POST /plays', error);
-    res.status(error.statusCode || 500).json({
+    return res.status(error.statusCode || 500).json({
       ok: false,
       error: error.message || 'Error guardando play',
     });
