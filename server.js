@@ -43,7 +43,27 @@ function requireAuth(req, res, next) {
     return res.status(401).json({ ok: false, error: 'Token inválido' });
   }
 }
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
 
+function normalizePhone(value) {
+  return String(value || "").replace(/\D+/g, "");
+}
+
+function mapUserCategory(user) {
+  const normalizedType = String(user?.user_type || "").toLowerCase();
+
+  return {
+    ...user,
+    qCategory:
+      normalizedType === "senior"
+        ? "Senior"
+        : normalizedType === "active"
+        ? "Active"
+        : "Pop",
+  };
+}
 // ================= HELPERS =================
 
 async function userIsDeckMember(client, deckId, userId) {
@@ -1023,6 +1043,7 @@ app.get('/users-picker', requireAuth, async (req, res) => {
 
 app.post('/users/resolve', requireAuth, async (req, res) => {
   const client = await pool.connect();
+  let transactionStarted = false;
 
   try {
     const rawNickname = String(req.body.nickname || '').trim();
@@ -1047,13 +1068,21 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
     }
 
     await client.query('BEGIN');
+    transactionStarted = true;
 
     let existingByEmail = null;
     let existingByPhone = null;
 
     if (email) {
       const emailResult = await client.query(
-        `SELECT id, nickname, email, phone, profile_photo_url, birth_date, user_type
+        `SELECT
+           id,
+           nickname,
+           email,
+           phone,
+           profile_photo_url,
+           birth_date,
+           user_type
          FROM users
          WHERE LOWER(email) = $1
          LIMIT 1`,
@@ -1064,7 +1093,14 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
 
     if (phone) {
       const phoneResult = await client.query(
-        `SELECT id, nickname, email, phone, profile_photo_url, birth_date, user_type
+        `SELECT
+           id,
+           nickname,
+           email,
+           phone,
+           profile_photo_url,
+           birth_date,
+           user_type
          FROM users
          WHERE phone = $1
          LIMIT 1`,
@@ -1073,8 +1109,14 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
       existingByPhone = phoneResult.rows[0] || null;
     }
 
-    if (existingByEmail && existingByPhone && String(existingByEmail.id) !== String(existingByPhone.id)) {
+    if (
+      existingByEmail &&
+      existingByPhone &&
+      String(existingByEmail.id) !== String(existingByPhone.id)
+    ) {
       await client.query('ROLLBACK');
+      transactionStarted = false;
+
       return res.status(409).json({
         ok: false,
         error: 'El email y el teléfono pertenecen a usuarios distintos',
@@ -1089,6 +1131,8 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
 
     if (existingUser) {
       await client.query('COMMIT');
+      transactionStarted = false;
+
       return res.json({
         ok: true,
         mode: 'existing',
@@ -1097,7 +1141,10 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
       });
     }
 
-    const placeholderPassword = await bcrypt.hash(`cooptrack:${Date.now()}:${Math.random()}`, SALT_ROUNDS);
+    const placeholderPassword = await bcrypt.hash(
+      `cooptrack:${Date.now()}:${Math.random()}`,
+      SALT_ROUNDS
+    );
 
     const insertUserResult = await client.query(
       `INSERT INTO users (
@@ -1130,7 +1177,10 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
     if (email) {
       await client.query(
         `INSERT INTO user_contacts_history (
-           user_id, contact_type, contact_value, is_current
+           user_id,
+           contact_type,
+           contact_value,
+           is_current
          )
          VALUES ($1, 'EMAIL', $2, true)`,
         [createdUser.id, email]
@@ -1140,7 +1190,10 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
     if (phone) {
       await client.query(
         `INSERT INTO user_contacts_history (
-           user_id, contact_type, contact_value, is_current
+           user_id,
+           contact_type,
+           contact_value,
+           is_current
          )
          VALUES ($1, 'PHONE', $2, true)`,
         [createdUser.id, phone]
@@ -1148,19 +1201,28 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
     }
 
     await client.query('COMMIT');
+    transactionStarted = false;
 
-    res.json({
+    return res.json({
       ok: true,
       mode: 'created',
       user: mapUserCategory(createdUser),
       message: 'Usuario creado correctamente',
     });
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error en POST /users/resolve-for-q', error);
-    res.status(500).json({
+    if (transactionStarted) {
+      try {
+        await client.query('ROLLBACK');
+      } catch (rollbackError) {
+        console.error('Error haciendo ROLLBACK en /users/resolve', rollbackError);
+      }
+    }
+
+    console.error('Error en POST /users/resolve', error);
+
+    return res.status(500).json({
       ok: false,
-      error: 'Error resolviendo usuario para Q',
+      error: 'Error resolviendo usuario',
     });
   } finally {
     client.release();
