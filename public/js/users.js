@@ -330,17 +330,15 @@ function renderUsersPicker(containerId, options = {}) {
   }
 
   function rerender() {
-    const html = `
-      const html = `
-  <section class="users-picker">
-    ${state.selectedUser ? renderSelectedState() : renderResultsState()}
-  </section>
-`;
-    `;
+  const html = `
+    <section class="users-picker">
+      ${state.selectedUser ? renderSelectedState() : renderResultsState()}
+    </section>
+  `;
 
-    container.innerHTML = html;
-    bindEvents();
-  }
+  container.innerHTML = html;
+  bindEvents();
+}
 
   rerender();
 
