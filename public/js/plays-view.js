@@ -80,6 +80,8 @@ function buildQSpadeBody(play) {
 }
 
 function currentUserHasClubAce() {
+  console.log("corporateCards:", lastState?.corporateCards);
+
   if (!lastState) return false;
 
   const cards = Array.isArray(lastState.corporateCards)
