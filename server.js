@@ -833,6 +833,48 @@ app.post('/plays', requireAuth, async (req, res) => {
   }
 });
 
+app.get('/plays/pending', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const result = await pool.query(
+      `SELECT
+         p.id,
+         p.deck_id,
+         p.parent_play_id,
+         p.card_rank,
+         p.card_suit,
+         p.play_status,
+         p.created_at,
+         p.target_user_id,
+         p.created_by_user_id,
+         parent.play_text AS parent_play_text,
+         parent.start_date AS parent_start_date,
+         parent.end_date AS parent_end_date,
+         parent.location AS parent_location
+       FROM plays p
+       LEFT JOIN plays parent
+         ON parent.id = p.parent_play_id
+       WHERE p.target_user_id = $1
+         AND UPPER(COALESCE(p.card_rank, '')) = 'Q'
+         AND UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
+         AND UPPER(COALESCE(p.play_status, '')) IN ('SENT', 'PENDING')
+       ORDER BY p.created_at DESC`,
+      [userId]
+    );
+
+    return res.json({
+      ok: true,
+      plays: result.rows,
+    });
+  } catch (error) {
+    console.error('Error en GET /plays/pending', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'Error obteniendo pendientes',
+    });
+  }
+});
 app.patch('/plays/:playId', requireAuth, async (req, res) => {
   const { playId } = req.params;
   const userId = req.auth.userId;
