@@ -17,8 +17,8 @@
 }
 
 .users-picker__people-icon {
-  width: 48px;
-  height: 72px;
+  width: auto;
+  height: 35px;
   object-fit: cover;
   border: 1px solid #999;
   border-radius: 4px;
