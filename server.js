@@ -169,33 +169,232 @@ app.get('/health', async (req, res) => {
 
 app.post('/login', async (req, res) => {
   try {
-    const { login, password } = req.body;
+    const rawLogin = String(req.body.login || '').trim();
+    const password = String(req.body.password || '');
+
+    const loginEmail = normalizeEmail(rawLogin);
+    const loginPhone = normalizePhone(rawLogin);
 
     const result = await pool.query(
-      `SELECT * FROM users WHERE email = $1 OR phone = $1 LIMIT 1`,
-      [login]
+      `SELECT * 
+       FROM users 
+       WHERE LOWER(email) = $1 OR phone = $2
+       LIMIT 1`,
+      [loginEmail, loginPhone]
     );
 
     if (!result.rows.length) {
-      return res.status(401).json({ ok: false });
+      return res.status(401).json({
+        ok: false,
+        error: 'Credenciales inválidas',
+      });
     }
 
     const user = result.rows[0];
+    const accountStatus = String(user.account_status || 'ACTIVE').toUpperCase();
+
+    if (accountStatus === 'PENDING') {
+      return res.status(403).json({
+        ok: false,
+        code: 'ACCOUNT_PENDING',
+        error: 'Tu cuenta todavía no fue activada',
+      });
+    }
+
+    if (!user.password_hash) {
+      return res.status(401).json({
+        ok: false,
+        error: 'Credenciales inválidas',
+      });
+    }
+
     const match = await bcrypt.compare(password, user.password_hash);
 
     if (!match) {
-      return res.status(401).json({ ok: false });
+      return res.status(401).json({
+        ok: false,
+        error: 'Credenciales inválidas',
+      });
     }
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET);
 
-    res.json({ ok: true, token });
+    return res.json({
+      ok: true,
+      token,
+    });
   } catch (error) {
     console.error('Error en /login', error);
-    res.status(500).json({ ok: false });
+    return res.status(500).json({
+      ok: false,
+      error: 'Error al iniciar sesión',
+    });
   }
 });
 
+app.post('/users/activate', async (req, res) => {
+  const client = await pool.connect();
+  let transactionStarted = false;
+
+  try {
+    const rawEmail = String(req.body.email || '').trim();
+    const rawPhone = String(req.body.phone || '').trim();
+    const rawActivationCode = String(req.body.activationCode || '').trim();
+    const rawPassword = String(req.body.password || '');
+    const rawPasswordConfirm = String(req.body.passwordConfirm || '');
+
+    const email = normalizeEmail(rawEmail);
+    const phone = normalizePhone(rawPhone);
+    const activationCode = rawActivationCode.toUpperCase();
+
+    if (!email && !phone) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Ingresá email o teléfono',
+      });
+    }
+
+    if (!activationCode) {
+      return res.status(400).json({
+        ok: false,
+        error: 'El código de activación es obligatorio',
+      });
+    }
+
+    if (!rawPassword || rawPassword.length < 6) {
+      return res.status(400).json({
+        ok: false,
+        error: 'La contraseña debe tener al menos 6 caracteres',
+      });
+    }
+
+    if (rawPassword !== rawPasswordConfirm) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Las contraseñas no coinciden',
+      });
+    }
+
+    await client.query('BEGIN');
+    transactionStarted = true;
+
+    let userResult;
+
+    if (email) {
+      userResult = await client.query(
+        `SELECT *
+         FROM users
+         WHERE LOWER(email) = $1
+         LIMIT 1`,
+        [email]
+      );
+    } else {
+      userResult = await client.query(
+        `SELECT *
+         FROM users
+         WHERE phone = $1
+         LIMIT 1`,
+        [phone]
+      );
+    }
+
+    if (!userResult.rows.length) {
+      await client.query('ROLLBACK');
+      transactionStarted = false;
+
+      return res.status(404).json({
+        ok: false,
+        error: 'Usuario no encontrado',
+      });
+    }
+
+    const user = userResult.rows[0];
+    const accountStatus = String(user.account_status || 'ACTIVE').toUpperCase();
+
+    if (accountStatus !== 'PENDING') {
+      await client.query('ROLLBACK');
+      transactionStarted = false;
+
+      return res.status(400).json({
+        ok: false,
+        error: 'La cuenta ya está activa',
+      });
+    }
+
+    if (!user.activation_code || String(user.activation_code).toUpperCase() !== activationCode) {
+      await client.query('ROLLBACK');
+      transactionStarted = false;
+
+      return res.status(400).json({
+        ok: false,
+        error: 'Código de activación inválido',
+      });
+    }
+
+    if (user.activation_expires_at && new Date(user.activation_expires_at) < new Date()) {
+      await client.query('ROLLBACK');
+      transactionStarted = false;
+
+      return res.status(400).json({
+        ok: false,
+        error: 'El código de activación venció',
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(rawPassword, SALT_ROUNDS);
+
+    const updateResult = await client.query(
+      `UPDATE users
+       SET
+         password_hash = $2,
+         account_status = 'ACTIVE',
+         activation_code = NULL,
+         activation_expires_at = NULL,
+         updated_at = NOW()
+       WHERE id = $1
+       RETURNING
+         id,
+         nickname,
+         email,
+         phone,
+         profile_photo_url,
+         birth_date,
+         user_type,
+         account_status`,
+      [user.id, passwordHash]
+    );
+
+    await client.query('COMMIT');
+    transactionStarted = false;
+
+    const activatedUser = updateResult.rows[0];
+    const token = jwt.sign({ userId: activatedUser.id }, JWT_SECRET);
+
+    return res.json({
+      ok: true,
+      message: 'Cuenta activada correctamente',
+      token,
+      user: activatedUser,
+    });
+  } catch (error) {
+    if (transactionStarted) {
+      try {
+        await client.query('ROLLBACK');
+      } catch (rollbackError) {
+        console.error('Error haciendo ROLLBACK en /users/activate', rollbackError);
+      }
+    }
+
+    console.error('Error en POST /users/activate', error);
+
+    return res.status(500).json({
+      ok: false,
+      error: 'Error activando usuario',
+    });
+  } finally {
+    client.release();
+  }
+});
 // ================= ME =================
 
 app.get('/me', requireAuth, async (req, res) => {
