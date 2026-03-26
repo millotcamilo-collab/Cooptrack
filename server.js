@@ -1020,6 +1020,152 @@ app.get('/users-picker', requireAuth, async (req, res) => {
     client.release();
   }
 });
+
+app.post('/users/resolve', requireAuth, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const rawNickname = String(req.body.nickname || '').trim();
+    const rawEmail = String(req.body.email || '').trim();
+    const rawPhone = String(req.body.phone || '').trim();
+
+    const email = normalizeEmail(rawEmail);
+    const phone = normalizePhone(rawPhone);
+
+    if (!rawNickname) {
+      return res.status(400).json({
+        ok: false,
+        error: 'nickname es obligatorio',
+      });
+    }
+
+    if (!email && !phone) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Debe ingresar email o teléfono',
+      });
+    }
+
+    await client.query('BEGIN');
+
+    let existingByEmail = null;
+    let existingByPhone = null;
+
+    if (email) {
+      const emailResult = await client.query(
+        `SELECT id, nickname, email, phone, profile_photo_url, birth_date, user_type
+         FROM users
+         WHERE LOWER(email) = $1
+         LIMIT 1`,
+        [email]
+      );
+      existingByEmail = emailResult.rows[0] || null;
+    }
+
+    if (phone) {
+      const phoneResult = await client.query(
+        `SELECT id, nickname, email, phone, profile_photo_url, birth_date, user_type
+         FROM users
+         WHERE phone = $1
+         LIMIT 1`,
+        [phone]
+      );
+      existingByPhone = phoneResult.rows[0] || null;
+    }
+
+    if (existingByEmail && existingByPhone && String(existingByEmail.id) !== String(existingByPhone.id)) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({
+        ok: false,
+        error: 'El email y el teléfono pertenecen a usuarios distintos',
+        existingUsers: [
+          mapUserCategory(existingByEmail),
+          mapUserCategory(existingByPhone),
+        ],
+      });
+    }
+
+    const existingUser = existingByEmail || existingByPhone;
+
+    if (existingUser) {
+      await client.query('COMMIT');
+      return res.json({
+        ok: true,
+        mode: 'existing',
+        user: mapUserCategory(existingUser),
+        message: 'El contacto ya existe. Seleccionalo para continuar.',
+      });
+    }
+
+    const placeholderPassword = await bcrypt.hash(`cooptrack:${Date.now()}:${Math.random()}`, SALT_ROUNDS);
+
+    const insertUserResult = await client.query(
+      `INSERT INTO users (
+         nickname,
+         email,
+         phone,
+         password_hash,
+         user_type
+       )
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING
+         id,
+         nickname,
+         email,
+         phone,
+         profile_photo_url,
+         birth_date,
+         user_type`,
+      [
+        rawNickname,
+        email || null,
+        phone || null,
+        placeholderPassword,
+        'guest',
+      ]
+    );
+
+    const createdUser = insertUserResult.rows[0];
+
+    if (email) {
+      await client.query(
+        `INSERT INTO user_contacts_history (
+           user_id, contact_type, contact_value, is_current
+         )
+         VALUES ($1, 'EMAIL', $2, true)`,
+        [createdUser.id, email]
+      );
+    }
+
+    if (phone) {
+      await client.query(
+        `INSERT INTO user_contacts_history (
+           user_id, contact_type, contact_value, is_current
+         )
+         VALUES ($1, 'PHONE', $2, true)`,
+        [createdUser.id, phone]
+      );
+    }
+
+    await client.query('COMMIT');
+
+    res.json({
+      ok: true,
+      mode: 'created',
+      user: mapUserCategory(createdUser),
+      message: 'Usuario creado correctamente',
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error en POST /users/resolve-for-q', error);
+    res.status(500).json({
+      ok: false,
+      error: 'Error resolviendo usuario para Q',
+    });
+  } finally {
+    client.release();
+  }
+});
 // ================= START =================
 
 console.log('PORT recibido:', PORT);
