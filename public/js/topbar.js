@@ -1,218 +1,203 @@
-window.API_BASE_URL = window.API_BASE_URL || "https://cooptrack-backend.onrender.com";
+(() => {
 
-function getLoggedUser() {
-  try {
-    const raw = localStorage.getItem("cooptrackUser");
-    return raw ? JSON.parse(raw) : null;
-  } catch (error) {
-    console.error("Error leyendo cooptrackUser:", error);
-    return null;
-  }
-}
+  const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
-function getStoredDecksViewOpen() {
-  try {
-    return localStorage.getItem("cooptrackDecksViewOpen") === "true";
-  } catch (error) {
-    console.error("Error leyendo cooptrackDecksViewOpen:", error);
-    return false;
-  }
-}
+  async function getLoggedUser() {
+    try {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return null;
 
-function setStoredDecksViewOpen(value) {
-  try {
-    localStorage.setItem("cooptrackDecksViewOpen", value ? "true" : "false");
-  } catch (error) {
-    console.error("Error guardando cooptrackDecksViewOpen:", error);
-  }
-}
+      const response = await fetch(`${API_BASE_URL}/me`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-async function hasPendingItems() {
-  try {
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) return false;
-
-    const response = await fetch(`${window.API_BASE_URL}/plays/pending`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
+      if (!response.ok) {
+        if (response.status === 401) {
+          return null;
+        }
+        throw new Error(`Error HTTP ${response.status}`);
       }
-    });
 
-    const data = await response.json();
+      const data = await response.json();
+      return data?.user || null;
+    } catch (error) {
+      console.error("Error obteniendo usuario autenticado:", error);
+      return null;
+    }
+  }
 
-    if (!response.ok || !data.ok) {
-      console.warn("Pendientes no disponibles:", data);
+  function logout() {
+    localStorage.removeItem("cooptrackUser");
+    localStorage.removeItem("cooptrackToken");
+    window.location.href = "/index.html";
+  }
+
+  function getProfileImage(user) {
+    if (user && user.profile_photo_url && user.profile_photo_url.trim() !== "") {
+      return user.profile_photo_url;
+    }
+    return "/assets/icons/singeta120.gif";
+  }
+
+  async function hasDecks() {
+    try {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return false;
+
+      const response = await fetch(`${API_BASE_URL}/decks`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) return false;
+        throw new Error(`Error HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const decks = Array.isArray(data?.decks) ? data.decks : [];
+      return decks.length > 0;
+    } catch (error) {
+      console.error("Error leyendo mazos desde servidor:", error);
       return false;
     }
+  }
 
-    return Array.isArray(data.plays) && data.plays.length > 0;
-  } catch (error) {
-    console.error("Error consultando pendientes:", error);
+  async function hasPendingApprovals() {
     return false;
   }
-}
 
-async function renderTopbar() {
-  const container = document.getElementById("topbar-container");
-  if (!container) return;
-
-  const user = getLoggedUser();
-  const token = localStorage.getItem("cooptrackToken");
-  const isAuthenticated = !!token;
-
-  let hasPending = false;
-
-  try {
-    hasPending = await hasPendingItems();
-  } catch (error) {
-    console.error("Error resolviendo pendientes en topbar:", error);
-    hasPending = false;
+  function isMazosPage() {
+    return window.location.pathname.endsWith("/mazos.html") ||
+           window.location.pathname === "/mazos.html";
   }
 
-  container.innerHTML = `
-    <header class="topbar">
-      <div class="page-container topbar__inner">
-        <div class="topbar__left">
-          <a href="/index.html" class="topbar__logo-link" aria-label="CoopTrack">
-            <img
-              src="/assets/icons/cooptrack.png"
-              alt="CoopTrack"
-              class="topbar__logo"
-            />
-          </a>
-        </div>
-
-        <div class="topbar__right">
-          ${
-            isAuthenticated
-              ? `
-                <button type="button" class="topbar__icon-btn" id="profileBtn" title="Perfil">
-                  <img
-                    src="${user?.profile_photo_url || "/assets/icons/singeta120.gif"}"
-                    alt="Perfil"
-                    class="topbar__icon-img topbar__icon-img--avatar"
-                  />
-                </button>
-
-                <button type="button" class="topbar__icon-btn" id="newDeckBtn" title="Nuevo mazo">
-                  <img src="/assets/icons/Acorazon.gif" alt="Nuevo mazo" class="topbar__icon-img" />
-                </button>
-
-                <button type="button" class="topbar__icon-btn" id="toggleDecksBtn" title="Portafolios">
-                  <img
-                    src="${getStoredDecksViewOpen() ? "/assets/icons/portafolioAbierto.png" : "/assets/icons/portafolios80.gif"}"
-                    alt="Portafolios"
-                    class="topbar__icon-img"
-                  />
-                </button>
-
-                ${
-                  hasPending
-                    ? `
-                      <button type="button" class="topbar__icon-btn" id="pendingBtn" title="Jugadas pendientes">
-                        <img src="/assets/icons/Dorso70.gif" alt="Pendientes" class="topbar__icon-img" />
-                      </button>
-                    `
-                    : ""
-                }
-
-                <button type="button" class="topbar__icon-btn" id="scheduleBtn" title="Almanaque">
-                  <img src="/assets/icons/Schedule80.gif" alt="Almanaque" class="topbar__icon-img" />
-                </button>
-
-                <button type="button" class="topbar__icon-btn" id="newsBtn" title="Noticias">
-                  <img src="/assets/icons/Extra120.gif" alt="Noticias" class="topbar__icon-img" />
-                </button>
-
-                <button type="button" class="topbar__icon-btn" id="helpBtn" title="Ayuda">
-                  <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda" class="topbar__icon-img" />
-                </button>
-
-                <button type="button" class="topbar__icon-btn" id="logoutBtn" title="Salir">
-                  <img src="/assets/icons/exit80.gif" alt="Salir" class="topbar__icon-img" />
-                </button>
-              `
-              : `
-                <a href="/login.html" class="topbar__login-link">Ingresar</a>
-              `
-          }
-        </div>
-      </div>
-    </header>
-  `;
-
-  bindTopbarEvents();
-}
-
-function bindTopbarEvents() {
-  const profileBtn = document.getElementById("profileBtn");
-  if (profileBtn) {
-    profileBtn.addEventListener("click", () => {
-      window.location.href = "/perfil.html";
-    });
+  function goToCreateDeckPage() {
+    window.location.href = "/nuevo-mazo.html";
   }
 
-  const newDeckBtn = document.getElementById("newDeckBtn");
-  if (newDeckBtn) {
-    newDeckBtn.addEventListener("click", () => {
-      window.location.href = "/nuevo-mazo.html";
-    });
+  async function renderTopbar() {
+    const user = await getLoggedUser();
+    const userHasDecks = await hasDecks();
+    const userHasPendingApprovals = await hasPendingApprovals();
+    const onMazosPage = isMazosPage();
+
+    let topbarHTML = "";
+
+    if (user) {
+      topbarHTML = `
+        <header class="topbar">
+          <div class="page-container topbar__inner">
+
+            <div class="topbar__left">
+              <a href="/index.html" class="topbar__logo">
+                <img src="/assets/icons/cooptrack.png" class="topbar__logo-img" />
+              </a>
+            </div>
+
+            <nav class="topbar__right">
+
+              <a href="/profile.html" class="topbar__icon-btn">
+                <img src="${getProfileImage(user)}" class="topbar__icon-img topbar__icon-img--profile" />
+              </a>
+
+              <button class="topbar__icon-btn" id="newDeckBtn">
+                <img src="/assets/icons/Acorazon.gif" class="topbar__icon-img" />
+              </button>
+
+              ${
+                userHasDecks
+                  ? `
+                    <a href="${onMazosPage ? "/index.html" : "/mazos.html"}"
+                       class="topbar__icon-btn">
+                      <img
+                        src="${
+                          onMazosPage
+                            ? "/assets/icons/portafolioAbierto.png"
+                            : "/assets/icons/portafolios80.gif"
+                        }"
+                        class="topbar__icon-img"
+                      />
+                    </a>
+                  `
+                  : ""
+              }
+
+              <a href="/almanaque.html" class="topbar__icon-btn">
+                <img src="/assets/icons/Schedule80.gif" class="topbar__icon-img" />
+              </a>
+
+              <a href="/noticias.html" class="topbar__icon-btn">
+                <img src="/assets/icons/Extra120.gif" class="topbar__icon-img" />
+              </a>
+
+              <a href="/help.html" class="topbar__icon-btn">
+                <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
+              </a>
+
+              <button class="topbar__icon-btn" id="logoutBtn">
+                <img src="/assets/icons/exit80.gif" class="topbar__icon-img" />
+              </button>
+
+            </nav>
+          </div>
+        </header>
+      `;
+    } else {
+      topbarHTML = `
+        <header class="topbar">
+          <div class="page-container topbar__inner">
+
+            <div class="topbar__left">
+              <a href="/index.html" class="topbar__logo">
+                <img src="/assets/icons/cooptrack.png" class="topbar__logo-img" />
+              </a>
+            </div>
+
+            <nav class="topbar__right">
+              <a href="/almanaque.html" class="topbar__icon-btn">
+                <img src="/assets/icons/Schedule80.gif" class="topbar__icon-img" />
+              </a>
+
+              <a href="/help.html" class="topbar__icon-btn">
+                <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
+              </a>
+
+              <a href="/login.html" class="topbar__login-link">
+                Login
+              </a>
+            </nav>
+          </div>
+        </header>
+      `;
+    }
+
+    const container = document.getElementById("topbar-container");
+
+    if (!container) {
+      console.warn("topbar-container no encontrado");
+      return;
+    }
+
+    container.innerHTML = topbarHTML;
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", logout);
+    }
+
+    const newDeckBtn = document.getElementById("newDeckBtn");
+    if (newDeckBtn) {
+      newDeckBtn.addEventListener("click", goToCreateDeckPage);
+    }
   }
 
-  const toggleDecksBtn = document.getElementById("toggleDecksBtn");
-  if (toggleDecksBtn) {
-    toggleDecksBtn.addEventListener("click", () => {
-      const nextValue = !getStoredDecksViewOpen();
-      setStoredDecksViewOpen(nextValue);
+  // 🚀 IMPORTANTE
+  document.addEventListener("DOMContentLoaded", renderTopbar);
 
-      document.dispatchEvent(
-        new CustomEvent("topbar:toggle-decks", {
-          detail: { open: nextValue }
-        })
-      );
-
-      renderTopbar();
-    });
-  }
-
-  const pendingBtn = document.getElementById("pendingBtn");
-  if (pendingBtn) {
-    pendingBtn.addEventListener("click", () => {
-      window.location.href = "/pendientes.html";
-    });
-  }
-
-  const scheduleBtn = document.getElementById("scheduleBtn");
-  if (scheduleBtn) {
-    scheduleBtn.addEventListener("click", () => {
-      window.location.href = "/almanaque.html";
-    });
-  }
-
-  const newsBtn = document.getElementById("newsBtn");
-  if (newsBtn) {
-    newsBtn.addEventListener("click", () => {
-      window.location.href = "/noticias.html";
-    });
-  }
-
-  const helpBtn = document.getElementById("helpBtn");
-  if (helpBtn) {
-    helpBtn.addEventListener("click", () => {
-      window.location.href = "/help.html";
-    });
-  }
-
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      localStorage.removeItem("cooptrackToken");
-      localStorage.removeItem("cooptrackUser");
-      localStorage.removeItem("cooptrackDecksViewOpen");
-      window.location.href = "/login.html";
-    });
-  }
-}
-
-window.renderTopbar = renderTopbar;
+})();
