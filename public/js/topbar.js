@@ -68,9 +68,9 @@
     }
   }
 
-  async function hasPendingApprovals() {
-    return false;
-  }
+ async function hasPendingApprovals() {
+  return true; // para probar
+}
 
   function isMazosPage() {
     return window.location.pathname.endsWith("/mazos.html") ||
@@ -127,7 +127,15 @@
                   `
                   : ""
               }
-
+${
+  userHasPendingApprovals
+    ? `
+      <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
+        <img src="/assets/icons/Dorso70.gif" class="topbar__icon-img" />
+      </button>
+    `
+    : ""
+}
               <a href="/almanaque.html" class="topbar__icon-btn">
                 <img src="/assets/icons/Schedule80.gif" class="topbar__icon-img" />
               </a>
