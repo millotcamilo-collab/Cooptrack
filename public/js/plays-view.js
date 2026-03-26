@@ -34,14 +34,41 @@ const {
   buildSpadeActions
 } = window.JRenderer;
 
+function buildQSpadeBody(play) {
+  if (!play.__isExpanded) {
+    return `
+      <div class="plays-view__text">
+        Q♠ — ${play.__selectedUser ? escapeHTML(play.__selectedUser.nickname) : "Sin destinatario"}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="plays-view__qspade-expanded">
+      <div class="plays-view__qspade-card">
+        <span class="plays-view__badge-rank">Q</span>
+        <img src="${escapeHTML(window.ICONS.suits.SPADE)}" class="plays-view__badge-suit"/>
+      </div>
+
+      <div class="plays-view__qspade-body">
+        <div id="q-user-picker-${play.id}"></div>
+      </div>
+    </div>
+  `;
+}
+
 function buildPlayRow(play) {
   const suit = getPlaySuit(play);
   const childClass = isChildPlay(play) ? "plays-view__row--child" : "";
+  const rank = String(play.card_rank || play.rank || "").toUpperCase();
 
   let bodyHTML = "";
   let actionsHTML = "";
 
-  if (suit === "HEART") {
+  if (rank === "Q" && suit === "SPADE") {
+    bodyHTML = buildQSpadeBody(play);
+    actionsHTML = "";
+  } else if (suit === "HEART") {
     bodyHTML = buildHeartBody(play);
     actionsHTML = buildHeartActions(play);
   } else if (suit === "CLUB") {
@@ -109,8 +136,37 @@ function renderPlaysView(deck, plays = [], state = null) {
   `;
 
   bindPlaysViewEvents();
+  requestAnimationFrame(() => {
+  mountQUserPickers();
+});
 }
+function mountQUserPickers() {
+  lastPlays.forEach((play) => {
+    if (play.card_rank === "Q" && play.card_suit === "SPADE" && play.__isDraft) {
+      const containerId = `q-user-picker-${play.id}`;
 
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      renderUsersPicker(containerId, {
+        deckId: lastDeck?.id,
+        selectedUser: play.__selectedUser,
+
+        onSelect: (user) => {
+          play.__selectedUser = user;
+          play.__qStep = "selected";
+
+          renderPlaysView(lastDeck, lastPlays, lastState);
+        },
+
+        onExit: () => {
+          removeLocalPlay(play.id);
+          renderPlaysView(lastDeck, lastPlays, lastState);
+        }
+      });
+    }
+  });
+}
 function updateLocalPlay(playId, patch = {}) {
   lastPlays = lastPlays.map((play) => {
     if (String(play.id) !== String(playId)) return play;
@@ -127,6 +183,32 @@ function getFieldValue(playId, fieldName) {
   return field ? field.value : "";
 }
 
+function createQSpadeDraft(parentPlayId) {
+  const newPlay = {
+    id: `temp-q-${Date.now()}`,
+    parent_play_id: parentPlayId,
+    card_rank: "Q",
+    card_suit: "SPADE",
+    play_status: "DRAFT",
+
+    // estado UI
+    __isDraft: true,
+    __isExpanded: true,
+    __qStep: "select-user",
+    __selectedUser: null
+  };
+
+  // insertar debajo del padre
+  const index = lastPlays.findIndex(p => String(p.id) === String(parentPlayId));
+
+  if (index === -1) {
+    lastPlays.push(newPlay);
+  } else {
+    lastPlays.splice(index + 1, 0, newPlay);
+  }
+
+  renderPlaysView(lastDeck, lastPlays, lastState);
+}
 async function savePlayPatch(playId, patch) {
   document.dispatchEvent(
     new CustomEvent("plays:patch-requested", {
@@ -377,15 +459,12 @@ containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
   });
 
   containerSafeQueryAll('[data-action="add-child-qspade"]').forEach((button) => {
-    button.addEventListener("click", () => {
-      const playId = button.dataset.playId;
-      document.dispatchEvent(
-        new CustomEvent("plays:add-child-qspade-requested", {
-          detail: { parentPlayId: playId }
-        })
-      );
-    });
+  button.addEventListener("click", () => {
+    const parentPlayId = button.dataset.playId;
+
+    createQSpadeDraft(parentPlayId);
   });
+});
 
   containerSafeQueryAll('[data-action="set-recurrence"]').forEach((button) => {
     button.addEventListener("click", () => {
