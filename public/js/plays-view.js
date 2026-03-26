@@ -45,11 +45,6 @@ function buildQSpadeBody(play) {
 
   return `
     <div class="plays-view__qspade-expanded">
-      <div class="plays-view__qspade-card">
-        <span class="plays-view__badge-rank">Q</span>
-        <img src="${escapeHTML(window.ICONS.suits.SPADE)}" class="plays-view__badge-suit"/>
-      </div>
-
       <div class="plays-view__qspade-body">
         <div id="q-user-picker-${play.id}"></div>
       </div>
