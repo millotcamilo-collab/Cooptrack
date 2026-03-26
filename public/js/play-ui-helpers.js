@@ -100,8 +100,25 @@ function isVisibleJPlay(play, filter = null) {
   return getPlaySuit(play) === filter;
 }
 
+function isVisiblePlay(play, filter = null) {
+  const rank = getPlayRank(play);
+  const suit = getPlaySuit(play);
+
+  if (rank === "J") {
+    if (!filter) return true;
+    return suit === filter;
+  }
+
+  if (rank === "Q") {
+    if (!filter) return true;
+    return suit === filter;
+  }
+
+  return false;
+}
+
 function getVisiblePlays(plays, filter = null) {
-  return (Array.isArray(plays) ? plays : []).filter((play) => isVisibleJPlay(play, filter));
+  return (Array.isArray(plays) ? plays : []).filter((play) => isVisiblePlay(play, filter));
 }
 
 function getFilterTitle(filter) {
@@ -452,6 +469,7 @@ window.PlayUIHelpers = {
   hasRecurrence,
   formatShortWeekdayDate,
   formatSpadeScheduleInline,
+  isVisibleJPlay,
   normalizeText, getPlayRank, getPlayStatus, isJPlay, isVisibleJPlay
 };
 
