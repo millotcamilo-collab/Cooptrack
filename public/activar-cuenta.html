@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activar cuenta | CoopTrack</title>
+  <link rel="stylesheet" href="/css/topbar.css">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f6f7fb;
+      color: #1f2937;
+    }
+
+    .page {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 100px 20px 40px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+    }
+
+    h1 { margin-top: 0; }
+
+    .subtitle {
+      margin-bottom: 24px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .field { margin-bottom: 16px; }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #111827;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover { background: #1f2937; }
+
+    .message {
+      margin-top: 14px;
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    .success { color: #065f46; }
+    .error { color: #b91c1c; }
+  </style>
+</head>
+<body>
+
+  <div id="topbar-container"></div>
+
+  <main class="page">
+    <div class="card">
+      <h1>Activar cuenta</h1>
+      <p class="subtitle">
+        Ingresá tu email o teléfono, el código de invitación y elegí tu contraseña.
+      </p>
+
+      <form id="activateForm">
+
+        <div class="field">
+          <label>Email o teléfono</label>
+          <input id="login" required>
+        </div>
+
+        <div class="field">
+          <label>Código de activación</label>
+          <input id="activationCode" required>
+        </div>
+
+        <div class="field">
+          <label>Nueva contraseña</label>
+          <input id="password" type="password" required>
+        </div>
+
+        <div class="field">
+          <label>Repetir contraseña</label>
+          <input id="passwordConfirm" type="password" required>
+        </div>
+
+        <button type="submit">Activar cuenta</button>
+
+        <div id="msg" class="message"></div>
+      </form>
+    </div>
+  </main>
+
+  <script src="/js/topbar.js"></script>
+
+  <script>
+    const form = document.getElementById("activateForm");
+    const msg = document.getElementById("msg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      msg.className = "message";
+      msg.textContent = "";
+
+      const login = document.getElementById("login").value.trim();
+      const activationCode = document.getElementById("activationCode").value.trim();
+      const password = document.getElementById("password").value;
+      const passwordConfirm = document.getElementById("passwordConfirm").value;
+
+      try {
+        const res = await fetch("/users/activate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: login.includes("@") ? login : "",
+            phone: !login.includes("@") ? login : "",
+            activationCode,
+            password,
+            passwordConfirm
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          localStorage.setItem("cooptrackToken", data.token);
+          localStorage.setItem("cooptrackUser", JSON.stringify(data.user));
+
+          msg.className = "message success";
+          msg.textContent = "Cuenta activada correctamente";
+
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 1000);
+
+        } else {
+          msg.className = "message error";
+          msg.textContent = data.error || "Error al activar cuenta";
+        }
+
+      } catch (err) {
+        msg.className = "message error";
+        msg.textContent = "Error de conexión";
+      }
+    });
+  </script>
+
+</body>
+</html>
