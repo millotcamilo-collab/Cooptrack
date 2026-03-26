@@ -196,6 +196,7 @@ app.post('/login', async (req, res) => {
     const user = result.rows[0];
     const accountStatus = String(user.account_status || 'ACTIVE').toUpperCase();
 
+    // 👇 CASO USUARIO PENDIENTE
     if (accountStatus === 'PENDING') {
       return res.status(403).json({
         ok: false,
@@ -222,10 +223,22 @@ app.post('/login', async (req, res) => {
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET);
 
+    // 👇 ESTE ES EL CAMBIO IMPORTANTE
     return res.json({
       ok: true,
       token,
+      user: {
+        id: user.id,
+        nickname: user.nickname,
+        email: user.email,
+        phone: user.phone,
+        profile_photo_url: user.profile_photo_url,
+        birth_date: user.birth_date,
+        user_type: user.user_type,
+        account_status: user.account_status,
+      },
     });
+
   } catch (error) {
     console.error('Error en /login', error);
     return res.status(500).json({
@@ -234,7 +247,6 @@ app.post('/login', async (req, res) => {
     });
   }
 });
-
 app.post('/users/activate', async (req, res) => {
   const client = await pool.connect();
   let transactionStarted = false;
