@@ -127,30 +127,31 @@ async function insertValidatedPlay(client, {
   }
 
   const result = await client.query(
-    `INSERT INTO plays (
-      deck_id,
-      created_by_user_id,
-      parent_play_id,
-      target_user_id,   -- 👈 NUEVO
-      play_code,
-      card_rank,
-      card_suit,
-      play_status,
-      play_text
-    )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    RETURNING *`,
-    [
-      deckId,
-      createdByUserId,
-      parentPlayId,
-      playCode,
-      cardRank,
-      cardSuit,
-      playStatus,
-      playText || null,
-    ]
-  );
+  `INSERT INTO plays (
+    deck_id,
+    created_by_user_id,
+    parent_play_id,
+    target_user_id,
+    play_code,
+    card_rank,
+    card_suit,
+    play_status,
+    play_text
+  )
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+  RETURNING *`,
+  [
+    deckId,
+    createdByUserId,
+    parentPlayId,
+    targetUserId,   // 👈 ESTE NO SE ESTABA USANDO
+    playCode,
+    cardRank,
+    cardSuit,
+    playStatus,
+    playText || null,
+  ]
+);
 
   return result.rows[0];
 }
