@@ -5,7 +5,6 @@ let lastState = null;
 
 const {
   escapeHTML,
-  formatDate,
   getPlaySuit,
   getPlayText,
   getPlayAmount,
@@ -33,6 +32,22 @@ const {
   buildSpadeBody,
   buildSpadeActions
 } = window.JRenderer;
+
+/* =========================================================
+   EVENTOS CUSTOM
+========================================================= */
+
+function emitPlayEvent(eventName, detail = {}) {
+  document.dispatchEvent(
+    new CustomEvent(eventName, {
+      detail
+    })
+  );
+}
+
+/* =========================================================
+   Q SPADE
+========================================================= */
 
 function buildQSpadeBody(play) {
   if (!play.__isExpanded) {
@@ -63,8 +78,13 @@ function buildQSpadeBody(play) {
     </div>
   `;
 }
+
 function currentUserHasClubAce() {
-  const cards = Array.isArray(lastState?.corporateCards) ? lastState.corporateCards : [];
+  if (!lastState) return false;
+
+  const cards = Array.isArray(lastState.corporateCards)
+    ? lastState.corporateCards
+    : [];
 
   return cards.some((card) => {
     const rank = String(card.rank || card.card_rank || "").toUpperCase();
@@ -101,6 +121,11 @@ function buildQSpadeActions(play) {
     </div>
   `;
 }
+
+/* =========================================================
+   RENDER FILA
+========================================================= */
+
 function buildPlayRow(play) {
   const suit = getPlaySuit(play);
   const childClass = isChildPlay(play) ? "plays-view__row--child" : "";
@@ -143,6 +168,10 @@ function buildPlayRow(play) {
   `;
 }
 
+/* =========================================================
+   RENDER GENERAL
+========================================================= */
+
 function renderPlaysView(deck, plays = [], state = null) {
   const container = document.getElementById("plays-view-container");
   if (!container) return;
@@ -180,16 +209,22 @@ function renderPlaysView(deck, plays = [], state = null) {
   `;
 
   bindPlaysViewEvents();
+
   requestAnimationFrame(() => {
-  mountQUserPickers();
-});
+    mountQUserPickers();
+  });
 }
+
+/* =========================================================
+   USERS PICKER PARA Q♠
+========================================================= */
+
 function mountQUserPickers() {
   lastPlays.forEach((play) => {
     if (play.card_rank === "Q" && play.card_suit === "SPADE" && play.__isDraft) {
       const containerId = `q-user-picker-${play.id}`;
-
       const container = document.getElementById(containerId);
+
       if (!container) return;
 
       renderUsersPicker(containerId, {
@@ -199,7 +234,6 @@ function mountQUserPickers() {
         onSelect: (user) => {
           play.__selectedUser = user;
           play.__qStep = "selected";
-
           renderPlaysView(lastDeck, lastPlays, lastState);
         },
 
@@ -211,6 +245,11 @@ function mountQUserPickers() {
     }
   });
 }
+
+/* =========================================================
+   ESTADO LOCAL
+========================================================= */
+
 function updateLocalPlay(playId, patch = {}) {
   lastPlays = lastPlays.map((play) => {
     if (String(play.id) !== String(playId)) return play;
@@ -234,16 +273,13 @@ function createQSpadeDraft(parentPlayId) {
     card_rank: "Q",
     card_suit: "SPADE",
     play_status: "DRAFT",
-
-    // estado UI
     __isDraft: true,
     __isExpanded: true,
     __qStep: "select-user",
     __selectedUser: null
   };
 
-  // insertar debajo del padre
-  const index = lastPlays.findIndex(p => String(p.id) === String(parentPlayId));
+  const index = lastPlays.findIndex((p) => String(p.id) === String(parentPlayId));
 
   if (index === -1) {
     lastPlays.push(newPlay);
@@ -253,37 +289,30 @@ function createQSpadeDraft(parentPlayId) {
 
   renderPlaysView(lastDeck, lastPlays, lastState);
 }
+
+/* =========================================================
+   WRAPPERS DE EVENTOS
+========================================================= */
+
 async function savePlayPatch(playId, patch) {
-  document.dispatchEvent(
-    new CustomEvent("plays:patch-requested", {
-      detail: { playId, patch }
-    })
-  );
+  emitPlayEvent("plays:patch-requested", { playId, patch });
 }
 
 async function deletePlay(playId) {
-  document.dispatchEvent(
-    new CustomEvent("plays:delete-requested", {
-      detail: { playId }
-    })
-  );
+  emitPlayEvent("plays:delete-requested", { playId });
 }
 
 async function approvePlay(playId) {
-  document.dispatchEvent(
-    new CustomEvent("plays:approve-requested", {
-      detail: { playId }
-    })
-  );
+  emitPlayEvent("plays:approve-requested", { playId });
 }
 
 async function transformSuit(playId, suit) {
-  document.dispatchEvent(
-    new CustomEvent("plays:transform-suit-requested", {
-      detail: { playId, suit }
-    })
-  );
+  emitPlayEvent("plays:transform-suit-requested", { playId, suit });
 }
+
+/* =========================================================
+   BIND DE EVENTOS UI
+========================================================= */
 
 function bindPlaysViewEvents() {
   containerSafeQueryAll('[data-action="edit-heart"]').forEach((button) => {
@@ -335,47 +364,47 @@ function bindPlaysViewEvents() {
     });
   });
 
-containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
-  button.addEventListener("click", () => {
-    const playId = button.dataset.playId;
+  containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
 
-    updateLocalPlay(playId, {
-      spade_mode: "APPOINTMENT",
-      __editingSchedule: true
-    });
+      updateLocalPlay(playId, {
+        spade_mode: "APPOINTMENT",
+        __editingSchedule: true
+      });
 
-    renderPlaysView(lastDeck, lastPlays, lastState);
+      renderPlaysView(lastDeck, lastPlays, lastState);
 
-    requestAnimationFrame(() => {
-      const firstField = document.querySelector(
-        `[data-field="start_date"][data-play-id="${playId}"]`
-      );
-      if (firstField) firstField.focus();
+      requestAnimationFrame(() => {
+        const firstField = document.querySelector(
+          `[data-field="start_date"][data-play-id="${playId}"]`
+        );
+        if (firstField) firstField.focus();
+      });
     });
   });
-});
 
   containerSafeQueryAll('[data-action="set-deadline"]').forEach((button) => {
-  button.addEventListener("click", () => {
-    const playId = button.dataset.playId;
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
 
-    updateLocalPlay(playId, {
-      spade_mode: "DEADLINE",
-      __editingSchedule: true,
-      start_date: "",
-      location: ""
-    });
+      updateLocalPlay(playId, {
+        spade_mode: "DEADLINE",
+        __editingSchedule: true,
+        start_date: "",
+        location: ""
+      });
 
-    renderPlaysView(lastDeck, lastPlays, lastState);
+      renderPlaysView(lastDeck, lastPlays, lastState);
 
-    requestAnimationFrame(() => {
-      const firstField = document.querySelector(
-        `[data-field="end_date"][data-play-id="${playId}"]`
-      );
-      if (firstField) firstField.focus();
+      requestAnimationFrame(() => {
+        const firstField = document.querySelector(
+          `[data-field="end_date"][data-play-id="${playId}"]`
+        );
+        if (firstField) firstField.focus();
+      });
     });
   });
-});
 
   containerSafeQueryAll('[data-action="save-schedule"]').forEach((button) => {
     button.addEventListener("click", async () => {
@@ -429,19 +458,17 @@ containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
       const amount = input.value;
 
       updateLocalPlay(playId, {
-        amount: amount,
+        amount,
         play_amount: amount
       });
 
       renderPlaysView(lastDeck, lastPlays, lastState);
 
-      await savePlayPatch(playId, {
-        amount: amount
-      });
+      await savePlayPatch(playId, { amount });
     });
   });
 
-  containerSafeQueryAll('.plays-view__child-text-input').forEach((input) => {
+  containerSafeQueryAll(".plays-view__child-text-input").forEach((input) => {
     input.addEventListener("change", async () => {
       const playId = input.dataset.playId;
       const playText = input.value;
@@ -483,32 +510,23 @@ containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
   containerSafeQueryAll('[data-action="deadline"]').forEach((button) => {
     button.addEventListener("click", () => {
       const playId = button.dataset.playId;
-      document.dispatchEvent(
-        new CustomEvent("plays:deadline-requested", {
-          detail: { playId }
-        })
-      );
+      emitPlayEvent("plays:deadline-requested", { playId });
     });
   });
 
   containerSafeQueryAll('[data-action="add-child-diamond"]').forEach((button) => {
     button.addEventListener("click", () => {
       const playId = button.dataset.playId;
-      document.dispatchEvent(
-        new CustomEvent("plays:add-child-diamond-requested", {
-          detail: { parentPlayId: playId }
-        })
-      );
+      emitPlayEvent("plays:add-child-diamond-requested", { parentPlayId: playId });
     });
   });
 
   containerSafeQueryAll('[data-action="add-child-qspade"]').forEach((button) => {
-  button.addEventListener("click", () => {
-    const parentPlayId = button.dataset.playId;
-
-    createQSpadeDraft(parentPlayId);
+    button.addEventListener("click", () => {
+      const parentPlayId = button.dataset.playId;
+      createQSpadeDraft(parentPlayId);
+    });
   });
-});
 
   containerSafeQueryAll('[data-action="set-recurrence"]').forEach((button) => {
     button.addEventListener("click", () => {
@@ -571,54 +589,63 @@ containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
       renderPlaysView(lastDeck, lastPlays, lastState);
     });
   });
+
   containerSafeQueryAll('[data-action="cancel-qspade"]').forEach((button) => {
-  button.addEventListener("click", () => {
-    const playId = button.dataset.playId;
-    removeLocalPlay(playId);
-    renderPlaysView(lastDeck, lastPlays, lastState);
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
+      removeLocalPlay(playId);
+      renderPlaysView(lastDeck, lastPlays, lastState);
+    });
   });
-});
 
-containerSafeQueryAll('[data-action="save-qspade"]').forEach((button) => {
-  button.addEventListener("click", async () => {
-    const playId = button.dataset.playId;
-    const play = lastPlays.find((item) => String(item.id) === String(playId));
-    if (!play || !play.__selectedUser) return;
+  containerSafeQueryAll('[data-action="save-qspade"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
+      const play = lastPlays.find((item) => String(item.id) === String(playId));
 
-    document.dispatchEvent(
-      new CustomEvent("plays:save-qspade-requested", {
-        detail: {
-          playId,
-          parentPlayId: play.parent_play_id,
-          targetUserId: play.__selectedUser.id
-        }
-      })
-    );
+      if (!play || !play.__selectedUser) return;
+
+      emitPlayEvent("plays:save-qspade-requested", {
+        playId,
+        parentPlayId: play.parent_play_id,
+        targetUserId: play.__selectedUser.id
+      });
+
+      removeLocalPlay(playId);
+      renderPlaysView(lastDeck, lastPlays, lastState);
+    });
   });
-});
 
-containerSafeQueryAll('[data-action="send-qspade"]').forEach((button) => {
-  button.addEventListener("click", async () => {
-    const playId = button.dataset.playId;
-    const play = lastPlays.find((item) => String(item.id) === String(playId));
-    if (!play || !play.__selectedUser) return;
+  containerSafeQueryAll('[data-action="send-qspade"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
+      const play = lastPlays.find((item) => String(item.id) === String(playId));
 
-    document.dispatchEvent(
-      new CustomEvent("plays:send-qspade-requested", {
-        detail: {
-          playId,
-          parentPlayId: play.parent_play_id,
-          targetUserId: play.__selectedUser.id
-        }
-      })
-    );
+      if (!play || !play.__selectedUser) return;
+
+      emitPlayEvent("plays:send-qspade-requested", {
+        playId,
+        parentPlayId: play.parent_play_id,
+        targetUserId: play.__selectedUser.id
+      });
+
+      removeLocalPlay(playId);
+      renderPlaysView(lastDeck, lastPlays, lastState);
+    });
   });
-});
 }
+
+/* =========================================================
+   UTILS
+========================================================= */
 
 function containerSafeQueryAll(selector) {
   return Array.from(document.querySelectorAll(selector));
 }
+
+/* =========================================================
+   FILTRO DESDE MAZOBAR
+========================================================= */
 
 document.addEventListener("mazobar:filter", (event) => {
   const incomingFilter = event.detail?.filter || null;
