@@ -891,6 +891,89 @@ app.get("/plays/:id/recurrence", requireAuth, async (req, res) => {
     res.status(500).json({ ok: false });
   }
 });
+
+app.get('/decks/:deckId/q-users', requireAuth, async (req, res) => {
+  const userId = req.auth.userId;
+  const deckId = Number(req.params.deckId);
+
+  if (!Number.isInteger(deckId) || deckId <= 0) {
+    return res.status(400).json({
+      ok: false,
+      error: 'deckId inválido',
+    });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    const isMember = await userIsDeckMember(client, deckId, userId);
+
+    if (!isMember) {
+      return res.status(403).json({
+        ok: false,
+        error: 'No pertenecés a este mazo',
+      });
+    }
+
+    const result = await client.query(
+      `SELECT
+         u.id,
+         u.nickname,
+         u.email,
+         u.phone,
+         u.profile_photo_url,
+         u.user_type
+       FROM deck_members dm
+       INNER JOIN users u
+         ON u.id = dm.user_id
+       WHERE dm.deck_id = $1
+       ORDER BY
+         CASE
+           WHEN u.user_type = 'senior' THEN 1
+           WHEN u.user_type = 'active' THEN 2
+           ELSE 3
+         END,
+         LOWER(COALESCE(u.nickname, '')) ASC,
+         u.id ASC`,
+      [deckId]
+    );
+
+    const users = result.rows.map((u) => {
+      const normalizedType = String(u.user_type || '').toLowerCase();
+
+      let qCategory = 'Pop';
+      let categoryIcon = '/assets/icons/q-pop.gif';
+
+      if (normalizedType === 'senior') {
+        qCategory = 'Senior';
+        categoryIcon = '/assets/icons/q-senior.gif';
+      } else if (normalizedType === 'active') {
+        qCategory = 'Active';
+        categoryIcon = '/assets/icons/q-active.gif';
+      }
+
+      return {
+        ...u,
+        qCategory,
+        categoryIcon,
+      };
+    });
+
+    res.json({
+      ok: true,
+      deckId,
+      users,
+    });
+  } catch (error) {
+    console.error('Error en GET /decks/:deckId/q-users', error);
+    res.status(500).json({
+      ok: false,
+      error: 'Error cargando usuarios para Q',
+    });
+  } finally {
+    client.release();
+  }
+});
 // ================= START =================
 
 console.log('PORT recibido:', PORT);
