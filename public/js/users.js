@@ -317,7 +317,7 @@ function renderUsersPicker(containerId, options = {}) {
           data-users-edit-btn
           title="Editar selección"
         >
-          <img src="${escapeHtml(options.editIcon || "/assets/icons/edit80.gif")}" alt="Editar" />
+          <img src="${escapeHtml(options.editIcon || "/assets/icons/desarrollo40.gif")}" alt="Editar" />
         </button>
 
         <button
