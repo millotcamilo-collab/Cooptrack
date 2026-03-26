@@ -470,7 +470,7 @@ window.PlayUIHelpers = {
   formatShortWeekdayDate,
   formatSpadeScheduleInline,
   isVisibleJPlay,
-  normalizeText, getPlayRank, getPlayStatus, isJPlay, isVisibleJPlay
+  normalizeText, getPlayRank, getPlayStatus, isJPlay
 };
 
 })();
