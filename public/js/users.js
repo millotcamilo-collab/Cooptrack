@@ -82,29 +82,23 @@ function renderUsersPicker(containerId, options = {}) {
   };
 
   async function ensureUsersLoaded() {
-    if (state.loaded || state.loading) return;
+  if (state.loaded || state.loading) return;
 
-    if (!state.deckId) {
-      state.error = "Falta deckId para cargar usuarios";
-      state.loaded = true;
-      return;
-    }
+  state.loading = true;
+  state.error = "";
 
-    state.loading = true;
-    state.error = "";
-
-    try {
-      state.allUsers = await fetchUsers();
-      state.filteredUsers = [];
-      state.loaded = true;
-    } catch (error) {
-      console.error(error);
-      state.error = error.message || "Error cargando usuarios";
-      state.loaded = true;
-    } finally {
-      state.loading = false;
-    }
+  try {
+    state.allUsers = await fetchUsers();
+    state.filteredUsers = [];
+    state.loaded = true;
+  } catch (error) {
+    console.error(error);
+    state.error = error.message || "Error cargando usuarios";
+    state.loaded = true;
+  } finally {
+    state.loading = false;
   }
+}
 
   function filterUsers(searchText) {
     const trimmed = String(searchText || "").trim();
@@ -213,52 +207,52 @@ function renderUsersPicker(containerId, options = {}) {
   }
 
   function renderSearchState() {
-    return `
-      <div class="users-picker__top">
-        <img
-  class="users-picker__people-icon"
-  src="${escapeHtml(getUserPhoto(user))}"
-  alt="${escapeHtml(getUserDisplayName(user))}"
-/>
+  return `
+    <div class="users-picker__top">
+      <img
+        class="users-picker__people-icon"
+        src="${escapeHtml(options.peopleIcon || "/assets/icons/Gente120.gif")}"
+        alt="Usuarios"
+      />
 
-        <div class="users-picker__search-wrap">
-          <input
-            class="users-picker__search-input"
-            type="text"
-            value="${escapeHtml(state.searchValue)}"
-            data-users-search-input
-          />
+      <div class="users-picker__search-wrap">
+        <input
+          class="users-picker__search-input"
+          type="text"
+          value="${escapeHtml(state.searchValue)}"
+          data-users-search-input
+        />
 
-          <button
-            type="button"
-            class="users-picker__icon-btn"
-            data-users-search-btn
-            title="Buscar"
-          >
-            <img src="${escapeHtml(options.searchIcon || "/assets/icons/lupa60.gif")}" alt="Buscar" />
-          </button>
+        <button
+          type="button"
+          class="users-picker__icon-btn"
+          data-users-search-btn
+          title="Buscar"
+        >
+          <img src="${escapeHtml(options.searchIcon || "/assets/icons/lupa60.gif")}" alt="Buscar" />
+        </button>
 
-          <button
-            type="button"
-            class="users-picker__icon-btn"
-            data-users-seal-btn
-            title="Registrar usuario"
-          >
-            <img src="${escapeHtml(options.sealIcon || "/assets/icons/lacre80.gif")}" alt="Registrar usuario" />
-          </button>
+        <button
+          type="button"
+          class="users-picker__icon-btn"
+          data-users-seal-btn
+          title="Registrar usuario"
+        >
+          <img src="${escapeHtml(options.sealIcon || "/assets/icons/lacre120.gif")}" alt="Registrar usuario" />
+        </button>
 
-          <button
-            type="button"
-            class="users-picker__icon-btn"
-            data-users-exit-btn
-            title="Salir"
-          >
-            <img src="${escapeHtml(options.exitIcon || "/assets/icons/exit80.gif")}" alt="Salir" />
-          </button>
-        </div>
+        <button
+          type="button"
+          class="users-picker__icon-btn"
+          data-users-exit-btn
+          title="Salir"
+        >
+          <img src="${escapeHtml(options.exitIcon || "/assets/icons/exit80.gif")}" alt="Salir" />
+        </button>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
   function renderResultsState() {
     let resultsHtml = "";
@@ -304,40 +298,40 @@ function renderUsersPicker(containerId, options = {}) {
   }
 
   function renderSelectedState() {
-    const user = state.selectedUser;
+  const user = state.selectedUser;
 
-    return `
-      <div class="users-picker__top">
-        <img
-          class="users-picker__people-icon"
-         src="${escapeHtml(options.peopleIcon || "/assets/icons/Gente120.gif")}"
-          alt="Usuarios"
-        />
+  return `
+    <div class="users-picker__top">
+      <img
+        class="users-picker__people-icon"
+        src="${escapeHtml(getUserPhoto(user))}"
+        alt="${escapeHtml(getUserDisplayName(user))}"
+      />
 
-        <div class="users-picker__search-wrap">
-          <span class="users-picker__selected-name">${escapeHtml(getUserDisplayName(user))}</span>
+      <div class="users-picker__search-wrap">
+        <span class="users-picker__selected-name">${escapeHtml(getUserDisplayName(user))}</span>
 
-          <button
-            type="button"
-            class="users-picker__icon-btn"
-            data-users-edit-btn
-            title="Editar selección"
-          >
-            <img src="${escapeHtml(options.editIcon || "/assets/icons/desarrollo40.gif")}" alt="Editar" />
-          </button>
+        <button
+          type="button"
+          class="users-picker__icon-btn"
+          data-users-edit-btn
+          title="Editar selección"
+        >
+          <img src="${escapeHtml(options.editIcon || "/assets/icons/edit80.gif")}" alt="Editar" />
+        </button>
 
-          <button
-            type="button"
-            class="users-picker__icon-btn"
-            data-users-exit-btn
-            title="Salir"
-          >
-            <img src="${escapeHtml(options.exitIcon || "/assets/icons/exit80.gif")}" alt="Salir" />
-          </button>
-        </div>
+        <button
+          type="button"
+          class="users-picker__icon-btn"
+          data-users-exit-btn
+          title="Salir"
+        >
+          <img src="${escapeHtml(options.exitIcon || "/assets/icons/exit80.gif")}" alt="Salir" />
+        </button>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
   function rerender() {
   const html = `
