@@ -62,7 +62,36 @@ async function fetchUsers() {
 
   return Array.isArray(data.users) ? data.users : [];
 }
+async function resolveUser(payload) {
+  const token = getAuthToken();
 
+  const response = await fetch(`${window.API_BASE_URL}/users/resolve`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(data.error || "No se pudo resolver el usuario");
+    error.payload = data;
+    throw error;
+  }
+
+  return data;
+}
+
+function normalizeEmailValue(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function normalizePhoneValue(value) {
+  return String(value || "").replace(/\D+/g, "");
+}
 function renderUsersPicker(containerId, options = {}) {
   const container = document.getElementById(containerId);
   if (!container) {
@@ -71,15 +100,25 @@ function renderUsersPicker(containerId, options = {}) {
   }
 
   const state = {
-    deckId: options.deckId || null,
-    allUsers: [],
-    filteredUsers: [],
-    selectedUser: options.selectedUser || null,
-    searchValue: "",
-    loaded: false,
-    loading: false,
-    error: "",
-  };
+  deckId: options.deckId || null,
+  allUsers: [],
+  filteredUsers: [],
+  selectedUser: options.selectedUser || null,
+  searchValue: "",
+  loaded: false,
+  loading: false,
+  error: "",
+
+  isCreatingUser: false,
+  createUserLoading: false,
+  createUserError: "",
+  createUserMessage: "",
+  conflictUsers: [],
+
+  newUserNickname: "",
+  newUserEmail: "",
+  newUserPhone: "",
+};
 
   async function ensureUsersLoaded() {
   if (state.loaded || state.loading) return;
@@ -146,12 +185,123 @@ function renderUsersPicker(containerId, options = {}) {
     container.innerHTML = "";
   }
 
-  function handleCreateUser() {
-    if (typeof options.onCreateUser === "function") {
-      options.onCreateUser();
-    }
+function handleCreateUser() {
+  state.isCreatingUser = true;
+  state.createUserError = "";
+  state.createUserMessage = "";
+  state.conflictUsers = [];
+  state.newUserNickname = state.searchValue || "";
+  state.newUserEmail = "";
+  state.newUserPhone = "";
+  rerender();
+}
+
+  function handleCancelCreateUser() {
+  state.isCreatingUser = false;
+  state.createUserLoading = false;
+  state.createUserError = "";
+  state.createUserMessage = "";
+  state.conflictUsers = [];
+  rerender();
+}
+
+async function handleSaveNewUser() {
+  const nickname = String(state.newUserNickname || "").trim();
+  const email = normalizeEmailValue(state.newUserEmail);
+  const phone = normalizePhoneValue(state.newUserPhone);
+
+  state.createUserError = "";
+  state.createUserMessage = "";
+  state.conflictUsers = [];
+
+  if (!nickname) {
+    state.createUserError = "El nickname es obligatorio.";
+    rerender();
+    return;
   }
 
+  if (!email && !phone) {
+    state.createUserError = "Ingresá email o teléfono.";
+    rerender();
+    return;
+  }
+
+  state.createUserLoading = true;
+  rerender();
+
+  try {
+    const data = await resolveUser({
+      nickname,
+      email: email || null,
+      phone: phone || null,
+    });
+
+    const resolvedUser = data.user || null;
+
+    if (!resolvedUser) {
+      throw new Error("El servidor no devolvió usuario.");
+    }
+
+    const alreadyExists = state.allUsers.some(
+      (user) => String(user.id) === String(resolvedUser.id)
+    );
+
+    if (!alreadyExists) {
+      state.allUsers.push(resolvedUser);
+    }
+
+    state.selectedUser = resolvedUser;
+    state.isCreatingUser = false;
+    state.createUserLoading = false;
+    state.createUserError = "";
+    state.createUserMessage = data.message || "";
+    state.conflictUsers = [];
+
+    rerender();
+
+    if (typeof options.onSelect === "function") {
+      options.onSelect(resolvedUser);
+    }
+  } catch (error) {
+    console.error(error);
+
+    state.createUserLoading = false;
+    state.createUserError = error.message || "Error creando usuario";
+    state.conflictUsers = Array.isArray(error.payload?.existingUsers)
+      ? error.payload.existingUsers
+      : [];
+
+    rerender();
+  }
+}
+
+function handleConflictSelect(userId) {
+  const selected =
+    state.conflictUsers.find((u) => String(u.id) === String(userId)) ||
+    state.allUsers.find((u) => String(u.id) === String(userId));
+
+  if (!selected) return;
+
+  const alreadyExists = state.allUsers.some(
+    (user) => String(user.id) === String(selected.id)
+  );
+
+  if (!alreadyExists) {
+    state.allUsers.push(selected);
+  }
+
+  state.selectedUser = selected;
+  state.isCreatingUser = false;
+  state.createUserError = "";
+  state.createUserMessage = "";
+  state.conflictUsers = [];
+
+  rerender();
+
+  if (typeof options.onSelect === "function") {
+    options.onSelect(selected);
+  }
+}
   async function handleSearchClick() {
     await ensureUsersLoaded();
     filterUsers(state.searchValue);
@@ -163,49 +313,172 @@ function renderUsersPicker(containerId, options = {}) {
   }
 
   function bindEvents() {
-    const input = container.querySelector("[data-users-search-input]");
-    const searchBtn = container.querySelector("[data-users-search-btn]");
-    const sealBtn = container.querySelector("[data-users-seal-btn]");
-    const exitBtn = container.querySelector("[data-users-exit-btn]");
-    const editBtn = container.querySelector("[data-users-edit-btn]");
-    const rowButtons = container.querySelectorAll("[data-users-row-id]");
+  const input = container.querySelector("[data-users-search-input]");
+  const searchBtn = container.querySelector("[data-users-search-btn]");
+  const sealBtn = container.querySelector("[data-users-seal-btn]");
+  const exitBtn = container.querySelector("[data-users-exit-btn]");
+  const editBtn = container.querySelector("[data-users-edit-btn]");
+  const rowButtons = container.querySelectorAll("[data-users-row-id]");
 
-    if (input) {
-      input.addEventListener("input", (event) => {
-        state.searchValue = event.target.value || "";
-      });
+  const createFields = container.querySelectorAll("[data-users-create-field]");
+  const saveNewBtn = container.querySelector("[data-users-save-new]");
+  const cancelNewBtn = container.querySelector("[data-users-cancel-new]");
+  const conflictButtons = container.querySelectorAll("[data-users-conflict-id]");
 
-      input.addEventListener("keydown", async (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          await handleSearchClick();
-        }
-      });
-    }
+  if (input) {
+    input.addEventListener("input", (event) => {
+      state.searchValue = event.target.value || "";
+    });
 
-    if (searchBtn) {
-      searchBtn.addEventListener("click", handleSearchClick);
-    }
-
-    if (sealBtn) {
-      sealBtn.addEventListener("click", handleCreateUser);
-    }
-
-    if (exitBtn) {
-      exitBtn.addEventListener("click", handleExit);
-    }
-
-    if (editBtn) {
-      editBtn.addEventListener("click", handleEditSelected);
-    }
-
-    rowButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        handleSelect(btn.getAttribute("data-users-row-id"));
-      });
+    input.addEventListener("keydown", async (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        await handleSearchClick();
+      }
     });
   }
 
+  if (searchBtn) {
+    searchBtn.addEventListener("click", handleSearchClick);
+  }
+
+  if (sealBtn) {
+    sealBtn.addEventListener("click", handleCreateUser);
+  }
+
+  if (exitBtn) {
+    exitBtn.addEventListener("click", handleExit);
+  }
+
+  if (editBtn) {
+    editBtn.addEventListener("click", handleEditSelected);
+  }
+
+  rowButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      handleSelect(btn.getAttribute("data-users-row-id"));
+    });
+  });
+
+  createFields.forEach((field) => {
+    field.addEventListener("input", (event) => {
+      const fieldName = event.target.getAttribute("data-users-create-field");
+      const value = event.target.value || "";
+
+      if (fieldName === "nickname") state.newUserNickname = value;
+      if (fieldName === "email") state.newUserEmail = value;
+      if (fieldName === "phone") state.newUserPhone = value;
+    });
+  });
+
+  if (saveNewBtn) {
+    saveNewBtn.addEventListener("click", handleSaveNewUser);
+  }
+
+  if (cancelNewBtn) {
+    cancelNewBtn.addEventListener("click", handleCancelCreateUser);
+  }
+
+  conflictButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      handleConflictSelect(btn.getAttribute("data-users-conflict-id"));
+    });
+  });
+}
+
+function renderCreateUserState() {
+  const conflictHtml = state.conflictUsers.length
+    ? `
+      <div class="users-picker__conflicts">
+        <div class="users-picker__conflicts-title">
+          Ya existe un usuario con ese email o teléfono. Elegilo para continuar:
+        </div>
+        <div class="users-picker__results">
+          ${state.conflictUsers.map((user) => `
+            <button
+              type="button"
+              class="users-picker__row"
+              data-users-conflict-id="${escapeHtml(user.id)}"
+            >
+              <img
+                class="users-picker__row-type-icon"
+                src="${escapeHtml(getUserTypeIcon(user))}"
+                alt="${escapeHtml(user.qCategory || user.user_type || "Usuario")}"
+              />
+              <img
+                class="users-picker__row-photo"
+                src="${escapeHtml(getUserPhoto(user))}"
+                alt="${escapeHtml(getUserDisplayName(user))}"
+              />
+              <span class="users-picker__row-name">${escapeHtml(getUserDisplayName(user))}</span>
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    `
+    : "";
+
+  return `
+    <div class="users-picker__top">
+      <img
+        class="users-picker__people-icon"
+        src="${escapeHtml(options.sealIcon || "/assets/icons/lacre120.gif")}"
+        alt="Nuevo usuario"
+      />
+
+      <div class="users-picker__create-wrap">
+        <input
+          class="users-picker__create-input"
+          type="text"
+          placeholder="Nickname"
+          value="${escapeHtml(state.newUserNickname)}"
+          data-users-create-field="nickname"
+        />
+
+        <input
+          class="users-picker__create-input"
+          type="email"
+          placeholder="Email"
+          value="${escapeHtml(state.newUserEmail)}"
+          data-users-create-field="email"
+        />
+
+        <input
+          class="users-picker__create-input"
+          type="text"
+          placeholder="Teléfono"
+          value="${escapeHtml(state.newUserPhone)}"
+          data-users-create-field="phone"
+        />
+
+        <div class="users-picker__create-actions">
+          <button
+            type="button"
+            class="users-picker__text-btn"
+            data-users-save-new
+            ${state.createUserLoading ? "disabled" : ""}
+          >
+            ${state.createUserLoading ? "Salvando..." : "Salvar"}
+          </button>
+
+          <button
+            type="button"
+            class="users-picker__text-btn"
+            data-users-cancel-new
+            ${state.createUserLoading ? "disabled" : ""}
+          >
+            Cancelar
+          </button>
+        </div>
+
+        ${state.createUserError ? `<div class="users-picker__error">${escapeHtml(state.createUserError)}</div>` : ""}
+        ${state.createUserMessage ? `<div class="users-picker__message">${escapeHtml(state.createUserMessage)}</div>` : ""}
+        ${conflictHtml}
+      </div>
+    </div>
+  `;
+}
+  
   function renderSearchState() {
   return `
     <div class="users-picker__top">
@@ -289,12 +562,14 @@ function renderUsersPicker(containerId, options = {}) {
 `).join("");
     }
 
-    return `
-      ${renderSearchState()}
-      <div class="users-picker__results">
-        ${resultsHtml}
-      </div>
-    `;
+   return `
+  ${state.isCreatingUser ? renderCreateUserState() : renderSearchState()}
+  ${state.isCreatingUser ? "" : `
+    <div class="users-picker__results">
+      ${resultsHtml}
+    </div>
+  `}
+`;
   }
 
   function renderSelectedState() {
