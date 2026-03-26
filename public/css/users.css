@@ -69,10 +69,10 @@
 /* ROW */
 .users-picker__row {
   display: grid;
-  grid-template-columns: 28px 1fr;
+  grid-template-columns: 28px 36px 1fr;
   align-items: center;
   gap: 8px;
-  min-height: 30px;
+  min-height: 42px;
   padding: 4px 6px;
   border: 1px dotted #bbb;
   background: #fff;
@@ -84,12 +84,24 @@
   background: #f8f1dd;
 }
 
-.users-picker__row-icon {
+/* ICONO DE TIPO */
+.users-picker__row-type-icon {
   width: 18px;
   height: 18px;
   object-fit: contain;
 }
 
+/* FOTO DEL USUARIO */
+.users-picker__row-photo {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  background: #fff;
+}
+
+/* NOMBRE */
 .users-picker__row-name {
   font-size: 15px;
   color: #111;
