@@ -19,8 +19,10 @@
 .users-picker__people-icon {
   width: 48px;
   height: 72px;
-  object-fit: contain;
-  flex: 0 0 auto;
+  object-fit: cover;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background: #fff;
 }
 
 /* SEARCH BAR */
