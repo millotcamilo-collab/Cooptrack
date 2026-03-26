@@ -41,10 +41,10 @@ function getUserDisplayName(user) {
   return user.nickname || user.full_name || user.name || `Usuario ${user.id}`;
 }
 
-async function fetchDeckUsers(deckId) {
+async function fetchUsers() {
   const token = getAuthToken();
 
-  const response = await fetch(`${window.API_BASE_URL}/decks/${deckId}/q-users`, {
+  const response = await fetch(`${window.API_BASE_URL}/users-picker`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -91,7 +91,7 @@ function renderUsersPicker(containerId, options = {}) {
     state.error = "";
 
     try {
-      state.allUsers = await fetchDeckUsers(state.deckId);
+      state.allUsers = await fetchUsers(state.deckId);
       state.filteredUsers = [];
       state.loaded = true;
     } catch (error) {
