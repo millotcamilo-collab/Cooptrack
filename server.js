@@ -92,6 +92,7 @@ async function insertValidatedPlay(client, {
   cardSuit,
   playStatus = 'ACTIVE',
   playText = '',
+  targetUserId = null   // 👈 NUEVO
 }) {
   const parsed = parseAndValidatePlayCode(playCode);
 
@@ -130,6 +131,7 @@ async function insertValidatedPlay(client, {
       deck_id,
       created_by_user_id,
       parent_play_id,
+      target_user_id,   -- 👈 NUEVO
       play_code,
       card_rank,
       card_suit,
@@ -718,6 +720,7 @@ app.post('/plays', requireAuth, async (req, res) => {
   const {
     deck_id,
     parent_play_id = null,
+     target_user_id = null,   // 👈 NUEVO
     play_code,
     card_rank,
     card_suit,
@@ -808,6 +811,7 @@ app.post('/plays', requireAuth, async (req, res) => {
       deckId: deck_id,
       createdByUserId: userId,
       parentPlayId: parent_play_id,
+       targetUserId: target_user_id,   // 👈 NUEVO
       playCode: play_code,
       cardRank: String(card_rank).toUpperCase(),
       cardSuit: String(card_suit).toUpperCase(),
