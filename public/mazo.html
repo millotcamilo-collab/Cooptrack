@@ -28,7 +28,7 @@
   <script src="/js/topbar.js"></script>
 
   <script>
-    const API_BASE_URL = "https://cooptrack-backend.onrender.com";
+    window.API_BASE_URL = window.API_BASE_URL || "https://cooptrack-backend.onrender.com";
 
     function getToken() {
       return localStorage.getItem("cooptrackToken");
