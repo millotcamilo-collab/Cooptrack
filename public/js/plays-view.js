@@ -43,15 +43,64 @@ function buildQSpadeBody(play) {
     `;
   }
 
+  if (!play.__selectedUser) {
+    return `
+      <div class="plays-view__qspade-expanded">
+        <div class="plays-view__qspade-body">
+          <div id="q-user-picker-${play.id}"></div>
+        </div>
+      </div>
+    `;
+  }
+
   return `
     <div class="plays-view__qspade-expanded">
       <div class="plays-view__qspade-body">
-        <div id="q-user-picker-${play.id}"></div>
+        <div class="plays-view__text">
+          Invitación para: <strong>${escapeHTML(play.__selectedUser.nickname || "Usuario")}</strong>
+        </div>
       </div>
     </div>
   `;
 }
+function currentUserHasClubAce() {
+  const cards = Array.isArray(lastState?.corporateCards) ? lastState.corporateCards : [];
 
+  return cards.some((card) => {
+    const rank = String(card.rank || card.card_rank || "").toUpperCase();
+    const suit = String(card.suit || card.card_suit || "").toUpperCase();
+    return rank === "A" && suit === "CLUB";
+  });
+}
+
+function buildQSpadeActions(play) {
+  const canFinish = !!play.__selectedUser;
+  const hasClubAce = currentUserHasClubAce();
+
+  return `
+    <div class="plays-view__actions">
+      ${
+        canFinish
+          ? buildIconButton({
+              src: hasClubAce ? window.ICONS.actions.send : window.ICONS.actions.save,
+              alt: hasClubAce ? "Enviar" : "Guardar",
+              title: hasClubAce ? "Enviar invitación" : "Guardar invitación",
+              action: hasClubAce ? "send-qspade" : "save-qspade",
+              playId: play.id
+            })
+          : ""
+      }
+
+      ${buildIconButton({
+        src: window.ICONS.actions.exit,
+        alt: "Salir",
+        title: "Cancelar Q♠",
+        action: "cancel-qspade",
+        playId: play.id
+      })}
+    </div>
+  `;
+}
 function buildPlayRow(play) {
   const suit = getPlaySuit(play);
   const childClass = isChildPlay(play) ? "plays-view__row--child" : "";
@@ -62,7 +111,7 @@ function buildPlayRow(play) {
 
   if (rank === "Q" && suit === "SPADE") {
     bodyHTML = buildQSpadeBody(play);
-    actionsHTML = "";
+    actionsHTML = buildQSpadeActions(play);
   } else if (suit === "HEART") {
     bodyHTML = buildHeartBody(play);
     actionsHTML = buildHeartActions(play);
@@ -522,6 +571,49 @@ containerSafeQueryAll('[data-action="set-appointment"]').forEach((button) => {
       renderPlaysView(lastDeck, lastPlays, lastState);
     });
   });
+  containerSafeQueryAll('[data-action="cancel-qspade"]').forEach((button) => {
+  button.addEventListener("click", () => {
+    const playId = button.dataset.playId;
+    removeLocalPlay(playId);
+    renderPlaysView(lastDeck, lastPlays, lastState);
+  });
+});
+
+containerSafeQueryAll('[data-action="save-qspade"]').forEach((button) => {
+  button.addEventListener("click", async () => {
+    const playId = button.dataset.playId;
+    const play = lastPlays.find((item) => String(item.id) === String(playId));
+    if (!play || !play.__selectedUser) return;
+
+    document.dispatchEvent(
+      new CustomEvent("plays:save-qspade-requested", {
+        detail: {
+          playId,
+          parentPlayId: play.parent_play_id,
+          targetUserId: play.__selectedUser.id
+        }
+      })
+    );
+  });
+});
+
+containerSafeQueryAll('[data-action="send-qspade"]').forEach((button) => {
+  button.addEventListener("click", async () => {
+    const playId = button.dataset.playId;
+    const play = lastPlays.find((item) => String(item.id) === String(playId));
+    if (!play || !play.__selectedUser) return;
+
+    document.dispatchEvent(
+      new CustomEvent("plays:send-qspade-requested", {
+        detail: {
+          playId,
+          parentPlayId: play.parent_play_id,
+          targetUserId: play.__selectedUser.id
+        }
+      })
+    );
+  });
+});
 }
 
 function containerSafeQueryAll(selector) {
