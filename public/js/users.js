@@ -528,7 +528,7 @@ function renderCreateUserState() {
           data-users-exit-btn
           title="Salir"
         >
-          <img src="${escapeHtml(options.exitIcon || "/assets/icons/desarrollo40.gif")}" alt="Salir" />
+          <img src="${escapeHtml(options.exitIcon || "/assets/icons/exit40.gif")}" alt="Salir" />
         </button>
       </div>
     </div>
@@ -609,7 +609,7 @@ function renderCreateUserState() {
           data-users-exit-btn
           title="Salir"
         >
-          <img src="${escapeHtml(options.exitIcon || "/assets/icons/desarrollo40.gif")}" alt="Salir" />
+          <img src="${escapeHtml(options.exitIcon || "/assets/icons/exit40.gif")}" alt="Salir" />
         </button>
       </div>
     </div>
