@@ -216,10 +216,10 @@ function renderUsersPicker(containerId, options = {}) {
     return `
       <div class="users-picker__top">
         <img
-          class="users-picker__people-icon"
-          src="${escapeHtml(options.peopleIcon || "/assets/icons/Gente120.gif")}"
-          alt="Usuarios"
-        />
+  class="users-picker__people-icon"
+  src="${escapeHtml(getUserPhoto(user))}"
+  alt="${escapeHtml(getUserDisplayName(user))}"
+/>
 
         <div class="users-picker__search-wrap">
           <input
