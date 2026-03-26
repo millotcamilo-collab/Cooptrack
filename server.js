@@ -974,6 +974,52 @@ app.get('/decks/:deckId/q-users', requireAuth, async (req, res) => {
     client.release();
   }
 });
+
+app.get('/users-picker', requireAuth, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const result = await client.query(`
+      SELECT
+        id,
+        nickname,
+        email,
+        phone,
+        profile_photo_url,
+        user_type
+      FROM users
+      ORDER BY
+        CASE
+          WHEN user_type = 'senior' THEN 1
+          WHEN user_type = 'active' THEN 2
+          ELSE 3
+        END,
+        LOWER(COALESCE(nickname, '')) ASC,
+        id ASC
+    `);
+
+    const users = result.rows.map((u) => ({
+      ...u,
+      qCategory:
+        String(u.user_type || '').toLowerCase() === 'senior' ? 'Senior'
+        : String(u.user_type || '').toLowerCase() === 'active' ? 'Active'
+        : 'Pop'
+    }));
+
+    res.json({
+      ok: true,
+      users
+    });
+  } catch (error) {
+    console.error('Error en GET /users-picker', error);
+    res.status(500).json({
+      ok: false,
+      error: 'Error cargando usuarios'
+    });
+  } finally {
+    client.release();
+  }
+});
 // ================= START =================
 
 console.log('PORT recibido:', PORT);
