@@ -44,7 +44,7 @@ function getUserDisplayName(user) {
 async function fetchDeckUsers(deckId) {
   const token = getAuthToken();
 
-  const response = await fetch(`${API_BASE_URL}/decks/${deckId}/q-users`, {
+  const response = await fetch(`${window.API_BASE_URL}/decks/${deckId}/q-users`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
