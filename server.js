@@ -50,7 +50,11 @@ function normalizeEmail(value) {
 function normalizePhone(value) {
   return String(value || "").replace(/\D+/g, "");
 }
-
+function generateActivationCode() {
+  const partA = Math.random().toString(36).slice(2, 6).toUpperCase();
+  const partB = Math.floor(1000 + Math.random() * 9000);
+  return `${partA}-${partB}`;
+}
 function mapUserCategory(user) {
   const normalizedType = String(user?.user_type || "").toLowerCase();
 
@@ -1082,7 +1086,11 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
            phone,
            profile_photo_url,
            birth_date,
-           user_type
+           user_type,
+           account_status,
+           activation_code,
+           activation_expires_at,
+           invited_by_user_id
          FROM users
          WHERE LOWER(email) = $1
          LIMIT 1`,
@@ -1100,7 +1108,11 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
            phone,
            profile_photo_url,
            birth_date,
-           user_type
+           user_type,
+           account_status,
+           activation_code,
+           activation_expires_at,
+           invited_by_user_id
          FROM users
          WHERE phone = $1
          LIMIT 1`,
@@ -1137,14 +1149,17 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
         ok: true,
         mode: 'existing',
         user: mapUserCategory(existingUser),
-        message: 'El contacto ya existe. Seleccionalo para continuar.',
+        accountStatus: existingUser.account_status || 'ACTIVE',
+        message:
+          (existingUser.account_status || 'ACTIVE') === 'PENDING'
+            ? 'El contacto ya existe como usuario pendiente.'
+            : 'El contacto ya existe. Seleccionalo para continuar.',
       });
     }
 
-    const placeholderPassword = await bcrypt.hash(
-      `cooptrack:${Date.now()}:${Math.random()}`,
-      SALT_ROUNDS
-    );
+    const activationCode = generateActivationCode();
+    const activationExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7); // 7 días
+    const invitedByUserId = req.auth?.userId || null;
 
     const insertUserResult = await client.query(
       `INSERT INTO users (
@@ -1152,9 +1167,13 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
          email,
          phone,
          password_hash,
-         user_type
+         user_type,
+         account_status,
+         activation_code,
+         activation_expires_at,
+         invited_by_user_id
        )
-       VALUES ($1, $2, $3, $4, $5)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING
          id,
          nickname,
@@ -1162,13 +1181,21 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
          phone,
          profile_photo_url,
          birth_date,
-         user_type`,
+         user_type,
+         account_status,
+         activation_code,
+         activation_expires_at,
+         invited_by_user_id`,
       [
         rawNickname,
         email || null,
         phone || null,
-        placeholderPassword,
+        null,            // todavía no tiene contraseña real
         'guest',
+        'PENDING',
+        activationCode,
+        activationExpiresAt,
+        invitedByUserId,
       ]
     );
 
@@ -1205,9 +1232,12 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
 
     return res.json({
       ok: true,
-      mode: 'created',
+      mode: 'created_pending',
       user: mapUserCategory(createdUser),
-      message: 'Usuario creado correctamente',
+      accountStatus: createdUser.account_status,
+      activationCode: createdUser.activation_code,
+      activationExpiresAt: createdUser.activation_expires_at,
+      message: 'Usuario pendiente creado correctamente',
     });
   } catch (error) {
     if (transactionStarted) {
