@@ -167,14 +167,19 @@ function renderUsersPicker(containerId, options = {}) {
     }
   }
 
-  function handleEditSelected() {
-    state.selectedUser = null;
-    rerender();
+function handleEditSelected() {
+  state.selectedUser = null;
+  state.isCreatingUser = false;
+  state.createUserLoading = false;
+  state.createUserError = "";
+  state.createUserMessage = "";
+  state.conflictUsers = [];
+  rerender();
 
-    if (typeof options.onEdit === "function") {
-      options.onEdit();
-    }
+  if (typeof options.onEdit === "function") {
+    options.onEdit();
   }
+}
 
   function handleExit() {
     if (typeof options.onExit === "function") {
