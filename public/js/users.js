@@ -94,7 +94,7 @@ function renderUsersPicker(containerId, options = {}) {
     state.error = "";
 
     try {
-      state.allUsers = await fetchUsers(state.deckId);
+      state.allUsers = await fetchUsers();
       state.filteredUsers = [];
       state.loaded = true;
     } catch (error) {
