@@ -328,7 +328,7 @@ function renderUsersPicker(containerId, options = {}) {
       <div class="users-picker__top">
         <img
           class="users-picker__people-icon"
-          src="${escapeHtml(options.peopleIcon || "/assets/icons/people80.gif")}"
+          src="${escapeHtml(options.peopleIcon || "/assets/icons/Gente120.gif")}"
           alt="Usuarios"
         />
 
@@ -346,7 +346,7 @@ function renderUsersPicker(containerId, options = {}) {
             data-users-search-btn
             title="Buscar"
           >
-            <img src="${escapeHtml(options.searchIcon || "/assets/icons/search80.gif")}" alt="Buscar" />
+            <img src="${escapeHtml(options.searchIcon || "/assets/icons/lupa60.gif")}" alt="Buscar" />
           </button>
 
           <button
