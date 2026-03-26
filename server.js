@@ -842,23 +842,34 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
          p.id,
          p.deck_id,
          p.parent_play_id,
+         p.created_by_user_id,
+         p.target_user_id,
          p.card_rank,
          p.card_suit,
          p.play_status,
+         p.play_text,
          p.created_at,
-         p.target_user_id,
-         p.created_by_user_id,
+         p.updated_at,
+
          parent.play_text AS parent_play_text,
          parent.start_date AS parent_start_date,
          parent.end_date AS parent_end_date,
-         parent.location AS parent_location
+         parent.location AS parent_location,
+         parent.spade_mode AS parent_spade_mode,
+
+         author.nickname AS author_nickname,
+         deck.name AS deck_name
        FROM plays p
        LEFT JOIN plays parent
          ON parent.id = p.parent_play_id
+       LEFT JOIN users author
+         ON author.id = p.created_by_user_id
+       LEFT JOIN decks deck
+         ON deck.id = p.deck_id
        WHERE p.target_user_id = $1
-         AND UPPER(COALESCE(p.card_rank, '')) = 'Q'
-         AND UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
-         AND UPPER(COALESCE(p.play_status, '')) IN ('SENT', 'PENDING')
+         AND p.card_rank = 'Q'
+         AND p.card_suit = 'SPADE'
+         AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
        ORDER BY p.created_at DESC`,
       [userId]
     );
