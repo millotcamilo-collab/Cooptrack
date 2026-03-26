@@ -357,3 +357,4 @@ function renderUsersPicker(containerId, options = {}) {
     },
   };
 }
+window.renderUsersPicker = renderUsersPicker;
