@@ -32,8 +32,8 @@ function startsWithSearch(fullText, searchText) {
 function getUserTypeIcon(user) {
   const category = String(user.qCategory || user.user_type || "").toLowerCase();
 
-  if (category === "senior") return "/assets/icons/senior80.gif";
-  if (category === "active") return "/assets/icons/active80.gif";
+  if (category === "senior") return "/assets/icons/senior120.gif";
+  if (category === "active") return "/assets/icons/activo120.gif";
   return "/assets/icons/guest80.gif";
 }
 
@@ -300,7 +300,7 @@ function renderUsersPicker(containerId, options = {}) {
       <div class="users-picker__top">
         <img
           class="users-picker__people-icon"
-          src="${escapeHtml(options.peopleIcon || "/assets/icons/people80.gif")}"
+         src="${escapeHtml(options.peopleIcon || "/assets/icons/Gente120.gif")}"
           alt="Usuarios"
         />
 
