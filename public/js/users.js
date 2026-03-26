@@ -202,6 +202,9 @@ function handleCreateUser() {
   state.createUserError = "";
   state.createUserMessage = "";
   state.conflictUsers = [];
+  state.newUserNickname = "";
+  state.newUserEmail = "";
+  state.newUserPhone = "";
   rerender();
 }
 
