@@ -729,6 +729,9 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
 // ================= PLAYS =================
 
 app.post('/plays', requireAuth, async (req, res) => {
+  console.log("BODY /plays:", req.body);
+  console.log("BODY /plays:", req.auth);
+  
   const userId = req.auth.userId;
   const {
     deck_id,
