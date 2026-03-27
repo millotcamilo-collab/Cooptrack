@@ -338,24 +338,13 @@ function getLoggedUserId() {
   }
 }
 
-async function persistQSpade(playId) {
+async function persistQSpade(playId, mode = "save") {
   const draft = lastPlays.find((play) => String(play.id) === String(playId));
 
-  if (!draft) {
-    throw new Error("No se encontró la Q♠ temporal");
-  }
-
-  if (!lastDeck?.id) {
-    throw new Error("No hay deck cargado");
-  }
-
-  if (!draft.parent_play_id) {
-    throw new Error("La Q♠ necesita parent_play_id");
-  }
-
-  if (!draft.__selectedUser?.id) {
-    throw new Error("Primero elegí un destinatario");
-  }
+  if (!draft) throw new Error("No se encontró la Q♠ temporal");
+  if (!lastDeck?.id) throw new Error("No hay deck cargado");
+  if (!draft.parent_play_id) throw new Error("La Q♠ necesita parent_play_id");
+  if (!draft.__selectedUser?.id) throw new Error("Primero elegí un destinatario");
 
   const userId = getLoggedUserId();
   const payload = {
@@ -364,7 +353,7 @@ async function persistQSpade(playId) {
     target_user_id: Number(draft.__selectedUser.id),
     card_rank: "Q",
     card_suit: "SPADE",
-    play_status: "DRAFT",
+    play_status: mode === "send" ? "PENDING" : "DRAFT",
     play_code: buildQSpadePlayCode({
       deckId: lastDeck.id,
       userId,
@@ -372,8 +361,6 @@ async function persistQSpade(playId) {
     }),
     text: `Invitación para ${draft.__selectedUser.nickname || `usuario #${draft.__selectedUser.id}`}`
   };
-
-  console.log("SALVANDO Q♠", payload);
 
   const response = await fetch(`${API_BASE_URL}/plays`, {
     method: "POST",
@@ -401,7 +388,6 @@ async function persistQSpade(playId) {
 
   replaceLocalPlay(playId, persistedPlay);
   renderPlaysView(lastDeck, lastPlays, lastState);
-
   document.dispatchEvent(new CustomEvent("plays:changed"));
 }
 
