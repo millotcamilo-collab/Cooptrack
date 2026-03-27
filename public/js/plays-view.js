@@ -5,6 +5,7 @@ let lastState = null;
 
 const {
   escapeHTML,
+  formatDate,
   getPlaySuit,
   getPlayText,
   getPlayAmount,
@@ -33,37 +34,51 @@ const {
   buildSpadeActions
 } = window.JRenderer;
 
-/* =========================================================
-   EVENTOS CUSTOM
-========================================================= */
+function getAuthToken() {
+  return localStorage.getItem("cooptrackToken") || "";
+}
 
-function emitPlayEvent(eventName, detail = {}) {
-  document.dispatchEvent(
-    new CustomEvent(eventName, {
-      detail
-    })
+function normalizeNickname(play) {
+  return (
+    play?.target_user_nickname ||
+    play?.target_nickname ||
+    play?.recipient_nickname ||
+    play?.nickname ||
+    play?.__selectedUser?.nickname ||
+    (play?.target_user_id ? `Usuario #${play.target_user_id}` : "Sin destinatario")
   );
 }
 
-/* =========================================================
-   Q SPADE
-========================================================= */
+function updateLocalPlay(playId, patch = {}) {
+  lastPlays = lastPlays.map((play) => {
+    if (String(play.id) !== String(playId)) return play;
+    return { ...play, ...patch };
+  });
+}
+
+function removeLocalPlay(playId) {
+  lastPlays = lastPlays.filter((play) => String(play.id) !== String(playId));
+}
+
+function replaceLocalPlay(playId, nextPlay) {
+  lastPlays = lastPlays.map((play) => {
+    if (String(play.id) !== String(playId)) return play;
+    return nextPlay;
+  });
+}
+
+function getFieldValue(playId, fieldName) {
+  const field = document.querySelector(
+    `[data-field="${fieldName}"][data-play-id="${playId}"]`
+  );
+  return field ? field.value : "";
+}
 
 function buildQSpadeBody(play) {
   if (!play.__isExpanded) {
     return `
       <div class="plays-view__text">
-        Q♠ — ${play.__selectedUser ? escapeHTML(play.__selectedUser.nickname) : "Sin destinatario"}
-      </div>
-    `;
-  }
-
-  if (!play.__selectedUser) {
-    return `
-      <div class="plays-view__qspade-expanded">
-        <div class="plays-view__qspade-body">
-          <div id="q-user-picker-${play.id}"></div>
-        </div>
+        Q♠ — Invitación para: <strong>${escapeHTML(normalizeNickname(play))}</strong>
       </div>
     `;
   }
@@ -72,61 +87,46 @@ function buildQSpadeBody(play) {
     <div class="plays-view__qspade-expanded">
       <div class="plays-view__qspade-body">
         <div class="plays-view__text">
-          Invitación para: <strong>${escapeHTML(play.__selectedUser.nickname || "Usuario")}</strong>
+          Q♠ — Elegí destinatario
         </div>
+        <div id="q-user-picker-${play.id}"></div>
       </div>
     </div>
   `;
 }
 
-function currentUserHasClubAce() {
-  console.log("corporateCards:", lastState?.corporateCards);
-
-  if (!lastState) return false;
-
-  const cards = Array.isArray(lastState.corporateCards)
-    ? lastState.corporateCards
-    : [];
-
-  return cards.some((card) => {
-    const rank = String(card.rank || card.card_rank || "").toUpperCase();
-    const suit = String(card.suit || card.card_suit || "").toUpperCase();
-    return rank === "A" && suit === "CLUB";
-  });
-}
-
 function buildQSpadeActions(play) {
-  const canFinish = !!play.__selectedUser;
-  const hasClubAce = currentUserHasClubAce();
+  const playId = escapeHTML(String(play.id));
+
+  if (!play.__isDraft) {
+    return `
+      <div class="plays-view__meta">
+        ${isApproved(play) ? buildApprovedMeta(play) : ""}
+      </div>
+    `;
+  }
+
+  if (!play.__selectedUser) {
+    return `
+      <div class="plays-view__actions">
+        <button type="button" data-action="cancel-qspade" data-play-id="${playId}">
+          Salir
+        </button>
+      </div>
+    `;
+  }
 
   return `
     <div class="plays-view__actions">
-      ${
-        canFinish
-          ? buildIconButton({
-              src: hasClubAce ? window.ICONS.actions.send : window.ICONS.actions.save,
-              alt: hasClubAce ? "Enviar" : "Guardar",
-              title: hasClubAce ? "Enviar invitación" : "Guardar invitación",
-              action: hasClubAce ? "send-qspade" : "save-qspade",
-              playId: play.id
-            })
-          : ""
-      }
-
-      ${buildIconButton({
-        src: window.ICONS.actions.exit,
-        alt: "Salir",
-        title: "Cancelar Q♠",
-        action: "cancel-qspade",
-        playId: play.id
-      })}
+      <button type="button" data-action="save-qspade" data-play-id="${playId}">
+        Guardar
+      </button>
+      <button type="button" data-action="cancel-qspade" data-play-id="${playId}">
+        Salir
+      </button>
     </div>
   `;
 }
-
-/* =========================================================
-   RENDER FILA
-========================================================= */
 
 function buildPlayRow(play) {
   const suit = getPlaySuit(play);
@@ -154,7 +154,7 @@ function buildPlayRow(play) {
   }
 
   return `
-    <article class="plays-view__row ${isApproved(play) ? "plays-view__row--approved" : ""} ${childClass}" data-play-id="${escapeHTML(play.id)}">
+    <article class="plays-view__row ${isApproved(play) ? "plays-view__row--approved" : ""} ${childClass}" data-play-id="${escapeHTML(String(play.id))}">
       <div class="plays-view__left">
         ${buildSuitBadge(play)}
       </div>
@@ -169,10 +169,6 @@ function buildPlayRow(play) {
     </article>
   `;
 }
-
-/* =========================================================
-   RENDER GENERAL
-========================================================= */
 
 function renderPlaysView(deck, plays = [], state = null) {
   const container = document.getElementById("plays-view-container");
@@ -217,16 +213,15 @@ function renderPlaysView(deck, plays = [], state = null) {
   });
 }
 
-/* =========================================================
-   USERS PICKER PARA Q♠
-========================================================= */
-
 function mountQUserPickers() {
   lastPlays.forEach((play) => {
-    if (play.card_rank === "Q" && play.card_suit === "SPADE" && play.__isDraft) {
+    if (
+      String(play.card_rank || "").toUpperCase() === "Q" &&
+      String(play.card_suit || "").toUpperCase() === "SPADE" &&
+      play.__isDraft
+    ) {
       const containerId = `q-user-picker-${play.id}`;
       const container = document.getElementById(containerId);
-
       if (!container) return;
 
       renderUsersPicker(containerId, {
@@ -235,7 +230,10 @@ function mountQUserPickers() {
 
         onSelect: (user) => {
           play.__selectedUser = user;
+          play.target_user_id = user?.id || null;
           play.__qStep = "selected";
+          play.__isExpanded = false;
+
           renderPlaysView(lastDeck, lastPlays, lastState);
         },
 
@@ -248,33 +246,15 @@ function mountQUserPickers() {
   });
 }
 
-/* =========================================================
-   ESTADO LOCAL
-========================================================= */
-
-function updateLocalPlay(playId, patch = {}) {
-  lastPlays = lastPlays.map((play) => {
-    if (String(play.id) !== String(playId)) return play;
-    return { ...play, ...patch };
-  });
-}
-
-function removeLocalPlay(playId) {
-  lastPlays = lastPlays.filter((play) => String(play.id) !== String(playId));
-}
-
-function getFieldValue(playId, fieldName) {
-  const field = document.querySelector(`[data-field="${fieldName}"][data-play-id="${playId}"]`);
-  return field ? field.value : "";
-}
-
 function createQSpadeDraft(parentPlayId) {
   const newPlay = {
     id: `temp-q-${Date.now()}`,
+    deck_id: lastDeck?.id || null,
     parent_play_id: parentPlayId,
     card_rank: "Q",
     card_suit: "SPADE",
     play_status: "DRAFT",
+
     __isDraft: true,
     __isExpanded: true,
     __qStep: "select-user",
@@ -292,29 +272,133 @@ function createQSpadeDraft(parentPlayId) {
   renderPlaysView(lastDeck, lastPlays, lastState);
 }
 
-/* =========================================================
-   WRAPPERS DE EVENTOS
-========================================================= */
+function buildQSpadePlayCode({ deckId, userId, targetUserId }) {
+  const separator = "§";
+  const now = new Date().toISOString();
+
+  return [
+    deckId || "",
+    userId || "",
+    now,
+    "Q",
+    "SPADE",
+    "invite_activity",
+    `U:${userId || ""}`,
+    "direct",
+    `U:${targetUserId || ""}`
+  ].join(separator);
+}
+
+function getLoggedUserId() {
+  try {
+    const raw = localStorage.getItem("cooptrackUser");
+    if (!raw) return null;
+    const user = JSON.parse(raw);
+    return user?.id || null;
+  } catch (error) {
+    console.error("Error leyendo cooptrackUser:", error);
+    return null;
+  }
+}
+
+async function persistQSpade(playId) {
+  const draft = lastPlays.find((play) => String(play.id) === String(playId));
+
+  if (!draft) {
+    throw new Error("No se encontró la Q♠ temporal");
+  }
+
+  if (!lastDeck?.id) {
+    throw new Error("No hay deck cargado");
+  }
+
+  if (!draft.parent_play_id) {
+    throw new Error("La Q♠ necesita parent_play_id");
+  }
+
+  if (!draft.__selectedUser?.id) {
+    throw new Error("Primero elegí un destinatario");
+  }
+
+  const userId = getLoggedUserId();
+  const payload = {
+    deck_id: Number(lastDeck.id),
+    parent_play_id: Number(draft.parent_play_id),
+    target_user_id: Number(draft.__selectedUser.id),
+    card_rank: "Q",
+    card_suit: "SPADE",
+    play_status: "DRAFT",
+    play_code: buildQSpadePlayCode({
+      deckId: lastDeck.id,
+      userId,
+      targetUserId: draft.__selectedUser.id
+    }),
+    text: `Invitación para ${draft.__selectedUser.nickname || `usuario #${draft.__selectedUser.id}`}`
+  };
+
+  console.log("SALVANDO Q♠", payload);
+
+  const response = await fetch(`${API_BASE_URL}/plays`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getAuthToken()}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || !data?.ok || !data?.play) {
+    throw new Error(data?.error || "No se pudo guardar la Q♠");
+  }
+
+  const persistedPlay = {
+    ...data.play,
+    __selectedUser: draft.__selectedUser,
+    target_user_id: draft.__selectedUser.id,
+    target_user_nickname: draft.__selectedUser.nickname,
+    __isDraft: false,
+    __isExpanded: false
+  };
+
+  replaceLocalPlay(playId, persistedPlay);
+  renderPlaysView(lastDeck, lastPlays, lastState);
+
+  document.dispatchEvent(new CustomEvent("plays:changed"));
+}
 
 async function savePlayPatch(playId, patch) {
-  emitPlayEvent("plays:patch-requested", { playId, patch });
+  document.dispatchEvent(
+    new CustomEvent("plays:patch-requested", {
+      detail: { playId, patch }
+    })
+  );
 }
 
 async function deletePlay(playId) {
-  emitPlayEvent("plays:delete-requested", { playId });
+  document.dispatchEvent(
+    new CustomEvent("plays:delete-requested", {
+      detail: { playId }
+    })
+  );
 }
 
 async function approvePlay(playId) {
-  emitPlayEvent("plays:approve-requested", { playId });
+  document.dispatchEvent(
+    new CustomEvent("plays:approve-requested", {
+      detail: { playId }
+    })
+  );
 }
 
 async function transformSuit(playId, suit) {
-  emitPlayEvent("plays:transform-suit-requested", { playId, suit });
+  document.dispatchEvent(
+    new CustomEvent("plays:transform-suit-requested", {
+      detail: { playId, suit }
+    })
+  );
 }
-
-/* =========================================================
-   BIND DE EVENTOS UI
-========================================================= */
 
 function bindPlaysViewEvents() {
   containerSafeQueryAll('[data-action="edit-heart"]').forEach((button) => {
@@ -466,7 +550,9 @@ function bindPlaysViewEvents() {
 
       renderPlaysView(lastDeck, lastPlays, lastState);
 
-      await savePlayPatch(playId, { amount });
+      await savePlayPatch(playId, {
+        amount
+      });
     });
   });
 
@@ -512,14 +598,22 @@ function bindPlaysViewEvents() {
   containerSafeQueryAll('[data-action="deadline"]').forEach((button) => {
     button.addEventListener("click", () => {
       const playId = button.dataset.playId;
-      emitPlayEvent("plays:deadline-requested", { playId });
+      document.dispatchEvent(
+        new CustomEvent("plays:deadline-requested", {
+          detail: { playId }
+        })
+      );
     });
   });
 
   containerSafeQueryAll('[data-action="add-child-diamond"]').forEach((button) => {
     button.addEventListener("click", () => {
       const playId = button.dataset.playId;
-      emitPlayEvent("plays:add-child-diamond-requested", { parentPlayId: playId });
+      document.dispatchEvent(
+        new CustomEvent("plays:add-child-diamond-requested", {
+          detail: { parentPlayId: playId }
+        })
+      );
     });
   });
 
@@ -527,6 +621,29 @@ function bindPlaysViewEvents() {
     button.addEventListener("click", () => {
       const parentPlayId = button.dataset.playId;
       createQSpadeDraft(parentPlayId);
+    });
+  });
+
+  containerSafeQueryAll('[data-action="save-qspade"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
+
+      try {
+        button.disabled = true;
+        await persistQSpade(playId);
+      } catch (error) {
+        console.error("Error guardando Q♠:", error);
+        window.alert(error.message || "No se pudo guardar la Q♠");
+        button.disabled = false;
+      }
+    });
+  });
+
+  containerSafeQueryAll('[data-action="cancel-qspade"]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const playId = button.dataset.playId;
+      removeLocalPlay(playId);
+      renderPlaysView(lastDeck, lastPlays, lastState);
     });
   });
 
@@ -547,9 +664,15 @@ function bindPlaysViewEvents() {
       const playId = button.dataset.playId;
 
       const row = document.querySelector(`.plays-view__row[data-play-id="${playId}"]`);
-      const typeField = row?.querySelector(`[data-field="recurrence_type"][data-play-id="${playId}"]`);
-      const dayField = row?.querySelector(`[data-field="day_of_month"][data-play-id="${playId}"]`);
-      const checkboxes = row ? row.querySelectorAll(".plays-view__recurrence-weekly input") : [];
+      const typeField = row?.querySelector(
+        `[data-field="recurrence_type"][data-play-id="${playId}"]`
+      );
+      const dayField = row?.querySelector(
+        `[data-field="day_of_month"][data-play-id="${playId}"]`
+      );
+      const checkboxes = row
+        ? row.querySelectorAll(".plays-view__recurrence-weekly input")
+        : [];
 
       const weekdays = Array.from(checkboxes)
         .filter((cb) => cb.checked)
@@ -566,7 +689,7 @@ function bindPlaysViewEvents() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("cooptrackToken")}`
+          Authorization: `Bearer ${getAuthToken()}`
         },
         body: JSON.stringify(payload)
       });
@@ -591,63 +714,11 @@ function bindPlaysViewEvents() {
       renderPlaysView(lastDeck, lastPlays, lastState);
     });
   });
-
-  containerSafeQueryAll('[data-action="cancel-qspade"]').forEach((button) => {
-    button.addEventListener("click", () => {
-      const playId = button.dataset.playId;
-      removeLocalPlay(playId);
-      renderPlaysView(lastDeck, lastPlays, lastState);
-    });
-  });
-
-  containerSafeQueryAll('[data-action="save-qspade"]').forEach((button) => {
-    button.addEventListener("click", async () => {
-      const playId = button.dataset.playId;
-      const play = lastPlays.find((item) => String(item.id) === String(playId));
-
-      if (!play || !play.__selectedUser) return;
-
-      emitPlayEvent("plays:save-qspade-requested", {
-        playId,
-        parentPlayId: play.parent_play_id,
-        targetUserId: play.__selectedUser.id
-      });
-
-      removeLocalPlay(playId);
-      renderPlaysView(lastDeck, lastPlays, lastState);
-    });
-  });
-
-  containerSafeQueryAll('[data-action="send-qspade"]').forEach((button) => {
-    button.addEventListener("click", async () => {
-      const playId = button.dataset.playId;
-      const play = lastPlays.find((item) => String(item.id) === String(playId));
-
-      if (!play || !play.__selectedUser) return;
-
-      emitPlayEvent("plays:send-qspade-requested", {
-        playId,
-        parentPlayId: play.parent_play_id,
-        targetUserId: play.__selectedUser.id
-      });
-
-      removeLocalPlay(playId);
-      renderPlaysView(lastDeck, lastPlays, lastState);
-    });
-  });
 }
-
-/* =========================================================
-   UTILS
-========================================================= */
 
 function containerSafeQueryAll(selector) {
   return Array.from(document.querySelectorAll(selector));
 }
-
-/* =========================================================
-   FILTRO DESDE MAZOBAR
-========================================================= */
 
 document.addEventListener("mazobar:filter", (event) => {
   const incomingFilter = event.detail?.filter || null;
