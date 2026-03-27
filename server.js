@@ -718,24 +718,14 @@ async function getMazoHandler(req, res) {
   }
 }
 
-// Alias compatibles
-app.post('/mazos', requireAuth, createMazoHandler);
-app.post('/decks', requireAuth, createMazoHandler);
-
-app.get('/mazos', requireAuth, listMazosHandler);
-app.get('/decks', requireAuth, listMazosHandler);
-
-app.get('/mazos/:mazoId', requireAuth, getMazoHandler);
-app.get('/decks/:deckId', requireAuth, getMazoHandler);
-
 // =====================================================
 // ESTADO DEL MAZO
 // =====================================================
 
-app.get('/mazos/:mazoId/state', requireAuth, async (req, res) => {
+async function getMazoStateHandler(req, res) {
   try {
     const userId = req.auth.userId;
-    const mazoId = Number(req.params.mazoId);
+    const mazoId = Number(req.params.mazoId || req.params.deckId);
 
     if (!Number.isInteger(mazoId) || mazoId <= 0) {
       return res.status(400).json({
@@ -770,22 +760,20 @@ app.get('/mazos/:mazoId/state', requireAuth, async (req, res) => {
     return res.json({
       ok: true,
       mazoId,
+      userId,
       plays: result.rows,
     });
   } catch (error) {
-    console.error('Error en GET /mazos/:mazoId/state', error);
+    console.error('Error en GET state del mazo', error);
     return res.status(500).json({
       ok: false,
       error: 'Error obteniendo estado del mazo',
     });
   }
-});
+}
 
-// Alias viejo
-app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
-  req.params.mazoId = req.params.deckId;
-  return app._router.handle(req, res, () => {});
-});
+app.get('/mazos/:mazoId/state', requireAuth, getMazoStateHandler);
+app.get('/mazo/:deckId/state', requireAuth, getMazoStateHandler);
 
 // =====================================================
 // JUGADAS
