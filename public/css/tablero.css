@@ -13,3 +13,22 @@
   border-radius: 8px;
   box-sizing: border-box;
 }
+.tablero-row__amount-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tablero-row__amount-card {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.tablero-row__amount-input {
+  height: 30px;
+  max-width: 180px;
+  padding: 0 8px;
+  border: 1px solid #999;
+  background: #fff;
+  box-sizing: border-box;
+}
