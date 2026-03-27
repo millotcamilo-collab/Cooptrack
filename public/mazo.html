@@ -87,18 +87,19 @@
     const response = await fetch(`${API_BASE_URL}/mazo/${deckId}/state`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`
       }
     });
 
     const rawText = await response.text();
     console.log("STATE RAW RESPONSE:", rawText);
 
-    let data = null;
+    let data;
     try {
       data = JSON.parse(rawText);
-    } catch (parseError) {
-      throw new Error(`La ruta /mazo/${deckId}/state no devolvió JSON`);
+    } catch (error) {
+      console.error("No es JSON válido:", rawText);
+      throw new Error("El backend devolvió HTML o error");
     }
 
     if (!response.ok || !data.ok) {
@@ -108,29 +109,14 @@
     return data;
   } catch (error) {
     console.error("Error trayendo estado del mazo:", error);
-    return null;
+
+    // 👇 clave: devolvemos estructura mínima para que el tablero no muera
+    return {
+      plays: [],
+      userId: null
+    };
   }
 }
-    async function patchPlay(playId, patch) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-          method: "PATCH",
-          headers: getAuthHeaders(true),
-          body: JSON.stringify(patch)
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || "Error actualizando play");
-        }
-
-        return data.play;
-      } catch (error) {
-        console.error("Error en patchPlay:", error);
-        throw error;
-      }
-    }
 
     async function deletePlayRequest(playId) {
       try {
