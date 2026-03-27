@@ -1086,12 +1086,12 @@ app.delete('/plays/:playId', requireAuth, async (req, res) => {
 // Listado general de plays
 app.get('/plays', requireAuth, async (req, res) => {
   try {
-    const deckId = req.query.deckId;
+    const deckId = Number(req.query.deckId);
 
-    if (!deckId) {
+    if (!Number.isInteger(deckId) || deckId <= 0) {
       return res.status(400).json({
         ok: false,
-        error: 'Falta deckId',
+        error: 'Falta deckId válido',
       });
     }
 
@@ -1099,14 +1099,20 @@ app.get('/plays', requireAuth, async (req, res) => {
       `
       SELECT 
         p.*,
+        creator.nickname AS created_by_nickname,
+        target.nickname AS target_user_nickname,
         EXISTS (
           SELECT 1
           FROM play_recurrences pr
           WHERE pr.play_id = p.id
         ) AS has_recurrence
       FROM plays p
+      LEFT JOIN users creator
+        ON creator.id = p.created_by_user_id
+      LEFT JOIN users target
+        ON target.id = p.target_user_id
       WHERE p.deck_id = $1
-      ORDER BY p.created_at DESC
+      ORDER BY p.created_at DESC, p.id DESC
       `,
       [deckId]
     );
@@ -1123,7 +1129,6 @@ app.get('/plays', requireAuth, async (req, res) => {
     });
   }
 });
-
 // Plays de un deck
 app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
   try {
@@ -1138,19 +1143,27 @@ app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
     }
 
     const result = await pool.query(
-      `SELECT
-         p.*,
-         EXISTS (
-           SELECT 1
-           FROM play_recurrences pr
-           WHERE pr.play_id = p.id
-         ) AS has_recurrence
-       FROM plays p
-       INNER JOIN deck_members dm
-         ON dm.deck_id = p.deck_id
-       WHERE p.deck_id = $1
-         AND dm.user_id = $2
-       ORDER BY p.id ASC`,
+      `
+      SELECT
+        p.*,
+        creator.nickname AS created_by_nickname,
+        target.nickname AS target_user_nickname,
+        EXISTS (
+          SELECT 1
+          FROM play_recurrences pr
+          WHERE pr.play_id = p.id
+        ) AS has_recurrence
+      FROM plays p
+      INNER JOIN deck_members dm
+        ON dm.deck_id = p.deck_id
+      LEFT JOIN users creator
+        ON creator.id = p.created_by_user_id
+      LEFT JOIN users target
+        ON target.id = p.target_user_id
+      WHERE p.deck_id = $1
+        AND dm.user_id = $2
+      ORDER BY p.id ASC
+      `,
       [deckId, userId]
     );
 
@@ -1166,6 +1179,7 @@ app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
     });
   }
 });
+
 // Recurrencias
 app.post("/plays/:id/recurrence", requireAuth, async (req, res) => {
   const playId = parseInt(req.params.id, 10);
