@@ -1,0 +1,15 @@
+.tablero {
+  width: 100%;
+}
+
+.tablero-row {
+  display: grid;
+  grid-template-columns: 64px 1fr 140px;
+  gap: 12px;
+  align-items: start;
+  border: 1px dotted #777;
+  padding: 10px 12px;
+  background: #fffdf8;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
