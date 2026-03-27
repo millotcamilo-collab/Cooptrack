@@ -69,7 +69,7 @@
           throw new Error(data.message || "Error cargando mazo");
         }
 
-        return data.deck;
+         return data.mazo || data.deck;
       } catch (error) {
         console.error("Error trayendo deck:", error);
         return null;
@@ -77,33 +77,40 @@
     }
 
     async function fetchDeckState(deckId) {
-      try {
-        const token = getToken();
+  try {
+    const token = getToken();
 
-        if (!token) {
-          throw new Error("Token no encontrado");
-        }
-
-        const response = await fetch(`${API_BASE_URL}/mazo/${deckId}/state`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || "Error cargando estado del mazo");
-        }
-
-        return data;
-      } catch (error) {
-        console.error("Error trayendo estado del mazo:", error);
-        return null;
-      }
+    if (!token) {
+      throw new Error("Token no encontrado");
     }
 
+    const response = await fetch(`${API_BASE_URL}/mazo/${deckId}/state`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    const rawText = await response.text();
+    console.log("STATE RAW RESPONSE:", rawText);
+
+    let data = null;
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseError) {
+      throw new Error(`La ruta /mazo/${deckId}/state no devolvió JSON`);
+    }
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Error cargando estado del mazo");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error trayendo estado del mazo:", error);
+    return null;
+  }
+}
     async function patchPlay(playId, patch) {
       try {
         const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
