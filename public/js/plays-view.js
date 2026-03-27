@@ -606,14 +606,58 @@ function bindPlaysViewEvents() {
     });
   });
 
-  containerSafeQueryAll('[data-action="approve"]').forEach((button) => {
-    button.addEventListener("click", async () => {
-      const playId = button.dataset.playId;
+containerSafeQueryAll('[data-action="approve"]').forEach((button) => {
+  button.addEventListener("click", async () => {
+    const playId = button.dataset.playId;
+    const play = lastPlays.find((item) => String(item.id) === String(playId)) || {};
+    const spadeMode = getSpadeMode(play);
+
+    try {
+      if (String(play.card_suit || "").toUpperCase() === "SPADE") {
+        const startDate = getFieldValue(playId, "start_date");
+        const endDate = getFieldValue(playId, "end_date");
+        const location = getFieldValue(playId, "location");
+
+        if (spadeMode === "DEADLINE" && endDate) {
+          updateLocalPlay(playId, {
+            end_date: endDate,
+            __editingSchedule: false
+          });
+
+          await savePlayPatch(playId, {
+            spade_mode: "DEADLINE",
+            end_date: endDate
+          });
+        } else if (
+          (spadeMode === "APPOINTMENT" || spadeMode === "CITA") &&
+          startDate
+        ) {
+          updateLocalPlay(playId, {
+            spade_mode: "APPOINTMENT",
+            start_date: startDate,
+            end_date: endDate,
+            location,
+            __editingSchedule: false
+          });
+
+          await savePlayPatch(playId, {
+            spade_mode: "APPOINTMENT",
+            start_date: startDate,
+            end_date: endDate,
+            location
+          });
+        }
+      }
+
       updateLocalPlay(playId, { play_status: "APPROVED", status: "APPROVED" });
       renderPlaysView(lastDeck, lastPlays, lastState);
       await approvePlay(playId);
-    });
+    } catch (error) {
+      console.error("Error aprobando jugada:", error);
+      window.alert("No se pudo aprobar la jugada");
+    }
   });
+});
 
   containerSafeQueryAll('[data-action="deadline"]').forEach((button) => {
     button.addEventListener("click", () => {
