@@ -10,7 +10,11 @@ http://localhost:3000/health
 Archivo compilado: 
 
 Get-ChildItem -Recurse -File |
-Where-Object { $_.FullName -notmatch "node_modules" -and $_.FullName -notmatch "\\icons\\" } |
+Where-Object {
+    $_.FullName -notmatch "node_modules" -and
+    $_.FullName -notmatch "\\icons\\" -and
+    $_.FullName -notmatch "\\.env$"
+} |
 ForEach-Object {
     Add-Content -Path cooptrack_snapshot.txt -Value "===============================" -Encoding utf8
     Add-Content -Path cooptrack_snapshot.txt -Value "FILE: $($_.FullName)" -Encoding utf8
