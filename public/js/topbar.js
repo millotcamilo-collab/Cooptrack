@@ -43,30 +43,36 @@
   }
 
   async function hasDecks() {
-    try {
-      const token = localStorage.getItem("cooptrackToken");
-      if (!token) return false;
+  try {
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) return false;
 
-      const response = await fetch(`${API_BASE_URL}/decks`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) return false;
-        throw new Error(`Error HTTP ${response.status}`);
+    const response = await fetch(`${API_BASE_URL}/decks`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
       }
+    });
 
-      const data = await response.json();
-      const decks = Array.isArray(data?.decks) ? data.decks : [];
-      return decks.length > 0;
-    } catch (error) {
-      console.error("Error leyendo mazos desde servidor:", error);
-      return false;
+    if (!response.ok) {
+      if (response.status === 401) return false;
+      throw new Error(`Error HTTP ${response.status}`);
     }
+
+    const data = await response.json();
+
+    const mazos = Array.isArray(data?.mazos)
+      ? data.mazos
+      : Array.isArray(data?.decks)
+        ? data.decks
+        : [];
+
+    return mazos.length > 0;
+  } catch (error) {
+    console.error("Error leyendo mazos desde servidor:", error);
+    return false;
   }
+}
 
 async function hasPendingApprovals() {
   try {
