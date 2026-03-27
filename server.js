@@ -717,7 +717,15 @@ async function getMazoHandler(req, res) {
     });
   }
 }
+// Alias compatibles
+app.post('/mazos', requireAuth, createMazoHandler);
+app.post('/decks', requireAuth, createMazoHandler);
 
+app.get('/mazos', requireAuth, listMazosHandler);
+app.get('/decks', requireAuth, listMazosHandler);
+
+app.get('/mazos/:mazoId', requireAuth, getMazoHandler);
+app.get('/decks/:deckId', requireAuth, getMazoHandler);
 // =====================================================
 // ESTADO DEL MAZO
 // =====================================================
