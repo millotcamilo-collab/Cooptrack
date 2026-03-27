@@ -696,6 +696,8 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
     const result = await pool.query(
       `SELECT
          p.*,
+         creator.nickname AS created_by_nickname,
+         target.nickname AS target_user_nickname,
          EXISTS (
            SELECT 1
            FROM play_recurrences pr
@@ -704,6 +706,10 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
        FROM plays p
        INNER JOIN deck_members dm
          ON dm.deck_id = p.deck_id
+       LEFT JOIN users creator
+         ON creator.id = p.created_by_user_id
+       LEFT JOIN users target
+         ON target.id = p.target_user_id
        WHERE p.deck_id = $1
          AND dm.user_id = $2
        ORDER BY p.id ASC`,
@@ -725,12 +731,11 @@ app.get('/mazo/:deckId/state', requireAuth, async (req, res) => {
     });
   }
 });
-
 // ================= PLAYS =================
 
 app.post('/plays', requireAuth, async (req, res) => {
   console.log("BODY /plays:", req.body);
-  console.log("BODY /plays:", req.auth);
+  console.log("AUTH /plays:", req.auth);
   
   const userId = req.auth.userId;
   const {
