@@ -136,15 +136,7 @@ function buildQSpadeActions(play) {
 
   if (!isDraft) {
     return `
-      <div class="plays-view__actions">
-        ${buildIconButton({
-          src: window.ICONS.actions.exit,
-          alt: "Salir",
-          title: "Cerrar",
-          action: "cancel-qspade",
-          playId: play.id
-        })}
-      </div>
+      <div class="plays-view__actions"></div>
     `;
   }
 
@@ -699,13 +691,22 @@ function bindPlaysViewEvents() {
     });
   });
   
-  containerSafeQueryAll('[data-action="cancel-qspade"]').forEach((button) => {
-    button.addEventListener("click", () => {
-      const playId = button.dataset.playId;
+containerSafeQueryAll('[data-action="cancel-qspade"]').forEach((button) => {
+  button.addEventListener("click", () => {
+    const playId = button.dataset.playId;
+    const play = lastPlays.find((item) => String(item.id) === String(playId));
+
+    if (!play) return;
+
+    if (play.__isDraft) {
       removeLocalPlay(playId);
-      renderPlaysView(lastDeck, lastPlays, lastState);
-    });
+    } else {
+      updateLocalPlay(playId, { __isExpanded: false });
+    }
+
+    renderPlaysView(lastDeck, lastPlays, lastState);
   });
+});
 
   containerSafeQueryAll('[data-action="set-recurrence"]').forEach((button) => {
     button.addEventListener("click", () => {
