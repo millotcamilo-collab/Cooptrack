@@ -131,13 +131,10 @@ function currentUserHasClubAce() {
 
 function buildQSpadeActions(play) {
   const canFinish = !!play.__selectedUser;
-  const hasClubAce = currentUserHasClubAce();
   const isDraft = !!play.__isDraft;
 
   if (!isDraft) {
-    return `
-      <div class="plays-view__actions"></div>
-    `;
+    return `<div class="plays-view__actions"></div>`;
   }
 
   return `
@@ -145,10 +142,10 @@ function buildQSpadeActions(play) {
       ${
         canFinish
           ? buildIconButton({
-              src: hasClubAce ? window.ICONS.actions.send : window.ICONS.actions.save,
-              alt: hasClubAce ? "Enviar" : "Guardar",
-              title: hasClubAce ? "Enviar invitación" : "Guardar invitación",
-              action: hasClubAce ? "send-qspade" : "save-qspade",
+              src: window.ICONS.actions.send,
+              alt: "Enviar",
+              title: "Enviar invitación",
+              action: "send-qspade",
               playId: play.id
             })
           : ""
@@ -663,19 +660,19 @@ function bindPlaysViewEvents() {
   });
 
     containerSafeQueryAll('[data-action="send-qspade"]').forEach((button) => {
-    button.addEventListener("click", async () => {
-      const playId = button.dataset.playId;
+  button.addEventListener("click", async () => {
+    const playId = button.dataset.playId;
 
-      try {
-        button.disabled = true;
-        await persistQSpade(playId);
-      } catch (error) {
-        console.error("Error enviando Q♠:", error);
-        window.alert(error.message || "No se pudo enviar la Q♠");
-        button.disabled = false;
-      }
-    });
+    try {
+      button.disabled = true;
+      await persistQSpade(playId, "send");
+    } catch (error) {
+      console.error("Error enviando Q♠:", error);
+      window.alert(error.message || "No se pudo enviar la Q♠");
+      button.disabled = false;
+    }
   });
+});
   
 containerSafeQueryAll('[data-action="cancel-qspade"]').forEach((button) => {
   button.addEventListener("click", () => {
