@@ -185,7 +185,7 @@
               </td>
               <td class="nuevo-mazo-actions">
                 <button
-                  id="createDeckBtn"
+                  id="eckBtn"
                   class="icon-btn"
                   type="button"
                   title="Guardar mazo"
@@ -280,13 +280,16 @@
           throw new Error(data.error || "Error creando mazo");
         }
 
-        if (!data.deck || !data.deck.id) {
-          throw new Error("La respuesta del servidor no trajo el mazo creado");
-        }
+const createdMazo = data.mazo || data.deck;
 
-        setStatus("Mazo creado correctamente");
+if (!createdMazo || !createdMazo.id) {
+  console.error("Respuesta completa del servidor:", data);
+  throw new Error("La respuesta del servidor no trajo el mazo creado");
+}
 
-        window.location.href = `/mazo.html?id=${data.deck.id}`;
+setStatus("Mazo creado correctamente");
+window.location.href = `/mazo.html?id=${createdMazo.id}`;
+        
       } catch (error) {
         console.error("Error creando mazo:", error);
         setStatus(error.message || "Error al crear mazo", true);
