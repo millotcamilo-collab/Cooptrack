@@ -204,60 +204,134 @@
       return data.play;
     }
     function clearDeckView() {
-      const ids = [
-        "mazobar-container",
-        "playform-container",
-        "plays-view-container"
-      ];
+  const ids = [
+    "mazobar-container",
+    "playform-container",
+    "tablero-container"
+  ];
 
-      ids.forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = "";
-      });
-    }
-
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = "";
+  });
+}
     async function initMazoPage() {
-      const params = new URLSearchParams(window.location.search);
-      const deckId = params.get("id");
+  const params = new URLSearchParams(window.location.search);
+  const deckId = params.get("id");
 
-      clearDeckView();
+  clearDeckView();
 
-      if (!deckId) {
-        console.warn("Mazo sin id");
-        return;
-      }
+  if (!deckId) {
+    console.warn("Mazo sin id");
+    return;
+  }
 
-      const [deck, state] = await Promise.all([
-        fetchDeckById(deckId),
-        fetchDeckState(deckId)
-      ]);
+  const [deck, state] = await Promise.all([
+    fetchDeckById(deckId),
+    fetchDeckState(deckId)
+  ]);
 
-      console.log("deck:", deck);
-      console.log("state:", state);
+  console.log("deck:", deck);
+  console.log("state:", state);
 
-      if (!deck) {
-        console.warn("No se pudo cargar el mazo");
-        return;
-      }
+  if (!deck) {
+    console.warn("No se pudo cargar el mazo");
+    return;
+  }
 
-      if (!state) {
-        console.warn("No se pudo cargar el estado del mazo");
-        return;
-      }
+  if (!state) {
+    console.warn("No se pudo cargar el estado del mazo");
+    return;
+  }
 
-      if (typeof renderMazobar === "function") {
-        renderMazobar(deck, state.plays || [], state.userId);
-      }
+  if (typeof renderMazobar === "function") {
+    renderMazobar(deck, state.plays || [], state.userId);
+  }
 
-      if (typeof renderPlayform === "function") {
-        renderPlayform(deck, state);
-      }
+  if (typeof renderPlayform === "function") {
+    renderPlayform(deck, state);
+  }
 
-      if (typeof renderPlaysView === "function") {
-        renderPlaysView(deck, state.plays || [], state);
-      }
-    }
+  if (typeof renderTablero === "function") {
+    renderTablero(deck, state.plays || [], state);
+  }
+}
+document.addEventListener("tablero:change-suit", async (event) => {
+  try {
+    const playId = event.detail?.playId;
+    const nextSuit = event.detail?.nextSuit;
 
+    if (!playId || !nextSuit) return;
+
+    console.log("TABLERO CHANGE SUIT", playId, nextSuit);
+
+    await patchPlay(playId, {
+      card_suit: nextSuit
+    });
+
+    await initMazoPage();
+  } catch (error) {
+    console.error("Error en tablero:change-suit", error);
+  }
+});
+
+document.addEventListener("tablero:save-play", async (event) => {
+  try {
+    const playId = event.detail?.playId;
+    if (!playId) return;
+
+    console.log("TABLERO SAVE PLAY", playId);
+
+    await initMazoPage();
+  } catch (error) {
+    console.error("Error en tablero:save-play", error);
+  }
+});
+
+document.addEventListener("tablero:approve-play", async (event) => {
+  try {
+    const playId = event.detail?.playId;
+    if (!playId) return;
+
+    console.log("TABLERO APPROVE PLAY", playId);
+
+    await patchPlay(playId, {
+      play_status: "APPROVED"
+    });
+
+    await initMazoPage();
+  } catch (error) {
+    console.error("Error en tablero:approve-play", error);
+  }
+});
+
+document.addEventListener("tablero:delete-play", async (event) => {
+  try {
+    const playId = event.detail?.playId;
+    if (!playId) return;
+
+    console.log("TABLERO DELETE PLAY", playId);
+
+    await deletePlayRequest(playId);
+    await initMazoPage();
+  } catch (error) {
+    console.error("Error en tablero:delete-play", error);
+  }
+});
+
+document.addEventListener("tablero:cancel-play", async (event) => {
+  try {
+    const playId = event.detail?.playId;
+    if (!playId) return;
+
+    console.log("TABLERO CANCEL PLAY", playId);
+
+    await initMazoPage();
+  } catch (error) {
+    console.error("Error en tablero:cancel-play", error);
+  }
+});
+    
     document.addEventListener("plays:patch-requested", async (event) => {
       try {
         const playId = event.detail?.playId;
