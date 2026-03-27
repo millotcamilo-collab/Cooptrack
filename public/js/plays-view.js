@@ -684,6 +684,21 @@ function bindPlaysViewEvents() {
     });
   });
 
+    containerSafeQueryAll('[data-action="send-qspade"]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const playId = button.dataset.playId;
+
+      try {
+        button.disabled = true;
+        await persistQSpade(playId);
+      } catch (error) {
+        console.error("Error enviando Q♠:", error);
+        window.alert(error.message || "No se pudo enviar la Q♠");
+        button.disabled = false;
+      }
+    });
+  });
+  
   containerSafeQueryAll('[data-action="cancel-qspade"]').forEach((button) => {
     button.addEventListener("click", () => {
       const playId = button.dataset.playId;
