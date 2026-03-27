@@ -142,7 +142,7 @@ function buildQSpadeActions(play) {
       ${
         canFinish
           ? buildIconButton({
-              src: window.ICONS.actions.send,
+              src: window.ICONS.actions.save,
               alt: "Enviar",
               title: "Enviar invitación",
               action: "send-qspade",
