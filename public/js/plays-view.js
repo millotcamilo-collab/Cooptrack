@@ -74,11 +74,32 @@ function getFieldValue(playId, fieldName) {
   return field ? field.value : "";
 }
 
+function normalizeQSpadeNickname(play) {
+  return (
+    play?.target_user_nickname ||
+    play?.target_nickname ||
+    play?.recipient_nickname ||
+    play?.nickname ||
+    play?.__selectedUser?.nickname ||
+    (play?.target_user_id ? `Usuario #${play.target_user_id}` : "Sin destinatario")
+  );
+}
+
 function buildQSpadeBody(play) {
   if (!play.__isExpanded) {
     return `
       <div class="plays-view__text">
-        Q♠ — Invitación para: <strong>${escapeHTML(normalizeNickname(play))}</strong>
+        Invitación para: <strong>${escapeHTML(normalizeQSpadeNickname(play))}</strong>
+      </div>
+    `;
+  }
+
+  if (!play.__selectedUser) {
+    return `
+      <div class="plays-view__qspade-expanded">
+        <div class="plays-view__qspade-body">
+          <div id="q-user-picker-${play.id}"></div>
+        </div>
       </div>
     `;
   }
@@ -87,43 +108,67 @@ function buildQSpadeBody(play) {
     <div class="plays-view__qspade-expanded">
       <div class="plays-view__qspade-body">
         <div class="plays-view__text">
-          Q♠ — Elegí destinatario
+          Invitación para: <strong>${escapeHTML(play.__selectedUser.nickname || "Usuario")}</strong>
         </div>
-        <div id="q-user-picker-${play.id}"></div>
       </div>
     </div>
   `;
 }
 
+function currentUserHasClubAce() {
+  if (!lastState) return false;
+
+  const cards = Array.isArray(lastState.corporateCards)
+    ? lastState.corporateCards
+    : [];
+
+  return cards.some((card) => {
+    const rank = String(card.rank || card.card_rank || "").toUpperCase();
+    const suit = String(card.suit || card.card_suit || "").toUpperCase();
+    return rank === "A" && suit === "CLUB";
+  });
+}
+
 function buildQSpadeActions(play) {
-  const playId = escapeHTML(String(play.id));
+  const canFinish = !!play.__selectedUser;
+  const hasClubAce = currentUserHasClubAce();
+  const isDraft = !!play.__isDraft;
 
-  if (!play.__isDraft) {
-    return `
-      <div class="plays-view__meta">
-        ${isApproved(play) ? buildApprovedMeta(play) : ""}
-      </div>
-    `;
-  }
-
-  if (!play.__selectedUser) {
+  if (!isDraft) {
     return `
       <div class="plays-view__actions">
-        <button type="button" data-action="cancel-qspade" data-play-id="${playId}">
-          Salir
-        </button>
+        ${buildIconButton({
+          src: window.ICONS.actions.exit,
+          alt: "Salir",
+          title: "Cerrar",
+          action: "cancel-qspade",
+          playId: play.id
+        })}
       </div>
     `;
   }
 
   return `
     <div class="plays-view__actions">
-      <button type="button" data-action="save-qspade" data-play-id="${playId}">
-        Guardar
-      </button>
-      <button type="button" data-action="cancel-qspade" data-play-id="${playId}">
-        Salir
-      </button>
+      ${
+        canFinish
+          ? buildIconButton({
+              src: hasClubAce ? window.ICONS.actions.send : window.ICONS.actions.save,
+              alt: hasClubAce ? "Enviar" : "Guardar",
+              title: hasClubAce ? "Enviar invitación" : "Guardar invitación",
+              action: hasClubAce ? "send-qspade" : "save-qspade",
+              playId: play.id
+            })
+          : ""
+      }
+
+      ${buildIconButton({
+        src: window.ICONS.actions.exit,
+        alt: "Salir",
+        title: "Cancelar Q♠",
+        action: "cancel-qspade",
+        playId: play.id
+      })}
     </div>
   `;
 }
