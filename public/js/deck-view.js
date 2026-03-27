@@ -34,7 +34,7 @@ async function fetchDecks() {
       throw new Error(data.message || data.error || "Error cargando mazos");
     }
 
-    return data.decks || [];
+    return data.mazos || data.decks || [];
   } catch (error) {
     console.error("Error trayendo mazos:", error);
     return [];
