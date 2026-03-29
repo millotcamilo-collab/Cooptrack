@@ -610,9 +610,9 @@ async function createMazoHandler(req, res) {
          deck_image_url,
          currency_symbol,
          currency_name
-      )
-      VALUES ($1, $2, $3, $3, $4, $5, $6)
-      RETURNING *
+       )
+       VALUES ($1, $2, $3, $3, $4, $5, $6)
+       RETURNING *`,
       [
         name.trim(),
         description || null,
@@ -624,7 +624,7 @@ async function createMazoHandler(req, res) {
         currency_name
           ? String(currency_name).trim().slice(0, 120)
           : null,
-]
+      ]
     );
 
     const mazo = mazoResult.rows[0];
@@ -690,8 +690,7 @@ async function createMazoHandler(req, res) {
   } finally {
     client.release();
   }
-}
-async function listMazosHandler(req, res) {
+}async function listMazosHandler(req, res) {
   try {
     const userId = req.auth.userId;
 
