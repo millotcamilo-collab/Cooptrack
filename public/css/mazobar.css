@@ -139,7 +139,10 @@
   display: block;
   margin-left: 8px;
 }
-
+.mazobar__balance-currency {
+  margin-left: 6px;
+  font-weight: 600;
+}
 .mazobar__balance-value {
   font-size: 1rem;
   color: #7d0000;
