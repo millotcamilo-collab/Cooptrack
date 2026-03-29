@@ -2,7 +2,6 @@
   function renderJcorazon(play, context = {}) {
     const helpers = context.helpers || {};
     const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
-    const formatDate = helpers.formatDate || ((v) => String(v ?? ""));
     const dispatch =
       typeof context.dispatch === "function"
         ? context.dispatch
@@ -19,10 +18,13 @@
     const currentUserId = Number(state.userId || 0);
 
     const playId = play?.id;
-    const text = escapeHtml(play?.play_text || "");
+    const originalText = String(play?.play_text || "");
+    const safeText = escapeHtml(originalText);
     const statusRaw = String(play?.play_status || play?.status || "ACTIVE").toUpperCase();
+    const creatorUserId = Number(play?.created_by_user_id || 0);
 
     const rowId = `tablero-row-${playId}`;
+    const inputId = `jcorazon-input-${playId}`;
 
     function normalizeRank(value) {
       return String(value || "").trim().toUpperCase();
@@ -44,23 +46,14 @@
           const suit = normalizeSuit(p?.suit || p?.card_suit);
           return rank === "A" && suit === "HEART" && isAliveStatus(p?.play_status);
         })
-        .sort((a, b) => {
-          const aId = Number(a?.id || 0);
-          const bId = Number(b?.id || 0);
-          return bId - aId;
-        });
+        .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
 
       if (!aceHeartPlays.length) return null;
 
       const latest = aceHeartPlays[0];
 
-      if (latest?.target_user_id) {
-        return Number(latest.target_user_id);
-      }
-
-      if (latest?.created_by_user_id) {
-        return Number(latest.created_by_user_id);
-      }
+      if (latest?.target_user_id) return Number(latest.target_user_id);
+      if (latest?.created_by_user_id) return Number(latest.created_by_user_id);
 
       return null;
     }
@@ -71,28 +64,71 @@
       currentUserId !== 0 &&
       heartAceHolderUserId === currentUserId;
 
+    const userIsCreator =
+      creatorUserId !== 0 &&
+      currentUserId !== 0 &&
+      creatorUserId === currentUserId;
+
+    const userCanEdit = userIsCreator || userIsHeartAceHolder;
     const isApproved = statusRaw === "APPROVED";
-    const isSaved = statusRaw === "SAVED";
-    const canTransformSuit = !isSaved && !isApproved;
-    const canSave = !isApproved;
-    const canApprove = !isApproved && userIsHeartAceHolder;
-    const canCancel = isApproved && userIsHeartAceHolder;
-    const canDelete = !isApproved;
 
     const spadeIcon = escapeHtml(SUITS.SPADE || "");
     const clubIcon = escapeHtml(SUITS.CLUB || "");
+    const editIcon = escapeHtml(ACTIONS.edit || "");
     const saveIcon = escapeHtml(ACTIONS.save || "");
     const approveIcon = escapeHtml(ACTIONS.approve || "");
     const deleteIcon = escapeHtml(ACTIONS.delete || "");
-    const cancelIcon = escapeHtml(ACTIONS.cancel || ACTIONS.exit || "");
+    const cancelIcon = escapeHtml(ACTIONS.cancel || "");
+    const exitIcon = escapeHtml(ACTIONS.exit || ACTIONS.cancel || "");
 
     setTimeout(() => {
       const row = document.getElementById(rowId);
       if (!row || row.dataset.bound === "true") return;
 
       row.dataset.bound = "true";
+      row.dataset.mode = "read";
 
-      row.querySelector('[data-action="change-to-spade"]')?.addEventListener("click", () => {
+      const textView = row.querySelector('[data-role="text-view"]');
+      const textInput = row.querySelector('[data-role="text-input"]');
+      const btnSpade = row.querySelector('[data-action="change-to-spade"]');
+      const btnClub = row.querySelector('[data-action="change-to-club"]');
+      const btnEdit = row.querySelector('[data-action="edit-play"]');
+      const btnSave = row.querySelector('[data-action="save-play"]');
+      const btnApprove = row.querySelector('[data-action="approve-play"]');
+      const btnDelete = row.querySelector('[data-action="delete-play"]');
+      const btnCancel = row.querySelector('[data-action="cancel-play"]');
+      const btnExit = row.querySelector('[data-action="exit-edit"]');
+
+      function getCurrentText() {
+        return String(textInput?.value || "").trim();
+      }
+
+      function setMode(mode) {
+        row.dataset.mode = mode === "edit" ? "edit" : "read";
+      }
+
+      function renderMode() {
+        const isEditMode = row.dataset.mode === "edit";
+
+        if (textView) textView.hidden = isEditMode;
+        if (textInput) textInput.hidden = !isEditMode;
+
+        if (btnSpade) btnSpade.hidden = isApproved || isEditMode;
+        if (btnClub) btnClub.hidden = isApproved || isEditMode;
+        if (btnEdit) btnEdit.hidden = isApproved || isEditMode || !userCanEdit;
+        if (btnSave) btnSave.hidden = !isEditMode;
+        if (btnExit) btnExit.hidden = !isEditMode;
+        if (btnApprove) btnApprove.hidden = isApproved || isEditMode || !userIsHeartAceHolder;
+        if (btnDelete) btnDelete.hidden = isApproved;
+        if (btnCancel) btnCancel.hidden = !isApproved || !userIsHeartAceHolder;
+
+        if (isEditMode && textInput) {
+          textInput.focus();
+          textInput.select();
+        }
+      }
+
+      btnSpade?.addEventListener("click", () => {
         dispatch("tablero:change-suit", {
           playId,
           nextSuit: "SPADE",
@@ -100,7 +136,7 @@
         });
       });
 
-      row.querySelector('[data-action="change-to-club"]')?.addEventListener("click", () => {
+      btnClub?.addEventListener("click", () => {
         dispatch("tablero:change-suit", {
           playId,
           nextSuit: "CLUB",
@@ -108,29 +144,57 @@
         });
       });
 
-      row.querySelector('[data-action="save-play"]')?.addEventListener("click", () => {
+      btnEdit?.addEventListener("click", () => {
+        setMode("edit");
+        renderMode();
+      });
+
+      btnSave?.addEventListener("click", () => {
         dispatch("tablero:save-play", {
-          playId
+          playId,
+          text: getCurrentText()
         });
       });
 
-      row.querySelector('[data-action="approve-play"]')?.addEventListener("click", () => {
+      btnApprove?.addEventListener("click", () => {
         dispatch("tablero:approve-play", {
           playId
         });
       });
 
-      row.querySelector('[data-action="delete-play"]')?.addEventListener("click", () => {
+      btnDelete?.addEventListener("click", () => {
         dispatch("tablero:delete-play", {
           playId
         });
       });
 
-      row.querySelector('[data-action="cancel-play"]')?.addEventListener("click", () => {
+      btnCancel?.addEventListener("click", () => {
         dispatch("tablero:cancel-play", {
           playId
         });
       });
+
+      btnExit?.addEventListener("click", () => {
+        if (textInput) {
+          textInput.value = originalText;
+        }
+        setMode("read");
+        renderMode();
+      });
+
+      textInput?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          btnSave?.click();
+        }
+
+        if (event.key === "Escape") {
+          event.preventDefault();
+          btnExit?.click();
+        }
+      });
+
+      renderMode();
     }, 0);
 
     return `
@@ -140,65 +204,54 @@
         </div>
 
         <div class="tablero-row__center">
-          <div class="tablero-row__title">${text || "Sin texto"}</div>
+          <div class="tablero-row__title" data-role="text-view">${safeText || "Sin texto"}</div>
+
+          <input
+            id="${inputId}"
+            type="text"
+            class="tablero-row__inline-input"
+            data-role="text-input"
+            value="${safeText}"
+            hidden
+          />
+
           <div class="tablero-row__meta">
             <span>Estado: ${escapeHtml(statusRaw)}</span>
           </div>
         </div>
 
         <div class="tablero-row__right">
-          ${
-            canTransformSuit
-              ? `
-                <button type="button" data-action="change-to-spade" title="Cambiar a J♠">
-                  <img src="${spadeIcon}" alt="J♠" />
-                </button>
-                <button type="button" data-action="change-to-club" title="Cambiar a J♣">
-                  <img src="${clubIcon}" alt="J♣" />
-                </button>
-              `
-              : ""
-          }
+          <button type="button" data-action="change-to-spade" title="Cambiar a J♠">
+            <img src="${spadeIcon}" alt="J♠" />
+          </button>
 
-          ${
-            canSave
-              ? `
-                <button type="button" data-action="save-play" title="Salvar">
-                  <img src="${saveIcon}" alt="Salvar" />
-                </button>
-              `
-              : ""
-          }
+          <button type="button" data-action="change-to-club" title="Cambiar a J♣">
+            <img src="${clubIcon}" alt="J♣" />
+          </button>
 
-          ${
-            canApprove
-              ? `
-                <button type="button" data-action="approve-play" title="Aprobar">
-                  <img src="${approveIcon}" alt="Aprobar" />
-                </button>
-              `
-              : ""
-          }
+          <button type="button" data-action="edit-play" title="Editar">
+            <img src="${editIcon}" alt="Editar" />
+          </button>
 
-          ${
-            canDelete
-              ? `
-                <button type="button" data-action="delete-play" title="Borrar">
-                  <img src="${deleteIcon}" alt="Borrar" />
-                </button>
-              `
-              : ""
-          }
+          <button type="button" data-action="save-play" title="Salvar" hidden>
+            <img src="${saveIcon}" alt="Salvar" />
+          </button>
 
-          ${
-            canCancel
-              ? `
-                <button type="button" data-action="cancel-play" title="Cancelar">
-                  <img src="${cancelIcon}" alt="Cancelar" />
-                </button>
-              `
-              : ""
-          }
+          <button type="button" data-action="exit-edit" title="Salir edición" hidden>
+            <img src="${exitIcon}" alt="Salir edición" />
+          </button>
+
+          <button type="button" data-action="approve-play" title="Aprobar">
+            <img src="${approveIcon}" alt="Aprobar" />
+          </button>
+
+          <button type="button" data-action="cancel-play" title="Cancelar">
+            <img src="${cancelIcon}" alt="Cancelar" />
+          </button>
+
+          <button type="button" data-action="delete-play" title="Borrar">
+            <img src="${deleteIcon}" alt="Borrar" />
+          </button>
         </div>
       </article>
     `;
