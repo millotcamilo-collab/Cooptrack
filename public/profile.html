@@ -120,18 +120,25 @@
   <main class="profile-page">
     <section class="profile-card">
       <div class="profile-header">
-        <img
-          id="profileAvatar"
-          class="profile-avatar"
-          src="/assets/icons/singeta120.gif"
-          alt="Foto de perfil"
-        />
+  <img
+    id="userCategoryIcon"
+    class="user-category-icon"
+    src="/assets/icons/guest80.gif"
+    alt="Tipo de usuario"
+  />
 
-        <div class="profile-title">
-          <h1>Mi perfil</h1>
-          <p>Datos personales de tu cuenta</p>
-        </div>
-      </div>
+  <img
+    id="profileAvatar"
+    class="profile-avatar"
+    src="/assets/icons/singeta120.gif"
+    alt="Foto de perfil"
+  />
+
+  <div class="profile-title">
+    <h1>Mi perfil</h1>
+    <p>Datos personales de tu cuenta</p>
+  </div>
+</div>
 
       <form id="profileForm" class="profile-form">
         <div class="form-group">
@@ -165,10 +172,6 @@
   <option value="ES">España</option>
 </select>
 </div>
-        <div class="form-group">
-          <label for="userType">Tipo de usuario</label>
-          <input id="userType" name="userType" type="text" disabled />
-        </div>
 
         <div class="form-group">
           <label for="profilePhotoUrl">URL de foto de perfil</label>
