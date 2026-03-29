@@ -287,7 +287,7 @@
                   <span class="mazobar__title-rank">A</span>
                   <img
                     src="/assets/icons/cor40.gif"
-                    alt="Notas"
+                    alt="♥"
                     class="mazobar__title-suit"
                   />
                   <span class="mazobar__title-name">${deckName}</span>
