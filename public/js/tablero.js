@@ -1,5 +1,6 @@
 (function () {
   const PLAY_SEPARATOR = '§';
+  let activeTableroFilter = null;
 
   function safeTrim(value) {
     if (value === null || value === undefined) return '';
@@ -136,6 +137,34 @@
     return false;
   }
 
+  function matchesTableroFilter(play, filterSuit) {
+    const rank = normalizeRank(play?.rank);
+    const suit = normalizeSuit(play?.suit);
+    const filter = normalizeSuit(filterSuit);
+
+    if (!filter) {
+      return belongsToTablero(play);
+    }
+
+    if (filter === 'HEART') {
+      return rank === 'J' && suit === 'HEART';
+    }
+
+    if (filter === 'SPADE') {
+      return rank === 'J' && suit === 'SPADE';
+    }
+
+    if (filter === 'DIAMOND') {
+      return false;
+    }
+
+    if (filter === 'CLUB') {
+      return rank === 'A';
+    }
+
+    return belongsToTablero(play);
+  }
+
   function getComponentName(play) {
     const rank = normalizeRank(play?.rank);
     const suit = normalizeSuit(play?.suit);
@@ -258,106 +287,6 @@
     };
   }
 
-  function injectTableroStyles() {
-    if (document.getElementById('tablero-styles')) return;
-
-    const style = document.createElement('style');
-    style.id = 'tablero-styles';
-    style.textContent = `
-      .tablero {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px 0 30px;
-        box-sizing: border-box;
-      }
-
-      .tablero-row {
-        display: grid;
-        grid-template-columns: 64px 1fr 140px;
-        gap: 12px;
-        align-items: start;
-        border: 1px dotted #777;
-        padding: 10px 12px;
-        background: #fffdf8;
-        border-radius: 8px;
-        box-sizing: border-box;
-      }
-
-      .tablero-row__left {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-      }
-
-      .tablero-row__card {
-        font-size: 20px;
-        font-weight: 700;
-      }
-
-      .tablero-row__center {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-
-      .tablero-row__title {
-        font-size: 15px;
-        font-weight: 700;
-      }
-
-      .tablero-row__text {
-        font-size: 14px;
-        line-height: 1.4;
-        white-space: pre-wrap;
-      }
-
-      .tablero-row__meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        font-size: 12px;
-        color: #555;
-      }
-
-      .tablero-row__right {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        justify-content: flex-end;
-        align-items: flex-start;
-      }
-
-      .tablero-row__right button {
-        height: 30px;
-        padding: 0 10px;
-        border: 1px solid #999;
-        background: #fff;
-        cursor: pointer;
-      }
-
-      .tablero-empty {
-        padding: 16px 0 24px;
-        color: #444;
-      }
-
-      @media (max-width: 780px) {
-        .tablero-row {
-          grid-template-columns: 1fr;
-        }
-
-        .tablero-row__left {
-          justify-content: flex-start;
-        }
-
-        .tablero-row__right {
-          justify-content: flex-start;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-  }
 
   function renderTablero(deck, plays, state = {}) {
     const container = document.getElementById('tablero-container');
@@ -372,8 +301,9 @@
     try {
       const rawPlays = Array.isArray(plays) ? plays : [];
       const normalized = rawPlays.map(normalizePlay);
+
       const tableroPlays = sortTableroPlays(
-        normalized.filter(belongsToTablero)
+        normalized.filter((play) => matchesTableroFilter(play, activeTableroFilter))
       );
 
       if (!tableroPlays.length) {
@@ -412,7 +342,30 @@
     }
   }
 
-  window.renderTablero = renderTablero;
+  document.addEventListener('mazobar:filter', (event) => {
+    const nextFilter = normalizeSuit(event?.detail?.filter);
+
+    if (!nextFilter) {
+      activeTableroFilter = null;
+    } else if (activeTableroFilter === nextFilter) {
+      activeTableroFilter = null;
+    } else {
+      activeTableroFilter = nextFilter;
+    }
+
+    const deck = window.__currentDeck || null;
+    const state = window.__currentState || {};
+    const plays = Array.isArray(state?.plays) ? state.plays : [];
+
+    renderTablero(deck, plays, state);
+  });
+
+  window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
+    window.__currentDeck = deck || null;
+    window.__currentState = state || {};
+    renderTablero(deck, plays, state);
+  };
+
   window.normalizeTableroPlay = normalizePlay;
   window.belongsToTablero = belongsToTablero;
 })();
