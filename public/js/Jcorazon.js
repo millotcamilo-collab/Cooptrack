@@ -74,6 +74,7 @@
 
     const spadeIcon = escapeHtml(SUITS.SPADE || "");
     const clubIcon = escapeHtml(SUITS.CLUB || "");
+    const helpIcon = escapeHtml(ACTIONS.help || "");
     const editIcon = escapeHtml(ACTIONS.edit || "");
     const saveIcon = escapeHtml(ACTIONS.save || "");
     const approveIcon = escapeHtml(ACTIONS.approve || "");
@@ -92,6 +93,7 @@
       const textInput = row.querySelector('[data-role="text-input"]');
       const btnSpade = row.querySelector('[data-action="change-to-spade"]');
       const btnClub = row.querySelector('[data-action="change-to-club"]');
+      const btnHelp = row.querySelector('[data-action="show-help"]');
       const btnEdit = row.querySelector('[data-action="edit-play"]');
       const btnSave = row.querySelector('[data-action="save-play"]');
       const btnApprove = row.querySelector('[data-action="approve-play"]');
@@ -108,66 +110,70 @@
       }
 
       function showButton(button) {
-  if (!button) return;
-  button.style.display = "inline-flex";
-}
+        if (!button) return;
+        button.style.display = "inline-flex";
+      }
 
-function hideButton(button) {
-  if (!button) return;
-  button.style.display = "none";
-}
+      function hideButton(button) {
+        if (!button) return;
+        button.style.display = "none";
+      }
 
-function renderMode() {
-  const isEditMode = row.dataset.mode === "edit";
+      function renderMode() {
+        const isEditMode = row.dataset.mode === "edit";
 
- if (textView) textView.style.display = isEditMode ? "none" : "";
-if (textInput) textInput.style.display = isEditMode ? "block" : "none";
+        if (textView) textView.style.display = isEditMode ? "none" : "";
+        if (textInput) textInput.style.display = isEditMode ? "block" : "none";
 
-  if (isApproved || isEditMode) {
-    hideButton(btnSpade);
-    hideButton(btnClub);
-  } else {
-    showButton(btnSpade);
-    showButton(btnClub);
-  }
+        if (isApproved || isEditMode) {
+          hideButton(btnSpade);
+          hideButton(btnClub);
+        } else {
+          showButton(btnSpade);
+          showButton(btnClub);
+        }
 
-  if (!isApproved && !isEditMode && userCanEdit) {
-    showButton(btnEdit);
-  } else {
-    hideButton(btnEdit);
-  }
+        // Help siempre visible
+        showButton(btnHelp);
 
-  if (isEditMode) {
-    showButton(btnSave);
-    showButton(btnExit);
-  } else {
-    hideButton(btnSave);
-    hideButton(btnExit);
-  }
+        if (!isApproved && !isEditMode && userCanEdit) {
+          showButton(btnEdit);
+        } else {
+          hideButton(btnEdit);
+        }
 
-  if (!isApproved && !isEditMode && userIsHeartAceHolder) {
-    showButton(btnApprove);
-  } else {
-    hideButton(btnApprove);
-  }
+        if (isEditMode) {
+          showButton(btnSave);
+          showButton(btnExit);
+        } else {
+          hideButton(btnSave);
+          hideButton(btnExit);
+        }
 
-  if (!isApproved) {
-    showButton(btnDelete);
-  } else {
-    hideButton(btnDelete);
-  }
+        if (!isApproved && !isEditMode && userIsHeartAceHolder) {
+          showButton(btnApprove);
+        } else {
+          hideButton(btnApprove);
+        }
 
-  if (isApproved && userIsHeartAceHolder) {
-    showButton(btnCancel);
-  } else {
-    hideButton(btnCancel);
-  }
+        if (!isApproved) {
+          showButton(btnDelete);
+        } else {
+          hideButton(btnDelete);
+        }
 
-  if (isEditMode && textInput) {
-    textInput.focus();
-    textInput.select();
-  }
-}
+        if (isApproved && userIsHeartAceHolder) {
+          showButton(btnCancel);
+        } else {
+          hideButton(btnCancel);
+        }
+
+        if (isEditMode && textInput) {
+          textInput.focus();
+          textInput.select();
+        }
+      }
+
       btnSpade?.addEventListener("click", () => {
         dispatch("tablero:change-suit", {
           playId,
@@ -182,6 +188,14 @@ if (textInput) textInput.style.display = isEditMode ? "block" : "none";
           nextSuit: "CLUB",
           currentSuit: "HEART"
         });
+      });
+
+      btnHelp?.addEventListener("click", () => {
+        if (typeof window.openPlayHelp === "function") {
+          window.openPlayHelp("J_HEART");
+        } else {
+          console.warn("openPlayHelp no está disponible");
+        }
       });
 
       btnEdit?.addEventListener("click", () => {
@@ -252,7 +266,7 @@ if (textInput) textInput.style.display = isEditMode ? "block" : "none";
             class="tablero-row__inline-input"
             data-role="text-input"
             value="${safeText}"
-            hidden
+            style="display:none;"
           />
 
           <div class="tablero-row__meta">
@@ -269,17 +283,21 @@ if (textInput) textInput.style.display = isEditMode ? "block" : "none";
             <img src="${clubIcon}" alt="J♣" />
           </button>
 
+          <button type="button" data-action="show-help" title="Ayuda">
+            <img src="${helpIcon}" alt="Ayuda" />
+          </button>
+
           <button type="button" data-action="edit-play" title="Editar">
-  <img src="${editIcon}" alt="Editar" />
-</button>
+            <img src="${editIcon}" alt="Editar" />
+          </button>
 
-<button type="button" data-action="save-play" title="Salvar" style="display:none;">
-  <img src="${saveIcon}" alt="Salvar" />
-</button>
+          <button type="button" data-action="save-play" title="Salvar" style="display:none;">
+            <img src="${saveIcon}" alt="Salvar" />
+          </button>
 
-<button type="button" data-action="exit-edit" title="Salir edición" style="display:none;">
-  <img src="${exitIcon}" alt="Salir edición" />
-</button>
+          <button type="button" data-action="exit-edit" title="Salir edición" style="display:none;">
+            <img src="${exitIcon}" alt="Salir edición" />
+          </button>
 
           <button type="button" data-action="approve-play" title="Aprobar">
             <img src="${approveIcon}" alt="Aprobar" />
