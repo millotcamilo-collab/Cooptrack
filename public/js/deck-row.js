@@ -4,13 +4,13 @@ function renderDeckRow(deck) {
   const photoUrl =
     (typeof deck.deck_image_url === "string" && deck.deck_image_url.trim()) ||
     (typeof deck.photo_url === "string" && deck.photo_url.trim()) ||
+    (typeof deck.image_url === "string" && deck.image_url.trim()) ||
     "/assets/icons/sinPicture.gif";
 
   const deckName = deck.name || "Mazo sin nombre";
 
   return `
     <article class="deck-row" data-deck-id="${deck.id}">
-      
       <div class="deck-row__left">
         <div class="deck-row__cards">
           <img
@@ -34,16 +34,20 @@ function renderDeckRow(deck) {
         <div class="deck-row__name">
           ${deckName}
         </div>
-
-        <div class="deck-row__summary">
-          <span class="deck-row__summary-item">
-            ID: ${deck.id}
-          </span>
-        </div>
       </div>
-
     </article>
   `;
+}
+
+function attachDeckRowEvents() {
+  document.querySelectorAll(".deck-row").forEach((row) => {
+    const deckId = row.dataset.deckId;
+
+    row.addEventListener("click", () => {
+      if (!deckId) return;
+      window.location.href = `/mazo.html?id=${deckId}`;
+    });
+  });
 }
 
 function attachDeckRowEvents() {
