@@ -1,5 +1,20 @@
+:root {
+  --topbar-height: 72px;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
 body {
   margin: 0;
+  padding-top: var(--topbar-height);
   font-family: system-ui, Arial, sans-serif;
   background: #f5f5f5;
 }
