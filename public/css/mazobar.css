@@ -190,8 +190,12 @@
   font-family: "Courier New", Courier, monospace;
   font-weight: 700;
   font-size: 1.1rem;
-  padding: 0 4px;
-  min-height: auto;
+   padding: 7px 12px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .mazobar__cmd-btn--exit {
