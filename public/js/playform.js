@@ -81,7 +81,7 @@
                 type="button"
                 class="playform__action-btn playform__action-btn--heart"
                 data-play-suit="HEART"
-                title="J♥"
+                title="Nota"
               >
                 ♥
               </button>
@@ -90,7 +90,7 @@
                 type="button"
                 class="playform__action-btn playform__action-btn--spade"
                 data-play-suit="SPADE"
-                title="J♠"
+                title="Actividad"
               >
                 ♠
               </button>
@@ -99,7 +99,7 @@
                 type="button"
                 class="playform__action-btn playform__action-btn--club"
                 data-play-suit="CLUB"
-                title="J♣"
+                title="Concepto factura"
               >
                 ♣
               </button>
