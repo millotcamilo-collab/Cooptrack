@@ -18,7 +18,7 @@
 
     .help-page {
       width: 100%;
-      padding: 32px 0 48px;
+      padding: 32px 0 56px;
       box-sizing: border-box;
     }
 
@@ -36,12 +36,22 @@
       margin: 0;
       font-size: 1rem;
       line-height: 1.6;
-      max-width: 820px;
+      max-width: 860px;
+    }
+
+    .help-section {
+      margin-bottom: 34px;
+    }
+
+    .help-section__title {
+      margin: 0 0 14px;
+      font-size: 1.35rem;
+      line-height: 1.3;
     }
 
     .help-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 18px;
     }
 
@@ -49,6 +59,7 @@
       appearance: none;
       -webkit-appearance: none;
       width: 100%;
+      min-height: 220px;
       border: 1px solid #d7d0c2;
       border-radius: 14px;
       background: #fffdf8;
@@ -57,6 +68,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: flex-start;
       gap: 12px;
       text-align: center;
       transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
@@ -89,6 +101,38 @@
       font-size: 0.92rem;
       line-height: 1.45;
       color: #5a5a5a;
+    }
+
+    .help-note {
+      margin-top: 42px;
+      padding: 22px 20px;
+      background: #fffdf8;
+      border: 1px solid #d7d0c2;
+      border-radius: 14px;
+      box-sizing: border-box;
+    }
+
+    .help-note__title {
+      margin: 0 0 12px;
+      font-size: 1.2rem;
+      line-height: 1.3;
+    }
+
+    .help-note__text {
+      margin: 0 0 12px;
+      line-height: 1.65;
+    }
+
+    .help-note__text:last-child {
+      margin-bottom: 0;
+    }
+
+    .help-note code {
+      background: rgba(0, 0, 0, 0.06);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
     }
 
     .play-help-modal {
@@ -152,13 +196,29 @@
       white-space: normal;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 1100px) {
+      .help-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 780px) {
+      .help-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 520px) {
       .help-page {
         padding-top: 24px;
       }
 
       .help-page__title {
         font-size: 1.6rem;
+      }
+
+      .help-grid {
+        grid-template-columns: 1fr;
       }
 
       .help-card__image {
@@ -180,83 +240,132 @@
         </p>
       </header>
 
-      <section class="help-grid">
-        <button
-          type="button"
-          class="help-card"
-          onclick="openPlayHelp('A_HEART')"
-          title="Ver ayuda de A corazón"
-        >
-          <img src="/assets/icons/Acorazon.gif" alt="A corazón" class="help-card__image" />
-          <div class="help-card__label">A♥ · Fundación del mazo</div>
-          <div class="help-card__subtext">Nombre, imagen y referencia principal del mazo.</div>
-        </button>
+      <section class="help-section">
+        <h2 class="help-section__title">Ases</h2>
+        <div class="help-grid">
+          <button
+            type="button"
+            class="help-card"
+            onclick="openPlayHelp('A_HEART')"
+            title="Ver ayuda de A corazón"
+          >
+            <img src="/assets/icons/Acorazon.gif" alt="A corazón" class="help-card__image" />
+            <div class="help-card__label">A♥ · Fundación del mazo</div>
+            <div class="help-card__subtext">Nombre, imagen y referencia principal del mazo.</div>
+          </button>
 
-        <button
-          type="button"
-          class="help-card"
-          onclick="openPlayHelp('A_SPADE')"
-          title="Ver ayuda de A picas"
-        >
-          <img src="/assets/icons/Apike.gif" alt="A picas" class="help-card__image" />
-          <div class="help-card__label">A♠ · Autoridad de picas</div>
-          <div class="help-card__subtext">Autoridad sobre actividades y participaciones.</div>
-        </button>
+          <button
+            type="button"
+            class="help-card"
+            onclick="openPlayHelp('A_SPADE')"
+            title="Ver ayuda de A picas"
+          >
+            <img src="/assets/icons/Apike.gif" alt="A picas" class="help-card__image" />
+            <div class="help-card__label">A♠ · Autoridad de picas</div>
+            <div class="help-card__subtext">Autoridad sobre actividades y participaciones.</div>
+          </button>
 
-        <button
-          type="button"
-          class="help-card"
-          onclick="openPlayHelp('A_DIAMOND')"
-          title="Ver ayuda de A diamante"
-        >
-          <img src="/assets/icons/Adiamante.gif" alt="A diamante" class="help-card__image" />
-          <div class="help-card__label">A♦ · Autoridad económica</div>
-          <div class="help-card__subtext">Control y aprobación del flujo económico.</div>
-        </button>
+          <button
+            type="button"
+            class="help-card"
+            onclick="openPlayHelp('A_DIAMOND')"
+            title="Ver ayuda de A diamante"
+          >
+            <img src="/assets/icons/Adiamante.gif" alt="A diamante" class="help-card__image" />
+            <div class="help-card__label">A♦ · Autoridad económica</div>
+            <div class="help-card__subtext">Control y aprobación del flujo económico.</div>
+          </button>
 
-        <button
-          type="button"
-          class="help-card"
-          onclick="openPlayHelp('A_CLUB')"
-          title="Ver ayuda de A trébol"
-        >
-          <img src="/assets/icons/Atrebol.gif" alt="A trébol" class="help-card__image" />
-          <div class="help-card__label">A♣ · Autoridad de trébol</div>
-          <div class="help-card__subtext">Registro o contribución comunitaria del mazo.</div>
-        </button>
+          <button
+            type="button"
+            class="help-card"
+            onclick="openPlayHelp('A_CLUB')"
+            title="Ver ayuda de A trébol"
+          >
+            <img src="/assets/icons/Atrebol.gif" alt="A trébol" class="help-card__image" />
+            <div class="help-card__label">A♣ · Autoridad de trébol</div>
+            <div class="help-card__subtext">Registro o contribución comunitaria del mazo.</div>
+          </button>
+        </div>
+      </section>
 
-        <button
-          type="button"
-          class="help-card"
-          onclick="openPlayHelp('J_HEART')"
-          title="Ver ayuda de J corazón"
-        >
-          <img src="/assets/icons/Jcorazon.gif" alt="J corazón" class="help-card__image" />
-          <div class="help-card__label">J♥ · Anotación</div>
-          <div class="help-card__subtext">Comentario o anotación escrita dentro del mazo.</div>
-        </button>
+      <section class="help-section">
+        <h2 class="help-section__title">Reyes</h2>
+        <div class="help-grid">
+        </div>
+      </section>
 
-        <button
-          type="button"
-          class="help-card"
-          onclick="openPlayHelp('J_SPADE')"
-          title="Ver ayuda de J picas"
-        >
-          <img src="/assets/icons/Jpike.gif" alt="J picas" class="help-card__image" />
-          <div class="help-card__label">J♠ · Actividad</div>
-          <div class="help-card__subtext">Cita o deadline según el tipo elegido.</div>
-        </button>
+      <section class="help-section">
+        <h2 class="help-section__title">Reinas</h2>
+        <div class="help-grid">
+        </div>
+      </section>
 
-        <button
-          type="button"
-          class="help-card"
-          onclick="openPlayHelp('J_CLUB')"
-          title="Ver ayuda de J trébol"
-        >
-          <img src="/assets/icons/Jtrebol.gif" alt="J trébol" class="help-card__image" />
-          <div class="help-card__label">J♣ · Contribución / factura</div>
-          <div class="help-card__subtext">Registro económico suelto o asociado a actividad.</div>
-        </button>
+      <section class="help-section">
+        <h2 class="help-section__title">Jotas</h2>
+        <div class="help-grid">
+          <button
+            type="button"
+            class="help-card"
+            onclick="openPlayHelp('J_HEART')"
+            title="Ver ayuda de J corazón"
+          >
+            <img src="/assets/icons/Jcorazon.gif" alt="J corazón" class="help-card__image" />
+            <div class="help-card__label">J♥ · Anotación</div>
+            <div class="help-card__subtext">Comentario o anotación escrita dentro del mazo.</div>
+          </button>
+
+          <button
+            type="button"
+            class="help-card"
+            onclick="openPlayHelp('J_SPADE')"
+            title="Ver ayuda de J picas"
+          >
+            <img src="/assets/icons/Jpike.gif" alt="J picas" class="help-card__image" />
+            <div class="help-card__label">J♠ · Actividad</div>
+            <div class="help-card__subtext">Cita o deadline según el tipo elegido.</div>
+          </button>
+
+          <button
+            type="button"
+            class="help-card"
+            onclick="openPlayHelp('J_CLUB')"
+            title="Ver ayuda de J trébol"
+          >
+            <img src="/assets/icons/Jtrebol.gif" alt="J trébol" class="help-card__image" />
+            <div class="help-card__label">J♣ · Contribución / factura</div>
+            <div class="help-card__subtext">Registro económico suelto o asociado a actividad.</div>
+          </button>
+        </div>
+      </section>
+
+      <section class="help-note">
+        <h2 class="help-note__title">Nota sobre el sistema y el código abierto</h2>
+
+        <p class="help-note__text">
+          CoopTrack está pensado como un sistema abierto, legible y auditable. Detrás de cada jugada
+          no hay una magia oculta sino una línea de código institucional que puede revisarse.
+        </p>
+
+        <p class="help-note__text">
+          La base de esa lectura es el <code>play_code</code>, una cadena con segmentos separados por
+          <code>§</code>. En ella se guarda la información esencial de cada jugada:
+          mazo, usuario, fecha, carta, palo, acción, autorizados, flujo y destinatarios.
+        </p>
+
+        <p class="help-note__text">
+          El archivo <code>engine/playParser.js</code> es una de las piezas centrales de esa lógica.
+          Su tarea es leer cada <code>play_code</code>, separarlo, normalizarlo y validarlo para que
+          el sistema pueda interpretar qué clase de jugada es, qué relación tiene con otras
+          y si su estructura mínima es correcta.
+        </p>
+
+        <p class="help-note__text">
+          Dicho de otro modo: una parte importante de la lógica de CoopTrack no depende solo de pantallas,
+          botones o formularios, sino de cómo se escriben y se leen esas líneas del libro de jugadas.
+          Por eso, quien quiera comprender el funcionamiento interno del sistema puede ir a revisar
+          directamente ese archivo y seguir desde allí la semántica de cada carta.
+        </p>
       </section>
     </div>
   </main>
