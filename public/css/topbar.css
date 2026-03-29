@@ -94,12 +94,9 @@
 }
 
 .topbar__icon-img--exit {
-  height: 24px;
+  height: 16px;
 }
 
-.topbar__icon-img--exit {
-  height: 24px;
-}
 
 .topbar__exit-btn {
   appearance: none;
