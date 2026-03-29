@@ -2,7 +2,6 @@
   function renderJpike(play, context = {}) {
     const helpers = context.helpers || {};
     const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
-    const formatDate = helpers.formatDate || ((v) => String(v ?? ""));
     const dispatch =
       typeof context.dispatch === "function"
         ? context.dispatch
@@ -10,152 +9,323 @@
             document.dispatchEvent(new CustomEvent(eventName, { detail }));
           };
 
-    const playId = play?.id;
-    const text = escapeHtml(play?.play_text || "");
-    const author = escapeHtml(play?.createdByNickname || play?.created_by_nickname || "—");
-    const date = formatDate(play?.displayDate || play?.created_at || "");
-    const status = escapeHtml(play?.play_status || play?.status || "ACTIVE");
+    const ICONS = window.ICONS || {};
+    const ACTIONS = ICONS.actions || {};
 
-    const spadeMode = String(play?.spade_mode || "").toUpperCase();
+    const state = context.state || {};
+    const allPlays = Array.isArray(state.plays) ? state.plays : [];
+    const currentUserId = Number(state.userId || 0);
+
+    const playId = play?.id;
+    const originalText = String(play?.play_text || "");
+    const safeText = escapeHtml(originalText);
+    const statusRaw = String(play?.play_status || play?.status || "ACTIVE").toUpperCase();
+    const creatorUserId = Number(play?.created_by_user_id || 0);
+
+    // Campos actuales en la play
+    const spadeMode = String(play?.spade_mode || "").toUpperCase(); // APPOINTMENT | DEADLINE | ""
     const startDateValue = play?.start_date ? toInputDateTimeValue(play.start_date) : "";
     const endDateValue = play?.end_date ? toInputDateTimeValue(play.end_date) : "";
-    const locationValue = play?.location || "";
+    const locationValue = String(play?.location || "");
 
     const rowId = `tablero-row-${playId}`;
+    const textInputId = `jpike-text-${playId}`;
+
+    function normalizeRank(value) {
+      return String(value || "").trim().toUpperCase();
+    }
+
+    function normalizeSuit(value) {
+      return String(value || "").trim().toUpperCase();
+    }
+
+    function isAliveStatus(value) {
+      const status = String(value || "").trim().toUpperCase();
+      return !["CANCELLED", "DELETED", "REJECTED"].includes(status);
+    }
+
+    function resolveDiamondAceHolderUserId(plays) {
+      const aceDiamondPlays = plays
+        .filter((p) => {
+          const rank = normalizeRank(p?.rank || p?.card_rank);
+          const suit = normalizeSuit(p?.suit || p?.card_suit);
+          return rank === "A" && suit === "DIAMOND" && isAliveStatus(p?.play_status);
+        })
+        .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
+
+      if (!aceDiamondPlays.length) return null;
+
+      const latest = aceDiamondPlays[0];
+
+      if (latest?.target_user_id) return Number(latest.target_user_id);
+      if (latest?.created_by_user_id) return Number(latest.created_by_user_id);
+
+      return null;
+    }
+
+    function validateFields(mode, startDate, endDate, location) {
+      const normalizedMode = String(mode || "").toUpperCase();
+
+      if (normalizedMode === "APPOINTMENT") {
+        return {
+          ok: !!startDate && !!String(location || "").trim(),
+          error: "Para aprobar o salvar una cita, fecha inicio y locación son obligatorias."
+        };
+      }
+
+      if (normalizedMode === "DEADLINE") {
+        return {
+          ok: !!endDate,
+          error: "Para aprobar o salvar una deadline, fecha fin es obligatoria."
+        };
+      }
+
+      return {
+        ok: false,
+        error: "Primero elegí si la J♠ es cita o deadline."
+      };
+    }
+
+    const diamondAceHolderUserId = resolveDiamondAceHolderUserId(allPlays);
+    const userIsDiamondAceHolder =
+      diamondAceHolderUserId !== null &&
+      currentUserId !== 0 &&
+      diamondAceHolderUserId === currentUserId;
+
+    const userIsCreator =
+      creatorUserId !== 0 &&
+      currentUserId !== 0 &&
+      creatorUserId === currentUserId;
+
+    const userCanEdit = userIsCreator || userIsDiamondAceHolder;
+    const isApproved = statusRaw === "APPROVED";
+
+    const bombIcon = escapeHtml(ACTIONS.bomb || "");
+    const startIcon = escapeHtml(ACTIONS.start || "");
+    const endIcon = escapeHtml(ACTIONS.end || "");
+    const locationIcon = escapeHtml(ACTIONS.location || "");
+    const saveIcon = escapeHtml(ACTIONS.save || "");
+    const approveIcon = escapeHtml(ACTIONS.approve || "");
+    const deleteIcon = escapeHtml(ACTIONS.delete || "");
+    const editIcon = escapeHtml(ACTIONS.edit || "");
+    const exitIcon = escapeHtml(ACTIONS.exit || ACTIONS.cancel || "");
 
     setTimeout(() => {
       const row = document.getElementById(rowId);
       if (!row || row.dataset.bound === "true") return;
 
       row.dataset.bound = "true";
+      row.dataset.mode = spadeMode ? "read" : "choose";
 
-      row.querySelector('[data-action="choose-appointment"]')?.addEventListener("click", () => {
-        dispatch("tablero:spade-mode-selected", {
-          playId,
-          spadeMode: "APPOINTMENT"
+      const textView = row.querySelector('[data-role="text-view"]');
+      const textInput = row.querySelector('[data-role="text-input"]');
+
+      const modeRead = row.querySelector('[data-role="mode-read"]');
+      const modeChoose = row.querySelector('[data-role="mode-choose"]');
+      const modeEdit = row.querySelector('[data-role="mode-edit"]');
+
+      const btnChooseAppointment = row.querySelector('[data-action="choose-appointment"]');
+      const btnChooseDeadline = row.querySelector('[data-action="choose-deadline"]');
+      const btnEdit = row.querySelector('[data-action="edit-play"]');
+      const btnSave = row.querySelector('[data-action="save-play"]');
+      const btnApprove = row.querySelector('[data-action="approve-play"]');
+      const btnDelete = row.querySelector('[data-action="delete-play"]');
+      const btnExit = row.querySelector('[data-action="exit-edit"]');
+
+      const appointmentFields = row.querySelector('[data-role="appointment-fields"]');
+      const deadlineFields = row.querySelector('[data-role="deadline-fields"]');
+
+      const startDateInput = row.querySelector('[data-role="start-date"]');
+      const endDateInput = row.querySelector('[data-role="end-date"]');
+      const locationInput = row.querySelector('[data-role="location"]');
+
+      function getCurrentText() {
+        return String(textInput?.value || "").trim();
+      }
+
+      function getCurrentMode() {
+        return String(row.dataset.spadeMode || spadeMode || "").toUpperCase();
+      }
+
+      function getFieldValues() {
+        return {
+          startDate: String(startDateInput?.value || "").trim(),
+          endDate: String(endDateInput?.value || "").trim(),
+          location: String(locationInput?.value || "").trim(),
+        };
+      }
+
+      function setVisualMode(mode) {
+        row.dataset.mode = mode;
+      }
+
+      function setSpadeMode(mode) {
+        row.dataset.spadeMode = String(mode || "").toUpperCase();
+      }
+
+      function show(el, displayValue = "") {
+        if (!el) return;
+        el.style.display = displayValue;
+      }
+
+      function hide(el) {
+        if (!el) return;
+        el.style.display = "none";
+      }
+
+      function renderMode() {
+        const visualMode = row.dataset.mode || "choose";
+        const currentMode = getCurrentMode();
+        const isChoose = visualMode === "choose";
+        const isEdit = visualMode === "edit";
+        const isRead = visualMode === "read";
+
+        if (modeChoose) modeChoose.style.display = isChoose ? "flex" : "none";
+        if (modeRead) modeRead.style.display = isRead ? "flex" : "none";
+        if (modeEdit) modeEdit.style.display = isEdit ? "flex" : "none";
+
+        if (textView) textView.style.display = isEdit ? "none" : "";
+        if (textInput) textInput.style.display = isEdit ? "block" : "none";
+
+        if (appointmentFields) {
+          appointmentFields.style.display =
+            (isEdit || isRead) && currentMode === "APPOINTMENT" ? "flex" : "none";
+        }
+
+        if (deadlineFields) {
+          deadlineFields.style.display =
+            (isEdit || isRead) && currentMode === "DEADLINE" ? "flex" : "none";
+        }
+
+        // Botones
+        if (btnChooseAppointment) btnChooseAppointment.style.display = (!isApproved && isChoose) ? "inline-flex" : "none";
+        if (btnChooseDeadline) btnChooseDeadline.style.display = (!isApproved && isChoose) ? "inline-flex" : "none";
+
+        if (btnEdit) btnEdit.style.display = (!isApproved && isRead && userCanEdit && !!currentMode) ? "inline-flex" : "none";
+        if (btnSave) btnSave.style.display = (!isApproved && isEdit && !!currentMode) ? "inline-flex" : "none";
+        if (btnExit) btnExit.style.display = (!isApproved && isEdit) ? "inline-flex" : "none";
+
+        if (btnApprove) {
+          btnApprove.style.display =
+            (!isApproved && !!currentMode && userIsDiamondAceHolder && (isRead || isEdit))
+              ? "inline-flex"
+              : "none";
+        }
+
+        if (btnDelete) btnDelete.style.display = !isApproved ? "inline-flex" : "none";
+
+        if (isEdit && textInput) {
+          textInput.focus();
+          textInput.select();
+        }
+
+        // Campos readonly en lectura
+        setInputsReadOnly(isRead);
+      }
+
+      function setInputsReadOnly(readOnly) {
+        [textInput, startDateInput, endDateInput, locationInput].forEach((input) => {
+          if (!input) return;
+          input.readOnly = !!readOnly;
+          input.disabled = false;
         });
+      }
+
+      function buildPayload() {
+        const currentMode = getCurrentMode();
+        const { startDate, endDate, location } = getFieldValues();
+
+        return {
+          playId,
+          text: getCurrentText(),
+          spadeMode: currentMode,
+          startDate,
+          endDate,
+          location,
+        };
+      }
+
+      btnChooseAppointment?.addEventListener("click", () => {
+        setSpadeMode("APPOINTMENT");
+        setVisualMode("edit");
+        renderMode();
       });
 
-      row.querySelector('[data-action="choose-deadline"]')?.addEventListener("click", () => {
-        dispatch("tablero:spade-mode-selected", {
-          playId,
-          spadeMode: "DEADLINE"
-        });
+      btnChooseDeadline?.addEventListener("click", () => {
+        setSpadeMode("DEADLINE");
+        setVisualMode("edit");
+        renderMode();
       });
 
-      row.querySelector('[data-action="save-play"]')?.addEventListener("click", () => {
-        const payload = collectSpadeFields(row, playId, spadeMode);
+      btnEdit?.addEventListener("click", () => {
+        setVisualMode("edit");
+        renderMode();
+      });
+
+      btnSave?.addEventListener("click", () => {
+        const payload = buildPayload();
+        const check = validateFields(
+          payload.spadeMode,
+          payload.startDate,
+          payload.endDate,
+          payload.location
+        );
+
+        if (!check.ok) {
+          alert(check.error);
+          return;
+        }
+
         dispatch("tablero:save-play", payload);
       });
 
-      row.querySelector('[data-action="approve-play"]')?.addEventListener("click", () => {
-        const payload = collectSpadeFields(row, playId, spadeMode);
+      btnApprove?.addEventListener("click", () => {
+        const payload = buildPayload();
+        const check = validateFields(
+          payload.spadeMode,
+          payload.startDate,
+          payload.endDate,
+          payload.location
+        );
+
+        if (!check.ok) {
+          alert(check.error);
+          return;
+        }
+
         dispatch("tablero:approve-play", payload);
       });
 
-      row.querySelector('[data-action="edit-play"]')?.addEventListener("click", () => {
-        dispatch("tablero:edit-play", {
-          playId,
-          spadeMode
-        });
-      });
-
-      row.querySelector('[data-action="delete-play"]')?.addEventListener("click", () => {
+      btnDelete?.addEventListener("click", () => {
         dispatch("tablero:delete-play", {
-          playId
+          playId,
         });
       });
 
-      row.querySelector('[data-action="cancel-play"]')?.addEventListener("click", () => {
-        dispatch("tablero:cancel-play", {
-          playId
-        });
+      btnExit?.addEventListener("click", () => {
+        if (textInput) textInput.value = originalText;
+        if (startDateInput) startDateInput.value = startDateValue;
+        if (endDateInput) endDateInput.value = endDateValue;
+        if (locationInput) locationInput.value = locationValue;
+
+        setSpadeMode(spadeMode || "");
+        setVisualMode(spadeMode ? "read" : "choose");
+        renderMode();
       });
+
+      textInput?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          btnSave?.click();
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          btnExit?.click();
+        }
+      });
+
+      renderMode();
     }, 0);
-
-    if (!spadeMode) {
-      return `
-        <article class="tablero-row tablero-row--jpike" id="${rowId}">
-          <div class="tablero-row__left">
-            <div class="tablero-row__card">J♠</div>
-          </div>
-
-          <div class="tablero-row__center">
-            <div class="tablero-row__title">${text || "Sin texto"}</div>
-
-            <div class="tablero-row__meta">
-              <span>Autor: ${author}</span>
-              <span>Fecha: ${date}</span>
-              <span>Estado: ${status}</span>
-            </div>
-          </div>
-
-          <div class="tablero-row__right">
-            <button type="button" data-action="choose-appointment">Cita</button>
-            <button type="button" data-action="choose-deadline">Deadline</button>
-            <button type="button" data-action="delete-play">Borrar</button>
-          </div>
-        </article>
-      `;
-    }
-
-    if (spadeMode === "APPOINTMENT") {
-      return `
-        <article class="tablero-row tablero-row--jpike" id="${rowId}">
-          <div class="tablero-row__left">
-            <div class="tablero-row__card">J♠</div>
-          </div>
-
-          <div class="tablero-row__center">
-            <div class="tablero-row__title">${text || "Sin texto"}</div>
-
-            <div class="tablero-row__fields">
-              <label class="tablero-row__field">
-                <span>Fecha inicio</span>
-                <input
-                  type="datetime-local"
-                  value="${escapeHtml(startDateValue)}"
-                  data-role="start-date"
-                />
-              </label>
-
-              <label class="tablero-row__field">
-                <span>Fecha fin</span>
-                <input
-                  type="datetime-local"
-                  value="${escapeHtml(endDateValue)}"
-                  data-role="end-date"
-                />
-              </label>
-
-              <label class="tablero-row__field">
-                <span>Locación</span>
-                <input
-                  type="text"
-                  value="${escapeHtml(locationValue)}"
-                  data-role="location"
-                />
-              </label>
-            </div>
-
-            <div class="tablero-row__meta">
-              <span>Modo: Cita</span>
-              <span>Autor: ${author}</span>
-              <span>Fecha: ${date}</span>
-              <span>Estado: ${status}</span>
-            </div>
-          </div>
-
-          <div class="tablero-row__right">
-            <button type="button" data-action="save-play">Salvar</button>
-            <button type="button" data-action="approve-play">Aprobar</button>
-            <button type="button" data-action="edit-play">Editar</button>
-            <button type="button" data-action="delete-play">Borrar</button>
-            <button type="button" data-action="cancel-play">Cancelar</button>
-          </div>
-        </article>
-      `;
-    }
 
     return `
       <article class="tablero-row tablero-row--jpike" id="${rowId}">
@@ -164,59 +334,102 @@
         </div>
 
         <div class="tablero-row__center">
-          <div class="tablero-row__title">${text || "Sin texto"}</div>
+          <div class="tablero-row__title" data-role="text-view">${safeText || "Sin texto"}</div>
 
-          <div class="tablero-row__fields">
-            <label class="tablero-row__field">
-              <span>Fecha fin</span>
+          <input
+            id="${textInputId}"
+            type="text"
+            class="tablero-row__inline-input"
+            data-role="text-input"
+            value="${safeText}"
+            style="display:none;"
+          />
+
+          <div class="tablero-row__mode-read" data-role="mode-read"></div>
+          <div class="tablero-row__mode-choose" data-role="mode-choose"></div>
+          <div class="tablero-row__mode-edit" data-role="mode-edit"></div>
+
+          <div
+            class="tablero-row__fields tablero-row__fields--appointment"
+            data-role="appointment-fields"
+            style="display:none;"
+          >
+            <div class="tablero-row__field-inline">
+              <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
+              <input
+                type="datetime-local"
+                value="${escapeHtml(startDateValue)}"
+                data-role="start-date"
+              />
+            </div>
+
+            <div class="tablero-row__field-inline">
+              <img src="${endIcon}" alt="Fin" class="tablero-row__field-icon" />
               <input
                 type="datetime-local"
                 value="${escapeHtml(endDateValue)}"
                 data-role="end-date"
               />
-            </label>
+            </div>
 
-            <label class="tablero-row__field">
-              <span>Locación</span>
+            <div class="tablero-row__field-inline">
+              <img src="${locationIcon}" alt="Locación" class="tablero-row__field-icon" />
               <input
                 type="text"
                 value="${escapeHtml(locationValue)}"
                 data-role="location"
+                placeholder="Locación"
               />
-            </label>
+            </div>
           </div>
 
-          <div class="tablero-row__meta">
-            <span>Modo: Deadline</span>
-            <span>Autor: ${author}</span>
-            <span>Fecha: ${date}</span>
-            <span>Estado: ${status}</span>
+          <div
+            class="tablero-row__fields tablero-row__fields--deadline"
+            data-role="deadline-fields"
+            style="display:none;"
+          >
+            <div class="tablero-row__field-inline">
+              <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
+              <input
+                type="datetime-local"
+                value="${escapeHtml(endDateValue)}"
+                data-role="end-date"
+              />
+            </div>
           </div>
         </div>
 
         <div class="tablero-row__right">
-          <button type="button" data-action="save-play">Salvar</button>
-          <button type="button" data-action="approve-play">Aprobar</button>
-          <button type="button" data-action="edit-play">Editar</button>
-          <button type="button" data-action="delete-play">Borrar</button>
-          <button type="button" data-action="cancel-play">Cancelar</button>
+          <button type="button" data-action="choose-appointment" title="Cita">
+            <img src="${startIcon}" alt="Cita" />
+          </button>
+
+          <button type="button" data-action="choose-deadline" title="Deadline">
+            <img src="${bombIcon}" alt="Deadline" />
+          </button>
+
+          <button type="button" data-action="edit-play" title="Editar" style="display:none;">
+            <img src="${editIcon}" alt="Editar" />
+          </button>
+
+          <button type="button" data-action="save-play" title="Salvar" style="display:none;">
+            <img src="${saveIcon}" alt="Salvar" />
+          </button>
+
+          <button type="button" data-action="exit-edit" title="Salir edición" style="display:none;">
+            <img src="${exitIcon}" alt="Salir edición" />
+          </button>
+
+          <button type="button" data-action="approve-play" title="Aprobar" style="display:none;">
+            <img src="${approveIcon}" alt="Aprobar" />
+          </button>
+
+          <button type="button" data-action="delete-play" title="Borrar">
+            <img src="${deleteIcon}" alt="Borrar" />
+          </button>
         </div>
       </article>
     `;
-  }
-
-  function collectSpadeFields(row, playId, spadeMode) {
-    const startDate = row.querySelector('[data-role="start-date"]')?.value || "";
-    const endDate = row.querySelector('[data-role="end-date"]')?.value || "";
-    const location = row.querySelector('[data-role="location"]')?.value || "";
-
-    return {
-      playId,
-      spadeMode,
-      startDate,
-      endDate,
-      location
-    };
   }
 
   function toInputDateTimeValue(value) {
