@@ -48,8 +48,8 @@
 }
 
 .deck-row__card {
-  width: 28px;
-  height: 40px;
+  width: auto;
+  height: 72px;
   object-fit: contain;
   display: block;
 }
