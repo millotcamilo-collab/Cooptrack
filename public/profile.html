@@ -218,7 +218,7 @@
       document.getElementById("birthDate").value = user.birth_date || "";
       document.getElementById("userType").value = user.user_type || "";
       document.getElementById("profilePhotoUrl").value = user.profile_photo_url || "";
-
+      document.getElementById("country").value = user.country || "";
       updateAvatar(user.profile_photo_url);
     }
 
@@ -253,6 +253,7 @@
       const phone = document.getElementById("phone").value.trim();
       const birthDate = document.getElementById("birthDate").value || null;
       const profilePhotoUrl = document.getElementById("profilePhotoUrl").value.trim();
+      const country = document.getElementById("country").value.trim();
 
       if (!nickname) {
         setStatus("El nombre visible es obligatorio", true);
@@ -272,6 +273,7 @@
             email: email || null,
             phone: phone || null,
             birth_date: birthDate,
+            country: country || null,
             profile_photo_url: profilePhotoUrl || null
           })
         });
