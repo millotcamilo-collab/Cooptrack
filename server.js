@@ -629,7 +629,7 @@ async function createMazoHandler(req, res) {
       { rank: 'A', suit: 'HEART', action: 'init_ace', status: 'ACTIVE' },
       { rank: 'A', suit: 'SPADE', action: 'init_ace', status: 'ACTIVE' },
       { rank: 'A', suit: 'DIAMOND', action: 'init_ace', status: 'ACTIVE' },
-      { rank: 'A', suit: 'CLUB', action: 'puedeJugar', status: 'ACTIVE' },
+      { rank: 'A', suit: 'CLUB', action: 'init_ace', status: 'ACTIVE' },
 
       { rank: 'K', suit: 'HEART', action: 'puedeJugar', status: 'ACTIVE' },
       { rank: 'K', suit: 'SPADE', action: 'puedeJugar', status: 'ACTIVE' },
