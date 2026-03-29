@@ -1043,7 +1043,79 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     client.release();
   }
 });
+app.delete('/plays/:id', requireAuth, async (req, res) => {
+  const playId = Number(req.params.id);
+  const userId = req.auth.userId;
 
+  if (!Number.isInteger(playId) || playId <= 0) {
+    return res.status(400).json({
+      ok: false,
+      error: 'playId inválido',
+    });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const existingResult = await client.query(
+      `SELECT *
+       FROM plays
+       WHERE id = $1
+       LIMIT 1`,
+      [playId]
+    );
+
+    if (!existingResult.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        ok: false,
+        error: 'Play no encontrada',
+      });
+    }
+
+    const existingPlay = existingResult.rows[0];
+
+    const mazo = await getMazoByIdForUser(client, existingPlay.deck_id, userId);
+
+    if (!mazo) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({
+        ok: false,
+        error: 'Sin acceso a esta jugada',
+      });
+    }
+
+    await client.query(
+      `DELETE FROM plays
+       WHERE id = $1`,
+      [playId]
+    );
+
+    await client.query('COMMIT');
+
+    return res.json({
+      ok: true,
+      deletedPlayId: playId,
+    });
+  } catch (error) {
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackError) {
+      console.error('Error haciendo ROLLBACK en DELETE /plays/:id', rollbackError);
+    }
+
+    console.error('Error en DELETE /plays/:id', error);
+
+    return res.status(500).json({
+      ok: false,
+      error: 'Error borrando jugada',
+    });
+  } finally {
+    client.release();
+  }
+});
 app.get('/plays', requireAuth, async (req, res) => {
   try {
     const mazoId = Number(req.query.mazoId || req.query.deckId);
