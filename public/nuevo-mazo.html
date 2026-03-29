@@ -62,7 +62,7 @@
     }
 
     .nuevo-mazo-label {
-      width: 78px;
+      width: 92px;
       font-size: 18px;
       color: #222;
       white-space: nowrap;
@@ -76,6 +76,11 @@
       font-size: 16px;
       border: 1px solid #999;
       background: #fff;
+    }
+
+    .nuevo-mazo-input[readonly] {
+      background: #f4f4f4;
+      color: #333;
     }
 
     .nuevo-mazo-actions {
@@ -188,15 +193,16 @@
             </tr>
 
             <tr>
-              <td class="nuevo-mazo-label">Moneda</td>
+              <td class="nuevo-mazo-label">Cod. mon.</td>
               <td>
                 <input
-                  id="deckCurrency"
+                  id="deckCurrencyCode"
                   class="nuevo-mazo-input"
                   type="text"
-                  value="ARS"
+                  value=""
                   maxlength="3"
                   autocomplete="off"
+                  readonly
                 />
               </td>
               <td class="nuevo-mazo-actions">
@@ -232,6 +238,21 @@
               </td>
             </tr>
 
+            <tr>
+              <td class="nuevo-mazo-label">Moneda</td>
+              <td>
+                <input
+                  id="deckCurrencyName"
+                  class="nuevo-mazo-input"
+                  type="text"
+                  value=""
+                  autocomplete="off"
+                  readonly
+                />
+              </td>
+              <td></td>
+            </tr>
+
             <tr class="status-row">
               <td></td>
               <td>
@@ -251,12 +272,25 @@
   <script>
     const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
+    const COUNTRY_TO_CURRENCY = {
+      UY: { code: "UYU", name: "Peso uruguayo" },
+      AR: { code: "ARS", name: "Peso argentino" },
+      CL: { code: "CLP", name: "Peso chileno" },
+      BR: { code: "BRL", name: "Real brasileño" },
+      US: { code: "USD", name: "Dólar estadounidense" },
+      ES: { code: "EUR", name: "Euro" }
+    };
+
     function getToken() {
       return localStorage.getItem("cooptrackToken");
     }
 
+    function getEl(id) {
+      return document.getElementById(id);
+    }
+
     function setStatus(message, isError = false) {
-      const statusMsg = document.getElementById("statusMsg");
+      const statusMsg = getEl("statusMsg");
       if (!statusMsg) return;
 
       statusMsg.textContent = message || "";
@@ -267,14 +301,54 @@
       window.location.href = "/index.html";
     }
 
+    async function loadDefaultCurrencyFromProfile() {
+      const token = getToken();
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/me`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok || !data.user) {
+          return;
+        }
+
+        const country = String(data.user.country || "").trim().toUpperCase();
+        const currency = COUNTRY_TO_CURRENCY[country];
+
+        const codeInput = getEl("deckCurrencyCode");
+        const nameInput = getEl("deckCurrencyName");
+
+        if (!codeInput || !nameInput) return;
+
+        if (currency) {
+          codeInput.value = currency.code;
+          nameInput.value = currency.name;
+        } else {
+          codeInput.value = "";
+          nameInput.value = "";
+        }
+      } catch (error) {
+        console.error("No se pudo cargar la moneda por defecto:", error);
+      }
+    }
+
     async function createDeck() {
-      const nameInput = document.getElementById("deckName");
-      const imageInput = document.getElementById("deckImage");
-      const currencyInput = document.getElementById("deckCurrency");
+      const nameInput = getEl("deckName");
+      const imageInput = getEl("deckImage");
+      const currencyCodeInput = getEl("deckCurrencyCode");
+      const currencyNameInput = getEl("deckCurrencyName");
 
       const name = (nameInput?.value || "").trim();
       const image = (imageInput?.value || "").trim();
-      const currency = (currencyInput?.value || "").trim().toUpperCase();
+      const currencyCode = (currencyCodeInput?.value || "").trim().toUpperCase();
+      const currencyName = (currencyNameInput?.value || "").trim();
       const token = getToken();
 
       if (!token) {
@@ -288,9 +362,8 @@
         return;
       }
 
-      if (currency.length > 3) {
-        setStatus("La moneda no puede tener más de 3 caracteres", true);
-        if (currencyInput) currencyInput.focus();
+      if (currencyCode && currencyCode.length !== 3) {
+        setStatus("El código de moneda debe tener 3 caracteres", true);
         return;
       }
 
@@ -305,9 +378,10 @@
           },
           body: JSON.stringify({
             name,
-            description: currency ? `Moneda:${currency}` : null,
+            description: currencyName ? `Moneda:${currencyName}` : null,
             deck_image_url: image || null,
-            currency_symbol: currency || null
+            currency_symbol: currencyCode || null,
+            currency_name: currencyName || null
           })
         });
 
@@ -332,39 +406,48 @@
       }
     }
 
-    document.getElementById("createDeckBtn")?.addEventListener("click", createDeck);
-    document.getElementById("cancelBtn")?.addEventListener("click", goBack);
+    getEl("createDeckBtn")?.addEventListener("click", createDeck);
+    getEl("cancelBtn")?.addEventListener("click", goBack);
 
-    document.getElementById("helpBtn")?.addEventListener("click", () => {
+    getEl("helpBtn")?.addEventListener("click", () => {
       if (typeof window.openPlayHelp === "function") {
         window.openPlayHelp("A_HEART");
       }
     });
 
-    document.getElementById("deckName")?.addEventListener("keydown", (event) => {
+    getEl("deckName")?.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
         createDeck();
       }
     });
 
-    document.getElementById("deckImage")?.addEventListener("keydown", (event) => {
+    getEl("deckImage")?.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
         createDeck();
       }
     });
 
-    document.getElementById("deckCurrency")?.addEventListener("keydown", (event) => {
+    getEl("deckCurrencyCode")?.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
         createDeck();
       }
     });
 
-    window.addEventListener("DOMContentLoaded", () => {
-      const nameInput = document.getElementById("deckName");
+    getEl("deckCurrencyName")?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        createDeck();
+      }
+    });
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      const nameInput = getEl("deckName");
       if (nameInput) nameInput.focus();
+
+      await loadDefaultCurrencyFromProfile();
     });
   </script>
 </body>
