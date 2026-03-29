@@ -274,16 +274,21 @@ document.addEventListener("tablero:change-suit", async (event) => {
 document.addEventListener("tablero:save-play", async (event) => {
   try {
     const playId = event.detail?.playId;
+    const text = String(event.detail?.text || "").trim();
+
     if (!playId) return;
 
-    console.log("TABLERO SAVE PLAY", playId);
+    console.log("TABLERO SAVE PLAY", playId, text);
+
+    await patchPlay(playId, {
+      play_text: text
+    });
 
     await initMazoPage();
   } catch (error) {
     console.error("Error en tablero:save-play", error);
   }
 });
-
 document.addEventListener("tablero:approve-play", async (event) => {
   try {
     const playId = event.detail?.playId;
