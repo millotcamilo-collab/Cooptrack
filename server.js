@@ -478,6 +478,7 @@ app.get('/me', requireAuth, async (req, res) => {
         profile_photo_url,
         birth_date,
         user_type
+        country
        FROM users
        WHERE id = $1`,
       [userId]
@@ -512,6 +513,7 @@ app.put('/me', requireAuth, async (req, res) => {
       phone,
       birth_date,
       profile_photo_url,
+      country,
     } = req.body;
 
     if (!nickname || !nickname.trim()) {
@@ -529,6 +531,7 @@ app.put('/me', requireAuth, async (req, res) => {
          phone = $3,
          birth_date = $4,
          profile_photo_url = $5,
+         country = $6,
          updated_at = NOW()
        WHERE id = $6
        RETURNING
@@ -538,6 +541,7 @@ app.put('/me', requireAuth, async (req, res) => {
          phone,
          profile_photo_url,
          birth_date,
+         country,
          user_type`,
       [
         nickname.trim(),
@@ -545,6 +549,7 @@ app.put('/me', requireAuth, async (req, res) => {
         phone || null,
         birth_date || null,
         profile_photo_url || null,
+        country || null,
         userId,
       ]
     );
