@@ -1,0 +1,53 @@
+.play-help-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+.play-help-modal.is-hidden {
+  display: none;
+}
+
+.play-help-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.play-help-modal__dialog {
+  position: relative;
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  margin: 24px auto;
+  background: #fffdf8;
+  border: 1px solid #999;
+  border-radius: 12px;
+  padding: 18px 18px 14px;
+  box-sizing: border-box;
+}
+
+.play-help-modal__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #999;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.play-help-modal__title {
+  margin: 0 36px 12px 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.play-help-modal__body p {
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
