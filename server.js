@@ -574,7 +574,12 @@ app.put('/me', requireAuth, async (req, res) => {
 // =====================================================
 
 async function createMazoHandler(req, res) {
-  const { name, description } = req.body;
+ const {
+  name,
+  description,
+  deck_image_url,
+  currency_symbol,
+} = req.body;
   const userId = req.auth.userId;
 
   if (!name || !name.trim()) {
@@ -589,20 +594,25 @@ async function createMazoHandler(req, res) {
   try {
     await client.query('BEGIN');
 
-    const mazoResult = await client.query(
-      `INSERT INTO decks (name, description, created_by_user_id, owner_user_id)
-       VALUES ($1, $2, $3, $3)
-       RETURNING *`,
-      [name.trim(), description || null, userId]
-    );
-
-    const mazo = mazoResult.rows[0];
-
-    await client.query(
-      `INSERT INTO deck_members (deck_id, user_id)
-       VALUES ($1, $2)`,
-      [mazo.id, userId]
-    );
+   const mazoResult = await client.query(
+  `INSERT INTO decks (
+     name,
+     description,
+     created_by_user_id,
+     owner_user_id,
+     deck_image_url,
+     currency_symbol
+   )
+   VALUES ($1, $2, $3, $3, $4, $5)
+   RETURNING *`,
+  [
+    name.trim(),
+    description || null,
+    userId,
+    deck_image_url || null,
+    currency_symbol ? String(currency_symbol).trim().slice(0, 3) : null,
+  ]
+);
 
     const seedPlays = [
       { rank: 'A', suit: 'HEART', action: 'init_ace', status: 'ACTIVE' },
