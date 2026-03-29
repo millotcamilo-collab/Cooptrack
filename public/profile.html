@@ -229,15 +229,34 @@
       const safeUrl = (url || "").trim();
       avatar.src = safeUrl || getFallbackProfileImage();
     }
+function updateUserCategoryIcon(user) {
+  const icon = document.getElementById("userCategoryIcon");
+  if (!icon) return;
 
+  const normalizedType = String(user?.user_type || "").toLowerCase();
+
+  let iconSrc = "/assets/icons/guest80.gif";
+  let altText = "Guest";
+
+  if (normalizedType === "senior") {
+    iconSrc = "/assets/icons/senior80.gif";
+    altText = "Senior";
+  } else if (normalizedType === "active") {
+    iconSrc = "/assets/icons/activo80.gif";
+    altText = "Active";
+  }
+
+  icon.src = iconSrc;
+  icon.alt = altText;
+}
     function fillProfileForm(user) {
       document.getElementById("nickname").value = user.nickname || "";
       document.getElementById("email").value = user.email || "";
       document.getElementById("phone").value = user.phone || "";
       document.getElementById("birthDate").value = user.birth_date || "";
-      document.getElementById("userType").value = user.user_type || "";
       document.getElementById("profilePhotoUrl").value = user.profile_photo_url || "";
       document.getElementById("country").value = user.country || "";
+      updateUserCategoryIcon(user);
       updateAvatar(user.profile_photo_url);
     }
 
