@@ -88,8 +88,23 @@
     return map[suitPart] || null;
   }
 
-  function getAvatarSrc() {
-    return "/assets/icons/sinPicture.gif";
+  function getDeckAvatarSrc(deck) {
+    const raw = String(deck?.deck_image_url || "").trim();
+    return raw || "/assets/icons/sinPicture.gif";
+  }
+
+  function getCurrencyCode(deck) {
+    return String(deck?.currency_symbol || "").trim().toUpperCase();
+  }
+
+  function getBalanceValue(deck) {
+    const value = deck?.viewer_balance;
+
+    if (value === null || value === undefined || value === "") {
+      return "0";
+    }
+
+    return String(value);
   }
 
   function getEnabledTopCards(plays) {
@@ -241,10 +256,10 @@
       : [];
 
     const enabledCards = getEnabledTopCards(normalizedPlays);
-    const avatarSrc = getAvatarSrc();
-    const userName = "";
+    const avatarSrc = getDeckAvatarSrc(deck);
     const deckName = deck?.name || "Mazo";
-    const balance = deck?.viewer_balance || 0;
+    const currencyCode = getCurrencyCode(deck);
+    const balance = getBalanceValue(deck);
 
     return `
       <section class="mazobar">
@@ -260,10 +275,10 @@
                 <div class="mazobar__userbox">
                   <img
                     src="${avatarSrc}"
-                    alt="${userName}"
+                    alt="Foto del mazo"
                     class="mazobar__avatar"
+                    onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
                   />
-                 
                 </div>
               </div>
 
@@ -281,6 +296,7 @@
                     alt="♦"
                     class="mazobar__balance-icon"
                   />
+                  <span class="mazobar__balance-currency">${currencyCode}</span>
                   <span class="mazobar__balance-value">${balance}</span>
                 </div>
 
