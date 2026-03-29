@@ -296,8 +296,6 @@
       return;
     }
 
-    injectTableroStyles();
-
     try {
       const rawPlays = Array.isArray(plays) ? plays : [];
       const normalized = rawPlays.map(normalizePlay);
