@@ -477,7 +477,7 @@ app.get('/me', requireAuth, async (req, res) => {
         phone,
         profile_photo_url,
         birth_date,
-        user_type
+        user_type,
         country
        FROM users
        WHERE id = $1`,
@@ -533,7 +533,7 @@ app.put('/me', requireAuth, async (req, res) => {
          profile_photo_url = $5,
          country = $6,
          updated_at = NOW()
-       WHERE id = $6
+       WHERE id = $7
        RETURNING
          id,
          nickname,
