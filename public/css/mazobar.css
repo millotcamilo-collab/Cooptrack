@@ -26,7 +26,7 @@
   box-sizing: border-box;
 }
 
-/* IZQUIERDA: cartas habilitadas + usuario */
+/* IZQUIERDA: cartas habilitadas + foto del mazo */
 
 .mazobar__top-left {
   display: flex;
@@ -75,16 +75,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-width: 78px;
+  min-width: auto;
 }
 
 .mazobar__avatar {
-  width: 52px;
-  height: 52px;
+  height: 70px;
+  width: auto;
+  max-width: 140px;
   border-radius: 6px;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
-  background: #ddd;
+  background: transparent;
 }
 
 .mazobar__username {
@@ -139,10 +140,12 @@
   display: block;
   margin-left: 8px;
 }
+
 .mazobar__balance-currency {
   margin-left: 6px;
   font-weight: 600;
 }
+
 .mazobar__balance-value {
   font-size: 1rem;
   color: #7d0000;
@@ -179,9 +182,13 @@
 }
 
 .mazobar__cmd-btn--primary {
-  background: #f7f0e2;
+  background: transparent;
+  border: none;
+  font-family: "Courier New", Courier, monospace;
+  font-weight: 700;
   font-size: 1.1rem;
-  padding: 7px 14px;
+  padding: 0 4px;
+  min-height: auto;
 }
 
 .mazobar__cmd-btn--exit {
@@ -225,7 +232,7 @@
 }
 
 .mazobar__joker.is-inactive {
-    opacity: 1;
+  opacity: 1;
   filter: none;
 }
 
@@ -278,6 +285,11 @@
 
   .mazobar__topcard-image {
     height: 58px;
+  }
+
+  .mazobar__avatar {
+    height: 58px;
+    max-width: 120px;
   }
 
   .mazobar__joker {
