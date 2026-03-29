@@ -81,10 +81,9 @@ async function renderDecksView() {
     return;
   }
 
-  const deckRowsHTML = decks
-    .map((deck) => buildDeckRowViewModel(deck))
-    .map((deckView) => renderDeckRow(deckView))
-    .join("");
+const deckRowsHTML = decks
+  .map((deck) => renderDeckRow(deck))
+  .join("");
 
   container.innerHTML = `
     <section class="decks-view">
