@@ -183,7 +183,10 @@
 
 .mazobar__cmd-btn--primary {
   background: transparent;
-  border: none;
+  border: 1px solid #bdb39f;
+  border-radius: 4px;
+  background: #fff;
+  color: #111;
   font-family: "Courier New", Courier, monospace;
   font-weight: 700;
   font-size: 1.1rem;
