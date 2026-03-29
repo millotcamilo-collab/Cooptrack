@@ -1,6 +1,10 @@
 function renderDeckRow(deck) {
   if (!deck) return "";
 
+  const photoUrl = deck.photo_url && deck.photo_url.trim() !== ""
+    ? deck.photo_url
+    : "/assets/icons/sinPicture.gif";
+
   return `
     <article class="deck-row" data-deck-id="${deck.id}">
       
@@ -12,7 +16,7 @@ function renderDeckRow(deck) {
 
       <div class="deck-row__photo">
         <img
-          src="/assets/icons/singeta120.gif"
+          src="${photoUrl}"
           class="deck-row__photo-img"
         />
       </div>
