@@ -1,41 +1,66 @@
-.jcorazon-row,
 .tablero-row--jcorazon {
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 12px;
   background: #fffdf8;
 }
 
-/* CENTRO */
+/* COLUMNA IZQUIERDA */
+.tablero-row--jcorazon .tablero-row__left {
+  justify-content: center;
+  align-items: center;
+}
+
+.tablero-row--jcorazon .tablero-row__card {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* COLUMNA CENTRAL */
 .tablero-row--jcorazon .tablero-row__center {
-  gap: 6px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
 }
 
 .tablero-row--jcorazon .tablero-row__title {
+  min-width: 0;
+  margin: 0;
   font-size: 15px;
   font-weight: 700;
-  line-height: 1.3;
-  word-break: break-word;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
 }
 
-.tablero-row--jcorazon .tablero-row__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  font-size: 12px;
-  color: #555;
+/* OCULTAMOS LA SEGUNDA LÍNEA */
+.tablero-row--jcorazon .tablero-row__meta,
+.tablero-row--jcorazon .tablero-row__text {
+  display: none;
 }
 
-/* PANEL DERECHO */
+/* COLUMNA DERECHA */
 .tablero-row--jcorazon .tablero-row__right {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap;
   justify-content: flex-end;
-  align-items: flex-start;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 /* BOTONES */
 .tablero-row--jcorazon .tablero-row__right button {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: 1px solid #b8b8b8;
   border-radius: 8px;
@@ -43,8 +68,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   box-sizing: border-box;
+  cursor: pointer;
+  flex: 0 0 auto;
 }
 
 .tablero-row--jcorazon .tablero-row__right button:hover {
@@ -63,34 +89,41 @@
 /* ICONOS */
 .tablero-row--jcorazon .tablero-row__right button img {
   display: block;
-  max-width: 26px;
-  max-height: 26px;
+  max-width: 24px;
+  max-height: 24px;
   width: auto;
   height: auto;
   object-fit: contain;
   pointer-events: none;
 }
 
-/* CARTA IZQUIERDA */
-.tablero-row--jcorazon .tablero-row__card {
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1;
-}
-
 /* RESPONSIVE */
 @media (max-width: 780px) {
-  .tablero-row--jcorazon .tablero-row__right {
+  .tablero-row--jcorazon {
+    grid-template-columns: 36px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .tablero-row--jcorazon .tablero-row__left {
+    align-items: flex-start;
     justify-content: flex-start;
+    padding-top: 6px;
   }
 
-  .tablero-row--jcorazon .tablero-row__right button {
-    width: 40px;
-    height: 40px;
+  .tablero-row--jcorazon .tablero-row__center {
+    min-width: 0;
   }
 
-  .tablero-row--jcorazon .tablero-row__right button img {
-    max-width: 24px;
-    max-height: 24px;
+  .tablero-row--jcorazon .tablero-row__title {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .tablero-row--jcorazon .tablero-row__right {
+    grid-column: 2;
+    justify-content: flex-start;
+    margin-top: 6px;
+    flex-wrap: wrap;
   }
 }
