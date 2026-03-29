@@ -107,27 +107,67 @@
         row.dataset.mode = mode === "edit" ? "edit" : "read";
       }
 
-      function renderMode() {
-        const isEditMode = row.dataset.mode === "edit";
+      function showButton(button) {
+  if (!button) return;
+  button.style.display = "inline-flex";
+}
 
-        if (textView) textView.hidden = isEditMode;
-        if (textInput) textInput.hidden = !isEditMode;
+function hideButton(button) {
+  if (!button) return;
+  button.style.display = "none";
+}
 
-        if (btnSpade) btnSpade.hidden = isApproved || isEditMode;
-        if (btnClub) btnClub.hidden = isApproved || isEditMode;
-        if (btnEdit) btnEdit.hidden = isApproved || isEditMode || !userCanEdit;
-        if (btnSave) btnSave.hidden = !isEditMode;
-        if (btnExit) btnExit.hidden = !isEditMode;
-        if (btnApprove) btnApprove.hidden = isApproved || isEditMode || !userIsHeartAceHolder;
-        if (btnDelete) btnDelete.hidden = isApproved;
-        if (btnCancel) btnCancel.hidden = !isApproved || !userIsHeartAceHolder;
+function renderMode() {
+  const isEditMode = row.dataset.mode === "edit";
 
-        if (isEditMode && textInput) {
-          textInput.focus();
-          textInput.select();
-        }
-      }
+ if (textView) textView.style.display = isEditMode ? "none" : "";
+if (textInput) textInput.style.display = isEditMode ? "block" : "none";
 
+  if (isApproved || isEditMode) {
+    hideButton(btnSpade);
+    hideButton(btnClub);
+  } else {
+    showButton(btnSpade);
+    showButton(btnClub);
+  }
+
+  if (!isApproved && !isEditMode && userCanEdit) {
+    showButton(btnEdit);
+  } else {
+    hideButton(btnEdit);
+  }
+
+  if (isEditMode) {
+    showButton(btnSave);
+    showButton(btnExit);
+  } else {
+    hideButton(btnSave);
+    hideButton(btnExit);
+  }
+
+  if (!isApproved && !isEditMode && userIsHeartAceHolder) {
+    showButton(btnApprove);
+  } else {
+    hideButton(btnApprove);
+  }
+
+  if (!isApproved) {
+    showButton(btnDelete);
+  } else {
+    hideButton(btnDelete);
+  }
+
+  if (isApproved && userIsHeartAceHolder) {
+    showButton(btnCancel);
+  } else {
+    hideButton(btnCancel);
+  }
+
+  if (isEditMode && textInput) {
+    textInput.focus();
+    textInput.select();
+  }
+}
       btnSpade?.addEventListener("click", () => {
         dispatch("tablero:change-suit", {
           playId,
@@ -230,16 +270,16 @@
           </button>
 
           <button type="button" data-action="edit-play" title="Editar">
-            <img src="${editIcon}" alt="Editar" />
-          </button>
+  <img src="${editIcon}" alt="Editar" />
+</button>
 
-          <button type="button" data-action="save-play" title="Salvar" hidden>
-            <img src="${saveIcon}" alt="Salvar" />
-          </button>
+<button type="button" data-action="save-play" title="Salvar" style="display:none;">
+  <img src="${saveIcon}" alt="Salvar" />
+</button>
 
-          <button type="button" data-action="exit-edit" title="Salir edición" hidden>
-            <img src="${exitIcon}" alt="Salir edición" />
-          </button>
+<button type="button" data-action="exit-edit" title="Salir edición" style="display:none;">
+  <img src="${exitIcon}" alt="Salir edición" />
+</button>
 
           <button type="button" data-action="approve-play" title="Aprobar">
             <img src="${approveIcon}" alt="Aprobar" />
