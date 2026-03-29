@@ -1,5 +1,4 @@
 (() => {
-
   const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
   async function getLoggedUser() {
@@ -43,63 +42,63 @@
   }
 
   async function hasDecks() {
-  try {
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) return false;
+    try {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return false;
 
-    const response = await fetch(`${API_BASE_URL}/decks`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
+      const response = await fetch(`${API_BASE_URL}/decks`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) return false;
+        throw new Error(`Error HTTP ${response.status}`);
       }
-    });
 
-    if (!response.ok) {
-      if (response.status === 401) return false;
-      throw new Error(`Error HTTP ${response.status}`);
+      const data = await response.json();
+
+      const mazos = Array.isArray(data?.mazos)
+        ? data.mazos
+        : Array.isArray(data?.decks)
+          ? data.decks
+          : [];
+
+      return mazos.length > 0;
+    } catch (error) {
+      console.error("Error leyendo mazos desde servidor:", error);
+      return false;
     }
-
-    const data = await response.json();
-
-    const mazos = Array.isArray(data?.mazos)
-      ? data.mazos
-      : Array.isArray(data?.decks)
-        ? data.decks
-        : [];
-
-    return mazos.length > 0;
-  } catch (error) {
-    console.error("Error leyendo mazos desde servidor:", error);
-    return false;
   }
-}
 
-async function hasPendingApprovals() {
-  try {
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) return false;
+  async function hasPendingApprovals() {
+    try {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return false;
 
-    const response = await fetch(`${API_BASE_URL}/plays/pending`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
+      const response = await fetch(`${API_BASE_URL}/plays/pending`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) return false;
+        throw new Error(`Error HTTP ${response.status}`);
       }
-    });
 
-    if (!response.ok) {
-      if (response.status === 401) return false;
-      throw new Error(`Error HTTP ${response.status}`);
+      const data = await response.json();
+      const plays = Array.isArray(data?.plays) ? data.plays : [];
+
+      return plays.length > 0;
+    } catch (error) {
+      console.error("Error leyendo pendientes:", error);
+      return false;
     }
-
-    const data = await response.json();
-    const plays = Array.isArray(data?.plays) ? data.plays : [];
-
-    return plays.length > 0;
-  } catch (error) {
-    console.error("Error leyendo pendientes:", error);
-    return false;
   }
-}
 
   function isMazosPage() {
     return window.location.pathname.endsWith("/mazos.html") ||
@@ -135,15 +134,22 @@ async function hasPendingApprovals() {
                 <img src="${getProfileImage(user)}" class="topbar__icon-img topbar__icon-img--profile" />
               </a>
 
-              <button class="topbar__icon-btn" id="newDeckBtn">
+              <button
+                class="topbar__icon-btn"
+                id="newDeckBtn"
+                title="El as de corazon constituye la primer jugada de un mazo. Comprende el nombre, la imagen y la moneda de referencia y solo se juega una vez"
+              >
                 <img src="/assets/icons/Acorazon.gif" class="topbar__icon-img" />
               </button>
 
               ${
                 userHasDecks
                   ? `
-                    <a href="${onMazosPage ? "/index.html" : "/mazos.html"}"
-                       class="topbar__icon-btn">
+                    <a
+                      href="${onMazosPage ? "/index.html" : "/mazos.html"}"
+                      class="topbar__icon-btn"
+                      title="Aqui estan los mazos"
+                    >
                       <img
                         src="${
                           onMazosPage
@@ -156,24 +162,38 @@ async function hasPendingApprovals() {
                   `
                   : ""
               }
-${
-  userHasPendingApprovals
-    ? `
-      <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
-        <img src="/assets/icons/Dorso70.gif" class="topbar__icon-img" />
-      </button>
-    `
-    : ""
-}
-              <a href="/almanaque.html" class="topbar__icon-btn">
+
+              ${
+                userHasPendingApprovals
+                  ? `
+                    <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
+                      <img src="/assets/icons/Dorso70.gif" class="topbar__icon-img" />
+                    </button>
+                  `
+                  : ""
+              }
+
+              <a
+                href="/almanaque.html"
+                class="topbar__icon-btn"
+                title="Aqui esta el calendario aun no te programe"
+              >
                 <img src="/assets/icons/Schedule80.gif" class="topbar__icon-img" />
               </a>
 
-              <a href="/noticias.html" class="topbar__icon-btn">
+              <a
+                href="/noticias.html"
+                class="topbar__icon-btn"
+                title="Aca estan las noticias que aun no ocurren"
+              >
                 <img src="/assets/icons/Extra120.gif" class="topbar__icon-img" />
               </a>
 
-              <a href="/help.html" class="topbar__icon-btn">
+              <a
+                href="/help.html"
+                class="topbar__icon-btn"
+                title="help"
+              >
                 <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
               </a>
 
@@ -197,11 +217,19 @@ ${
             </div>
 
             <nav class="topbar__right">
-              <a href="/almanaque.html" class="topbar__icon-btn">
+              <a
+                href="/almanaque.html"
+                class="topbar__icon-btn"
+                title="Aqui esta el calendario aun no te programe"
+              >
                 <img src="/assets/icons/Schedule80.gif" class="topbar__icon-img" />
               </a>
 
-              <a href="/help.html" class="topbar__icon-btn">
+              <a
+                href="/help.html"
+                class="topbar__icon-btn"
+                title="help"
+              >
                 <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
               </a>
 
@@ -234,7 +262,5 @@ ${
     }
   }
 
-  // 🚀 IMPORTANTE
   document.addEventListener("DOMContentLoaded", renderTopbar);
-
 })();
