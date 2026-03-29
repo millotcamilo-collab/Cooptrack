@@ -27,5 +27,6 @@ window.ICONS = {
     register: "/assets/icons/lacre80.gif",
     reject: "/assets/icons/stepback40.gif",
     quit: "/assets/icons/step60.gif",
+    help: "/assets/icons/bastonRecortado80"
   }
 };
