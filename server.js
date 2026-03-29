@@ -618,11 +618,13 @@ async function createMazoHandler(req, res) {
         description || null,
         userId,
         deck_image_url || null,
-        currency_symbol,
-        currency_name
+        currency_symbol
           ? String(currency_symbol).trim().toUpperCase().slice(0, 3)
           : null,
-      ]
+        currency_name
+          ? String(currency_name).trim().slice(0, 120)
+          : null,
+]
     );
 
     const mazo = mazoResult.rows[0];
