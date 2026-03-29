@@ -123,9 +123,9 @@
           <div class="page-container topbar__inner">
 
             <div class="topbar__left">
-              <a href="/index.html" class="topbar__logo">
-                <img src="/assets/icons/cooptrack.png" class="topbar__logo-img" />
-              </a>
+              <a href="/index.html" class="topbar__logo" title="home">
+  <img src="/assets/icons/cooptrack.png" class="topbar__logo-img" />
+</a>
             </div>
 
             <nav class="topbar__right">
