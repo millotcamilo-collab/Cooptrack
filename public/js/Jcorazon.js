@@ -14,13 +14,70 @@
     const SUITS = ICONS.suits || {};
     const ACTIONS = ICONS.actions || {};
 
+    const state = context.state || {};
+    const allPlays = Array.isArray(state.plays) ? state.plays : [];
+    const currentUserId = Number(state.userId || 0);
+
     const playId = play?.id;
     const text = escapeHtml(play?.play_text || "");
-    const author = escapeHtml(play?.createdByNickname || play?.created_by_nickname || "—");
-    const date = formatDate(play?.displayDate || play?.created_at || "");
-    const status = escapeHtml(play?.play_status || play?.status || "ACTIVE");
+    const statusRaw = String(play?.play_status || play?.status || "ACTIVE").toUpperCase();
 
     const rowId = `tablero-row-${playId}`;
+
+    function normalizeRank(value) {
+      return String(value || "").trim().toUpperCase();
+    }
+
+    function normalizeSuit(value) {
+      return String(value || "").trim().toUpperCase();
+    }
+
+    function isAliveStatus(value) {
+      const status = String(value || "").trim().toUpperCase();
+      return !["CANCELLED", "DELETED", "REJECTED"].includes(status);
+    }
+
+    function resolveHeartAceHolderUserId(plays) {
+      const aceHeartPlays = plays
+        .filter((p) => {
+          const rank = normalizeRank(p?.rank || p?.card_rank);
+          const suit = normalizeSuit(p?.suit || p?.card_suit);
+          return rank === "A" && suit === "HEART" && isAliveStatus(p?.play_status);
+        })
+        .sort((a, b) => {
+          const aId = Number(a?.id || 0);
+          const bId = Number(b?.id || 0);
+          return bId - aId;
+        });
+
+      if (!aceHeartPlays.length) return null;
+
+      const latest = aceHeartPlays[0];
+
+      if (latest?.target_user_id) {
+        return Number(latest.target_user_id);
+      }
+
+      if (latest?.created_by_user_id) {
+        return Number(latest.created_by_user_id);
+      }
+
+      return null;
+    }
+
+    const heartAceHolderUserId = resolveHeartAceHolderUserId(allPlays);
+    const userIsHeartAceHolder =
+      heartAceHolderUserId !== null &&
+      currentUserId !== 0 &&
+      heartAceHolderUserId === currentUserId;
+
+    const isApproved = statusRaw === "APPROVED";
+    const isSaved = statusRaw === "SAVED";
+    const canTransformSuit = !isSaved && !isApproved;
+    const canSave = !isApproved;
+    const canApprove = !isApproved && userIsHeartAceHolder;
+    const canCancel = isApproved && userIsHeartAceHolder;
+    const canDelete = !isApproved;
 
     const spadeIcon = escapeHtml(SUITS.SPADE || "");
     const clubIcon = escapeHtml(SUITS.CLUB || "");
@@ -39,7 +96,7 @@
         dispatch("tablero:change-suit", {
           playId,
           nextSuit: "SPADE",
-          currentSuit: "HEART",
+          currentSuit: "HEART"
         });
       });
 
@@ -47,31 +104,31 @@
         dispatch("tablero:change-suit", {
           playId,
           nextSuit: "CLUB",
-          currentSuit: "HEART",
+          currentSuit: "HEART"
         });
       });
 
       row.querySelector('[data-action="save-play"]')?.addEventListener("click", () => {
         dispatch("tablero:save-play", {
-          playId,
+          playId
         });
       });
 
       row.querySelector('[data-action="approve-play"]')?.addEventListener("click", () => {
         dispatch("tablero:approve-play", {
-          playId,
+          playId
         });
       });
 
       row.querySelector('[data-action="delete-play"]')?.addEventListener("click", () => {
         dispatch("tablero:delete-play", {
-          playId,
+          playId
         });
       });
 
       row.querySelector('[data-action="cancel-play"]')?.addEventListener("click", () => {
         dispatch("tablero:cancel-play", {
-          playId,
+          playId
         });
       });
     }, 0);
@@ -84,38 +141,64 @@
 
         <div class="tablero-row__center">
           <div class="tablero-row__title">${text || "Sin texto"}</div>
-
           <div class="tablero-row__meta">
-            <span>Autor: ${author}</span>
-            <span>Fecha: ${date}</span>
-            <span>Estado: ${status}</span>
+            <span>Estado: ${escapeHtml(statusRaw)}</span>
           </div>
         </div>
 
         <div class="tablero-row__right">
-          <button type="button" data-action="change-to-spade" title="Cambiar a J♠">
-            <img src="${spadeIcon}" alt="J♠" />
-          </button>
+          ${
+            canTransformSuit
+              ? `
+                <button type="button" data-action="change-to-spade" title="Cambiar a J♠">
+                  <img src="${spadeIcon}" alt="J♠" />
+                </button>
+                <button type="button" data-action="change-to-club" title="Cambiar a J♣">
+                  <img src="${clubIcon}" alt="J♣" />
+                </button>
+              `
+              : ""
+          }
 
-          <button type="button" data-action="change-to-club" title="Cambiar a J♣">
-            <img src="${clubIcon}" alt="J♣" />
-          </button>
+          ${
+            canSave
+              ? `
+                <button type="button" data-action="save-play" title="Salvar">
+                  <img src="${saveIcon}" alt="Salvar" />
+                </button>
+              `
+              : ""
+          }
 
-          <button type="button" data-action="save-play" title="Salvar">
-            <img src="${saveIcon}" alt="Salvar" />
-          </button>
+          ${
+            canApprove
+              ? `
+                <button type="button" data-action="approve-play" title="Aprobar">
+                  <img src="${approveIcon}" alt="Aprobar" />
+                </button>
+              `
+              : ""
+          }
 
-          <button type="button" data-action="approve-play" title="Aprobar">
-            <img src="${approveIcon}" alt="Aprobar" />
-          </button>
+          ${
+            canDelete
+              ? `
+                <button type="button" data-action="delete-play" title="Borrar">
+                  <img src="${deleteIcon}" alt="Borrar" />
+                </button>
+              `
+              : ""
+          }
 
-          <button type="button" data-action="delete-play" title="Borrar">
-            <img src="${deleteIcon}" alt="Borrar" />
-          </button>
-
-          <button type="button" data-action="cancel-play" title="Cancelar">
-            <img src="${cancelIcon}" alt="Cancelar" />
-          </button>
+          ${
+            canCancel
+              ? `
+                <button type="button" data-action="cancel-play" title="Cancelar">
+                  <img src="${cancelIcon}" alt="Cancelar" />
+                </button>
+              `
+              : ""
+          }
         </div>
       </article>
     `;
