@@ -184,28 +184,35 @@
                 />
               </td>
               <td class="nuevo-mazo-actions">
-                <button
-                  id="createDeckBtn"
-                  class="icon-btn"
-                  type="button"
-                  title="Guardar mazo"
-                  aria-label="Guardar mazo"
-                >
-                  <img src="/assets/icons/salvar40.gif" alt="Guardar" />
-                </button>
 
-                <button
-                  id="cancelBtn"
-                  class="icon-btn"
-                  type="button"
-                  title="Salir"
-                  aria-label="Salir"
-                >
-                  <img src="/assets/icons/exit80.gif" alt="Salir" />
-                </button>
-              </td>
-            </tr>
+  <button
+    id="helpBtn"
+    class="icon-btn"
+    type="button"
+    title="Ayuda"
+  >
+    <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda" />
+  </button>
 
+  <button
+    id="createDeckBtn"
+    class="icon-btn"
+    type="button"
+    title="Guardar mazo"
+  >
+    <img src="/assets/icons/salvar40.gif" alt="Guardar" />
+  </button>
+
+  <button
+    id="cancelBtn"
+    class="icon-btn"
+    type="button"
+    title="Salir"
+  >
+    <img src="/assets/icons/exit80.gif" alt="Salir" />
+  </button>
+
+</td>
             <tr class="status-row">
               <td></td>
               <td>
@@ -312,7 +319,11 @@ window.location.href = `/mazo.html?id=${createdMazo.id}`;
         createDeck();
       }
     });
-
+document.getElementById("helpBtn")?.addEventListener("click", () => {
+  if (typeof window.openPlayHelp === "function") {
+    window.openPlayHelp("A_HEART");
+  }
+});
     window.addEventListener("DOMContentLoaded", () => {
       const nameInput = document.getElementById("deckName");
       if (nameInput) nameInput.focus();
