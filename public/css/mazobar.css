@@ -247,7 +247,12 @@
   opacity: 1;
   filter: none;
 }
-
+.mazobar__cmd-btn--alert {
+  background: #fff;
+  font-weight: 500;
+  padding-left: 14px;
+  padding-right: 14px;
+}
 /* Responsive */
 
 @media (max-width: 1024px) {
