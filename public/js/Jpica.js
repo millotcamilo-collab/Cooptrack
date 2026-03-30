@@ -5,7 +5,108 @@
     if (Number.isNaN(date.getTime())) return false;
     return date.getTime() > Date.now();
   }
+  
+function formatShortDateTime(value) {
+  if (!value) return "—";
 
+  const date = new Date(value);
+ if (Number.isNaN(date.getTime())) return String(value ?? "");
+
+  try {
+    const parts = new Intl.DateTimeFormat("es-UY", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).formatToParts(date);
+
+    const map = {};
+    parts.forEach((part) => {
+      map[part.type] = part.value;
+    });
+
+    const weekday = String(map.weekday || "").replace(".", "");
+    const day = map.day || "";
+    const month = String(map.month || "").replace(".", "");
+    const hour = map.hour || "";
+    const minute = map.minute || "";
+
+    const cap = (txt) =>
+      txt ? txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase() : "";
+
+    return `${cap(weekday)} ${day} ${cap(month)} ${hour}:${minute}`;
+  } catch (error) {
+    return String(value ?? "");
+  }
+}
+
+function getHoursBetween(startValue, endValue) {
+  if (!startValue || !endValue) return null;
+
+  const start = new Date(startValue);
+  const end = new Date(endValue);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+
+  const diffMs = end.getTime() - start.getTime();
+  if (diffMs <= 0) return null;
+
+  const hours = diffMs / (1000 * 60 * 60);
+
+  if (hours < 1) {
+    const minutes = Math.round(diffMs / (1000 * 60));
+    return `${minutes} min`;
+  }
+
+  const rounded = Math.round(hours * 10) / 10;
+  return Number.isInteger(rounded) ? `${rounded} hr` : `${rounded} hr`;
+}
+
+function getHoursFromNow(targetValue) {
+  if (!targetValue) return null;
+
+  const now = new Date();
+  const target = new Date(targetValue);
+
+  if (Number.isNaN(target.getTime())) return null;
+
+  const diffMs = target.getTime() - now.getTime();
+  const absMs = Math.abs(diffMs);
+
+  if (absMs < 60 * 1000) {
+    return diffMs >= 0 ? "ahora" : "recién pasó";
+  }
+
+  if (absMs < 1000 * 60 * 60) {
+    const minutes = Math.round(absMs / (1000 * 60));
+    return diffMs >= 0 ? `faltan ${minutes} min` : `hace ${minutes} min`;
+  }
+
+  const hours = Math.round((absMs / (1000 * 60 * 60)) * 10) / 10;
+  const label = Number.isInteger(hours) ? `${hours} hr` : `${hours} hr`;
+
+  return diffMs >= 0 ? `faltan ${label}` : `hace ${label}`;
+}
+
+  function getAppointmentReadLabel(startValue, endValue) {
+  const startLabel = formatShortDateTime(startValue);
+  const durationLabel = getHoursBetween(startValue, endValue);
+
+  if (!durationLabel) return startLabel;
+
+  return `${startLabel} – ${durationLabel}`;
+}
+
+function getDeadlineReadLabel(endValue) {
+  const endLabel = formatShortDateTime(endValue);
+  const distanceLabel = getHoursFromNow(endValue);
+
+  if (!distanceLabel) return endLabel;
+
+  return `${endLabel} – ${distanceLabel}`;
+}
+  
   function renderJpike(play, context = {}) {
     const helpers = context.helpers || {};
     const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
@@ -722,45 +823,40 @@ btnDelete?.addEventListener("click", () => {
       />
 
       <div class="tablero-row__mode-read" data-role="mode-read">
-        <div
-          class="tablero-row__fields tablero-row__fields--appointment"
-          data-role="appointment-read"
-          style="display:none;"
-        >
-          <div class="tablero-row__field-inline">
-            <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
-            <span>${escapeHtml(formatDateTimeForRead(play?.start_date))}</span>
-          </div>
+  <div
+    class="tablero-row__fields tablero-row__fields--appointment"
+    data-role="appointment-read"
+    style="display:none;"
+  >
+    <div class="tablero-row__field-inline">
+      <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
+      <span>${escapeHtml(getAppointmentReadLabel(play?.start_date, play?.end_date))}</span>
+    </div>
 
-          <div class="tablero-row__field-inline">
-            <img src="${endIcon}" alt="Fin" class="tablero-row__field-icon" />
-            <span>${escapeHtml(formatDateTimeForRead(play?.end_date))}</span>
-          </div>
+    <div class="tablero-row__field-inline">
+      <img src="${locationIcon}" alt="Locación" class="tablero-row__field-icon" />
+      <span>${escapeHtml(locationValue || "—")}</span>
+    </div>
+  </div>
 
-          <div class="tablero-row__field-inline">
-            <img src="${locationIcon}" alt="Locación" class="tablero-row__field-icon" />
-            <span>${escapeHtml(locationValue || "—")}</span>
-          </div>
-        </div>
+  <div
+    class="tablero-row__fields tablero-row__fields--deadline"
+    data-role="deadline-read"
+    style="display:none;"
+  >
+    <div class="tablero-row__field-inline">
+      <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
+      <span>${escapeHtml(getDeadlineReadLabel(play?.end_date))}</span>
+    </div>
+  </div>
 
-        <div
-          class="tablero-row__fields tablero-row__fields--deadline"
-          data-role="deadline-read"
-          style="display:none;"
-        >
-          <div class="tablero-row__field-inline">
-            <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
-            <span>${escapeHtml(formatDateTimeForRead(play?.end_date))}</span>
-          </div>
-        </div>
-
-        <div
-          class="tablero-row__fields tablero-row__fields--recurrence"
-          data-role="recurrence-read"
-        >
-          ${escapeHtml(hasRecurrence ? "Rutina configurada" : "Sin rutina")}
-        </div>
-      </div>
+  <div
+    class="tablero-row__fields tablero-row__fields--recurrence"
+    data-role="recurrence-read"
+  >
+    ${escapeHtml(hasRecurrence ? "Rutina configurada" : "Sin rutina")}
+  </div>
+</div>
 
       <div class="tablero-row__mode-choose" data-role="mode-choose"></div>
 
