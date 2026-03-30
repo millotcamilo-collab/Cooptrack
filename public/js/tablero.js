@@ -393,14 +393,14 @@ document.addEventListener("tablero:cancel-play", async (event) => {
       return;
     }
 
-    const response = await fetch(`${API_BASE_URL}/plays/${playId}/status`, {
+    const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-        status: "CANCELLED"
+        play_status: "CANCELLED"
       })
     });
 
