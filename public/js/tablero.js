@@ -382,6 +382,7 @@ function belongsToTablero(play) {
 
     renderTablero(deck, plays, state);
   });
+  
 document.addEventListener("tablero:cancel-play", async (event) => {
   try {
     const playId = Number(event?.detail?.playId || 0);
@@ -424,6 +425,57 @@ document.addEventListener("tablero:cancel-play", async (event) => {
   } catch (error) {
     console.error("Error en tablero:cancel-play", error);
     alert("Error cancelando la jugada");
+  }
+});
+
+document.addEventListener("tablero:change-suit", async (event) => {
+  try {
+    const {
+      playId,
+      nextSuit
+    } = event.detail || {};
+
+    if (!playId || !nextSuit) {
+      alert("Datos inválidos para cambiar de palo");
+      return;
+    }
+
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) {
+      alert("No estás logueado");
+      return;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        card_suit: nextSuit
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error cambiando palo:", data);
+      alert("No se pudo cambiar el palo de la jugada");
+      return;
+    }
+
+    const deckId =
+      window.__currentDeck?.id ||
+      window.__currentState?.deck?.id ||
+      null;
+
+    document.dispatchEvent(new CustomEvent("plays:changed", {
+      detail: { deckId }
+    }));
+  } catch (error) {
+    console.error("Error en tablero:change-suit", error);
+    alert("Error cambiando el palo");
   }
 });
   
