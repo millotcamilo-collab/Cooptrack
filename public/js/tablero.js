@@ -1,7 +1,27 @@
 (function () {
   const PLAY_SEPARATOR = '§';
   let activeTableroFilter = null;
+  let activeTableroStatusFilter = null;
 
+  const API_BASE_URL = "https://cooptrack-backend.onrender.com";
+
+  function normalizeStatus(value) {
+  return String(value || "").trim().toUpperCase();
+}
+
+function isStructuralPlay(play) {
+  const action = safeTrim(play?.action).toLowerCase();
+  return action === "init_ace" || action === "puedejugar";
+}
+
+function matchesStatusFilter(play, statusFilter) {
+  const currentStatus = normalizeStatus(play?.play_status || play?.status);
+
+  if (!statusFilter) return true;
+
+  return currentStatus === normalizeStatus(statusFilter);
+}
+  
   function safeTrim(value) {
     if (value === null || value === undefined) return '';
     return String(value).trim();
@@ -123,11 +143,7 @@
         '—',
     };
   }
-function isStructuralPlay(play) {
-  const action = safeTrim(play?.action).toLowerCase();
 
-  return action === 'init_ace' || action === 'puedejugar';
-}
   
 function belongsToTablero(play) {
   const rank = normalizeRank(play?.rank);
@@ -141,7 +157,6 @@ function belongsToTablero(play) {
 
   return false;
 }
-
   function matchesTableroFilter(play, filterSuit) {
   const rank = normalizeRank(play?.rank);
   const suit = normalizeSuit(play?.suit);
@@ -307,8 +322,10 @@ function belongsToTablero(play) {
 
      const tableroPlays = sortTableroPlays(
   normalized.filter((play) => {
-    if (isStructuralPlay(play)) return false;
-    return matchesTableroFilter(play, activeTableroFilter);
+    if (!belongsToTablero(play)) return false;
+    if (!matchesTableroFilter(play, activeTableroFilter)) return false;
+    if (!matchesStatusFilter(play, activeTableroStatusFilter)) return false;
+    return true;
   })
 );
 
@@ -365,7 +382,67 @@ function belongsToTablero(play) {
 
     renderTablero(deck, plays, state);
   });
+document.addEventListener("tablero:cancel-play", async (event) => {
+  try {
+    const playId = Number(event?.detail?.playId || 0);
+    if (!playId) return;
 
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) {
+      alert("No estás logueado");
+      return;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/plays/${playId}/status`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        status: "CANCELLED"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error cancelando jugada:", data);
+      alert("No se pudo cancelar la jugada");
+      return;
+    }
+
+    const deckId =
+      data.deckId ||
+      window.__currentDeck?.id ||
+      window.__currentState?.deck?.id ||
+      null;
+
+    document.dispatchEvent(new CustomEvent("plays:changed", {
+      detail: { deckId }
+    }));
+  } catch (error) {
+    console.error("Error en tablero:cancel-play", error);
+    alert("Error cancelando la jugada");
+  }
+});
+  
+document.addEventListener("mazobar:showCancelled", () => {
+  if (activeTableroStatusFilter === "CANCELLED") {
+    activeTableroStatusFilter = null;
+  } else {
+    activeTableroStatusFilter = "CANCELLED";
+  }
+
+  activeTableroFilter = null;
+
+  const deck = window.__currentDeck || null;
+  const state = window.__currentState || {};
+  const plays = Array.isArray(state?.plays) ? state.plays : [];
+
+  renderTablero(deck, plays, state);
+});
+  
   window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
     window.__currentDeck = deck || null;
     window.__currentState = state || {};
