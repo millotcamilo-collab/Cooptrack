@@ -1,4 +1,11 @@
 (function () {
+  function isFutureDate(value) {
+    if (!value) return false;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return false;
+    return date.getTime() > Date.now();
+  }
+
   function renderJpike(play, context = {}) {
     const helpers = context.helpers || {};
     const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
@@ -17,15 +24,15 @@
     const currentUserId = Number(state.userId || 0);
 
     const playId = play?.id;
-    const originalText = String(play?.play_text || "");
+    let originalText = String(play?.play_text || "");
     const safeText = escapeHtml(originalText);
     const statusRaw = String(play?.play_status || play?.status || "ACTIVE").toUpperCase();
     const creatorUserId = Number(play?.created_by_user_id || 0);
 
     const spadeMode = String(play?.spade_mode || "").toUpperCase(); // APPOINTMENT | DEADLINE | ""
-    const startDateValue = play?.start_date ? toInputDateTimeValue(play.start_date) : "";
-    const endDateValue = play?.end_date ? toInputDateTimeValue(play.end_date) : "";
-    const locationValue = String(play?.location || "");
+    let startDateValue = play?.start_date ? toInputDateTimeValue(play.start_date) : "";
+    let endDateValue = play?.end_date ? toInputDateTimeValue(play.end_date) : "";
+    let locationValue = String(play?.location || "");
 
     const rowId = `tablero-row-${playId}`;
     const textInputId = `jpike-text-${playId}`;
@@ -118,6 +125,20 @@
     const isApproved = statusRaw === "APPROVED";
     const isCancelled = statusRaw === "CANCELLED";
 
+    function canCancelApprovedPlay() {
+      if (!isApproved) return false;
+
+      if (spadeMode === "APPOINTMENT") {
+        return isFutureDate(play?.end_date);
+      }
+
+      if (spadeMode === "DEADLINE") {
+        return isFutureDate(play?.end_date);
+      }
+
+      return false;
+    }
+
     const bombIcon = escapeHtml(ACTIONS.bomb || "");
     const startIcon = escapeHtml(ACTIONS.start || "");
     const endIcon = escapeHtml(ACTIONS.end || "");
@@ -127,6 +148,10 @@
     const deleteIcon = escapeHtml(ACTIONS.delete || "");
     const editIcon = escapeHtml(ACTIONS.edit || "");
     const exitIcon = escapeHtml(ACTIONS.exit || ACTIONS.cancel || "");
+    const helpIcon = escapeHtml(ACTIONS.help || "");
+    const cancelIcon = escapeHtml(ACTIONS.cancel || ACTIONS.exit || "");
+    const clubIcon = escapeHtml(ACTIONS.club || "");
+    const qspadeIcon = escapeHtml(ACTIONS.qspade || ACTIONS.spade || "");
 
     setTimeout(() => {
       const row = document.getElementById(rowId);
@@ -150,6 +175,11 @@
       const btnApprove = row.querySelector('[data-action="approve-play"]');
       const btnDelete = row.querySelector('[data-action="delete-play"]');
       const btnExit = row.querySelector('[data-action="exit-edit"]');
+
+      const btnHelp = row.querySelector('[data-action="help-play"]');
+      const btnCancel = row.querySelector('[data-action="cancel-play"]');
+      const btnAddJclub = row.querySelector('[data-action="add-jclub-child"]');
+      const btnAddQspade = row.querySelector('[data-action="add-qspade-child"]');
 
       const appointmentRead = row.querySelector('[data-role="appointment-read"]');
       const deadlineRead = row.querySelector('[data-role="deadline-read"]');
@@ -205,6 +235,9 @@
         const isEdit = visualMode === "edit";
         const isRead = visualMode === "read";
 
+        const showApprovedExtras = isApproved && !isCancelled;
+        const showCancelApproved = canCancelApprovedPlay();
+
         if (modeChoose) modeChoose.style.display = isChoose ? "flex" : "none";
         if (modeRead) modeRead.style.display = isRead ? "flex" : "none";
         if (modeEdit) modeEdit.style.display = isEdit ? "flex" : "none";
@@ -236,6 +269,10 @@
           if (btnApprove) btnApprove.style.display = "none";
           if (btnDelete) btnDelete.style.display = "none";
           if (btnExit) btnExit.style.display = "none";
+          if (btnCancel) btnCancel.style.display = "none";
+          if (btnAddJclub) btnAddJclub.style.display = "none";
+          if (btnAddQspade) btnAddQspade.style.display = "none";
+          if (btnHelp) btnHelp.style.display = "inline-flex";
           return;
         }
 
@@ -269,6 +306,22 @@
 
         if (btnDelete) {
           btnDelete.style.display = !isApproved ? "inline-flex" : "none";
+        }
+
+        if (btnHelp) {
+          btnHelp.style.display = "inline-flex";
+        }
+
+        if (btnCancel) {
+          btnCancel.style.display = showCancelApproved ? "inline-flex" : "none";
+        }
+
+        if (btnAddJclub) {
+          btnAddJclub.style.display = showApprovedExtras ? "inline-flex" : "none";
+        }
+
+        if (btnAddQspade) {
+          btnAddQspade.style.display = showApprovedExtras ? "inline-flex" : "none";
         }
 
         if (isEdit && textInput) {
@@ -309,34 +362,32 @@
       });
 
       btnSave?.addEventListener("click", () => {
-  const payload = buildPayload();
+        const payload = buildPayload();
 
-  const check = validateFields(
-    payload.spadeMode,
-    payload.startDate,
-    payload.endDate,
-    payload.location
-  );
+        const check = validateFields(
+          payload.spadeMode,
+          payload.startDate,
+          payload.endDate,
+          payload.location
+        );
 
-  if (!check.ok) {
-    alert(check.error);
-    return;
-  }
+        if (!check.ok) {
+          alert(check.error);
+          return;
+        }
 
-  dispatch("tablero:save-play", payload);
+        dispatch("tablero:save-play", payload);
 
-  // 🔥 ACTUALIZAR ESTADO LOCAL
-  originalText = payload.text || "";
-  if (textView) textView.textContent = originalText || "Sin texto";
+        originalText = payload.text || "";
+        if (textView) textView.textContent = originalText || "Sin texto";
 
-  // opcional: también actualizar valores locales
-  if (payload.startDate) startDateValue = payload.startDate;
-  if (payload.endDate) endDateValue = payload.endDate;
-  if (payload.location) locationValue = payload.location;
+        startDateValue = payload.startDate || "";
+        endDateValue = payload.endDate || "";
+        locationValue = payload.location || "";
 
-  setVisualMode("read");
-  renderMode();
-});
+        setVisualMode("read");
+        renderMode();
+      });
 
       btnApprove?.addEventListener("click", () => {
         const payload = buildPayload();
@@ -371,6 +422,37 @@
         setSpadeMode(spadeMode || "");
         setVisualMode(spadeMode ? "read" : "choose");
         renderMode();
+      });
+
+      btnHelp?.addEventListener("click", () => {
+        dispatch("tablero:help-play", {
+          playId,
+          cardRank: "J",
+          cardSuit: "SPADE",
+          spadeMode: getCurrentMode(),
+        });
+      });
+
+      btnCancel?.addEventListener("click", () => {
+        dispatch("tablero:cancel-play", {
+          playId,
+        });
+      });
+
+      btnAddJclub?.addEventListener("click", () => {
+        dispatch("tablero:add-child-play", {
+          parentPlayId: playId,
+          childRank: "J",
+          childSuit: "CLUB",
+        });
+      });
+
+      btnAddQspade?.addEventListener("click", () => {
+        dispatch("tablero:add-child-play", {
+          parentPlayId: playId,
+          childRank: "Q",
+          childSuit: "SPADE",
+        });
       });
 
       textInput?.addEventListener("keydown", (event) => {
@@ -520,6 +602,22 @@
 
           <button type="button" data-action="delete-play" title="Borrar">
             <img src="${deleteIcon}" alt="Borrar" />
+          </button>
+
+          <button type="button" data-action="help-play" title="Help">
+            ${helpIcon ? `<img src="${helpIcon}" alt="Help" />` : `<span>?</span>`}
+          </button>
+
+          <button type="button" data-action="cancel-play" title="Cancelar" style="display:none;">
+            ${cancelIcon ? `<img src="${cancelIcon}" alt="Cancelar" />` : `<span>X</span>`}
+          </button>
+
+          <button type="button" data-action="add-jclub-child" title="Agregar J♣ hija" style="display:none;">
+            ${clubIcon ? `<img src="${clubIcon}" alt="J♣" />` : `<span>J♣</span>`}
+          </button>
+
+          <button type="button" data-action="add-qspade-child" title="Agregar Q♠" style="display:none;">
+            ${qspadeIcon ? `<img src="${qspadeIcon}" alt="Q♠" />` : `<span>Q♠</span>`}
           </button>
         </div>
       </article>
