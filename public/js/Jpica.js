@@ -85,6 +85,24 @@
       };
     }
 
+    function formatDateTimeForRead(value) {
+      if (!value) return "—";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return escapeHtml(value);
+
+      try {
+        return date.toLocaleString("es-UY", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch (error) {
+        return escapeHtml(value);
+      }
+    }
+
     const spadeAceHolderUserId = resolveSpadeAceHolderUserId(allPlays);
     const userIsSpadeAceHolder =
       spadeAceHolderUserId !== null &&
@@ -133,8 +151,11 @@
       const btnDelete = row.querySelector('[data-action="delete-play"]');
       const btnExit = row.querySelector('[data-action="exit-edit"]');
 
-      const appointmentFields = row.querySelector('[data-role="appointment-fields"]');
-      const deadlineFields = row.querySelector('[data-role="deadline-fields"]');
+      const appointmentRead = row.querySelector('[data-role="appointment-read"]');
+      const deadlineRead = row.querySelector('[data-role="deadline-read"]');
+
+      const appointmentEdit = row.querySelector('[data-role="appointment-edit"]');
+      const deadlineEdit = row.querySelector('[data-role="deadline-edit"]');
 
       const startDateInput = row.querySelector('[data-role="start-date"]');
       const appointmentEndDateInput = row.querySelector('[data-role="appointment-end-date"]');
@@ -191,14 +212,20 @@
         if (textView) textView.style.display = isEdit ? "none" : "";
         if (textInput) textInput.style.display = isEdit ? "block" : "none";
 
-        if (appointmentFields) {
-          appointmentFields.style.display =
-            (isEdit || isRead) && currentMode === "APPOINTMENT" ? "flex" : "none";
+        if (appointmentRead) {
+          appointmentRead.style.display = isRead && currentMode === "APPOINTMENT" ? "flex" : "none";
         }
 
-        if (deadlineFields) {
-          deadlineFields.style.display =
-            (isEdit || isRead) && currentMode === "DEADLINE" ? "flex" : "none";
+        if (deadlineRead) {
+          deadlineRead.style.display = isRead && currentMode === "DEADLINE" ? "flex" : "none";
+        }
+
+        if (appointmentEdit) {
+          appointmentEdit.style.display = isEdit && currentMode === "APPOINTMENT" ? "flex" : "none";
+        }
+
+        if (deadlineEdit) {
+          deadlineEdit.style.display = isEdit && currentMode === "DEADLINE" ? "flex" : "none";
         }
 
         if (isCancelled) {
@@ -209,11 +236,6 @@
           if (btnApprove) btnApprove.style.display = "none";
           if (btnDelete) btnDelete.style.display = "none";
           if (btnExit) btnExit.style.display = "none";
-
-          if (textView) textView.style.display = "";
-          if (textInput) textInput.style.display = "none";
-
-          setInputsReadOnly(true);
           return;
         }
 
@@ -253,22 +275,6 @@
           textInput.focus();
           textInput.select();
         }
-
-        setInputsReadOnly(isRead);
-      }
-
-      function setInputsReadOnly(readOnly) {
-        [
-          textInput,
-          startDateInput,
-          appointmentEndDateInput,
-          deadlineEndDateInput,
-          locationInput
-        ].forEach((input) => {
-          if (!input) return;
-          input.readOnly = !!readOnly;
-          input.disabled = false;
-        });
       }
 
       function buildPayload() {
@@ -303,25 +309,23 @@
       });
 
       btnSave?.addEventListener("click", () => {
-  const payload = buildPayload();
-  const check = validateFields(
-    payload.spadeMode,
-    payload.startDate,
-    payload.endDate,
-    payload.location
-  );
+        const payload = buildPayload();
+        const check = validateFields(
+          payload.spadeMode,
+          payload.startDate,
+          payload.endDate,
+          payload.location
+        );
 
-  if (!check.ok) {
-    alert(check.error);
-    return;
-  }
+        if (!check.ok) {
+          alert(check.error);
+          return;
+        }
 
-  dispatch("tablero:save-play", payload);
-
-  // 👇 CLAVE: volver a modo lectura inmediatamente
-  setVisualMode("read");
-  renderMode();
-});
+        dispatch("tablero:save-play", payload);
+        setVisualMode("read");
+        renderMode();
+      });
 
       btnApprove?.addEventListener("click", () => {
         const payload = buildPayload();
@@ -390,56 +394,90 @@
             style="display:none;"
           />
 
-          <div class="tablero-row__mode-read" data-role="mode-read"></div>
-          <div class="tablero-row__mode-choose" data-role="mode-choose"></div>
-          <div class="tablero-row__mode-edit" data-role="mode-edit"></div>
+          <div class="tablero-row__mode-read" data-role="mode-read">
+            <div
+              class="tablero-row__fields tablero-row__fields--appointment"
+              data-role="appointment-read"
+              style="display:none;"
+            >
+              <div class="tablero-row__field-inline">
+                <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
+                <span>${escapeHtml(formatDateTimeForRead(play?.start_date))}</span>
+              </div>
 
-          <div
-            class="tablero-row__fields tablero-row__fields--appointment"
-            data-role="appointment-fields"
-            style="display:none;"
-          >
-            <div class="tablero-row__field-inline">
-              <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
-              <input
-                type="datetime-local"
-                value="${escapeHtml(startDateValue)}"
-                data-role="start-date"
-              />
+              <div class="tablero-row__field-inline">
+                <img src="${endIcon}" alt="Fin" class="tablero-row__field-icon" />
+                <span>${escapeHtml(formatDateTimeForRead(play?.end_date))}</span>
+              </div>
+
+              <div class="tablero-row__field-inline">
+                <img src="${locationIcon}" alt="Locación" class="tablero-row__field-icon" />
+                <span>${escapeHtml(locationValue || "—")}</span>
+              </div>
             </div>
 
-            <div class="tablero-row__field-inline">
-              <img src="${endIcon}" alt="Fin" class="tablero-row__field-icon" />
-              <input
-                type="datetime-local"
-                value="${escapeHtml(endDateValue)}"
-                data-role="appointment-end-date"
-              />
-            </div>
-
-            <div class="tablero-row__field-inline">
-              <img src="${locationIcon}" alt="Locación" class="tablero-row__field-icon" />
-              <input
-                type="text"
-                value="${escapeHtml(locationValue)}"
-                data-role="location"
-                placeholder="Locación"
-              />
+            <div
+              class="tablero-row__fields tablero-row__fields--deadline"
+              data-role="deadline-read"
+              style="display:none;"
+            >
+              <div class="tablero-row__field-inline">
+                <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
+                <span>${escapeHtml(formatDateTimeForRead(play?.end_date))}</span>
+              </div>
             </div>
           </div>
 
-          <div
-            class="tablero-row__fields tablero-row__fields--deadline"
-            data-role="deadline-fields"
-            style="display:none;"
-          >
-            <div class="tablero-row__field-inline">
-              <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
-              <input
-                type="datetime-local"
-                value="${escapeHtml(endDateValue)}"
-                data-role="deadline-end-date"
-              />
+          <div class="tablero-row__mode-choose" data-role="mode-choose"></div>
+
+          <div class="tablero-row__mode-edit" data-role="mode-edit">
+            <div
+              class="tablero-row__fields tablero-row__fields--appointment"
+              data-role="appointment-edit"
+              style="display:none;"
+            >
+              <div class="tablero-row__field-inline">
+                <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
+                <input
+                  type="datetime-local"
+                  value="${escapeHtml(startDateValue)}"
+                  data-role="start-date"
+                />
+              </div>
+
+              <div class="tablero-row__field-inline">
+                <img src="${endIcon}" alt="Fin" class="tablero-row__field-icon" />
+                <input
+                  type="datetime-local"
+                  value="${escapeHtml(endDateValue)}"
+                  data-role="appointment-end-date"
+                />
+              </div>
+
+              <div class="tablero-row__field-inline">
+                <img src="${locationIcon}" alt="Locación" class="tablero-row__field-icon" />
+                <input
+                  type="text"
+                  value="${escapeHtml(locationValue)}"
+                  data-role="location"
+                  placeholder="Locación"
+                />
+              </div>
+            </div>
+
+            <div
+              class="tablero-row__fields tablero-row__fields--deadline"
+              data-role="deadline-edit"
+              style="display:none;"
+            >
+              <div class="tablero-row__field-inline">
+                <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
+                <input
+                  type="datetime-local"
+                  value="${escapeHtml(endDateValue)}"
+                  data-role="deadline-end-date"
+                />
+              </div>
             </div>
           </div>
         </div>
