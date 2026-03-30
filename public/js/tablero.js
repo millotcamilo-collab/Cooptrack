@@ -451,7 +451,8 @@ document.addEventListener("mazobar:showCancelled", () => {
       spadeMode,
       startDate,
       endDate,
-      location
+      location,
+      amount
     } = event.detail || {};
 
     console.log("SAVE DETAIL =", event.detail);
@@ -478,7 +479,8 @@ document.addEventListener("mazobar:showCancelled", () => {
         spadeMode,
         startDate,
         endDate,
-        location
+        location,
+        amount
       })
     });
 
