@@ -459,20 +459,27 @@ document.addEventListener("tablero:change-suit", async (event) => {
 
     const data = await response.json();
 
-    if (!response.ok || !data.ok) {
+    if (!response.ok || !data.ok || !data.play) {
       console.error("Error cambiando palo:", data);
       alert("No se pudo cambiar el palo de la jugada");
       return;
     }
 
-    const deckId =
-      window.__currentDeck?.id ||
-      window.__currentState?.deck?.id ||
-      null;
+    const deck = window.__currentDeck || null;
+    const state = window.__currentState || {};
+    const currentPlays = Array.isArray(state.plays) ? state.plays : [];
 
-    document.dispatchEvent(new CustomEvent("plays:changed", {
-      detail: { deckId }
-    }));
+    const nextPlays = currentPlays.map((play) =>
+      Number(play.id) === Number(data.play.id) ? data.play : play
+    );
+
+    const nextState = {
+      ...state,
+      plays: nextPlays
+    };
+
+    window.__currentState = nextState;
+    renderTablero(deck, nextPlays, nextState);
   } catch (error) {
     console.error("Error en tablero:change-suit", error);
     alert("Error cambiando el palo");
