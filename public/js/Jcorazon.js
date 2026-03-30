@@ -71,6 +71,7 @@
 
     const userCanEdit = userIsCreator || userIsHeartAceHolder;
     const isApproved = statusRaw === "APPROVED";
+    const isCancelled = statusRaw === "CANCELLED";
 
     const spadeIcon = escapeHtml(SUITS.SPADE || "");
     const clubIcon = escapeHtml(SUITS.CLUB || "");
@@ -125,6 +126,23 @@
         if (textView) textView.style.display = isEditMode ? "none" : "";
         if (textInput) textInput.style.display = isEditMode ? "block" : "none";
 
+        // Si la jugada está cancelada, queda solo como registro.
+        if (isCancelled) {
+          hideButton(btnSpade);
+          hideButton(btnClub);
+          hideButton(btnHelp);
+          hideButton(btnEdit);
+          hideButton(btnSave);
+          hideButton(btnApprove);
+          hideButton(btnDelete);
+          hideButton(btnCancel);
+          hideButton(btnExit);
+
+          if (textView) textView.style.display = "";
+          if (textInput) textInput.style.display = "none";
+          return;
+        }
+
         if (isApproved || isEditMode) {
           hideButton(btnSpade);
           hideButton(btnClub);
@@ -133,7 +151,6 @@
           showButton(btnClub);
         }
 
-        // Help siempre visible
         showButton(btnHelp);
 
         if (!isApproved && !isEditMode && userCanEdit) {
