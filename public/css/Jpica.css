@@ -141,6 +141,14 @@
   pointer-events: none;
 }
 
+.tablero-row--jpike .tablero-row__field-inline span {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  box-sizing: border-box;
+  font: inherit;
+}
 @media (max-width: 980px) {
   .tablero-row--jpike {
     grid-template-columns: 36px minmax(0, 1fr);
