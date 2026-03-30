@@ -706,6 +706,7 @@ document.addEventListener("tablero:add-child-play", async (event) => {
 });
 
 document.addEventListener("tablero:save-recurrence", async (event) => {
+  console.log("SAVE RECURRENCE DETAIL =", event.detail);
   try {
     const {
       playId,
