@@ -50,7 +50,7 @@
 
         La aprobación solo la puede ejecutar el titular del As de corazón.
 
-        Una vez aprobada, queda fijada como anotación del mazo y será visible a todos los miembros del mazo sin distinción.
+        Una vez aprobada, queda fijada como anotación del mazo y será visible a todos sus miembros sin distinción.
       `
     },
 
