@@ -443,6 +443,52 @@ document.addEventListener("mazobar:showCancelled", () => {
   renderTablero(deck, plays, state);
 });
   
+  document.addEventListener("tablero:save-play", async (event) => {
+  try {
+    const { playId, text, spadeMode, startDate, endDate, location } = event.detail || {};
+
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) {
+      alert("No estás logueado");
+      return;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        text,
+        spadeMode,
+        startDate,
+        endDate,
+        location
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error guardando play:", data);
+      alert("No se pudo guardar la jugada");
+      return;
+    }
+
+    const deckId =
+      window.__currentDeck?.id ||
+      window.__currentState?.deck?.id ||
+      null;
+
+    document.dispatchEvent(new CustomEvent("plays:changed", {
+      detail: { deckId }
+    }));
+  } catch (error) {
+    console.error("Error en tablero:save-play", error);
+    alert("Error guardando la jugada");
+  }
+});
   window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
     window.__currentDeck = deck || null;
     window.__currentState = state || {};
