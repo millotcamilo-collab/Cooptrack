@@ -275,18 +275,56 @@ function belongsToTablero(play) {
   }
 
   function sortTableroPlays(plays) {
-    return [...plays].sort((a, b) => {
-      const aDate = new Date(a.displayDate || a.created_at || 0).getTime();
-      const bDate = new Date(b.displayDate || b.created_at || 0).getTime();
+  const sorted = [...plays].sort((a, b) => {
+    const aDate = new Date(a.displayDate || a.created_at || 0).getTime();
+    const bDate = new Date(b.displayDate || b.created_at || 0).getTime();
 
-      if (aDate !== bDate) return aDate - bDate;
+    if (aDate !== bDate) return aDate - bDate;
 
-      const aId = Number(a.id || 0);
-      const bId = Number(b.id || 0);
+    const aId = Number(a.id || 0);
+    const bId = Number(b.id || 0);
 
-      return aId - bId;
-    });
+    return aId - bId;
+  });
+
+  const byParent = new Map();
+  const roots = [];
+
+  for (const play of sorted) {
+    const parentId = play?.parent_play_id ? Number(play.parent_play_id) : null;
+
+    if (!parentId) {
+      roots.push(play);
+      continue;
+    }
+
+    if (!byParent.has(parentId)) {
+      byParent.set(parentId, []);
+    }
+
+    byParent.get(parentId).push(play);
   }
+
+  const result = [];
+
+  function appendWithChildren(play, depth = 0) {
+    result.push({
+      ...play,
+      __treeDepth: depth
+    });
+
+    const children = byParent.get(Number(play.id)) || [];
+    for (const child of children) {
+      appendWithChildren(child, depth + 1);
+    }
+  }
+
+  for (const root of roots) {
+    appendWithChildren(root, 0);
+  }
+
+  return result;
+}
 
   function buildContext(deck, state) {
     return {
@@ -343,7 +381,16 @@ function belongsToTablero(play) {
 
           if (renderer) {
             try {
-              return renderer(play, context);
+              const html = renderer(play, context);
+
+              if (play.__treeDepth && play.__treeDepth > 0) {
+                return html.replace(
+                'class="tablero-row ',
+                `class="tablero-row tablero-row--child tablero-row--child-depth-${play.__treeDepth} `
+              );
+            }
+
+            return html;
             } catch (error) {
               console.error(`Error renderizando ${componentName}`, error);
               return renderFallbackRow(play);
