@@ -123,19 +123,21 @@
         '—',
     };
   }
+function isStructuralPlay(play) {
+  const action = safeTrim(play?.action).toLowerCase();
 
+  return action === 'init_ace' || action === 'puedejugar';
+}
+  
 function belongsToTablero(play) {
   const rank = normalizeRank(play?.rank);
   const suit = normalizeSuit(play?.suit);
 
   if (!rank || !suit) return false;
+  if (isStructuralPlay(play)) return false;
 
-  // En esta etapa, al tablero solo entran jugadas J
-  // y ases corporativos distintos del A♥.
-  // Las K y Q con action "puedeJugar" NO son jugadas:
-  // son líneas de control de acceso del libro.
   if (rank === 'J') return true;
-  // if (rank === 'A' && suit !== 'HEART') return true;
+  if (rank === 'A' && suit !== 'HEART') return true;
 
   return false;
 }
@@ -303,9 +305,12 @@ function belongsToTablero(play) {
       const rawPlays = Array.isArray(plays) ? plays : [];
       const normalized = rawPlays.map(normalizePlay);
 
-      const tableroPlays = sortTableroPlays(
-        normalized.filter((play) => matchesTableroFilter(play, activeTableroFilter))
-      );
+     const tableroPlays = sortTableroPlays(
+  normalized.filter((play) => {
+    if (isStructuralPlay(play)) return false;
+    return matchesTableroFilter(play, activeTableroFilter);
+  })
+);
 
       if (!tableroPlays.length) {
         container.innerHTML = renderEmptyState();
