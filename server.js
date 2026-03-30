@@ -974,105 +974,81 @@ app.post('/plays', requireAuth, async (req, res) => {
   }
 });
 
-app.patch('/plays/:id', requireAuth, async (req, res) => {
-  const playId = Number(req.params.id);
-  const userId = req.auth.userId;
-
-  const {
-    play_text,
-    play_status,
-    card_suit,
-  } = req.body || {};
-
-  if (!Number.isInteger(playId) || playId <= 0) {
-    return res.status(400).json({
-      ok: false,
-      error: 'playId inválido',
-    });
-  }
-
+app.patch('/plays/:id/status', requireAuth, async (req, res) => {
   const client = await pool.connect();
 
   try {
-    await client.query('BEGIN');
+    const playId = Number(req.params.id);
+    const nextStatus = String(req.body?.status || '').trim().toUpperCase();
+
+    const allowedStatuses = new Set([
+      'ACTIVE',
+      'APPROVED',
+      'CANCELLED',
+      'REJECTED',
+      'BLOCKED'
+    ]);
+
+    if (!playId) {
+      return res.status(400).json({
+        ok: false,
+        error: 'playId inválido'
+      });
+    }
+
+    if (!allowedStatuses.has(nextStatus)) {
+      return res.status(400).json({
+        ok: false,
+        error: 'status inválido'
+      });
+    }
 
     const existingResult = await client.query(
-      `SELECT *
-       FROM plays
-       WHERE id = $1
-       LIMIT 1`,
+      `
+      SELECT id, deck_id, play_status, created_by_user_id
+      FROM plays
+      WHERE id = $1
+      LIMIT 1
+      `,
       [playId]
     );
 
     if (!existingResult.rows.length) {
-      await client.query('ROLLBACK');
       return res.status(404).json({
         ok: false,
-        error: 'Play no encontrada',
+        error: 'Jugada no encontrada'
       });
     }
 
-    const existingPlay = existingResult.rows[0];
+    const existing = existingResult.rows[0];
 
-    const mazo = await getMazoByIdForUser(client, existingPlay.deck_id, userId);
-
-    if (!mazo) {
-      await client.query('ROLLBACK');
-      return res.status(403).json({
-        ok: false,
-        error: 'Sin acceso a esta jugada',
-      });
-    }
-
-    const nextPlayText =
-      play_text !== undefined ? String(play_text) : existingPlay.play_text;
-
-    const nextPlayStatus =
-      play_status !== undefined ? String(play_status) : existingPlay.play_status;
-
-    const nextCardSuit =
-      card_suit !== undefined ? String(card_suit).toUpperCase() : existingPlay.card_suit;
-
-    const result = await client.query(
-      `UPDATE plays
-       SET
-         play_text = $2,
-         play_status = $3,
-         card_suit = $4,
-         updated_at = NOW()
-       WHERE id = $1
-       RETURNING *`,
-      [
-        playId,
-        nextPlayText,
-        nextPlayStatus,
-        nextCardSuit,
-      ]
+    const updateResult = await client.query(
+      `
+      UPDATE plays
+      SET play_status = $1,
+          updated_at = NOW()
+      WHERE id = $2
+      RETURNING *
+      `,
+      [nextStatus, playId]
     );
-
-    await client.query('COMMIT');
 
     return res.json({
       ok: true,
-      play: result.rows[0],
+      play: updateResult.rows[0],
+      deckId: existing.deck_id
     });
   } catch (error) {
-    try {
-      await client.query('ROLLBACK');
-    } catch (rollbackError) {
-      console.error('Error haciendo ROLLBACK en PATCH /plays/:id', rollbackError);
-    }
-
-    console.error('Error en PATCH /plays/:id', error);
-
+    console.error('Error actualizando status de play:', error);
     return res.status(500).json({
       ok: false,
-      error: 'Error actualizando jugada',
+      error: 'No se pudo actualizar el status de la jugada'
     });
   } finally {
     client.release();
   }
 });
+
 app.delete('/plays/:id', requireAuth, async (req, res) => {
   const playId = Number(req.params.id);
   const userId = req.auth.userId;
