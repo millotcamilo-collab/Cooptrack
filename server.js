@@ -1362,6 +1362,7 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
 // =====================================================
 
 app.post('/plays/:id/recurrence', requireAuth, async (req, res) => {
+  console.log("RECURRENCE BODY =", req.body);
   const playId = parseInt(req.params.id, 10);
   const {
     recurrence_type,
