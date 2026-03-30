@@ -19,14 +19,14 @@
 
     const playId = play?.id;
     const creatorUserId = Number(play?.created_by_user_id || 0);
+    const parentPlayId = play?.parent_play_id ? Number(play.parent_play_id) : null;
 
-    const originalText = String(play?.play_text || "");
+    let savedTextValue = String(play?.play_text || "");
     let savedAmountValue =
       play?.amount !== null && play?.amount !== undefined
         ? String(play.amount)
         : "";
 
-    const safeText = escapeHtml(originalText);
     const statusRaw = String(play?.play_status || play?.status || "ACTIVE").toUpperCase();
 
     const isApproved = statusRaw === "APPROVED";
@@ -102,8 +102,12 @@
       if (!row || row.dataset.bound === "true") return;
 
       row.dataset.bound = "true";
-      row.dataset.mode = savedAmountValue ? "read" : "edit";
 
+      const startsEmpty = !savedTextValue.trim() || !savedAmountValue.trim();
+      row.dataset.mode = startsEmpty ? "edit" : "read";
+
+      const textView = row.querySelector('[data-role="text-view"]');
+      const textInput = row.querySelector('[data-role="text-input"]');
       const modeRead = row.querySelector('[data-role="mode-read"]');
       const modeEdit = row.querySelector('[data-role="mode-edit"]');
 
@@ -117,6 +121,10 @@
       const btnApprove = row.querySelector('[data-action="approve-play"]');
       const btnDelete = row.querySelector('[data-action="delete-play"]');
 
+      function getCurrentText() {
+        return String(textInput?.value || "").trim();
+      }
+
       function getCurrentAmount() {
         return String(amountInput?.value || "").trim();
       }
@@ -129,7 +137,12 @@
         const visualMode = row.dataset.mode || "read";
         const isEdit = visualMode === "edit";
         const isRead = visualMode === "read";
+        const hasSavedText = String(savedTextValue || "").trim() !== "";
         const hasSavedAmount = String(savedAmountValue || "").trim() !== "";
+        const isComplete = hasSavedText && hasSavedAmount;
+
+        if (textView) textView.style.display = isRead ? "inline-flex" : "none";
+        if (textInput) textInput.style.display = isEdit ? "inline-flex" : "none";
 
         if (modeRead) modeRead.style.display = isRead ? "inline-flex" : "none";
         if (modeEdit) modeEdit.style.display = isEdit ? "inline-flex" : "none";
@@ -144,25 +157,22 @@
           return;
         }
 
-        if (btnHelp) {
-          btnHelp.style.display = "inline-flex";
-        }
+        if (btnHelp) btnHelp.style.display = "inline-flex";
 
         if (btnSave) {
-          btnSave.style.display =
-            userCanEdit && isEdit ? "inline-flex" : "none";
+          btnSave.style.display = userCanEdit && isEdit ? "inline-flex" : "none";
         }
 
         if (btnEdit) {
           btnEdit.style.display =
-            userCanEdit && !isApproved && isRead && hasSavedAmount
+            userCanEdit && !isApproved && isRead && isComplete
               ? "inline-flex"
               : "none";
         }
 
         if (btnExit) {
           btnExit.style.display =
-            userCanEdit && isEdit && hasSavedAmount
+            userCanEdit && isEdit && isComplete
               ? "inline-flex"
               : "none";
         }
@@ -171,8 +181,8 @@
           btnApprove.style.display =
             !isApproved &&
             userIsDiamondAceHolder &&
-            hasSavedAmount &&
-            isRead
+            isRead &&
+            isComplete
               ? "inline-flex"
               : "none";
         }
@@ -181,21 +191,32 @@
           btnDelete.style.display = !isApproved ? "inline-flex" : "none";
         }
 
-        if (isEdit && amountInput) {
-          amountInput.focus();
-          amountInput.select();
+        if (isEdit) {
+          if (textInput && !getCurrentText()) {
+            textInput.focus();
+          } else if (amountInput) {
+            amountInput.focus();
+            amountInput.select();
+          }
         }
       }
 
       btnSave?.addEventListener("click", () => {
+        const nextText = getCurrentText();
         const nextAmount = getCurrentAmount();
 
         dispatch("tablero:save-play", {
           playId,
+          text: nextText,
           amount: nextAmount
         });
 
+        savedTextValue = nextText;
         savedAmountValue = nextAmount;
+
+        if (textView) {
+          textView.textContent = savedTextValue || "Sin concepto";
+        }
 
         if (amountView) {
           amountView.textContent = savedAmountValue || "—";
@@ -207,12 +228,14 @@
 
       btnEdit?.addEventListener("click", () => {
         if (!userCanEdit || isApproved || isClosed) return;
+        if (textInput) textInput.value = savedTextValue || "";
         if (amountInput) amountInput.value = savedAmountValue || "";
         setVisualMode("edit");
         renderMode();
       });
 
       btnExit?.addEventListener("click", () => {
+        if (textInput) textInput.value = savedTextValue || "";
         if (amountInput) amountInput.value = savedAmountValue || "";
         setVisualMode("read");
         renderMode();
@@ -224,14 +247,14 @@
         });
       });
 
-  btnDelete?.addEventListener("click", () => {
-  const confirmed = window.confirm("¿Seguro que querés borrar esta jugada?");
-  if (!confirmed) return;
+      btnDelete?.addEventListener("click", () => {
+        const confirmed = window.confirm("¿Seguro que querés borrar esta jugada?");
+        if (!confirmed) return;
 
-  dispatch("tablero:delete-play", {
-    playId
-  });
-});
+        dispatch("tablero:delete-play", {
+          playId
+        });
+      });
 
       btnHelp?.addEventListener("click", () => {
         dispatch("tablero:help-play", {
@@ -239,6 +262,18 @@
           cardRank: "J",
           cardSuit: "CLUB"
         });
+      });
+
+      textInput?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          btnSave?.click();
+        }
+
+        if (event.key === "Escape") {
+          event.preventDefault();
+          btnExit?.click();
+        }
       });
 
       amountInput?.addEventListener("keydown", (event) => {
@@ -264,7 +299,19 @@
 
         <div class="tablero-row__center">
           <div class="tablero-row__main-line">
-            <span class="tablero-row__title-inline">${safeText || "Sin concepto"}</span>
+            <span
+              class="tablero-row__title-inline"
+              data-role="text-view"
+            >${escapeHtml(savedTextValue || "Sin concepto")}</span>
+
+            <input
+              type="text"
+              value="${escapeHtml(savedTextValue)}"
+              data-role="text-input"
+              class="tablero-row__inline-input tablero-row__inline-input--jtrebol"
+              placeholder="Concepto de factura"
+              style="display:none;"
+            />
 
             <span class="tablero-row__amount-card">J♦</span>
 
