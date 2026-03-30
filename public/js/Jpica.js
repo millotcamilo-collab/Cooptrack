@@ -441,7 +441,58 @@ function getDeadlineReadLabel(endValue, recurrenceType, weekdays, months) {
           timezone: "America/Montevideo"
         };
       }
+function getStartDateObject() {
+  const raw = String(startDateInput?.value || "").trim();
+  if (!raw) return null;
 
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return date;
+}
+
+function getWeekdayCodeFromDate(date) {
+  if (!date) return null;
+
+  const map = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+  return map[date.getDay()] || null;
+}
+
+function getMonthNumberFromDate(date) {
+  if (!date) return null;
+  return date.getMonth() + 1;
+}
+
+function applyDefaultRecurrenceFromStartDate() {
+  const recurrenceType = String(recurrenceTypeSelect?.value || "").trim().toUpperCase();
+  const startDate = getStartDateObject();
+
+  if (!startDate || !recurrenceType) return;
+
+  if (recurrenceType === "WEEKLY") {
+    const weekdayCode = getWeekdayCodeFromDate(startDate);
+    if (!weekdayCode) return;
+
+    const checkedWeekdays = getCheckedValues('[data-role="recurrence-weekday"]');
+    if (checkedWeekdays.length === 0) {
+      row.querySelectorAll('[data-role="recurrence-weekday"]').forEach((input) => {
+        input.checked = input.value === weekdayCode;
+      });
+    }
+  }
+
+  if (recurrenceType === "MONTHLY") {
+    const monthNumber = getMonthNumberFromDate(startDate);
+    if (!monthNumber) return;
+
+    const checkedMonths = getCheckedValues('[data-role="recurrence-month"]');
+    if (checkedMonths.length === 0) {
+      row.querySelectorAll('[data-role="recurrence-month"]').forEach((input) => {
+        input.checked = Number(input.value) === monthNumber;
+      });
+    }
+  }
+}
       function paintRecurrenceControls() {
         const recurrenceType = String(recurrenceTypeSelect?.value || "").trim().toUpperCase();
 
@@ -792,18 +843,24 @@ btnDelete?.addEventListener("click", () => {
   renderMode();
 });
     
-      btnRoutine?.addEventListener("click", async () => {
-        await loadRecurrenceIfNeeded();
+  btnRoutine?.addEventListener("click", async () => {
+  await loadRecurrenceIfNeeded();
 
-        if (!recurrenceEdit) return;
+  if (!recurrenceEdit) return;
 
-        const currentlyOpen = recurrenceEdit.dataset.open === "true";
-        recurrenceEdit.dataset.open = currentlyOpen ? "false" : "true";
-        renderMode();
-      });
+  const currentlyOpen = recurrenceEdit.dataset.open === "true";
+  recurrenceEdit.dataset.open = currentlyOpen ? "false" : "true";
+
+  if (!currentlyOpen) {
+    applyDefaultRecurrenceFromStartDate();
+  }
+
+  renderMode();
+});
 
       recurrenceTypeSelect?.addEventListener("change", () => {
         paintRecurrenceControls();
+        applyDefaultRecurrenceFromStartDate();
       });
     
       btnHelp?.addEventListener("click", () => {
