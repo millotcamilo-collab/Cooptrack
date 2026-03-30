@@ -234,10 +234,13 @@
       });
 
       btnDelete?.addEventListener("click", () => {
-        dispatch("tablero:delete-play", {
-          playId
-        });
-      });
+  const confirmed = window.confirm("¿Seguro que querés borrar esta jugada?");
+  if (!confirmed) return;
+
+  dispatch("tablero:delete-play", {
+    playId
+  });
+});
 
       btnCancel?.addEventListener("click", () => {
         dispatch("tablero:cancel-play", {
