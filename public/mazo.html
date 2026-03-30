@@ -297,15 +297,25 @@ document.addEventListener("tablero:change-suit", async (event) => {
 
 document.addEventListener("tablero:save-play", async (event) => {
   try {
-    const playId = event.detail?.playId;
-    const text = String(event.detail?.text || "").trim();
+    const {
+      playId,
+      text,
+      spadeMode,
+      startDate,
+      endDate,
+      location
+    } = event.detail || {};
 
     if (!playId) return;
 
-    console.log("TABLERO SAVE PLAY", playId, text);
+    console.log("TABLERO SAVE PLAY", event.detail);
 
     await patchPlay(playId, {
-      play_text: text
+      text,
+      spadeMode,
+      startDate,
+      endDate,
+      location
     });
 
     await initMazoPage();
@@ -313,7 +323,8 @@ document.addEventListener("tablero:save-play", async (event) => {
     console.error("Error en tablero:save-play", error);
   }
 });
-document.addEventListener("tablero:approve-play", async (event) => {
+    
+    document.addEventListener("tablero:approve-play", async (event) => {
   try {
     const playId = event.detail?.playId;
     if (!playId) return;
