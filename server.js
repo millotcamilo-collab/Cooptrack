@@ -1018,6 +1018,10 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
 
     const current = existingResult.rows[0];
 
+    // -----------------------------
+    // NORMALIZACIÓN DE CAMPOS
+    // -----------------------------
+
     const nextPlayText =
       text !== undefined
         ? (String(text || '').trim() || null)
@@ -1065,6 +1069,28 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         ? (String(card_suit || '').trim().toUpperCase() || null)
         : current.card_suit;
 
+    // -----------------------------
+    // RECONSTRUCCIÓN DE play_code
+    // -----------------------------
+
+    let nextPlayCode = current.play_code;
+
+    if (card_suit !== undefined && current.play_code) {
+      const parts = String(current.play_code).split('§');
+
+      // asegurar 9 segmentos
+      while (parts.length < 9) parts.push('');
+
+      if (parts.length === 9) {
+        parts[4] = nextCardSuit; // posición del palo
+        nextPlayCode = parts.join('§');
+      }
+    }
+
+    // -----------------------------
+    // UPDATE
+    // -----------------------------
+
     const result = await client.query(
       `
       UPDATE plays
@@ -1077,8 +1103,9 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         amount = $6,
         play_status = $7,
         card_suit = $8,
+        play_code = $9,
         updated_at = NOW()
-      WHERE id = $9
+      WHERE id = $10
       RETURNING *
       `,
       [
@@ -1090,6 +1117,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         nextAmount,
         nextPlayStatus,
         nextCardSuit,
+        nextPlayCode,
         playId
       ]
     );
@@ -1098,6 +1126,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       ok: true,
       play: result.rows[0]
     });
+
   } catch (error) {
     console.error('Error actualizando play:', error);
     return res.status(500).json({
