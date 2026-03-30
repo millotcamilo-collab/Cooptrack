@@ -987,6 +987,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       startDate,
       endDate,
       location,
+      amount,
       play_status,
       card_suit
     } = req.body || {};
@@ -1038,6 +1039,22 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         ? (String(location || '').trim() || null)
         : current.location;
 
+    const nextAmount =
+      amount !== undefined
+        ? (
+            String(amount).trim() === ''
+              ? null
+              : Number(amount)
+          )
+        : current.amount;
+
+    if (amount !== undefined && nextAmount !== null && Number.isNaN(nextAmount)) {
+      return res.status(400).json({
+        ok: false,
+        error: 'amount inválido'
+      });
+    }
+
     const nextPlayStatus =
       play_status !== undefined
         ? (String(play_status || '').trim().toUpperCase() || null)
@@ -1057,10 +1074,11 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         start_date = $3,
         end_date = $4,
         location = $5,
-        play_status = $6,
-        card_suit = $7,
+        amount = $6,
+        play_status = $7,
+        card_suit = $8,
         updated_at = NOW()
-      WHERE id = $8
+      WHERE id = $9
       RETURNING *
       `,
       [
@@ -1069,6 +1087,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         nextStartDate,
         nextEndDate,
         nextLocation,
+        nextAmount,
         nextPlayStatus,
         nextCardSuit,
         playId
@@ -1089,6 +1108,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     client.release();
   }
 });
+
 app.delete('/plays/:id', requireAuth, async (req, res) => {
   const playId = Number(req.params.id);
   const userId = req.auth.userId;
