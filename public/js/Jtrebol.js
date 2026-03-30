@@ -2,7 +2,6 @@
   function renderJtrebol(play, context = {}) {
     const helpers = context.helpers || {};
     const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
-    const formatDate = helpers.formatDate || ((v) => String(v ?? ""));
     const dispatch =
       typeof context.dispatch === "function"
         ? context.dispatch
@@ -27,10 +26,7 @@
         : "";
 
     const safeText = escapeHtml(originalText);
-    const author = escapeHtml(play?.createdByNickname || play?.created_by_nickname || "—");
-    const date = formatDate(play?.displayDate || play?.created_at || "");
     const statusRaw = String(play?.play_status || play?.status || "ACTIVE").toUpperCase();
-    const statusLabel = escapeHtml(statusRaw);
 
     const isApproved = statusRaw === "APPROVED";
     const isCancelled = statusRaw === "CANCELLED";
@@ -90,14 +86,13 @@
     const approveIcon = escapeHtml(ACTIONS.approve || "");
     const deleteIcon = escapeHtml(ACTIONS.delete || "");
     const helpIcon = escapeHtml(ACTIONS.help || "");
-    const amountIcon = escapeHtml(ACTIONS.diamond || "");
 
     setTimeout(() => {
       const row = document.getElementById(rowId);
       if (!row || row.dataset.bound === "true") return;
 
       row.dataset.bound = "true";
-      row.dataset.mode = "read";
+      row.dataset.mode = amountValue ? "read" : "edit";
 
       const modeRead = row.querySelector('[data-role="mode-read"]');
       const modeEdit = row.querySelector('[data-role="mode-edit"]');
@@ -123,8 +118,8 @@
         const isEdit = visualMode === "edit";
         const isRead = visualMode === "read";
 
-        if (modeRead) modeRead.style.display = isRead ? "flex" : "none";
-        if (modeEdit) modeEdit.style.display = isEdit ? "flex" : "none";
+        if (modeRead) modeRead.style.display = isRead ? "inline-flex" : "none";
+        if (modeEdit) modeEdit.style.display = isEdit ? "inline-flex" : "none";
 
         if (isClosed) {
           if (btnHelp) btnHelp.style.display = "inline-flex";
@@ -218,21 +213,18 @@
         </div>
 
         <div class="tablero-row__center">
-          <div class="tablero-row__title">${safeText || "Sin concepto"}</div>
+          <div class="tablero-row__main-line">
+            <span class="tablero-row__title-inline">${safeText || "Sin concepto"}</span>
 
-          <div class="tablero-row__amount-line">
             <span class="tablero-row__amount-card">J♦</span>
 
-            <div class="tablero-row__mode-read" data-role="mode-read">
+            <span class="tablero-row__mode-read" data-role="mode-read">
               <span class="tablero-row__amount-view" data-role="amount-view">
                 ${escapeHtml(amountValue || "—")}
               </span>
-            </div>
+            </span>
 
-            <div class="tablero-row__mode-edit" data-role="mode-edit" style="display:none;">
-              <span class="tablero-row__amount-icon-wrap">
-                ${amountIcon ? `<img src="${amountIcon}" alt="Monto" class="tablero-row__field-icon" />` : ""}
-              </span>
+            <span class="tablero-row__mode-edit" data-role="mode-edit" style="display:none;">
               <input
                 type="number"
                 step="0.01"
@@ -242,13 +234,7 @@
                 class="tablero-row__amount-input"
                 placeholder="Monto"
               />
-            </div>
-          </div>
-
-          <div class="tablero-row__meta">
-            <span>Autor: ${author}</span>
-            <span>Fecha: ${date}</span>
-            <span>Estado: ${statusLabel}</span>
+            </span>
           </div>
         </div>
 
