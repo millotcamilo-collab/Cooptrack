@@ -501,6 +501,95 @@ document.addEventListener("mazobar:showCancelled", () => {
 
   renderTablero(deck, plays, state);
 });
+
+document.addEventListener("tablero:add-child-play", async (event) => {
+  try {
+    const {
+      parentPlayId,
+      childRank,
+      childSuit
+    } = event.detail || {};
+
+    if (!parentPlayId || !childRank || !childSuit) {
+      alert("Datos inválidos para crear jugada hija");
+      return;
+    }
+
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) {
+      alert("No estás logueado");
+      return;
+    }
+
+    const deckId =
+      window.__currentDeck?.id ||
+      window.__currentState?.deck?.id ||
+      null;
+
+    const userId =
+      window.__currentState?.userId ||
+      window.__currentUser?.id ||
+      null;
+
+    const currentPlays = Array.isArray(window.__currentState?.plays)
+      ? window.__currentState.plays
+      : [];
+
+    const parentPlay = currentPlays.find(
+      (play) => Number(play.id) === Number(parentPlayId)
+    );
+
+    if (!deckId || !userId || !parentPlay) {
+      alert("No se pudo identificar la jugada madre");
+      return;
+    }
+
+    const text = String(parentPlay.play_text || "").trim();
+    const when = new Date().toISOString();
+
+    const playCode = [
+      deckId,
+      userId,
+      when,
+      String(childRank).toUpperCase(),
+      String(childSuit).toUpperCase(),
+      "create_child",
+      `U:${userId}`,
+      `child_of:${parentPlayId}`,
+      `U:${userId}`
+    ].join("§");
+
+    const response = await fetch(`${API_BASE_URL}/plays`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        deck_id: deckId,
+        parent_play_id: parentPlayId,
+        play_code: playCode,
+        text,
+        play_status: "ACTIVE"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error creando jugada hija:", data);
+      alert("No se pudo crear la jugada hija");
+      return;
+    }
+
+    document.dispatchEvent(new CustomEvent("plays:changed", {
+      detail: { deckId }
+    }));
+  } catch (error) {
+    console.error("Error en tablero:add-child-play", error);
+    alert("Error creando la jugada hija");
+  }
+});
   
   document.addEventListener("tablero:save-play", async (event) => {
   try {
