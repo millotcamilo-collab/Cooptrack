@@ -124,46 +124,49 @@
     };
   }
 
-  function belongsToTablero(play) {
-    const rank = normalizeRank(play?.rank);
-    const suit = normalizeSuit(play?.suit);
+function belongsToTablero(play) {
+  const rank = normalizeRank(play?.rank);
+  const suit = normalizeSuit(play?.suit);
 
-    if (!rank || !suit) return false;
+  if (!rank || !suit) return false;
 
-    if (rank === 'J') return true;
-    if (rank === 'Q' && (suit === 'SPADE' || suit === 'CLUB')) return true;
-    if (rank === 'A' && suit !== 'HEART') return true;
+  // En esta etapa, al tablero solo entran jugadas J
+  // y ases corporativos distintos del A♥.
+  // Las K y Q con action "puedeJugar" NO son jugadas:
+  // son líneas de control de acceso del libro.
+  if (rank === 'J') return true;
+  if (rank === 'A' && suit !== 'HEART') return true;
 
-    return false;
-  }
+  return false;
+}
 
   function matchesTableroFilter(play, filterSuit) {
-    const rank = normalizeRank(play?.rank);
-    const suit = normalizeSuit(play?.suit);
-    const filter = normalizeSuit(filterSuit);
+  const rank = normalizeRank(play?.rank);
+  const suit = normalizeSuit(play?.suit);
+  const filter = normalizeSuit(filterSuit);
 
-    if (!filter) {
-      return belongsToTablero(play);
-    }
-
-    if (filter === 'HEART') {
-      return rank === 'J' && suit === 'HEART';
-    }
-
-    if (filter === 'SPADE') {
-      return rank === 'J' && suit === 'SPADE';
-    }
-
-    if (filter === 'DIAMOND') {
-      return false;
-    }
-
-    if (filter === 'CLUB') {
-      return rank === 'A';
-    }
-
+  if (!filter) {
     return belongsToTablero(play);
   }
+
+  if (filter === 'HEART') {
+    return rank === 'J' && suit === 'HEART';
+  }
+
+  if (filter === 'SPADE') {
+    return rank === 'J' && suit === 'SPADE';
+  }
+
+  if (filter === 'DIAMOND') {
+    return rank === 'J' && suit === 'DIAMOND';
+  }
+
+  if (filter === 'CLUB') {
+    return (rank === 'J' && suit === 'CLUB') || (rank === 'A');
+  }
+
+  return belongsToTablero(play);
+}
 
   function getComponentName(play) {
     const rank = normalizeRank(play?.rank);
