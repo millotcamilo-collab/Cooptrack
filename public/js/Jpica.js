@@ -291,7 +291,7 @@ function getDeadlineReadLabel(endValue, recurrenceType, weekdays, months) {
     }
 
     function getRecurrenceSummary() {
-      if (!recurrenceTypeValue) return "Sin rutina";
+      if (!recurrenceTypeValue) return "";
 
       if (recurrenceTypeValue === "WEEKLY") {
         return `Rutina semanal: ${recurrenceWeekdaysValue.join(", ") || "—"}`;
