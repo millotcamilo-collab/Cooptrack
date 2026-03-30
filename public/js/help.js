@@ -1,5 +1,38 @@
 (function () {
   const PLAY_HELP = {
+     A_HEART: {
+      title: "A♥ · Fundación del mazo",
+      body: `
+        La jugada A♥ comprende el origen institucional de un mazo y se juega una sola vez.
+
+        La jugada puede ser salvada si tiene un titulo, pero para ser aprobada, debe contener imagen y moneda.
+
+        Una vez aprobada, solo será editable la imagen del mazo. Y se le otorgara al autor los 3 ases restantes que definen las autoridades maximas del mazo.
+      `
+    },
+
+    A_SPADE: {
+      title: "A♠ · El As de picas representa la autoridad màxima en materia de actividades",
+      body: `
+        Será el responsable de la planificación y ejecución de las actividades del mazo. O sea de las J♠
+    },
+
+    A_DIAMOND: {
+      title: "A♦ · Autoridad económica",
+      body: `
+        El As de diamante representa la autoridad económica del mazo.
+
+        Su titular puede aprobar jugadas que comprometen forma, plazo o validación económica.
+      `
+    },
+
+    A_CLUB: {
+      title: "A♣ · Autoridad de trébol",
+      body: `
+        El As de trébol representa la autoridad de registro o contribución comunitaria
+        según el flujo del mazo.
+      `
+    }
     J_HEART: {
       title: "J♥ · Anotación",
       body: `
@@ -62,42 +95,7 @@
 
       `
     },
-    A_HEART: {
-      title: "A♥ · Fundación del mazo",
-      body: `
-        El As de corazón representa el origen institucional del mazo.
-
-        Define la identidad principal del mazo y su autoridad de corazón.
-
-        Su titular puede aprobar las J♥.
-      `
-    },
-
-    A_SPADE: {
-      title: "A♠ · Autoridad de picas",
-      body: `
-        El As de picas representa autoridad sobre actividades y participaciones.
-
-        Su semántica fina depende del libro de jugadas y de las delegaciones vigentes.
-      `
-    },
-
-    A_DIAMOND: {
-      title: "A♦ · Autoridad económica",
-      body: `
-        El As de diamante representa la autoridad económica del mazo.
-
-        Su titular puede aprobar jugadas que comprometen forma, plazo o validación económica.
-      `
-    },
-
-    A_CLUB: {
-      title: "A♣ · Autoridad de trébol",
-      body: `
-        El As de trébol representa la autoridad de registro o contribución comunitaria
-        según el flujo del mazo.
-      `
-    }
+   
   };
 
   function getPlayHelp(helpKey) {
