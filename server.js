@@ -986,8 +986,109 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       spadeMode,
       startDate,
       endDate,
-      location
+      location,
+      play_status,
+      card_suit
     } = req.body || {};
+
+    if (!playId) {
+      return res.status(400).json({
+        ok: false,
+        error: 'playId inválido'
+      });
+    }
+
+    const existingResult = await client.query(
+      `
+      SELECT *
+      FROM plays
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [playId]
+    );
+
+    if (!existingResult.rows.length) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Jugada no encontrada'
+      });
+    }
+
+    const current = existingResult.rows[0];
+
+    const nextPlayText =
+      text !== undefined
+        ? (String(text || '').trim() || null)
+        : current.play_text;
+
+    const nextSpadeMode =
+      spadeMode !== undefined
+        ? (String(spadeMode || '').trim().toUpperCase() || null)
+        : current.spade_mode;
+
+    const nextStartDate =
+      startDate !== undefined ? (startDate || null) : current.start_date;
+
+    const nextEndDate =
+      endDate !== undefined ? (endDate || null) : current.end_date;
+
+    const nextLocation =
+      location !== undefined
+        ? (String(location || '').trim() || null)
+        : current.location;
+
+    const nextPlayStatus =
+      play_status !== undefined
+        ? (String(play_status || '').trim().toUpperCase() || null)
+        : current.play_status;
+
+    const nextCardSuit =
+      card_suit !== undefined
+        ? (String(card_suit || '').trim().toUpperCase() || null)
+        : current.card_suit;
+
+    const result = await client.query(
+      `
+      UPDATE plays
+      SET
+        play_text = $1,
+        spade_mode = $2,
+        start_date = $3,
+        end_date = $4,
+        location = $5,
+        play_status = $6,
+        card_suit = $7,
+        updated_at = NOW()
+      WHERE id = $8
+      RETURNING *
+      `,
+      [
+        nextPlayText,
+        nextSpadeMode,
+        nextStartDate,
+        nextEndDate,
+        nextLocation,
+        nextPlayStatus,
+        nextCardSuit,
+        playId
+      ]
+    );
+
+    return res.json({
+      ok: true,
+      play: result.rows[0]
+    });
+  } catch (error) {
+    console.error('Error actualizando play:', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'No se pudo actualizar la jugada'
+    });
+  } finally {
+    client.release();
+  }
+});
 app.delete('/plays/:id', requireAuth, async (req, res) => {
   const playId = Number(req.params.id);
   const userId = req.auth.userId;
