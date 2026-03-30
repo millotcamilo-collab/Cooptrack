@@ -224,11 +224,14 @@
         });
       });
 
-      btnDelete?.addEventListener("click", () => {
-        dispatch("tablero:delete-play", {
-          playId
-        });
-      });
+  btnDelete?.addEventListener("click", () => {
+  const confirmed = window.confirm("¿Seguro que querés borrar esta jugada?");
+  if (!confirmed) return;
+
+  dispatch("tablero:delete-play", {
+    playId
+  });
+});
 
       btnHelp?.addEventListener("click", () => {
         dispatch("tablero:help-play", {
