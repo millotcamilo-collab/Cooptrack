@@ -34,6 +34,14 @@
     let endDateValue = play?.end_date ? toInputDateTimeValue(play.end_date) : "";
     let locationValue = String(play?.location || "");
 
+    const hasRecurrence = !!play?.has_recurrence;
+
+    let recurrenceTypeValue = "";
+    let recurrenceWeekdaysValue = [];
+    let recurrenceMonthsValue = [];
+    let recurrenceUntilDateValue = "";
+    let recurrenceLoaded = false;
+    
     const rowId = `tablero-row-${playId}`;
     const textInputId = `jpike-text-${playId}`;
 
@@ -110,6 +118,50 @@
       }
     }
 
+    function canHaveRoutine(mode, startDate, endDate) {
+      const normalizedMode = String(mode || "").toUpperCase();
+
+      if (normalizedMode === "APPOINTMENT") {
+        return !!startDate;
+      }
+
+      if (normalizedMode === "DEADLINE") {
+        return !!endDate;
+      }
+
+      return false;
+    }
+
+    function isValidRecurrenceConfig(type, weekdays, months) {
+      const normalizedType = String(type || "").toUpperCase();
+
+      if (!normalizedType) return true; // rutina opcional
+
+      if (normalizedType === "WEEKLY") {
+        return Array.isArray(weekdays) && weekdays.length > 0;
+      }
+
+      if (normalizedType === "MONTHLY") {
+        return Array.isArray(months) && months.length > 0;
+      }
+
+      return false;
+    }
+
+    function getRecurrenceSummary() {
+      if (!recurrenceTypeValue) return "Sin rutina";
+
+      if (recurrenceTypeValue === "WEEKLY") {
+        return `Rutina semanal: ${recurrenceWeekdaysValue.join(", ") || "—"}`;
+      }
+
+      if (recurrenceTypeValue === "MONTHLY") {
+        return `Rutina mensual: ${recurrenceMonthsValue.join(", ") || "—"}`;
+      }
+
+      return "Sin rutina";
+    }
+    
     const spadeAceHolderUserId = resolveSpadeAceHolderUserId(allPlays);
     const userIsSpadeAceHolder =
       spadeAceHolderUserId !== null &&
@@ -152,6 +204,7 @@
     const cancelIcon = escapeHtml(ACTIONS.cancel || ACTIONS.exit || "");
     const clubIcon = escapeHtml(ACTIONS.club || "");
     const qspadeIcon = escapeHtml(ACTIONS.qspade || ACTIONS.spade || "");
+    const routineIcon = escapeHtml(ACTIONS.routine || "");
 
     setTimeout(() => {
       const row = document.getElementById(rowId);
@@ -192,6 +245,16 @@
       const deadlineEndDateInput = row.querySelector('[data-role="deadline-end-date"]');
       const locationInput = row.querySelector('[data-role="location"]');
 
+      const btnRoutine = row.querySelector('[data-action="toggle-routine"]');
+
+      const recurrenceRead = row.querySelector('[data-role="recurrence-read"]');
+      const recurrenceEdit = row.querySelector('[data-role="recurrence-edit"]');
+
+      const recurrenceTypeSelect = row.querySelector('[data-role="recurrence-type"]');
+      const recurrenceWeeklyBox = row.querySelector('[data-role="recurrence-weekly"]');
+      const recurrenceMonthlyBox = row.querySelector('[data-role="recurrence-monthly"]');
+      const recurrenceUntilDateInput = row.querySelector('[data-role="recurrence-until-date"]');
+
       function getCurrentText() {
         return String(textInput?.value || "").trim();
       }
@@ -220,6 +283,84 @@
         };
       }
 
+            function getCheckedValues(selector) {
+        return Array.from(row.querySelectorAll(selector))
+          .filter((input) => input.checked)
+          .map((input) => String(input.value || "").trim())
+          .filter(Boolean);
+      }
+
+      function getRecurrenceValues() {
+        return {
+          recurrence_type: String(recurrenceTypeSelect?.value || "").trim().toUpperCase(),
+          weekdays: getCheckedValues('[data-role="recurrence-weekday"]'),
+          months: getCheckedValues('[data-role="recurrence-month"]'),
+          until_date: String(recurrenceUntilDateInput?.value || "").trim() || null,
+          timezone: "America/Montevideo"
+        };
+      }
+
+      function paintRecurrenceControls() {
+        const recurrenceType = String(recurrenceTypeSelect?.value || "").trim().toUpperCase();
+
+        if (recurrenceWeeklyBox) {
+          recurrenceWeeklyBox.style.display = recurrenceType === "WEEKLY" ? "flex" : "none";
+        }
+
+        if (recurrenceMonthlyBox) {
+          recurrenceMonthlyBox.style.display = recurrenceType === "MONTHLY" ? "flex" : "none";
+        }
+
+        if (recurrenceRead) {
+          recurrenceRead.textContent = getRecurrenceSummary();
+        }
+      }
+
+      async function loadRecurrenceIfNeeded() {
+        if (recurrenceLoaded || !playId) return;
+
+        try {
+          const response = await fetch(`${window.API_BASE_URL}/plays/${playId}/recurrence`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("cooptrackToken") || ""}`
+            }
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || !data.ok || !data.recurrence) {
+            recurrenceLoaded = true;
+            paintRecurrenceControls();
+            return;
+          }
+
+          const recurrence = data.recurrence;
+
+          recurrenceTypeValue = String(recurrence.recurrence_type || "").toUpperCase();
+          recurrenceWeekdaysValue = Array.isArray(recurrence.weekdays) ? recurrence.weekdays : [];
+          recurrenceMonthsValue = Array.isArray(recurrence.months) ? recurrence.months : [];
+          recurrenceUntilDateValue = recurrence.until_date
+            ? String(recurrence.until_date).slice(0, 10)
+            : "";
+
+          if (recurrenceTypeSelect) recurrenceTypeSelect.value = recurrenceTypeValue;
+          if (recurrenceUntilDateInput) recurrenceUntilDateInput.value = recurrenceUntilDateValue;
+
+          row.querySelectorAll('[data-role="recurrence-weekday"]').forEach((input) => {
+            input.checked = recurrenceWeekdaysValue.includes(input.value);
+          });
+
+          row.querySelectorAll('[data-role="recurrence-month"]').forEach((input) => {
+            input.checked = recurrenceMonthsValue.includes(input.value);
+          });
+
+          recurrenceLoaded = true;
+          paintRecurrenceControls();
+        } catch (error) {
+          console.error("No se pudo cargar recurrencia", error);
+          recurrenceLoaded = true;
+        }
+      }
       function setVisualMode(mode) {
         row.dataset.mode = mode;
       }
@@ -237,6 +378,9 @@
 
         const showApprovedExtras = isApproved && !isCancelled;
         const showCancelApproved = canCancelApprovedPlay();
+
+        const { startDate, endDate } = getFieldValues();
+        const routineAvailable = !isApproved && !!currentMode && canHaveRoutine(currentMode, startDate, endDate);
 
         if (modeChoose) modeChoose.style.display = isChoose ? "flex" : "none";
         if (modeRead) modeRead.style.display = isRead ? "flex" : "none";
@@ -260,7 +404,14 @@
         if (deadlineEdit) {
           deadlineEdit.style.display = isEdit && currentMode === "DEADLINE" ? "flex" : "none";
         }
+        if (recurrenceEdit) {
+          const recurrenceOpen = recurrenceEdit.dataset.open === "true";
+          recurrenceEdit.style.display = isEdit && recurrenceOpen ? "flex" : "none";
+        }
 
+        if (btnRoutine) {
+          btnRoutine.style.display = routineAvailable ? "inline-flex" : "none";
+        }
         if (isCancelled) {
           if (btnChooseAppointment) btnChooseAppointment.style.display = "none";
           if (btnChooseDeadline) btnChooseDeadline.style.display = "none";
@@ -273,6 +424,7 @@
           if (btnAddJclub) btnAddJclub.style.display = "none";
           if (btnAddQspade) btnAddQspade.style.display = "none";
           if (btnHelp) btnHelp.style.display = "inline-flex";
+          if (btnRoutine) btnRoutine.style.display = "none";
           return;
         }
 
@@ -328,6 +480,7 @@
           textInput.focus();
           textInput.select();
         }
+        paintRecurrenceControls();
       }
 
       function buildPayload() {
@@ -344,6 +497,12 @@
         };
       }
 
+      function buildRecurrencePayload() {
+        return {
+          playId,
+          ...getRecurrenceValues()
+        };
+      }
       btnChooseAppointment?.addEventListener("click", () => {
         setSpadeMode("APPOINTMENT");
         setVisualMode("edit");
@@ -361,7 +520,59 @@
         renderMode();
       });
 
-      btnSave?.addEventListener("click", () => {
+        btnSave?.addEventListener("click", () => {
+  const payload = buildPayload();
+
+  const check = validateFields(
+    payload.spadeMode,
+    payload.startDate,
+    payload.endDate,
+    payload.location
+  );
+
+  if (!check.ok) {
+    alert(check.error);
+    return;
+  }
+
+  const recurrencePayload = buildRecurrencePayload();
+
+  if (
+    recurrencePayload.recurrence_type &&
+    !isValidRecurrenceConfig(
+      recurrencePayload.recurrence_type,
+      recurrencePayload.weekdays,
+      recurrencePayload.months
+    )
+  ) {
+    alert("La rutina está incompleta.");
+    return;
+  }
+
+  dispatch("tablero:save-play", payload);
+
+  if (recurrencePayload.recurrence_type) {
+    dispatch("tablero:save-recurrence", recurrencePayload);
+  }
+
+  originalText = payload.text || "";
+  if (textView) textView.textContent = originalText || "Sin texto";
+
+  startDateValue = payload.startDate || "";
+  endDateValue = payload.endDate || "";
+  locationValue = payload.location || "";
+
+  recurrenceTypeValue = recurrencePayload.recurrence_type || "";
+  recurrenceWeekdaysValue = recurrencePayload.weekdays || [];
+  recurrenceMonthsValue = recurrencePayload.months || [];
+  recurrenceUntilDateValue = recurrencePayload.until_date || "";
+
+  setVisualMode("read");
+  renderMode();
+});      
+      
+        
+        btnApprove?.addEventListener("click", () => {
         const payload = buildPayload();
 
         const check = validateFields(
@@ -376,36 +587,26 @@
           return;
         }
 
-        dispatch("tablero:save-play", payload);
+        const recurrencePayload = buildRecurrencePayload();
 
-        originalText = payload.text || "";
-        if (textView) textView.textContent = originalText || "Sin texto";
-
-        startDateValue = payload.startDate || "";
-        endDateValue = payload.endDate || "";
-        locationValue = payload.location || "";
-
-        setVisualMode("read");
-        renderMode();
-      });
-
-      btnApprove?.addEventListener("click", () => {
-        const payload = buildPayload();
-        const check = validateFields(
-          payload.spadeMode,
-          payload.startDate,
-          payload.endDate,
-          payload.location
-        );
-
-        if (!check.ok) {
-          alert(check.error);
+        if (
+          recurrencePayload.recurrence_type &&
+          !isValidRecurrenceConfig(
+            recurrencePayload.recurrence_type,
+            recurrencePayload.weekdays,
+            recurrencePayload.months
+          )
+        ) {
+          alert("La rutina está incompleta.");
           return;
         }
 
-        dispatch("tablero:approve-play", payload);
+        dispatch("tablero:approve-play", {
+          ...payload,
+          recurrence: recurrencePayload.recurrence_type ? recurrencePayload : null
+        });
       });
-
+    
 btnDelete?.addEventListener("click", () => {
   const confirmed = window.confirm("¿Seguro que querés borrar esta jugada?");
   if (!confirmed) return;
@@ -415,18 +616,48 @@ btnDelete?.addEventListener("click", () => {
   });
 });
 
-      btnExit?.addEventListener("click", () => {
-        if (textInput) textInput.value = originalText;
-        if (startDateInput) startDateInput.value = startDateValue;
-        if (appointmentEndDateInput) appointmentEndDateInput.value = endDateValue;
-        if (deadlineEndDateInput) deadlineEndDateInput.value = endDateValue;
-        if (locationInput) locationInput.value = locationValue;
+     btnExit?.addEventListener("click", () => {
+  if (textInput) textInput.value = originalText;
+  if (startDateInput) startDateInput.value = startDateValue;
+  if (appointmentEndDateInput) appointmentEndDateInput.value = endDateValue;
+  if (deadlineEndDateInput) deadlineEndDateInput.value = endDateValue;
+  if (locationInput) locationInput.value = locationValue;
 
-        setSpadeMode(spadeMode || "");
-        setVisualMode(spadeMode ? "read" : "choose");
+  if (recurrenceTypeSelect) recurrenceTypeSelect.value = recurrenceTypeValue || "";
+  if (recurrenceUntilDateInput) recurrenceUntilDateInput.value = recurrenceUntilDateValue || "";
+
+  row.querySelectorAll('[data-role="recurrence-weekday"]').forEach((input) => {
+    input.checked = recurrenceWeekdaysValue.includes(input.value);
+  });
+
+  row.querySelectorAll('[data-role="recurrence-month"]').forEach((input) => {
+    input.checked = recurrenceMonthsValue.includes(input.value);
+  });
+
+  if (recurrenceEdit) {
+    recurrenceEdit.dataset.open = "false";
+  }
+
+  setSpadeMode(spadeMode || "");
+  setVisualMode(spadeMode ? "read" : "choose");
+
+  renderMode();
+});
+    
+      btnRoutine?.addEventListener("click", async () => {
+        await loadRecurrenceIfNeeded();
+
+        if (!recurrenceEdit) return;
+
+        const currentlyOpen = recurrenceEdit.dataset.open === "true";
+        recurrenceEdit.dataset.open = currentlyOpen ? "false" : "true";
         renderMode();
       });
 
+      recurrenceTypeSelect?.addEventListener("change", () => {
+        paintRecurrenceControls();
+      });
+    
       btnHelp?.addEventListener("click", () => {
         dispatch("tablero:help-play", {
           playId,
@@ -473,158 +704,229 @@ btnDelete?.addEventListener("click", () => {
     }, 0);
 
     return `
-      <article class="tablero-row tablero-row--jpike" id="${rowId}">
-        <div class="tablero-row__left">
-          <div class="tablero-row__card">J♠</div>
+  <article class="tablero-row tablero-row--jpike" id="${rowId}">
+    <div class="tablero-row__left">
+      <div class="tablero-row__card">J♠</div>
+    </div>
+
+    <div class="tablero-row__center">
+      <div class="tablero-row__title" data-role="text-view">${safeText || "Sin texto"}</div>
+
+      <input
+        id="${textInputId}"
+        type="text"
+        class="tablero-row__inline-input"
+        data-role="text-input"
+        value="${safeText}"
+        style="display:none;"
+      />
+
+      <div class="tablero-row__mode-read" data-role="mode-read">
+        <div
+          class="tablero-row__fields tablero-row__fields--appointment"
+          data-role="appointment-read"
+          style="display:none;"
+        >
+          <div class="tablero-row__field-inline">
+            <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
+            <span>${escapeHtml(formatDateTimeForRead(play?.start_date))}</span>
+          </div>
+
+          <div class="tablero-row__field-inline">
+            <img src="${endIcon}" alt="Fin" class="tablero-row__field-icon" />
+            <span>${escapeHtml(formatDateTimeForRead(play?.end_date))}</span>
+          </div>
+
+          <div class="tablero-row__field-inline">
+            <img src="${locationIcon}" alt="Locación" class="tablero-row__field-icon" />
+            <span>${escapeHtml(locationValue || "—")}</span>
+          </div>
         </div>
 
-        <div class="tablero-row__center">
-          <div class="tablero-row__title" data-role="text-view">${safeText || "Sin texto"}</div>
+        <div
+          class="tablero-row__fields tablero-row__fields--deadline"
+          data-role="deadline-read"
+          style="display:none;"
+        >
+          <div class="tablero-row__field-inline">
+            <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
+            <span>${escapeHtml(formatDateTimeForRead(play?.end_date))}</span>
+          </div>
+        </div>
 
-          <input
-            id="${textInputId}"
-            type="text"
-            class="tablero-row__inline-input"
-            data-role="text-input"
-            value="${safeText}"
+        <div
+          class="tablero-row__fields tablero-row__fields--recurrence"
+          data-role="recurrence-read"
+        >
+          ${escapeHtml(hasRecurrence ? "Rutina configurada" : "Sin rutina")}
+        </div>
+      </div>
+
+      <div class="tablero-row__mode-choose" data-role="mode-choose"></div>
+
+      <div class="tablero-row__mode-edit" data-role="mode-edit">
+        <div
+          class="tablero-row__fields tablero-row__fields--appointment"
+          data-role="appointment-edit"
+          style="display:none;"
+        >
+          <div class="tablero-row__field-inline">
+            <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
+            <input
+              type="datetime-local"
+              value="${escapeHtml(startDateValue)}"
+              data-role="start-date"
+            />
+          </div>
+
+          <div class="tablero-row__field-inline">
+            <img src="${endIcon}" alt="Fin" class="tablero-row__field-icon" />
+            <input
+              type="datetime-local"
+              value="${escapeHtml(endDateValue)}"
+              data-role="appointment-end-date"
+            />
+          </div>
+
+          <div class="tablero-row__field-inline">
+            <img src="${locationIcon}" alt="Locación" class="tablero-row__field-icon" />
+            <input
+              type="text"
+              value="${escapeHtml(locationValue)}"
+              data-role="location"
+              placeholder="Locación"
+            />
+          </div>
+        </div>
+
+        <div
+          class="tablero-row__fields tablero-row__fields--deadline"
+          data-role="deadline-edit"
+          style="display:none;"
+        >
+          <div class="tablero-row__field-inline">
+            <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
+            <input
+              type="datetime-local"
+              value="${escapeHtml(endDateValue)}"
+              data-role="deadline-end-date"
+            />
+          </div>
+        </div>
+
+        <div
+          class="tablero-row__fields tablero-row__fields--recurrence-edit"
+          data-role="recurrence-edit"
+          style="display:none;"
+          data-open="false"
+        >
+          <div class="tablero-row__field-block">
+            <label>Rutina</label>
+            <select data-role="recurrence-type">
+              <option value="">Sin rutina</option>
+              <option value="WEEKLY">Semanal</option>
+              <option value="MONTHLY">Mensual</option>
+            </select>
+          </div>
+
+          <div
+            class="tablero-row__field-block"
+            data-role="recurrence-weekly"
             style="display:none;"
-          />
-
-          <div class="tablero-row__mode-read" data-role="mode-read">
-            <div
-              class="tablero-row__fields tablero-row__fields--appointment"
-              data-role="appointment-read"
-              style="display:none;"
-            >
-              <div class="tablero-row__field-inline">
-                <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
-                <span>${escapeHtml(formatDateTimeForRead(play?.start_date))}</span>
-              </div>
-
-              <div class="tablero-row__field-inline">
-                <img src="${endIcon}" alt="Fin" class="tablero-row__field-icon" />
-                <span>${escapeHtml(formatDateTimeForRead(play?.end_date))}</span>
-              </div>
-
-              <div class="tablero-row__field-inline">
-                <img src="${locationIcon}" alt="Locación" class="tablero-row__field-icon" />
-                <span>${escapeHtml(locationValue || "—")}</span>
-              </div>
-            </div>
-
-            <div
-              class="tablero-row__fields tablero-row__fields--deadline"
-              data-role="deadline-read"
-              style="display:none;"
-            >
-              <div class="tablero-row__field-inline">
-                <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
-                <span>${escapeHtml(formatDateTimeForRead(play?.end_date))}</span>
-              </div>
+          >
+            <label>Días</label>
+            <div class="tablero-row__checks">
+              <label><input type="checkbox" value="MON" data-role="recurrence-weekday" />Lun</label>
+              <label><input type="checkbox" value="TUE" data-role="recurrence-weekday" />Mar</label>
+              <label><input type="checkbox" value="WED" data-role="recurrence-weekday" />Mié</label>
+              <label><input type="checkbox" value="THU" data-role="recurrence-weekday" />Jue</label>
+              <label><input type="checkbox" value="FRI" data-role="recurrence-weekday" />Vie</label>
+              <label><input type="checkbox" value="SAT" data-role="recurrence-weekday" />Sáb</label>
+              <label><input type="checkbox" value="SUN" data-role="recurrence-weekday" />Dom</label>
             </div>
           </div>
 
-          <div class="tablero-row__mode-choose" data-role="mode-choose"></div>
-
-          <div class="tablero-row__mode-edit" data-role="mode-edit">
-            <div
-              class="tablero-row__fields tablero-row__fields--appointment"
-              data-role="appointment-edit"
-              style="display:none;"
-            >
-              <div class="tablero-row__field-inline">
-                <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
-                <input
-                  type="datetime-local"
-                  value="${escapeHtml(startDateValue)}"
-                  data-role="start-date"
-                />
-              </div>
-
-              <div class="tablero-row__field-inline">
-                <img src="${endIcon}" alt="Fin" class="tablero-row__field-icon" />
-                <input
-                  type="datetime-local"
-                  value="${escapeHtml(endDateValue)}"
-                  data-role="appointment-end-date"
-                />
-              </div>
-
-              <div class="tablero-row__field-inline">
-                <img src="${locationIcon}" alt="Locación" class="tablero-row__field-icon" />
-                <input
-                  type="text"
-                  value="${escapeHtml(locationValue)}"
-                  data-role="location"
-                  placeholder="Locación"
-                />
-              </div>
-            </div>
-
-            <div
-              class="tablero-row__fields tablero-row__fields--deadline"
-              data-role="deadline-edit"
-              style="display:none;"
-            >
-              <div class="tablero-row__field-inline">
-                <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
-                <input
-                  type="datetime-local"
-                  value="${escapeHtml(endDateValue)}"
-                  data-role="deadline-end-date"
-                />
-              </div>
+          <div
+            class="tablero-row__field-block"
+            data-role="recurrence-monthly"
+            style="display:none;"
+          >
+            <label>Meses</label>
+            <div class="tablero-row__checks">
+              <label><input type="checkbox" value="1" data-role="recurrence-month" />Ene</label>
+              <label><input type="checkbox" value="2" data-role="recurrence-month" />Feb</label>
+              <label><input type="checkbox" value="3" data-role="recurrence-month" />Mar</label>
+              <label><input type="checkbox" value="4" data-role="recurrence-month" />Abr</label>
+              <label><input type="checkbox" value="5" data-role="recurrence-month" />May</label>
+              <label><input type="checkbox" value="6" data-role="recurrence-month" />Jun</label>
+              <label><input type="checkbox" value="7" data-role="recurrence-month" />Jul</label>
+              <label><input type="checkbox" value="8" data-role="recurrence-month" />Ago</label>
+              <label><input type="checkbox" value="9" data-role="recurrence-month" />Sep</label>
+              <label><input type="checkbox" value="10" data-role="recurrence-month" />Oct</label>
+              <label><input type="checkbox" value="11" data-role="recurrence-month" />Nov</label>
+              <label><input type="checkbox" value="12" data-role="recurrence-month" />Dic</label>
             </div>
           </div>
+
+          <div class="tablero-row__field-block">
+            <label>Hasta</label>
+            <input type="date" data-role="recurrence-until-date" />
+          </div>
         </div>
+      </div>
+    </div>
 
-        <div class="tablero-row__right">
-          <button type="button" data-action="choose-appointment" title="Cita">
-            <img src="${startIcon}" alt="Cita" />
-          </button>
+    <div class="tablero-row__right">
+      <button type="button" data-action="choose-appointment" title="Cita">
+        <img src="${startIcon}" alt="Cita" />
+      </button>
 
-          <button type="button" data-action="choose-deadline" title="Deadline">
-            <img src="${bombIcon}" alt="Deadline" />
-          </button>
+      <button type="button" data-action="choose-deadline" title="Deadline">
+        <img src="${bombIcon}" alt="Deadline" />
+      </button>
 
-          <button type="button" data-action="edit-play" title="Editar" style="display:none;">
-            <img src="${editIcon}" alt="Editar" />
-          </button>
+      <button type="button" data-action="edit-play" title="Editar" style="display:none;">
+        <img src="${editIcon}" alt="Editar" />
+      </button>
 
-          <button type="button" data-action="save-play" title="Salvar" style="display:none;">
-            <img src="${saveIcon}" alt="Salvar" />
-          </button>
+      <button type="button" data-action="save-play" title="Salvar" style="display:none;">
+        <img src="${saveIcon}" alt="Salvar" />
+      </button>
 
-          <button type="button" data-action="exit-edit" title="Salir edición" style="display:none;">
-            <img src="${exitIcon}" alt="Salir edición" />
-          </button>
+      <button type="button" data-action="toggle-routine" title="Rutina" style="display:none;">
+        ${routineIcon ? `<img src="${routineIcon}" alt="Rutina" />` : `<span>R</span>`}
+      </button>
 
-          <button type="button" data-action="approve-play" title="Aprobar" style="display:none;">
-            <img src="${approveIcon}" alt="Aprobar" />
-          </button>
+      <button type="button" data-action="exit-edit" title="Salir edición" style="display:none;">
+        <img src="${exitIcon}" alt="Salir edición" />
+      </button>
 
-          <button type="button" data-action="delete-play" title="Borrar">
-            <img src="${deleteIcon}" alt="Borrar" />
-          </button>
+      <button type="button" data-action="approve-play" title="Aprobar" style="display:none;">
+        <img src="${approveIcon}" alt="Aprobar" />
+      </button>
 
-          <button type="button" data-action="help-play" title="Help">
-            ${helpIcon ? `<img src="${helpIcon}" alt="Help" />` : `<span>?</span>`}
-          </button>
+      <button type="button" data-action="delete-play" title="Borrar">
+        <img src="${deleteIcon}" alt="Borrar" />
+      </button>
 
-          <button type="button" data-action="cancel-play" title="Cancelar" style="display:none;">
-            ${cancelIcon ? `<img src="${cancelIcon}" alt="Cancelar" />` : `<span>X</span>`}
-          </button>
+      <button type="button" data-action="help-play" title="Help">
+        ${helpIcon ? `<img src="${helpIcon}" alt="Help" />` : `<span>?</span>`}
+      </button>
 
-          <button type="button" data-action="add-jclub-child" title="Agregar J♣ hija" style="display:none;">
-            ${clubIcon ? `<img src="${clubIcon}" alt="J♣" />` : `<span>J♣</span>`}
-          </button>
+      <button type="button" data-action="cancel-play" title="Cancelar" style="display:none;">
+        ${cancelIcon ? `<img src="${cancelIcon}" alt="Cancelar" />` : `<span>X</span>`}
+      </button>
 
-          <button type="button" data-action="add-qspade-child" title="Agregar Q♠" style="display:none;">
-            ${qspadeIcon ? `<img src="${qspadeIcon}" alt="Q♠" />` : `<span>Q♠</span>`}
-          </button>
-        </div>
-      </article>
-    `;
+      <button type="button" data-action="add-jclub-child" title="Agregar J♣ hija" style="display:none;">
+        ${clubIcon ? `<img src="${clubIcon}" alt="J♣" />` : `<span>J♣</span>`}
+      </button>
+
+      <button type="button" data-action="add-qspade-child" title="Agregar Q♠" style="display:none;">
+        ${qspadeIcon ? `<img src="${qspadeIcon}" alt="Q♠" />` : `<span>Q♠</span>`}
+      </button>
+    </div>
+  </article>
+`;
   }
 
   function toInputDateTimeValue(value) {
