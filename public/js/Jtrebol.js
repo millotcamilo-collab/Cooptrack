@@ -13,6 +13,7 @@
     const ACTIONS = ICONS.actions || {};
 
     const state = context.state || {};
+    const deck = context.deck || state.deck || window.__currentDeck || {};
     const allPlays = Array.isArray(state.plays) ? state.plays : [];
     const currentUserId = Number(state.userId || 0);
 
@@ -20,7 +21,7 @@
     const creatorUserId = Number(play?.created_by_user_id || 0);
 
     const originalText = String(play?.play_text || "");
-    let amountValue =
+    let savedAmountValue =
       play?.amount !== null && play?.amount !== undefined
         ? String(play.amount)
         : "";
@@ -33,6 +34,13 @@
     const isDeleted = statusRaw === "DELETED";
     const isRejected = statusRaw === "REJECTED";
     const isClosed = isCancelled || isDeleted || isRejected;
+
+    const currencySymbol = String(
+      play?.currency_symbol ||
+      deck?.currency_symbol ||
+      deck?.currencySymbol ||
+      ""
+    ).trim();
 
     const rowId = `tablero-row-${playId}`;
 
@@ -86,13 +94,15 @@
     const approveIcon = escapeHtml(ACTIONS.approve || "");
     const deleteIcon = escapeHtml(ACTIONS.delete || "");
     const helpIcon = escapeHtml(ACTIONS.help || "");
+    const editIcon = escapeHtml(ACTIONS.edit || "");
+    const exitIcon = escapeHtml(ACTIONS.exit || ACTIONS.cancel || "");
 
     setTimeout(() => {
       const row = document.getElementById(rowId);
       if (!row || row.dataset.bound === "true") return;
 
       row.dataset.bound = "true";
-      row.dataset.mode = amountValue ? "read" : "edit";
+      row.dataset.mode = savedAmountValue ? "read" : "edit";
 
       const modeRead = row.querySelector('[data-role="mode-read"]');
       const modeEdit = row.querySelector('[data-role="mode-edit"]');
@@ -102,6 +112,8 @@
 
       const btnHelp = row.querySelector('[data-action="help-play"]');
       const btnSave = row.querySelector('[data-action="save-play"]');
+      const btnEdit = row.querySelector('[data-action="edit-play"]');
+      const btnExit = row.querySelector('[data-action="exit-edit"]');
       const btnApprove = row.querySelector('[data-action="approve-play"]');
       const btnDelete = row.querySelector('[data-action="delete-play"]');
 
@@ -117,6 +129,7 @@
         const visualMode = row.dataset.mode || "read";
         const isEdit = visualMode === "edit";
         const isRead = visualMode === "read";
+        const hasSavedAmount = String(savedAmountValue || "").trim() !== "";
 
         if (modeRead) modeRead.style.display = isRead ? "inline-flex" : "none";
         if (modeEdit) modeEdit.style.display = isEdit ? "inline-flex" : "none";
@@ -124,6 +137,8 @@
         if (isClosed) {
           if (btnHelp) btnHelp.style.display = "inline-flex";
           if (btnSave) btnSave.style.display = "none";
+          if (btnEdit) btnEdit.style.display = "none";
+          if (btnExit) btnExit.style.display = "none";
           if (btnApprove) btnApprove.style.display = "none";
           if (btnDelete) btnDelete.style.display = "none";
           return;
@@ -134,12 +149,32 @@
         }
 
         if (btnSave) {
-          btnSave.style.display = userCanEdit ? "inline-flex" : "none";
+          btnSave.style.display =
+            userCanEdit && isEdit ? "inline-flex" : "none";
+        }
+
+        if (btnEdit) {
+          btnEdit.style.display =
+            userCanEdit && !isApproved && isRead && hasSavedAmount
+              ? "inline-flex"
+              : "none";
+        }
+
+        if (btnExit) {
+          btnExit.style.display =
+            userCanEdit && isEdit && hasSavedAmount
+              ? "inline-flex"
+              : "none";
         }
 
         if (btnApprove) {
           btnApprove.style.display =
-            !isApproved && userIsDiamondAceHolder ? "inline-flex" : "none";
+            !isApproved &&
+            userIsDiamondAceHolder &&
+            hasSavedAmount &&
+            isRead
+              ? "inline-flex"
+              : "none";
         }
 
         if (btnDelete) {
@@ -160,12 +195,25 @@
           amount: nextAmount
         });
 
-        amountValue = nextAmount;
+        savedAmountValue = nextAmount;
 
         if (amountView) {
-          amountView.textContent = amountValue || "—";
+          amountView.textContent = savedAmountValue || "—";
         }
 
+        setVisualMode("read");
+        renderMode();
+      });
+
+      btnEdit?.addEventListener("click", () => {
+        if (!userCanEdit || isApproved || isClosed) return;
+        if (amountInput) amountInput.value = savedAmountValue || "";
+        setVisualMode("edit");
+        renderMode();
+      });
+
+      btnExit?.addEventListener("click", () => {
+        if (amountInput) amountInput.value = savedAmountValue || "";
         setVisualMode("read");
         renderMode();
       });
@@ -190,16 +238,15 @@
         });
       });
 
-      amountView?.addEventListener("click", () => {
-        if (!userCanEdit || isApproved || isClosed) return;
-        setVisualMode("edit");
-        renderMode();
-      });
-
       amountInput?.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
           event.preventDefault();
           btnSave?.click();
+        }
+
+        if (event.key === "Escape") {
+          event.preventDefault();
+          btnExit?.click();
         }
       });
 
@@ -218,9 +265,15 @@
 
             <span class="tablero-row__amount-card">J♦</span>
 
+            ${currencySymbol ? `
+              <span class="tablero-row__currency-symbol">
+                ${escapeHtml(currencySymbol)}
+              </span>
+            ` : ""}
+
             <span class="tablero-row__mode-read" data-role="mode-read">
               <span class="tablero-row__amount-view" data-role="amount-view">
-                ${escapeHtml(amountValue || "—")}
+                ${escapeHtml(savedAmountValue || "—")}
               </span>
             </span>
 
@@ -229,7 +282,7 @@
                 type="number"
                 step="0.01"
                 min="0"
-                value="${escapeHtml(amountValue)}"
+                value="${escapeHtml(savedAmountValue)}"
                 data-role="amount-input"
                 class="tablero-row__amount-input"
                 placeholder="Monto"
@@ -243,11 +296,19 @@
             ${helpIcon ? `<img src="${helpIcon}" alt="Help" />` : `<span>?</span>`}
           </button>
 
-          <button type="button" data-action="save-play" title="Salvar">
+          <button type="button" data-action="save-play" title="Salvar" style="display:none;">
             ${saveIcon ? `<img src="${saveIcon}" alt="Salvar" />` : `<span>S</span>`}
           </button>
 
-          <button type="button" data-action="approve-play" title="Aprobar">
+          <button type="button" data-action="edit-play" title="Editar" style="display:none;">
+            ${editIcon ? `<img src="${editIcon}" alt="Editar" />` : `<span>E</span>`}
+          </button>
+
+          <button type="button" data-action="exit-edit" title="Salir edición" style="display:none;">
+            ${exitIcon ? `<img src="${exitIcon}" alt="Salir edición" />` : `<span>↩</span>`}
+          </button>
+
+          <button type="button" data-action="approve-play" title="Aprobar" style="display:none;">
             ${approveIcon ? `<img src="${approveIcon}" alt="Aprobar" />` : `<span>✓</span>`}
           </button>
 
