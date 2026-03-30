@@ -978,6 +978,8 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
   const client = await pool.connect();
 
   try {
+    console.log("PATCH /plays/:id req.body =", req.body);
+
     const playId = Number(req.params.id);
     const {
       text,
@@ -986,59 +988,6 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       endDate,
       location
     } = req.body || {};
-
-    if (!playId) {
-      return res.status(400).json({
-        ok: false,
-        error: 'playId inválido'
-      });
-    }
-
-    const result = await client.query(
-      `
-      UPDATE plays
-      SET
-        play_text = $1,
-        spade_mode = $2,
-        start_date = $3,
-        end_date = $4,
-        location = $5,
-        updated_at = NOW()
-      WHERE id = $6
-      RETURNING *
-      `,
-      [
-        String(text || '').trim(),
-        String(spadeMode || '').trim().toUpperCase() || null,
-        startDate || null,
-        endDate || null,
-        String(location || '').trim() || null,
-        playId
-      ]
-    );
-
-    if (!result.rows.length) {
-      return res.status(404).json({
-        ok: false,
-        error: 'Jugada no encontrada'
-      });
-    }
-
-    return res.json({
-      ok: true,
-      play: result.rows[0]
-    });
-  } catch (error) {
-    console.error('Error actualizando play:', error);
-    return res.status(500).json({
-      ok: false,
-      error: 'No se pudo actualizar la jugada'
-    });
-  } finally {
-    client.release();
-  }
-});
-
 app.delete('/plays/:id', requireAuth, async (req, res) => {
   const playId = Number(req.params.id);
   const userId = req.auth.userId;
