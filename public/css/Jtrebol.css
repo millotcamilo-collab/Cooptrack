@@ -41,19 +41,20 @@
 }
 
 .tablero-row--jtrebol .tablero-row__amount-card {
-  min-height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 8px;
-  border: 1px solid #b8b8b8;
-  border-radius: 8px;
-  background: #ffffff;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   box-sizing: border-box;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
+
+  color: #c0392b; /* rojo diamante */
 }
 
 .tablero-row--jtrebol .tablero-row__mode-read,
