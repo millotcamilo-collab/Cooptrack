@@ -309,23 +309,34 @@
       });
 
       btnSave?.addEventListener("click", () => {
-        const payload = buildPayload();
-        const check = validateFields(
-          payload.spadeMode,
-          payload.startDate,
-          payload.endDate,
-          payload.location
-        );
+  const payload = buildPayload();
 
-        if (!check.ok) {
-          alert(check.error);
-          return;
-        }
+  const check = validateFields(
+    payload.spadeMode,
+    payload.startDate,
+    payload.endDate,
+    payload.location
+  );
 
-        dispatch("tablero:save-play", payload);
-        setVisualMode("read");
-        renderMode();
-      });
+  if (!check.ok) {
+    alert(check.error);
+    return;
+  }
+
+  dispatch("tablero:save-play", payload);
+
+  // 🔥 ACTUALIZAR ESTADO LOCAL
+  originalText = payload.text || "";
+  if (textView) textView.textContent = originalText || "Sin texto";
+
+  // opcional: también actualizar valores locales
+  if (payload.startDate) startDateValue = payload.startDate;
+  if (payload.endDate) endDateValue = payload.endDate;
+  if (payload.location) locationValue = payload.location;
+
+  setVisualMode("read");
+  renderMode();
+});
 
       btnApprove?.addEventListener("click", () => {
         const payload = buildPayload();
