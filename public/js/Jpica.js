@@ -5,6 +5,61 @@
     if (Number.isNaN(date.getTime())) return false;
     return date.getTime() > Date.now();
   }
+
+function formatRecurrenceSuffix(type, weekdays, months) {
+  const normalizedType = String(type || "").toUpperCase();
+
+  const weekdayMap = {
+    MON: "Lun",
+    TUE: "Mar",
+    WED: "Mié",
+    THU: "Jue",
+    FRI: "Vie",
+    SAT: "Sáb",
+    SUN: "Dom"
+  };
+
+  const monthMap = {
+    1: "Ene",
+    2: "Feb",
+    3: "Mar",
+    4: "Abr",
+    5: "May",
+    6: "Jun",
+    7: "Jul",
+    8: "Ago",
+    9: "Sep",
+    10: "Oct",
+    11: "Nov",
+    12: "Dic"
+  };
+
+  if (normalizedType === "WEEKLY" && Array.isArray(weekdays) && weekdays.length) {
+    const labels = weekdays
+      .map((day) => weekdayMap[String(day).toUpperCase()] || String(day))
+      .filter(Boolean);
+
+    return labels.length ? labels.join(", ") : "";
+  }
+
+  if (normalizedType === "MONTHLY" && Array.isArray(months) && months.length) {
+    const labels = months
+      .map((month) => monthMap[Number(month)] || String(month))
+      .filter(Boolean);
+
+    return labels.length ? labels.join(", ") : "";
+  }
+
+  return "";
+}
+
+function appendRecurrenceLabel(baseLabel, recurrenceType, weekdays, months) {
+  const suffix = formatRecurrenceSuffix(recurrenceType, weekdays, months);
+
+  if (!suffix) return baseLabel;
+
+  return `${baseLabel} · ${suffix}`;
+}
   
 function formatShortDateTime(value) {
   if (!value) return "—";
@@ -89,22 +144,26 @@ function getHoursFromNow(targetValue) {
   return diffMs >= 0 ? `faltan ${label}` : `hace ${label}`;
 }
 
-  function getAppointmentReadLabel(startValue, endValue) {
+  function getAppointmentReadLabel(startValue, endValue, recurrenceType, weekdays, months) {
   const startLabel = formatShortDateTime(startValue);
   const durationLabel = getHoursBetween(startValue, endValue);
 
-  if (!durationLabel) return startLabel;
+  const baseLabel = durationLabel
+    ? `${startLabel} – ${durationLabel}`
+    : startLabel;
 
-  return `${startLabel} – ${durationLabel}`;
+  return appendRecurrenceLabel(baseLabel, recurrenceType, weekdays, months);
 }
 
-function getDeadlineReadLabel(endValue) {
+function getDeadlineReadLabel(endValue, recurrenceType, weekdays, months) {
   const endLabel = formatShortDateTime(endValue);
   const distanceLabel = getHoursFromNow(endValue);
 
-  if (!distanceLabel) return endLabel;
+  const baseLabel = distanceLabel
+    ? `${endLabel} – ${distanceLabel}`
+    : endLabel;
 
-  return `${endLabel} – ${distanceLabel}`;
+  return appendRecurrenceLabel(baseLabel, recurrenceType, weekdays, months);
 }
   
   function renderJpike(play, context = {}) {
@@ -812,7 +871,15 @@ btnDelete?.addEventListener("click", () => {
   >
     <div class="tablero-row__field-inline">
       <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
-      <span>${escapeHtml(getAppointmentReadLabel(play?.start_date, play?.end_date))}</span>
+      <span>${escapeHtml(
+  getAppointmentReadLabel(
+    play?.start_date,
+    play?.end_date,
+    recurrenceTypeValue,
+    recurrenceWeekdaysValue,
+    recurrenceMonthsValue
+  )
+)}</span>
     </div>
 
     <div class="tablero-row__field-inline">
@@ -828,7 +895,14 @@ btnDelete?.addEventListener("click", () => {
   >
     <div class="tablero-row__field-inline">
       <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
-      <span>${escapeHtml(getDeadlineReadLabel(play?.end_date))}</span>
+      <span>${escapeHtml(
+  getDeadlineReadLabel(
+    play?.end_date,
+    recurrenceTypeValue,
+    recurrenceWeekdaysValue,
+    recurrenceMonthsValue
+  )
+)}</span>
     </div>
   </div>
 
