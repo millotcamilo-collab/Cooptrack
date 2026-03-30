@@ -57,3 +57,17 @@
   background: #fff;
   box-sizing: border-box;
 }
+.tablero-row--child {
+  margin-left: 36px;
+  border-left: 3px solid #d8d8d8;
+  padding-left: 10px;
+}
+
+.tablero-row--child-depth-2 {
+  margin-left: 60px;
+}
+
+.tablero-row--child-depth-3 {
+  margin-left: 84px;
+}
+
