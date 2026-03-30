@@ -153,6 +153,16 @@
   pointer-events: none;
 }
 
+.tablero-row--jtrebol .tablero-row__inline-input--jtrebol {
+  min-width: 220px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #999;
+  background: #fff;
+  box-sizing: border-box;
+  font: inherit;
+}
+
 @media (max-width: 980px) {
   .tablero-row--jtrebol {
     grid-template-columns: 36px minmax(0, 1fr);
