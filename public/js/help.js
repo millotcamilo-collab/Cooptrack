@@ -3,18 +3,18 @@
     J_HEART: {
       title: "J♥ · Anotación",
       body: `
-        La J♥ representa una anotación o comentario dentro del mazo.
+        La J♥ representa una anotación.
 
-        Se crea escribiendo un texto en el playform y haciendo clic en corazón.
+        Se crea escribiendo un texto en el formulario + J y haciendo clic en corazón.
 
         Mientras no esté aprobada:
         - puede editarse,
         - puede transformarse a otros palos,
         - puede borrarse.
 
-        La aprobación corresponde al titular del As de corazón.
+        La aprobación solo la puede ejecutar el titular del As de corazón.
 
-        Una vez aprobada, queda fijada como anotación del mazo.
+        Una vez aprobada, queda fijada como anotación del mazo y será visible a todos los miembros del mazo sin distinción. 
       `
     },
 
@@ -23,7 +23,7 @@
       body: `
         La J♠ representa una actividad.
 
-        Se crea escribiendo un texto en el playform y haciendo clic en pica.
+        Se crea escribiendo un texto en el formulario ´J y haciendo clic en pica.
 
         Puede tomar dos formas:
         - Cita: requiere fecha de inicio y locación. Puede además llevar fecha fin.
@@ -34,23 +34,34 @@
         - puede editarse,
         - puede borrarse.
 
-        La aprobación corresponde al titular del As de diamante.
+        La aprobación corresponde al titular del As de picas.
       `
     },
 
     J_CLUB: {
-      title: "J♣ · Contribución / factura",
+      title: "J♣ · Es el concepto de una factura",
       body: `
-        La J♣ representa una contribución económica o factura.
+        La J♣ representa la definición de un bien o servicio.
 
         Puede ser una jugada suelta o hija de una J♠.
 
         Cuando es hija de una J♠, queda asociada a esa actividad.
 
-        Su programación específica depende del flujo económico del mazo.
+        Si la jugada J♣ tiene una J♦ que contenga el monto, entonces puede aprobarse y queda registrada como una salida de caja del cash flow del mazo
       `
     },
+    
+  J_DIAMOND: {
+      title: "J♦ · Es el monto de una factura",
+      body: `
+        La J♣ que contiene la definición de un bien o servicio, solo puede ser aprovada por el propietario del as de diamante, si se ha completado el campo monto correspondiente a la J♦.
 
+       La J♦ solo puede aparecer como complemento de J♣
+
+       Es decir, J♦ puede ser origen de una jugada, sino mas bien el fin de la jugada J♣
+
+      `
+    },
     A_HEART: {
       title: "A♥ · Fundación del mazo",
       body: `
