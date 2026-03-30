@@ -662,7 +662,7 @@ function getDeadlineReadLabel(endValue, recurrenceType, weekdays, months) {
         renderMode();
       });
 
-        btnSave?.addEventListener("click", () => {
+  btnSave?.addEventListener("click", () => {
   const payload = buildPayload();
 
   const check = validateFields(
@@ -712,11 +712,11 @@ function getDeadlineReadLabel(endValue, recurrenceType, weekdays, months) {
   setVisualMode("read");
         renderMode();
 
-      if (hasRecurrence) {
-        loadRecurrenceIfNeeded().then(() => {
-          renderMode();
-        });
-      }
+     if (recurrencePayload.recurrence_type) {
+      loadRecurrenceIfNeeded().then(() => {
+      renderMode();
+    });
+  }
 });      
       
         
