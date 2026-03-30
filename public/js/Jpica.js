@@ -710,7 +710,13 @@ function getDeadlineReadLabel(endValue, recurrenceType, weekdays, months) {
   recurrenceUntilDateValue = recurrencePayload.until_date || "";
 
   setVisualMode("read");
-  renderMode();
+        renderMode();
+
+      if (hasRecurrence) {
+        loadRecurrenceIfNeeded().then(() => {
+          renderMode();
+        });
+      }
 });      
       
         
