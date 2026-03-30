@@ -201,6 +201,7 @@ function getDeadlineReadLabel(endValue, recurrenceType, weekdays, months) {
     let recurrenceMonthsValue = [];
     let recurrenceUntilDateValue = "";
     let recurrenceLoaded = false;
+    let recurrenceAutoApplied = false;
     
     const rowId = `tablero-row-${playId}`;
     const textInputId = `jpike-text-${playId}`;
@@ -463,7 +464,7 @@ function getMonthNumberFromDate(date) {
   return date.getMonth() + 1;
 }
 
-function applyDefaultRecurrenceFromStartDate() {
+function applyDefaultRecurrenceFromStartDate(force = false) {
   const recurrenceType = String(recurrenceTypeSelect?.value || "").trim().toUpperCase();
   const startDate = getStartDateObject();
 
@@ -474,7 +475,8 @@ function applyDefaultRecurrenceFromStartDate() {
     if (!weekdayCode) return;
 
     const checkedWeekdays = getCheckedValues('[data-role="recurrence-weekday"]');
-    if (checkedWeekdays.length === 0) {
+
+    if (force || (!recurrenceAutoApplied && checkedWeekdays.length === 0)) {
       row.querySelectorAll('[data-role="recurrence-weekday"]').forEach((input) => {
         input.checked = input.value === weekdayCode;
       });
@@ -486,13 +488,17 @@ function applyDefaultRecurrenceFromStartDate() {
     if (!monthNumber) return;
 
     const checkedMonths = getCheckedValues('[data-role="recurrence-month"]');
-    if (checkedMonths.length === 0) {
+
+    if (force || (!recurrenceAutoApplied && checkedMonths.length === 0)) {
       row.querySelectorAll('[data-role="recurrence-month"]').forEach((input) => {
         input.checked = Number(input.value) === monthNumber;
       });
     }
   }
+
+  recurrenceAutoApplied = true;
 }
+      
       function paintRecurrenceControls() {
         const recurrenceType = String(recurrenceTypeSelect?.value || "").trim().toUpperCase();
 
@@ -852,16 +858,17 @@ btnDelete?.addEventListener("click", () => {
   recurrenceEdit.dataset.open = currentlyOpen ? "false" : "true";
 
   if (!currentlyOpen) {
-    applyDefaultRecurrenceFromStartDate();
+    recurrenceAutoApplied = false;
+    applyDefaultRecurrenceFromStartDate(false);
   }
 
   renderMode();
 });
 
-      recurrenceTypeSelect?.addEventListener("change", () => {
-        paintRecurrenceControls();
-        applyDefaultRecurrenceFromStartDate();
-      });
+     recurrenceTypeSelect?.addEventListener("change", () => {
+      paintRecurrenceControls();
+      applyDefaultRecurrenceFromStartDate(true);
+    });
     
       btnHelp?.addEventListener("click", () => {
         dispatch("tablero:help-play", {
