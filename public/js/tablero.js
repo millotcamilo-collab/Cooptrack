@@ -544,7 +544,11 @@ document.addEventListener("tablero:add-child-play", async (event) => {
       return;
     }
 
-    const text = String(parentPlay.play_text || "").trim();
+    const text = childRank === "J" && childSuit === "CLUB"
+      ? ""
+      : String(parentPlay.play_text || "").trim();
+
+    
     const when = new Date().toISOString();
 
     const playCode = [
