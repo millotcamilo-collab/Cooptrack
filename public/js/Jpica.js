@@ -303,21 +303,25 @@
       });
 
       btnSave?.addEventListener("click", () => {
-        const payload = buildPayload();
-        const check = validateFields(
-          payload.spadeMode,
-          payload.startDate,
-          payload.endDate,
-          payload.location
-        );
+  const payload = buildPayload();
+  const check = validateFields(
+    payload.spadeMode,
+    payload.startDate,
+    payload.endDate,
+    payload.location
+  );
 
-        if (!check.ok) {
-          alert(check.error);
-          return;
-        }
+  if (!check.ok) {
+    alert(check.error);
+    return;
+  }
 
-        dispatch("tablero:save-play", payload);
-      });
+  dispatch("tablero:save-play", payload);
+
+  // 👇 CLAVE: volver a modo lectura inmediatamente
+  setVisualMode("read");
+  renderMode();
+});
 
       btnApprove?.addEventListener("click", () => {
         const payload = buildPayload();
