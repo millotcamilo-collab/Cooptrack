@@ -445,7 +445,21 @@ document.addEventListener("mazobar:showCancelled", () => {
   
   document.addEventListener("tablero:save-play", async (event) => {
   try {
-    const { playId, text, spadeMode, startDate, endDate, location } = event.detail || {};
+    const {
+      playId,
+      text,
+      spadeMode,
+      startDate,
+      endDate,
+      location
+    } = event.detail || {};
+
+    console.log("SAVE DETAIL =", event.detail);
+
+    if (!playId) {
+      alert("playId inválido");
+      return;
+    }
 
     const token = localStorage.getItem("cooptrackToken");
     if (!token) {
@@ -489,6 +503,7 @@ document.addEventListener("mazobar:showCancelled", () => {
     alert("Error guardando la jugada");
   }
 });
+  
   window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
     window.__currentDeck = deck || null;
     window.__currentState = state || {};
