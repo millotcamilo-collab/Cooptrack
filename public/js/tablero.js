@@ -704,6 +704,153 @@ document.addEventListener("tablero:add-child-play", async (event) => {
     alert("Error guardando la jugada");
   }
 });
+
+document.addEventListener("tablero:save-recurrence", async (event) => {
+  try {
+    const {
+      playId,
+      recurrence_type,
+      weekdays,
+      months,
+      until_date,
+      timezone
+    } = event.detail || {};
+
+    if (!playId || !recurrence_type) {
+      return;
+    }
+
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) {
+      alert("No estás logueado");
+      return;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/plays/${playId}/recurrence`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        recurrence_type,
+        weekdays,
+        months,
+        until_date,
+        timezone
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error guardando recurrencia:", data);
+      alert("No se pudo guardar la recurrencia");
+      return;
+    }
+
+    const deckId =
+      window.__currentDeck?.id ||
+      window.__currentState?.deck?.id ||
+      null;
+
+    document.dispatchEvent(new CustomEvent("plays:changed", {
+      detail: { deckId }
+    }));
+  } catch (error) {
+    console.error("Error en tablero:save-recurrence", error);
+    alert("Error guardando la recurrencia");
+  }
+});
+
+  document.addEventListener("tablero:approve-play", async (event) => {
+  try {
+    const {
+      playId,
+      text,
+      spadeMode,
+      startDate,
+      endDate,
+      location,
+      amount,
+      recurrence
+    } = event.detail || {};
+
+    if (!playId) {
+      alert("playId inválido");
+      return;
+    }
+
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) {
+      alert("No estás logueado");
+      return;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        text,
+        spadeMode,
+        startDate,
+        endDate,
+        location,
+        amount,
+        play_status: "APPROVED"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error aprobando play:", data);
+      alert("No se pudo aprobar la jugada");
+      return;
+    }
+
+    if (recurrence && recurrence.recurrence_type) {
+      const recurrenceResponse = await fetch(`${API_BASE_URL}/plays/${playId}/recurrence`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          recurrence_type: recurrence.recurrence_type,
+          weekdays: recurrence.weekdays,
+          months: recurrence.months,
+          until_date: recurrence.until_date,
+          timezone: recurrence.timezone
+        })
+      });
+
+      const recurrenceData = await recurrenceResponse.json();
+
+      if (!recurrenceResponse.ok || !recurrenceData.ok) {
+        console.error("Error guardando recurrencia al aprobar:", recurrenceData);
+        alert("La jugada se aprobó, pero no se pudo guardar la recurrencia");
+        return;
+      }
+    }
+
+    const deckId =
+      window.__currentDeck?.id ||
+      window.__currentState?.deck?.id ||
+      null;
+
+    document.dispatchEvent(new CustomEvent("plays:changed", {
+      detail: { deckId }
+    }));
+  } catch (error) {
+    console.error("Error en tablero:approve-play", error);
+    alert("Error aprobando la jugada");
+  }
+});
+
   
   window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
     window.__currentDeck = deck || null;
