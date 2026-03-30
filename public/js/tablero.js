@@ -135,7 +135,7 @@ function belongsToTablero(play) {
   // Las K y Q con action "puedeJugar" NO son jugadas:
   // son líneas de control de acceso del libro.
   if (rank === 'J') return true;
-  if (rank === 'A' && suit !== 'HEART') return true;
+  // if (rank === 'A' && suit !== 'HEART') return true;
 
   return false;
 }
