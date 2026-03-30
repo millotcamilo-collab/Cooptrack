@@ -974,20 +974,18 @@ app.post('/plays', requireAuth, async (req, res) => {
   }
 });
 
-app.patch('/plays/:id/status', requireAuth, async (req, res) => {
+app.patch('/plays/:id', requireAuth, async (req, res) => {
   const client = await pool.connect();
 
   try {
     const playId = Number(req.params.id);
-    const nextStatus = String(req.body?.status || '').trim().toUpperCase();
-
-    const allowedStatuses = new Set([
-      'ACTIVE',
-      'APPROVED',
-      'CANCELLED',
-      'REJECTED',
-      'BLOCKED'
-    ]);
+    const {
+      text,
+      spadeMode,
+      startDate,
+      endDate,
+      location
+    } = req.body || {};
 
     if (!playId) {
       return res.status(400).json({
@@ -996,53 +994,45 @@ app.patch('/plays/:id/status', requireAuth, async (req, res) => {
       });
     }
 
-    if (!allowedStatuses.has(nextStatus)) {
-      return res.status(400).json({
-        ok: false,
-        error: 'status inválido'
-      });
-    }
-
-    const existingResult = await client.query(
+    const result = await client.query(
       `
-      SELECT id, deck_id, play_status, created_by_user_id
-      FROM plays
-      WHERE id = $1
-      LIMIT 1
+      UPDATE plays
+      SET
+        play_text = $1,
+        spade_mode = $2,
+        start_date = $3,
+        end_date = $4,
+        location = $5,
+        updated_at = NOW()
+      WHERE id = $6
+      RETURNING *
       `,
-      [playId]
+      [
+        String(text || '').trim(),
+        String(spadeMode || '').trim().toUpperCase() || null,
+        startDate || null,
+        endDate || null,
+        String(location || '').trim() || null,
+        playId
+      ]
     );
 
-    if (!existingResult.rows.length) {
+    if (!result.rows.length) {
       return res.status(404).json({
         ok: false,
         error: 'Jugada no encontrada'
       });
     }
 
-    const existing = existingResult.rows[0];
-
-    const updateResult = await client.query(
-      `
-      UPDATE plays
-      SET play_status = $1,
-          updated_at = NOW()
-      WHERE id = $2
-      RETURNING *
-      `,
-      [nextStatus, playId]
-    );
-
     return res.json({
       ok: true,
-      play: updateResult.rows[0],
-      deckId: existing.deck_id
+      play: result.rows[0]
     });
   } catch (error) {
-    console.error('Error actualizando status de play:', error);
+    console.error('Error actualizando play:', error);
     return res.status(500).json({
       ok: false,
-      error: 'No se pudo actualizar el status de la jugada'
+      error: 'No se pudo actualizar la jugada'
     });
   } finally {
     client.release();
