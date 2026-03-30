@@ -94,9 +94,11 @@
 
 .tablero-row--jpike .tablero-row__right {
   display: flex;
+  flex-direction: row;
   flex-wrap: nowrap;
   justify-content: flex-end;
   align-items: center;
+  align-self: center;
   gap: 6px;
   white-space: nowrap;
 }
