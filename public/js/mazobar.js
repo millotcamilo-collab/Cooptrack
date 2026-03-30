@@ -171,7 +171,84 @@
     }).join("");
   }
 
-  function buildCommandButtonsHTML() {
+  function hasPlayWithStatus(plays, statusList) {
+    const expected = new Set(
+      statusList.map((status) => String(status || "").toUpperCase())
+    );
+
+    return plays.some((play) => {
+      const status = String(play.status || "").toUpperCase();
+      return expected.has(status);
+    });
+  }
+
+  function getAlertButtonsConfig(plays) {
+    const buttons = [];
+
+    if (hasPlayWithStatus(plays, ["CANCELLED", "CANCELED"])) {
+      buttons.push({
+        id: "btnCancelled",
+        label: "Canceladas",
+        title: "Jugadas canceladas",
+        eventName: "mazobar:showCancelled",
+        type: "cancelled"
+      });
+    }
+
+    if (hasPlayWithStatus(plays, ["DISMISSED"])) {
+      buttons.push({
+        id: "btnDismissed",
+        label: "Despidos",
+        title: "Jugadas despedidas",
+        eventName: "mazobar:showDismissed",
+        type: "dismissed"
+      });
+    }
+
+    if (hasPlayWithStatus(plays, ["DECLINED", "REJECTED_BY_RECIPIENT"])) {
+      buttons.push({
+        id: "btnDeclined",
+        label: "Rechazos",
+        title: "Invitaciones rechazadas",
+        eventName: "mazobar:showDeclined",
+        type: "declined"
+      });
+    }
+
+    if (hasPlayWithStatus(plays, ["RESIGNED"])) {
+      buttons.push({
+        id: "btnResigned",
+        label: "Renuncias",
+        title: "Jugadas renunciadas",
+        eventName: "mazobar:showResigned",
+        type: "resigned"
+      });
+    }
+
+    return buttons;
+  }
+
+  function buildAlertButtonsHTML(plays) {
+    const buttons = getAlertButtonsConfig(plays);
+
+    if (!buttons.length) return "";
+
+    return buttons.map((button) => `
+      <button
+        id="${button.id}"
+        type="button"
+        class="mazobar__cmd-btn mazobar__cmd-btn--alert"
+        data-alert-type="${button.type}"
+        data-alert-event="${button.eventName}"
+        title="${button.title}"
+        aria-label="${button.title}"
+      >
+        ${button.label}
+      </button>
+    `).join("");
+  }
+
+  function buildCommandButtonsHTML(plays) {
     const suitButtons = getVisibleCommandSuits().map((suit) => {
       const imgSrc = getSuitButtonImageSrc(suit);
       const symbol = getSuitSymbol(suit);
@@ -203,6 +280,8 @@
       `;
     }).join("");
 
+    const alertButtons = buildAlertButtonsHTML(plays);
+
     return `
       <button
         id="btnAddJ"
@@ -215,16 +294,7 @@
       </button>
 
       ${suitButtons}
-
-      <button
-        id="btnExit"
-        type="button"
-        class="mazobar__cmd-btn mazobar__cmd-btn--exit"
-        title="EXIT"
-        aria-label="EXIT"
-      >
-        EXIT
-      </button>
+      ${alertButtons}
     `;
   }
 
@@ -301,7 +371,7 @@
                 </div>
 
                 <div class="mazobar__commands">
-                  ${buildCommandButtonsHTML()}
+                  ${buildCommandButtonsHTML(normalizedPlays)}
                 </div>
               </div>
 
@@ -321,15 +391,22 @@
       document.dispatchEvent(new CustomEvent("mazobar:addJ"));
     });
 
-    document.getElementById("btnExit")?.addEventListener("click", () => {
-      window.location.href = "/mazos.html";
-    });
-
     document.querySelectorAll("[data-command-suit]").forEach((button) => {
       button.addEventListener("click", () => {
         const suit = button.dataset.commandSuit;
         document.dispatchEvent(new CustomEvent("mazobar:filter", {
           detail: { filter: suit }
+        }));
+      });
+    });
+
+    document.querySelectorAll("[data-alert-event]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const eventName = button.dataset.alertEvent;
+        const alertType = button.dataset.alertType;
+
+        document.dispatchEvent(new CustomEvent(eventName, {
+          detail: { type: alertType }
         }));
       });
     });
