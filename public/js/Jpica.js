@@ -22,7 +22,6 @@
     const statusRaw = String(play?.play_status || play?.status || "ACTIVE").toUpperCase();
     const creatorUserId = Number(play?.created_by_user_id || 0);
 
-    // Campos actuales en la play
     const spadeMode = String(play?.spade_mode || "").toUpperCase(); // APPOINTMENT | DEADLINE | ""
     const startDateValue = play?.start_date ? toInputDateTimeValue(play.start_date) : "";
     const endDateValue = play?.end_date ? toInputDateTimeValue(play.end_date) : "";
@@ -44,18 +43,18 @@
       return !["CANCELLED", "DELETED", "REJECTED"].includes(status);
     }
 
-    function resolveDiamondAceHolderUserId(plays) {
-      const aceDiamondPlays = plays
+    function resolveSpadeAceHolderUserId(plays) {
+      const aceSpadePlays = plays
         .filter((p) => {
           const rank = normalizeRank(p?.rank || p?.card_rank);
           const suit = normalizeSuit(p?.suit || p?.card_suit);
-          return rank === "A" && suit === "DIAMOND" && isAliveStatus(p?.play_status);
+          return rank === "A" && suit === "SPADE" && isAliveStatus(p?.play_status);
         })
         .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
 
-      if (!aceDiamondPlays.length) return null;
+      if (!aceSpadePlays.length) return null;
 
-      const latest = aceDiamondPlays[0];
+      const latest = aceSpadePlays[0];
 
       if (latest?.target_user_id) return Number(latest.target_user_id);
       if (latest?.created_by_user_id) return Number(latest.created_by_user_id);
@@ -86,19 +85,20 @@
       };
     }
 
-    const diamondAceHolderUserId = resolveDiamondAceHolderUserId(allPlays);
-    const userIsDiamondAceHolder =
-      diamondAceHolderUserId !== null &&
+    const spadeAceHolderUserId = resolveSpadeAceHolderUserId(allPlays);
+    const userIsSpadeAceHolder =
+      spadeAceHolderUserId !== null &&
       currentUserId !== 0 &&
-      diamondAceHolderUserId === currentUserId;
+      spadeAceHolderUserId === currentUserId;
 
     const userIsCreator =
       creatorUserId !== 0 &&
       currentUserId !== 0 &&
       creatorUserId === currentUserId;
 
-    const userCanEdit = userIsCreator || userIsDiamondAceHolder;
+    const userCanEdit = userIsCreator || userIsSpadeAceHolder;
     const isApproved = statusRaw === "APPROVED";
+    const isCancelled = statusRaw === "CANCELLED";
 
     const bombIcon = escapeHtml(ACTIONS.bomb || "");
     const startIcon = escapeHtml(ACTIONS.start || "");
@@ -116,6 +116,7 @@
 
       row.dataset.bound = "true";
       row.dataset.mode = spadeMode ? "read" : "choose";
+      row.dataset.spadeMode = spadeMode || "";
 
       const textView = row.querySelector('[data-role="text-view"]');
       const textInput = row.querySelector('[data-role="text-input"]');
@@ -136,7 +137,8 @@
       const deadlineFields = row.querySelector('[data-role="deadline-fields"]');
 
       const startDateInput = row.querySelector('[data-role="start-date"]');
-      const endDateInput = row.querySelector('[data-role="end-date"]');
+      const appointmentEndDateInput = row.querySelector('[data-role="appointment-end-date"]');
+      const deadlineEndDateInput = row.querySelector('[data-role="deadline-end-date"]');
       const locationInput = row.querySelector('[data-role="location"]');
 
       function getCurrentText() {
@@ -144,14 +146,26 @@
       }
 
       function getCurrentMode() {
-        return String(row.dataset.spadeMode || spadeMode || "").toUpperCase();
+        return String(row.dataset.spadeMode || "").toUpperCase();
       }
 
       function getFieldValues() {
+        const currentMode = getCurrentMode();
+
+        const startDate = String(startDateInput?.value || "").trim();
+        const location = String(locationInput?.value || "").trim();
+
+        let endDate = "";
+        if (currentMode === "APPOINTMENT") {
+          endDate = String(appointmentEndDateInput?.value || "").trim();
+        } else if (currentMode === "DEADLINE") {
+          endDate = String(deadlineEndDateInput?.value || "").trim();
+        }
+
         return {
-          startDate: String(startDateInput?.value || "").trim(),
-          endDate: String(endDateInput?.value || "").trim(),
-          location: String(locationInput?.value || "").trim(),
+          startDate,
+          endDate,
+          location,
         };
       }
 
@@ -161,16 +175,6 @@
 
       function setSpadeMode(mode) {
         row.dataset.spadeMode = String(mode || "").toUpperCase();
-      }
-
-      function show(el, displayValue = "") {
-        if (!el) return;
-        el.style.display = displayValue;
-      }
-
-      function hide(el) {
-        if (!el) return;
-        el.style.display = "none";
       }
 
       function renderMode() {
@@ -197,34 +201,70 @@
             (isEdit || isRead) && currentMode === "DEADLINE" ? "flex" : "none";
         }
 
-        // Botones
-        if (btnChooseAppointment) btnChooseAppointment.style.display = (!isApproved && isChoose) ? "inline-flex" : "none";
-        if (btnChooseDeadline) btnChooseDeadline.style.display = (!isApproved && isChoose) ? "inline-flex" : "none";
+        if (isCancelled) {
+          if (btnChooseAppointment) btnChooseAppointment.style.display = "none";
+          if (btnChooseDeadline) btnChooseDeadline.style.display = "none";
+          if (btnEdit) btnEdit.style.display = "none";
+          if (btnSave) btnSave.style.display = "none";
+          if (btnApprove) btnApprove.style.display = "none";
+          if (btnDelete) btnDelete.style.display = "none";
+          if (btnExit) btnExit.style.display = "none";
 
-        if (btnEdit) btnEdit.style.display = (!isApproved && isRead && userCanEdit && !!currentMode) ? "inline-flex" : "none";
-        if (btnSave) btnSave.style.display = (!isApproved && isEdit && !!currentMode) ? "inline-flex" : "none";
-        if (btnExit) btnExit.style.display = (!isApproved && isEdit) ? "inline-flex" : "none";
+          if (textView) textView.style.display = "";
+          if (textInput) textInput.style.display = "none";
+
+          setInputsReadOnly(true);
+          return;
+        }
+
+        if (btnChooseAppointment) {
+          btnChooseAppointment.style.display = (!isApproved && isChoose) ? "inline-flex" : "none";
+        }
+
+        if (btnChooseDeadline) {
+          btnChooseDeadline.style.display = (!isApproved && isChoose) ? "inline-flex" : "none";
+        }
+
+        if (btnEdit) {
+          btnEdit.style.display =
+            (!isApproved && isRead && userCanEdit && !!currentMode) ? "inline-flex" : "none";
+        }
+
+        if (btnSave) {
+          btnSave.style.display = (!isApproved && isEdit && !!currentMode) ? "inline-flex" : "none";
+        }
+
+        if (btnExit) {
+          btnExit.style.display = (!isApproved && isEdit) ? "inline-flex" : "none";
+        }
 
         if (btnApprove) {
           btnApprove.style.display =
-            (!isApproved && !!currentMode && userIsDiamondAceHolder && (isRead || isEdit))
+            (!isApproved && !!currentMode && userIsSpadeAceHolder && (isRead || isEdit))
               ? "inline-flex"
               : "none";
         }
 
-        if (btnDelete) btnDelete.style.display = !isApproved ? "inline-flex" : "none";
+        if (btnDelete) {
+          btnDelete.style.display = !isApproved ? "inline-flex" : "none";
+        }
 
         if (isEdit && textInput) {
           textInput.focus();
           textInput.select();
         }
 
-        // Campos readonly en lectura
         setInputsReadOnly(isRead);
       }
 
       function setInputsReadOnly(readOnly) {
-        [textInput, startDateInput, endDateInput, locationInput].forEach((input) => {
+        [
+          textInput,
+          startDateInput,
+          appointmentEndDateInput,
+          deadlineEndDateInput,
+          locationInput
+        ].forEach((input) => {
           if (!input) return;
           input.readOnly = !!readOnly;
           input.disabled = false;
@@ -305,7 +345,8 @@
       btnExit?.addEventListener("click", () => {
         if (textInput) textInput.value = originalText;
         if (startDateInput) startDateInput.value = startDateValue;
-        if (endDateInput) endDateInput.value = endDateValue;
+        if (appointmentEndDateInput) appointmentEndDateInput.value = endDateValue;
+        if (deadlineEndDateInput) deadlineEndDateInput.value = endDateValue;
         if (locationInput) locationInput.value = locationValue;
 
         setSpadeMode(spadeMode || "");
@@ -368,7 +409,7 @@
               <input
                 type="datetime-local"
                 value="${escapeHtml(endDateValue)}"
-                data-role="end-date"
+                data-role="appointment-end-date"
               />
             </div>
 
@@ -393,7 +434,7 @@
               <input
                 type="datetime-local"
                 value="${escapeHtml(endDateValue)}"
-                data-role="end-date"
+                data-role="deadline-end-date"
               />
             </div>
           </div>
