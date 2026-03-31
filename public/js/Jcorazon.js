@@ -303,10 +303,6 @@
             <img src="${clubIcon}" alt="J♣" />
           </button>
 
-          <button type="button" data-action="show-help" title="Ayuda">
-            <img src="${helpIcon}" alt="Ayuda" />
-          </button>
-
           <button type="button" data-action="edit-play" title="Editar">
             <img src="${editIcon}" alt="Editar" />
           </button>
@@ -330,6 +326,11 @@
           <button type="button" data-action="delete-play" title="Borrar">
             <img src="${deleteIcon}" alt="Borrar" />
           </button>
+          
+          <button type="button" data-action="show-help" title="Ayuda">
+            <img src="${helpIcon}" alt="Ayuda" />
+          </button>
+          
         </div>
       </article>
     `;
