@@ -226,9 +226,17 @@ function resolveClubAceHolderUserId(plays) {
       window.__qpicaDraft = null;
     }
   }
+  
+function isQpikeRecipient(play, state) {
+  const currentUserId = Number(state?.userId || 0);
+  const targetUserId = Number(play?.target_user_id || 0);
 
-  function renderQpike(play, context = {}) {
+  return currentUserId !== 0 && targetUserId !== 0 && currentUserId === targetUserId;
+}
+  
+function renderQpike(play, context = {}) {
   const helpers = context.helpers || {};
+  const state = context.state || {};
   const escape = helpers.escapeHtml || ((v) => String(v ?? ""));
 
   const targetPhoto = play.target_user_photo_url || "/assets/icons/singeta120.gif";
@@ -238,6 +246,7 @@ function resolveClubAceHolderUserId(plays) {
     `Usuario ${play.target_user_id || "—"}`;
 
   const statusIcon = "/assets/icons/Dorso70.gif";
+  const showDecisionButtons = isQpikeRecipient(play, state);
 
   return `
     <article class="tablero-row tablero-row--qpike" id="tablero-row-${play.id}">
@@ -254,18 +263,43 @@ function resolveClubAceHolderUserId(plays) {
         <span class="qpike-row__nickname">${escape(targetName)}</span>
       </div>
 
-      <div class="tablero-row__right">
-        <img
-          class="qpike-row__status-icon"
-          src="${escape(statusIcon)}"
-          alt="Pendiente"
-          title="Pendiente"
-        />
+      <div class="tablero-row__right qpike-row__right">
+        ${
+          showDecisionButtons
+            ? `
+              <button
+                type="button"
+                class="qpike-row__action-btn"
+                data-action="approve-qpike"
+                data-play-id="${play.id}"
+                title="Approve"
+              >
+                Approve
+              </button>
+
+              <button
+                type="button"
+                class="qpike-row__action-btn"
+                data-action="reject-qpike"
+                data-play-id="${play.id}"
+                title="Reject"
+              >
+                Reject
+              </button>
+            `
+            : `
+              <img
+                class="qpike-row__status-icon"
+                src="${escape(statusIcon)}"
+                alt="Pendiente"
+                title="Pendiente"
+              />
+            `
+        }
       </div>
     </article>
   `;
 }
-
   document.addEventListener("qpica:open", (event) => {
     const parentPlayId = Number(event.detail?.parentPlayId || 0);
     if (!parentPlayId) return;
