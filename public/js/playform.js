@@ -64,17 +64,23 @@
         <div class="page-container">
           <div class="playform__inner">
 
-            <div class="playform__left">
-              <div class="playform__prefix">J</div>
+<div class="playform__left">
+  <img
+    src="/assets/icons/maquina80.gif"
+    alt="Nueva jugada"
+    class="playform__icon"
+  />
 
-              <input
-                id="playformTextInput"
-                type="text"
-                class="playform__input"
-                placeholder="Escribí una jugada..."
-                autocomplete="off"
-              />
-            </div>
+  <div class="playform__prefix">J</div>
+
+  <input
+    id="playformTextInput"
+    type="text"
+    class="playform__input"
+    placeholder="Escribí una jugada..."
+    autocomplete="off"
+  />
+</div>
 
             <div class="playform__center">
               <button
