@@ -260,37 +260,6 @@
   </div>
 </div>
 
-Y para que después no diga "Sin dato" sino "Email", en setViewValue podrías hacer este ajuste:
-
-function getEmptyPlaceholder(field) {
-  const placeholders = {
-    nickname: "Nickname",
-    email: "Email",
-    phone: "Teléfono",
-    birth_date: "Fecha de nacimiento",
-    country: "País",
-    profile_photo_url: "Foto de perfil"
-  };
-
-  return placeholders[field] || "Sin dato";
-}
-
-function setViewValue(field, rawValue) {
-  const viewEl = getEl(`view-${field}`);
-  if (!viewEl) return;
-
-  const formatted = formatFieldValue(field, rawValue);
-
-  if (!formatted) {
-    viewEl.textContent = getEmptyPlaceholder(field);
-    viewEl.classList.add("profile-field__value--empty");
-  } else {
-    viewEl.textContent = formatted;
-    viewEl.classList.remove("profile-field__value--empty");
-  }
-}
-
-Así el campo vacío ya actúa como etiqueta visual.
 
         <div class="profile-field" data-field="phone">
           <div class="profile-field__label">Teléfono</div>
