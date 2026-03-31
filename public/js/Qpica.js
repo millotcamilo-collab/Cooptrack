@@ -55,7 +55,7 @@
   }
 
   function renderQpicaPanel(parentPlayId) {
-    const container = getOrCreateQpicaContainer();
+    const container = getOrCreateQpicaContainer(parentPlayId);
 
     container.innerHTML = `
       <section class="qpica-panel" data-parent-play-id="${escapeHtml(parentPlayId)}">
@@ -87,14 +87,19 @@
     }
   }
 
-  function clearQpicaPanel() {
-    const container = document.getElementById("qpica-panel-container");
-    if (container) {
-      container.innerHTML = "";
-    }
+function clearQpicaPanel(parentPlayId) {
+  const container = document.getElementById(`qpica-panel-container-${parentPlayId}`);
+  if (container) {
+    container.remove();
+  }
 
+  if (
+    window.__qpicaDraft &&
+    Number(window.__qpicaDraft.parentPlayId) === Number(parentPlayId)
+  ) {
     window.__qpicaDraft = null;
   }
+}
 
   document.addEventListener("qpica:open", (event) => {
     const parentPlayId = Number(event.detail?.parentPlayId || 0);
