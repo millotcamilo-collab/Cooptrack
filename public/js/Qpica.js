@@ -117,16 +117,16 @@ function resolveClubAceHolderUserId(plays) {
   function renderQpicaPanel(parentPlayId) {
     const container = getOrCreateQpicaContainer(parentPlayId);
 
-    const clubAceHolderUserId = resolveClubAceHolderUserId(allPlays);
-
-const userCanSend =
-  clubAceHolderUserId !== null &&
-  currentUserId !== 0 &&
-  clubAceHolderUserId === currentUserId;
-    
-    const state = window.__COOPTRACK_STATE__ || {};
+    const state = window.__currentState || {};
     const allPlays = Array.isArray(state.plays) ? state.plays : [];
     const currentUserId = Number(state.userId || 0);
+
+    const clubAceHolderUserId = resolveClubAceHolderUserId(allPlays);
+
+    const userCanSend =
+      clubAceHolderUserId !== null &&
+      currentUserId !== 0 &&
+      clubAceHolderUserId === currentUserId;
     
     container.innerHTML = `
       <section class="qpica-panel" data-parent-play-id="${escapeHtml(parentPlayId)}">
