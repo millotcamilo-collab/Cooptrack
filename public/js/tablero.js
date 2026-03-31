@@ -144,7 +144,6 @@ function matchesStatusFilter(play, statusFilter) {
     };
   }
 
-  
 function belongsToTablero(play) {
   const rank = normalizeRank(play?.rank);
   const suit = normalizeSuit(play?.suit);
@@ -153,11 +152,13 @@ function belongsToTablero(play) {
   if (isStructuralPlay(play)) return false;
 
   if (rank === 'J') return true;
+  if (rank === 'Q') return true;
   if (rank === 'A' && suit !== 'HEART') return true;
 
   return false;
-}
-  function matchesTableroFilter(play, filterSuit) {
+}  
+
+ function matchesTableroFilter(play, filterSuit) {
   const rank = normalizeRank(play?.rank);
   const suit = normalizeSuit(play?.suit);
   const filter = normalizeSuit(filterSuit);
