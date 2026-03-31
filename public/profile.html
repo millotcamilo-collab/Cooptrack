@@ -471,21 +471,33 @@
       return String(value);
     }
 
-    function setViewValue(field, rawValue) {
-      const viewEl = getEl(`view-${field}`);
-      if (!viewEl) return;
+    function getEmptyPlaceholder(field) {
+  const placeholders = {
+    nickname: "Nickname",
+    email: "Email",
+    phone: "Teléfono",
+    birth_date: "Fecha de nacimiento",
+    country: "País",
+    profile_photo_url: "Foto de perfil"
+  };
 
-      const formatted = formatFieldValue(field, rawValue);
+  return placeholders[field] || "Sin dato";
+}
 
-      if (!formatted) {
-        viewEl.textContent = "Sin dato";
-        viewEl.classList.add("profile-field__value--empty");
-      } else {
-        viewEl.textContent = formatted;
-        viewEl.classList.remove("profile-field__value--empty");
-      }
-    }
+function setViewValue(field, rawValue) {
+  const viewEl = getEl(`view-${field}`);
+  if (!viewEl) return;
 
+  const formatted = formatFieldValue(field, rawValue);
+
+  if (!formatted) {
+    viewEl.textContent = getEmptyPlaceholder(field);
+    viewEl.classList.add("profile-field__value--empty");
+  } else {
+    viewEl.textContent = formatted;
+    viewEl.classList.remove("profile-field__value--empty");
+  }
+}
     function setInputValue(field, rawValue) {
       const inputEl = getEl(`input-${field}`);
       if (!inputEl) return;
