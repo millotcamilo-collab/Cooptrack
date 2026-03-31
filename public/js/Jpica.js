@@ -1134,10 +1134,6 @@ btnAddQspade?.addEventListener("click", (event) => {
         <img src="${deleteIcon}" alt="Borrar" />
       </button>
 
-      <button type="button" data-action="help-play" title="Help">
-        ${helpIcon ? `<img src="${helpIcon}" alt="Help" />` : `<span>?</span>`}
-      </button>
-
       <button type="button" data-action="cancel-play" title="Cancelar" style="display:none;">
         ${cancelIcon ? `<img src="${cancelIcon}" alt="Cancelar" />` : `<span>X</span>`}
       </button>
@@ -1148,6 +1144,10 @@ btnAddQspade?.addEventListener("click", (event) => {
 
       <button type="button" data-action="add-qspade-child" title="Agregar Q♠" style="display:none;">
         ${qspadeIcon ? `<img src="${qspadeIcon}" alt="Q♠" />` : `<span>Q♠</span>`}
+      </button>
+
+       <button type="button" data-action="help-play" title="Help">
+        ${helpIcon ? `<img src="${helpIcon}" alt="Help" />` : `<span>?</span>`}
       </button>
     </div>
   </article>
