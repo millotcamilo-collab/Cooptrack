@@ -7,7 +7,28 @@
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
   }
+  
+function resolveClubAceHolderUserId(plays) {
+  const aceClubPlays = plays
+    .filter((p) => {
+      const rank = String(p?.rank || p?.card_rank || "").toUpperCase();
+      const suit = String(p?.suit || p?.card_suit || "").toUpperCase();
+      const status = String(p?.play_status || "").toUpperCase();
 
+      return rank === "A" && suit === "CLUB" && status !== "CANCELLED";
+    })
+    .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
+
+  if (!aceClubPlays.length) return null;
+
+  const latest = aceClubPlays[0];
+
+  if (latest?.target_user_id) return Number(latest.target_user_id);
+  if (latest?.created_by_user_id) return Number(latest.created_by_user_id);
+
+  return null;
+}
+  
   function getOrCreateQpicaContainer(parentPlayId) {
     const containerId = `qpica-panel-container-${parentPlayId}`;
     let container = document.getElementById(containerId);
@@ -96,6 +117,17 @@
   function renderQpicaPanel(parentPlayId) {
     const container = getOrCreateQpicaContainer(parentPlayId);
 
+    const clubAceHolderUserId = resolveClubAceHolderUserId(allPlays);
+
+const userCanSend =
+  clubAceHolderUserId !== null &&
+  currentUserId !== 0 &&
+  clubAceHolderUserId === currentUserId;
+    
+    const state = window.__COOPTRACK_STATE__ || {};
+    const allPlays = Array.isArray(state.plays) ? state.plays : [];
+    const currentUserId = Number(state.userId || 0);
+    
     container.innerHTML = `
       <section class="qpica-panel" data-parent-play-id="${escapeHtml(parentPlayId)}">
         ${buildCardHtml()}
@@ -129,7 +161,10 @@
 
   if (selectedUser) {
     if (btnSave) btnSave.style.display = "inline-flex";
-    if (btnSend) btnSend.style.display = "inline-flex";
+
+    if (btnSend) {
+      btnSend.style.display = userCanSend ? "inline-flex" : "none";
+    }
   }
 }
       });
