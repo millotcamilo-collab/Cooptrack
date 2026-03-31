@@ -748,11 +748,10 @@ function applyDefaultRecurrenceFromStartDate(force = false) {
     return;
   }
 
-  dispatch("tablero:save-play", payload);
-
-  if (recurrencePayload.recurrence_type) {
-    dispatch("tablero:save-recurrence", recurrencePayload);
-  }
+  dispatch("tablero:save-play", {
+    ...payload,
+    recurrence: recurrencePayload.recurrence_type ? recurrencePayload : null
+  });
 
   originalText = payload.text || "";
   if (textView) textView.textContent = originalText || "Sin texto";
@@ -767,13 +766,7 @@ function applyDefaultRecurrenceFromStartDate(force = false) {
   recurrenceUntilDateValue = recurrencePayload.until_date || "";
 
   setVisualMode("read");
-        renderMode();
-
-     if (recurrencePayload.recurrence_type) {
-      loadRecurrenceIfNeeded().then(() => {
-      renderMode();
-    });
-  }
+  renderMode();
 });      
       
         
