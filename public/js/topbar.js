@@ -28,11 +28,10 @@
     }
   }
 
-async function hasUserJPlays() {
-  
+async function hasUserJPlays(userId) {
   try {
     const token = localStorage.getItem("cooptrackToken");
-    if (!token) return false;
+    if (!token || !userId) return false;
 
     const response = await fetch(`${API_BASE_URL}/plays/pending`, {
       method: "GET",
@@ -46,14 +45,15 @@ async function hasUserJPlays() {
     const data = await response.json();
     const plays = Array.isArray(data?.plays) ? data.plays : [];
 
-    // 👇 TEMPORAL: después lo cambiamos por endpoint propio
-    return plays.some(p => p.created_by_user_id);
+    return plays.some((p) =>
+      Number(p.created_by_user_id) === Number(userId) &&
+      String(p.card_rank || p.rank || "").toUpperCase() === "J"
+    );
   } catch (error) {
     console.error("Error verificando J del usuario:", error);
     return false;
   }
-}
-  
+}  
   function logout() {
     localStorage.removeItem("User");
     localStorage.removeItem("Token");
@@ -141,6 +141,8 @@ async function hasUserJPlays() {
     const userHasPendingApprovals = await hasPendingApprovals();
     const onMazosPage = isMazosPage();
     const userHasJPlays = await hasUserJPlays();
+    const user = await getLoggedUser();
+    const userHasJPlays = user ? await hasUserJPlays(user.id) : false;
 
     let topbarHTML = "";
 
