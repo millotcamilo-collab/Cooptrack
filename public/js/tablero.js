@@ -621,7 +621,7 @@ document.addEventListener("tablero:add-child-play", async (event) => {
         parent_play_id: parentPlayId,
         play_code: playCode,
         text,
-        play_status: "ACTIVE"
+        play_status: "SENT"
       })
     });
 
