@@ -945,14 +945,7 @@ app.post('/plays', requireAuth, async (req, res) => {
       }
     }
 
-    const created = await insertInstitutionalPlay(client, {
-      mazoId,
-      createdByUserId: userId,
-      parentPlayId: parent_play_id,
-      targetUserId: target_user_id,
-      playCode: play_code,
-      playText: text,
-      playStatus: play_status,const created = await insertInstitutionalPlay(client, {
+const created = await insertInstitutionalPlay(client, {
   mazoId,
   createdByUserId: userId,
   parentPlayId: parent_play_id,
@@ -986,9 +979,6 @@ if (
 }
 
 await client.query('COMMIT');
-    });
-
-    await client.query('COMMIT');
 
     return res.json({
       ok: true,
