@@ -853,6 +853,7 @@ document.addEventListener("tablero:save-recurrence", async (event) => {
 });
 
  document.addEventListener("plays:add-qspade-requested", async (event) => {
+   console.log("Q♠ enviar", { parentPlayId, targetUserId });
   try {
     const { parentPlayId, targetUserId } = event.detail || {};
 
