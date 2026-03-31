@@ -49,3 +49,25 @@
   color: #8a1f1f;
   font-size: 0.95rem;
 }
+
+.qpica-panel__right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.qpica-panel__selected {
+  min-height: 24px;
+  font-size: 0.95rem;
+}
+
+.qpica-panel__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.qpica-panel__btn {
+  padding: 8px 14px;
+  cursor: pointer;
+}
