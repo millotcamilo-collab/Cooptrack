@@ -92,15 +92,16 @@
   display: none;
 }
 
-.tablero-row--jpike .tablero-row__right {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: flex-end;
+.tablero-row--jpike .tablero-row__right button span {
+  display: inline-flex;
   align-items: center;
-  align-self: center;
-  gap: 6px;
-  white-space: nowrap;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  font-size: 18px;   /* 👈 antes 14px */
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .tablero-row--jpike .tablero-row__right button {
