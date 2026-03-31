@@ -849,7 +849,10 @@ btnDelete?.addEventListener("click", () => {
   renderMode();
 });
 
-btnAddQspade?.addEventListener("click", () => {
+btnAddQspade?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
   dispatch("qpica:open", {
     parentPlayId: playId
   });
