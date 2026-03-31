@@ -621,7 +621,7 @@ document.addEventListener("tablero:add-child-play", async (event) => {
         parent_play_id: parentPlayId,
         play_code: playCode,
         text,
-        play_status: "SENT"
+        play_status: "ACTIVE"
       })
     });
 
@@ -852,8 +852,93 @@ document.addEventListener("tablero:save-recurrence", async (event) => {
   }
 });
 
-  document.addEventListener("plays:add-qspade-requested", async (event) => {
-  console.log("EVENTO Q♠ RECIBIDO", event.detail);
+ document.addEventListener("plays:add-qspade-requested", async (event) => {
+  try {
+    const { parentPlayId, targetUserId } = event.detail || {};
+
+    if (!parentPlayId || !targetUserId) {
+      alert("Datos inválidos para crear Q♠");
+      return;
+    }
+
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) {
+      alert("No estás logueado");
+      return;
+    }
+
+    const deckId =
+      window.__currentDeck?.id ||
+      window.__currentState?.deck?.id ||
+      null;
+
+    const userId =
+      window.__currentState?.userId ||
+      window.__currentUser?.id ||
+      null;
+
+    const currentPlays = Array.isArray(window.__currentState?.plays)
+      ? window.__currentState.plays
+      : [];
+
+    const parentPlay = currentPlays.find(
+      (play) => Number(play.id) === Number(parentPlayId)
+    );
+
+    if (!deckId || !userId || !parentPlay) {
+      alert("No se pudo identificar la jugada madre");
+      return;
+    }
+
+    const when = new Date().toISOString();
+
+    const playCode = [
+      deckId,
+      userId,
+      when,
+      "Q",
+      "SPADE",
+      "invite",
+      `U:${userId}`,
+      `invite:${parentPlayId}`,
+      `U:${targetUserId}`
+    ].join("§");
+
+    const response = await fetch(`${API_BASE_URL}/plays`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        deck_id: deckId,
+        parent_play_id: parentPlayId,
+        target_user_id: targetUserId,
+        play_code: playCode,
+        text: "",
+        play_status: "SENT"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error creando Q♠:", data);
+      alert(data.error || "No se pudo enviar la invitación");
+      return;
+    }
+
+    document.dispatchEvent(new CustomEvent("qpica:close", {
+      detail: { parentPlayId }
+    }));
+
+    document.dispatchEvent(new CustomEvent("plays:changed", {
+      detail: { deckId }
+    }));
+  } catch (error) {
+    console.error("Error en plays:add-qspade-requested", error);
+    alert("Error enviando la Q♠");
+  }
 });
   
   window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
