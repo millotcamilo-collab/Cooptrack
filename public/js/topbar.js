@@ -99,32 +99,37 @@ async function hasUserJPlays(userId) {
     }
   }
 
-  async function hasPendingApprovals() {
-    try {
-      const token = localStorage.getItem("cooptrackToken");
-      if (!token) return false;
+  async function getLatestIncomingCard() {
+  try {
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) return null;
 
-      const response = await fetch(`${API_BASE_URL}/plays/pending`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) return false;
-        throw new Error(`Error HTTP ${response.status}`);
+    const response = await fetch(`${API_BASE_URL}/plays/pending`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
       }
+    });
 
-      const data = await response.json();
-      const plays = Array.isArray(data?.plays) ? data.plays : [];
+    if (!response.ok) return null;
 
-      return plays.length > 0;
-    } catch (error) {
-      console.error("Error leyendo pendientes:", error);
-      return false;
-    }
+    const data = await response.json();
+    const plays = Array.isArray(data?.plays) ? data.plays : [];
+
+    const incoming = plays.filter((p) => {
+      const rank = String(p.card_rank || p.rank || "").toUpperCase();
+      return rank === "Q" || rank === "K" || rank === "A";
+    });
+
+    if (!incoming.length) return null;
+
+    incoming.sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+    return incoming[0];
+  } catch (error) {
+    console.error("Error leyendo carta recibida:", error);
+    return null;
   }
+}
 
   function isMazosPage() {
     return window.location.pathname.endsWith("/mazos.html") ||
@@ -138,9 +143,11 @@ async function hasUserJPlays(userId) {
   async function renderTopbar() {
     const user = await getLoggedUser();
     const userHasDecks = await hasDecks();
-    const userHasPendingApprovals = await hasPendingApprovals();
+   
     const onMazosPage = isMazosPage();
     const userHasJPlays = user ? await hasUserJPlays(user.id) : false;
+    const latestIncomingCard = await getLatestIncomingCard();
+    const userHasPendingApprovals = !!latestIncomingCard;
 
     let topbarHTML = "";
 
@@ -300,6 +307,16 @@ ${
     if (newDeckBtn) {
       newDeckBtn.addEventListener("click", goToCreateDeckPage);
     }
+
+    const pendingBtn = document.getElementById("pendingBtn");
+    if (pendingBtn && latestIncomingCard) {
+    pendingBtn.addEventListener("click", () => {
+    const deckId = latestIncomingCard.deck_id;
+    const playId = latestIncomingCard.id;
+
+    window.location.href = `/mazo.html?id=${deckId}&focusPlayId=${playId}`;
+  });
+}
   }
 
   document.addEventListener("DOMContentLoaded", renderTopbar);
