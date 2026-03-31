@@ -108,9 +108,12 @@ function clearQpicaPanel(parentPlayId) {
     renderQpicaPanel(parentPlayId);
   });
 
-  document.addEventListener("qpica:close", () => {
-    clearQpicaPanel();
-  });
+document.addEventListener("qpica:close", (event) => {
+  const parentPlayId = Number(event.detail?.parentPlayId || 0);
+  if (!parentPlayId) return;
+
+  clearQpicaPanel(parentPlayId);
+});
 
   window.renderQpicaPanel = renderQpicaPanel;
   window.clearQpicaPanel = clearQpicaPanel;
