@@ -102,4 +102,5 @@
 
   window.renderQpicaPanel = renderQpicaPanel;
   window.clearQpicaPanel = clearQpicaPanel;
+  window.renderQpike = renderQpike;
 })();
