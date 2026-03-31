@@ -262,28 +262,25 @@
 
 
         <div class="profile-field" data-field="phone">
-          <div class="profile-field__label">Teléfono</div>
+  <div class="profile-field__view">
+    <div id="view-phone" class="profile-field__value">Teléfono</div>
+    <img id="editIcon-phone" class="profile-field__edit-icon" alt="Editar" />
+  </div>
 
-          <div class="profile-field__view">
-            <div id="view-phone" class="profile-field__value">-</div>
-            <img id="editIcon-phone" class="profile-field__edit-icon" alt="Editar" />
-          </div>
-
-          <div class="profile-field__edit">
-            <div class="profile-field__input-wrap">
-              <input id="input-phone" type="text" autocomplete="tel" />
-            </div>
-            <div class="profile-field__buttons">
-              <button type="button" class="icon-btn js-save-field" data-field="phone" title="Guardar">
-                <img id="saveIcon-phone" alt="Guardar" />
-              </button>
-              <button type="button" class="icon-btn js-cancel-field" data-field="phone" title="Salir">
-                <img id="exitIcon-phone" alt="Salir" />
-              </button>
-            </div>
-          </div>
-        </div>
-
+  <div class="profile-field__edit">
+    <div class="profile-field__input-wrap">
+      <input id="input-phone" type="text" autocomplete="tel" />
+    </div>
+    <div class="profile-field__buttons">
+      <button type="button" class="icon-btn js-save-field" data-field="phone" title="Guardar">
+        <img id="saveIcon-phone" alt="Guardar" />
+      </button>
+      <button type="button" class="icon-btn js-cancel-field" data-field="phone" title="Salir">
+        <img id="exitIcon-phone" alt="Salir" />
+      </button>
+    </div>
+  </div>
+</div>
         <div class="profile-field" data-field="birth_date">
           <div class="profile-field__label">Fecha de nacimiento</div>
 
