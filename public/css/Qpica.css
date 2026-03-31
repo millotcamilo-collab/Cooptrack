@@ -78,6 +78,30 @@
   cursor: pointer;
 }
 
+.qpike-row__center {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qpike-row__photo {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.qpike-row__nickname {
+  font-weight: 600;
+}
+
+.qpike-row__status-icon {
+  width: 28px;
+  height: auto;
+  display: block;
+}
+
 .qpica-panel__actions img {
   width: 28px;
   height: auto;
