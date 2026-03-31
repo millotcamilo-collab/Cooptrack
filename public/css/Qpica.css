@@ -71,3 +71,15 @@
   padding: 8px 14px;
   cursor: pointer;
 }
+.qpica-panel__actions button {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.qpica-panel__actions img {
+  width: 28px;
+  height: auto;
+  display: block;
+}
