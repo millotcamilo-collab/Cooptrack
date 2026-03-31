@@ -29,6 +29,8 @@
   }
 
 async function hasUserJPlays() {
+  console.log("hasUserJPlays plays =", plays);
+  console.log("userHasJPlays =", await hasUserJPlays());
   try {
     const token = localStorage.getItem("cooptrackToken");
     if (!token) return false;
