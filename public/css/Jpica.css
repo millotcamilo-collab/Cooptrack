@@ -103,7 +103,11 @@
   line-height: 1;
   pointer-events: none;
 }
-
+.tablero-row--jpike .tablero-row__right button[data-action="help-play"] img {
+  max-width: 22px;
+  max-height: 22px;
+  transform: translateY(1px);
+}
 .tablero-row--jpike .tablero-row__right button {
   width: 40px;
   height: 40px;
