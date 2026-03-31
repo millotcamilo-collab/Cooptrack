@@ -140,8 +140,6 @@ async function hasUserJPlays(userId) {
     const userHasDecks = await hasDecks();
     const userHasPendingApprovals = await hasPendingApprovals();
     const onMazosPage = isMazosPage();
-    const userHasJPlays = await hasUserJPlays();
-    const user = await getLoggedUser();
     const userHasJPlays = user ? await hasUserJPlays(user.id) : false;
 
     let topbarHTML = "";
