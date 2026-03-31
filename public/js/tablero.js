@@ -852,6 +852,9 @@ document.addEventListener("tablero:save-recurrence", async (event) => {
   }
 });
 
+  document.addEventListener("plays:add-qspade-requested", async (event) => {
+  console.log("EVENTO Q♠ RECIBIDO", event.detail);
+});
   
   window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
     window.__currentDeck = deck || null;
