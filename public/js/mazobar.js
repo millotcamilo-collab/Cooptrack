@@ -283,15 +283,19 @@
     const alertButtons = buildAlertButtonsHTML(plays);
 
     return `
-      <button
-        id="btnAddJ"
-        type="button"
-        class="mazobar__cmd-btn mazobar__cmd-btn--primary"
-        title="+J"
-        aria-label="+J"
-      >
-        +J
-      </button>
+  <button
+  id="btnAddJ"
+  type="button"
+  class="mazobar__cmd-btn mazobar__cmd-btn--primary"
+  title="Nueva jugada"
+  aria-label="Nueva jugada"
+>
+  <img
+    src="/assets/icons/maquina80.gif"
+    alt="J+"
+    class="mazobar__cmd-icon"
+  />
+</button>
 
       ${suitButtons}
       ${alertButtons}
