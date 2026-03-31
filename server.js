@@ -952,7 +952,40 @@ app.post('/plays', requireAuth, async (req, res) => {
       targetUserId: target_user_id,
       playCode: play_code,
       playText: text,
-      playStatus: play_status,
+      playStatus: play_status,const created = await insertInstitutionalPlay(client, {
+  mazoId,
+  createdByUserId: userId,
+  parentPlayId: parent_play_id,
+  targetUserId: target_user_id,
+  playCode: play_code,
+  playText: text,
+  playStatus: play_status,
+});
+
+if (
+  parsed.rank === 'Q' &&
+  parsed.suit === 'SPADE' &&
+  target_user_id
+) {
+  const memberCheck = await client.query(
+    `SELECT 1
+     FROM deck_members
+     WHERE deck_id = $1
+       AND user_id = $2
+     LIMIT 1`,
+    [mazoId, target_user_id]
+  );
+
+  if (!memberCheck.rows.length) {
+    await client.query(
+      `INSERT INTO deck_members (deck_id, user_id)
+       VALUES ($1, $2)`,
+      [mazoId, target_user_id]
+    );
+  }
+}
+
+await client.query('COMMIT');
     });
 
     await client.query('COMMIT');
