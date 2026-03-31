@@ -657,7 +657,7 @@ document.addEventListener("tablero:save-play", async (event) => {
     } = event.detail || {};
 
     console.log("SAVE DETAIL =", event.detail);
-
+    console.log("SAVE RECURRENCE IN SAVE-PLAY =", recurrence);
     if (!playId) {
       alert("playId inválido");
       return;
@@ -696,6 +696,7 @@ document.addEventListener("tablero:save-play", async (event) => {
 
     // 2. Guardar recurrencia (si existe)
     if (recurrence && recurrence.recurrence_type) {
+      console.log("ENTRA A POST /recurrence", recurrence);
       const recurrenceResponse = await fetch(`${API_BASE_URL}/plays/${playId}/recurrence`, {
         method: "POST",
         headers: {
