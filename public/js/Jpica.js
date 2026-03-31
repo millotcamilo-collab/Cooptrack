@@ -848,7 +848,13 @@ btnDelete?.addEventListener("click", () => {
 
   renderMode();
 });
-    
+
+btnAddQspade?.addEventListener("click", () => {
+  dispatch("qpica:open", {
+    parentPlayId: playId
+  });
+});
+      
   btnRoutine?.addEventListener("click", async () => {
   await loadRecurrenceIfNeeded();
 
