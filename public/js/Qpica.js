@@ -228,26 +228,43 @@ function resolveClubAceHolderUserId(plays) {
   }
 
   function renderQpike(play, context = {}) {
-    const helpers = context.helpers || {};
-    const escape = helpers.escapeHtml || ((v) => String(v ?? ""));
+  const helpers = context.helpers || {};
+  const escape = helpers.escapeHtml || ((v) => String(v ?? ""));
 
-    return `
-      <article class="tablero-row tablero-row--qpike" id="tablero-row-${play.id}">
-        <div class="tablero-row__left">
-          <div class="tablero-row__card">Q♠</div>
-        </div>
+  const targetPhoto = play.target_user_photo_url || "/assets/icons/singeta120.gif";
+  const targetName =
+    play.target_user_nickname ||
+    play.target_nickname ||
+    `Usuario ${play.target_user_id || "—"}`;
 
-        <div class="tablero-row__center">
-          <div class="tablero-row__title">Invitación</div>
-          <div class="tablero-row__text">
-            Invitado: ${escape(play.target_user_nickname || play.target_nickname || play.target_user_id || "—")}
-          </div>
-        </div>
+  const statusIcon = "/assets/icons/Dorso70.gif";
 
-        <div class="tablero-row__right"></div>
-      </article>
-    `;
-  }
+  return `
+    <article class="tablero-row tablero-row--qpike" id="tablero-row-${play.id}">
+      <div class="tablero-row__left">
+        <div class="tablero-row__card">Q♠</div>
+      </div>
+
+      <div class="tablero-row__center qpike-row__center">
+        <img
+          class="qpike-row__photo"
+          src="${escape(targetPhoto)}"
+          alt="${escape(targetName)}"
+        />
+        <span class="qpike-row__nickname">${escape(targetName)}</span>
+      </div>
+
+      <div class="tablero-row__right">
+        <img
+          class="qpike-row__status-icon"
+          src="${escape(statusIcon)}"
+          alt="Pendiente"
+          title="Pendiente"
+        />
+      </div>
+    </article>
+  `;
+}
 
   document.addEventListener("qpica:open", (event) => {
     const parentPlayId = Number(event.detail?.parentPlayId || 0);
