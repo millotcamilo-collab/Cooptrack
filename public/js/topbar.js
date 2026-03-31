@@ -28,6 +28,31 @@
     }
   }
 
+async function hasUserJPlays() {
+  try {
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) return false;
+
+    const response = await fetch(`${API_BASE_URL}/plays/pending`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) return false;
+
+    const data = await response.json();
+    const plays = Array.isArray(data?.plays) ? data.plays : [];
+
+    // 👇 TEMPORAL: después lo cambiamos por endpoint propio
+    return plays.some(p => p.created_by_user_id);
+  } catch (error) {
+    console.error("Error verificando J del usuario:", error);
+    return false;
+  }
+}
+  
   function logout() {
     localStorage.removeItem("cooptrackUser");
     localStorage.removeItem("cooptrackToken");
@@ -114,6 +139,7 @@
     const userHasDecks = await hasDecks();
     const userHasPendingApprovals = await hasPendingApprovals();
     const onMazosPage = isMazosPage();
+    const userHasJPlays = await hasUserJPlays();
 
     let topbarHTML = "";
 
@@ -218,6 +244,19 @@
             </div>
 
             <nav class="topbar__right">
+${
+  userHasJPlays
+    ? `
+      <button
+        class="topbar__icon-btn"
+        title="log de jotas"
+      >
+        <img src="/assets/icons/maquina80.gif" class="topbar__icon-img" />
+      </button>
+    `
+    : ""
+}
+            
               <a
                 href="/almanaque.html"
                 class="topbar__icon-btn"
