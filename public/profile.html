@@ -10,7 +10,7 @@
 
   <style>
     .profile-page {
-      max-width: 720px;
+      max-width: 760px;
       margin: 32px auto;
       padding: 0 16px 40px;
     }
@@ -26,7 +26,7 @@
       display: flex;
       align-items: center;
       gap: 20px;
-      margin-bottom: 24px;
+      margin-bottom: 28px;
       flex-wrap: wrap;
     }
 
@@ -57,65 +57,136 @@
       color: #666;
     }
 
-    .profile-form {
+    .profile-fields {
       display: grid;
-      gap: 16px;
+      gap: 14px;
     }
 
-    .form-group {
-      display: grid;
-      gap: 6px;
+    .profile-field {
+      border: 1px solid #e3e3e3;
+      border-radius: 12px;
+      padding: 14px 16px;
+      background: #fcfcfc;
     }
 
-    .form-group label {
-      font-weight: 600;
+    .profile-field__label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
+    .profile-field__view {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      cursor: pointer;
+    }
+
+    .profile-field__view:hover {
+      background: #f7f7f7;
+      border-radius: 10px;
+    }
+
+    .profile-field__value {
+      flex: 1;
+      min-height: 24px;
+      font-size: 17px;
+      color: #111;
+      word-break: break-word;
+      padding: 6px 0;
+    }
+
+    .profile-field__value--empty {
+      color: #999;
+      font-style: italic;
+    }
+
+    .profile-field__edit-icon {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      opacity: 0.8;
+      flex: 0 0 auto;
+    }
+
+    .profile-field__edit {
+      display: none;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-field.is-editing .profile-field__view {
+      display: none;
+    }
+
+    .profile-field.is-editing .profile-field__edit {
+      display: flex;
+    }
+
+    .profile-field__input-wrap {
+      flex: 1;
+    }
+
+    .profile-field input,
+    .profile-field select {
       width: 100%;
       padding: 10px 12px;
       font-size: 16px;
       border: 1px solid #ccc;
       border-radius: 10px;
       box-sizing: border-box;
+      background: #fff;
     }
 
-    .form-group textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .profile-actions {
+    .profile-field__buttons {
       display: flex;
-      gap: 12px;
-      margin-top: 8px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      flex: 0 0 auto;
     }
 
-    .profile-actions button {
-      padding: 10px 16px;
-      font-size: 16px;
+    .icon-btn {
+      width: 40px;
+      height: 40px;
       border: none;
-      border-radius: 10px;
+      background: transparent;
+      padding: 0;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .btn-primary {
-      background: #111;
-      color: #fff;
+    .icon-btn img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      display: block;
     }
 
-    .btn-secondary {
-      background: #eee;
-      color: #111;
+    .icon-btn:hover {
+      transform: scale(1.05);
     }
 
     .status-message {
-      margin-top: 16px;
+      margin-top: 18px;
       min-height: 24px;
       color: #333;
+    }
+
+    @media (max-width: 640px) {
+      .profile-field__edit {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .profile-field__buttons {
+        justify-content: flex-end;
+      }
     }
   </style>
 </head>
@@ -145,55 +216,159 @@
         </div>
       </div>
 
-      <form id="profileForm" class="profile-form">
-        <div class="form-group">
-          <label for="nickname">Nombre visible</label>
-          <input id="nickname" name="nickname" type="text" autocomplete="nickname" />
+      <section id="profileFields" class="profile-fields">
+        <div class="profile-field" data-field="nickname">
+          <div class="profile-field__label">Nombre visible</div>
+
+          <div class="profile-field__view">
+            <div id="view-nickname" class="profile-field__value">-</div>
+            <img id="editIcon-nickname" class="profile-field__edit-icon" alt="Editar" />
+          </div>
+
+          <div class="profile-field__edit">
+            <div class="profile-field__input-wrap">
+              <input id="input-nickname" type="text" autocomplete="nickname" />
+            </div>
+            <div class="profile-field__buttons">
+              <button type="button" class="icon-btn js-save-field" data-field="nickname" title="Guardar">
+                <img id="saveIcon-nickname" alt="Guardar" />
+              </button>
+              <button type="button" class="icon-btn js-cancel-field" data-field="nickname" title="Salir">
+                <img id="exitIcon-nickname" alt="Salir" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" autocomplete="email" />
+        <div class="profile-field" data-field="email">
+          <div class="profile-field__label">Email</div>
+
+          <div class="profile-field__view">
+            <div id="view-email" class="profile-field__value">-</div>
+            <img id="editIcon-email" class="profile-field__edit-icon" alt="Editar" />
+          </div>
+
+          <div class="profile-field__edit">
+            <div class="profile-field__input-wrap">
+              <input id="input-email" type="email" autocomplete="email" />
+            </div>
+            <div class="profile-field__buttons">
+              <button type="button" class="icon-btn js-save-field" data-field="email" title="Guardar">
+                <img id="saveIcon-email" alt="Guardar" />
+              </button>
+              <button type="button" class="icon-btn js-cancel-field" data-field="email" title="Salir">
+                <img id="exitIcon-email" alt="Salir" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="phone">Teléfono</label>
-          <input id="phone" name="phone" type="text" autocomplete="tel" />
+        <div class="profile-field" data-field="phone">
+          <div class="profile-field__label">Teléfono</div>
+
+          <div class="profile-field__view">
+            <div id="view-phone" class="profile-field__value">-</div>
+            <img id="editIcon-phone" class="profile-field__edit-icon" alt="Editar" />
+          </div>
+
+          <div class="profile-field__edit">
+            <div class="profile-field__input-wrap">
+              <input id="input-phone" type="text" autocomplete="tel" />
+            </div>
+            <div class="profile-field__buttons">
+              <button type="button" class="icon-btn js-save-field" data-field="phone" title="Guardar">
+                <img id="saveIcon-phone" alt="Guardar" />
+              </button>
+              <button type="button" class="icon-btn js-cancel-field" data-field="phone" title="Salir">
+                <img id="exitIcon-phone" alt="Salir" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="birthDate">Fecha de nacimiento</label>
-          <input id="birthDate" name="birthDate" type="date" autocomplete="bday" />
+        <div class="profile-field" data-field="birth_date">
+          <div class="profile-field__label">Fecha de nacimiento</div>
+
+          <div class="profile-field__view">
+            <div id="view-birth_date" class="profile-field__value">-</div>
+            <img id="editIcon-birth_date" class="profile-field__edit-icon" alt="Editar" />
+          </div>
+
+          <div class="profile-field__edit">
+            <div class="profile-field__input-wrap">
+              <input id="input-birth_date" type="date" autocomplete="bday" />
+            </div>
+            <div class="profile-field__buttons">
+              <button type="button" class="icon-btn js-save-field" data-field="birth_date" title="Guardar">
+                <img id="saveIcon-birth_date" alt="Guardar" />
+              </button>
+              <button type="button" class="icon-btn js-cancel-field" data-field="birth_date" title="Salir">
+                <img id="exitIcon-birth_date" alt="Salir" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="country">País</label>
-          <select id="country" name="country" autocomplete="country">
-            <option value="">Seleccionar país</option>
-            <option value="UY">Uruguay</option>
-            <option value="AR">Argentina</option>
-            <option value="CL">Chile</option>
-            <option value="BR">Brasil</option>
-            <option value="US">Estados Unidos</option>
-            <option value="ES">España</option>
-          </select>
+        <div class="profile-field" data-field="country">
+          <div class="profile-field__label">País</div>
+
+          <div class="profile-field__view">
+            <div id="view-country" class="profile-field__value">-</div>
+            <img id="editIcon-country" class="profile-field__edit-icon" alt="Editar" />
+          </div>
+
+          <div class="profile-field__edit">
+            <div class="profile-field__input-wrap">
+              <select id="input-country" autocomplete="country">
+                <option value="">Seleccionar país</option>
+                <option value="UY">Uruguay</option>
+                <option value="AR">Argentina</option>
+                <option value="CL">Chile</option>
+                <option value="BR">Brasil</option>
+                <option value="US">Estados Unidos</option>
+                <option value="ES">España</option>
+              </select>
+            </div>
+            <div class="profile-field__buttons">
+              <button type="button" class="icon-btn js-save-field" data-field="country" title="Guardar">
+                <img id="saveIcon-country" alt="Guardar" />
+              </button>
+              <button type="button" class="icon-btn js-cancel-field" data-field="country" title="Salir">
+                <img id="exitIcon-country" alt="Salir" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="profilePhotoUrl">URL de foto de perfil</label>
-          <input id="profilePhotoUrl" name="profilePhotoUrl" type="text" />
-        </div>
+        <div class="profile-field" data-field="profile_photo_url">
+          <div class="profile-field__label">URL de foto de perfil</div>
 
-        <div class="profile-actions">
-          <button type="submit" class="btn-primary">Guardar cambios</button>
-          <button type="button" id="reloadBtn" class="btn-secondary">Recargar</button>
-        </div>
+          <div class="profile-field__view">
+            <div id="view-profile_photo_url" class="profile-field__value">-</div>
+            <img id="editIcon-profile_photo_url" class="profile-field__edit-icon" alt="Editar" />
+          </div>
 
-        <div id="statusMessage" class="status-message"></div>
-      </form>
+          <div class="profile-field__edit">
+            <div class="profile-field__input-wrap">
+              <input id="input-profile_photo_url" type="text" />
+            </div>
+            <div class="profile-field__buttons">
+              <button type="button" class="icon-btn js-save-field" data-field="profile_photo_url" title="Guardar">
+                <img id="saveIcon-profile_photo_url" alt="Guardar" />
+              </button>
+              <button type="button" class="icon-btn js-cancel-field" data-field="profile_photo_url" title="Salir">
+                <img id="exitIcon-profile_photo_url" alt="Salir" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div id="statusMessage" class="status-message"></div>
     </section>
   </main>
 
+  <script src="/js/icons.js"></script>
   <script src="/js/topbar.js"></script>
 
   <script>
@@ -203,6 +378,9 @@
     if (!token) {
       window.location.href = "/login.html";
     }
+
+    let currentUser = null;
+    let editingField = null;
 
     function getEl(id) {
       return document.getElementById(id);
@@ -232,10 +410,12 @@
       if (!avatar) return;
 
       const safeUrl = String(url || "").trim();
+
       avatar.onerror = () => {
         avatar.onerror = null;
         avatar.src = getFallbackProfileImage();
       };
+
       avatar.src = safeUrl || getFallbackProfileImage();
     }
 
@@ -260,23 +440,225 @@
       icon.alt = altText;
     }
 
-    function fillProfileForm(user) {
-      const nicknameEl = getEl("nickname");
-      const emailEl = getEl("email");
-      const phoneEl = getEl("phone");
-      const birthDateEl = getEl("birthDate");
-      const profilePhotoUrlEl = getEl("profilePhotoUrl");
-      const countryEl = getEl("country");
+    function getCountryLabel(code) {
+      const map = {
+        UY: "Uruguay",
+        AR: "Argentina",
+        CL: "Chile",
+        BR: "Brasil",
+        US: "Estados Unidos",
+        ES: "España"
+      };
 
-      if (nicknameEl) nicknameEl.value = user.nickname || "";
-      if (emailEl) emailEl.value = user.email || "";
-      if (phoneEl) phoneEl.value = user.phone || "";
-      if (birthDateEl) birthDateEl.value = user.birth_date || "";
-      if (profilePhotoUrlEl) profilePhotoUrlEl.value = user.profile_photo_url || "";
-      if (countryEl) countryEl.value = user.country || "";
+      return map[code] || "";
+    }
+
+    function formatBirthDate(dateStr) {
+      if (!dateStr) return "";
+
+      const date = new Date(dateStr + "T00:00:00");
+      if (Number.isNaN(date.getTime())) return dateStr;
+
+      return date.toLocaleDateString("es-UY");
+    }
+
+    function formatFieldValue(field, value) {
+      if (!value) return "";
+
+      if (field === "birth_date") {
+        return formatBirthDate(value);
+      }
+
+      if (field === "country") {
+        return getCountryLabel(value);
+      }
+
+      return String(value);
+    }
+
+    function setViewValue(field, rawValue) {
+      const viewEl = getEl(`view-${field}`);
+      if (!viewEl) return;
+
+      const formatted = formatFieldValue(field, rawValue);
+
+      if (!formatted) {
+        viewEl.textContent = "Sin dato";
+        viewEl.classList.add("profile-field__value--empty");
+      } else {
+        viewEl.textContent = formatted;
+        viewEl.classList.remove("profile-field__value--empty");
+      }
+    }
+
+    function setInputValue(field, rawValue) {
+      const inputEl = getEl(`input-${field}`);
+      if (!inputEl) return;
+      inputEl.value = rawValue || "";
+    }
+
+    function applyIcons() {
+      const fields = [
+        "nickname",
+        "email",
+        "phone",
+        "birth_date",
+        "country",
+        "profile_photo_url"
+      ];
+
+      fields.forEach((field) => {
+        const editIcon = getEl(`editIcon-${field}`);
+        const saveIcon = getEl(`saveIcon-${field}`);
+        const exitIcon = getEl(`exitIcon-${field}`);
+
+        if (editIcon) editIcon.src = window.ICONS?.actions?.edit || "";
+        if (saveIcon) saveIcon.src = window.ICONS?.actions?.save || "";
+        if (exitIcon) exitIcon.src = window.ICONS?.actions?.exit || "";
+      });
+    }
+
+    function renderProfile(user) {
+      currentUser = { ...user };
+
+      setViewValue("nickname", user.nickname || "");
+      setViewValue("email", user.email || "");
+      setViewValue("phone", user.phone || "");
+      setViewValue("birth_date", user.birth_date || "");
+      setViewValue("country", user.country || "");
+      setViewValue("profile_photo_url", user.profile_photo_url || "");
+
+      setInputValue("nickname", user.nickname || "");
+      setInputValue("email", user.email || "");
+      setInputValue("phone", user.phone || "");
+      setInputValue("birth_date", user.birth_date || "");
+      setInputValue("country", user.country || "");
+      setInputValue("profile_photo_url", user.profile_photo_url || "");
 
       updateUserCategoryIcon(user);
-      updateAvatar(user.profile_photo_url);
+      updateAvatar(user.profile_photo_url || "");
+    }
+
+    function closeAllEditors() {
+      document.querySelectorAll(".profile-field.is-editing").forEach((node) => {
+        node.classList.remove("is-editing");
+      });
+      editingField = null;
+    }
+
+    function openEditor(field) {
+      if (!currentUser) return;
+
+      closeAllEditors();
+
+      const fieldNode = document.querySelector(`.profile-field[data-field="${field}"]`);
+      if (!fieldNode) return;
+
+      setInputValue(field, currentUser[field] || "");
+      fieldNode.classList.add("is-editing");
+      editingField = field;
+
+      const input = getEl(`input-${field}`);
+      if (input) {
+        input.focus();
+        if (typeof input.select === "function" && input.tagName === "INPUT" && input.type !== "date") {
+          input.select();
+        }
+      }
+    }
+
+    function cancelEdit(field) {
+      if (!currentUser) return;
+
+      setInputValue(field, currentUser[field] || "");
+
+      if (field === "profile_photo_url") {
+        updateAvatar(currentUser.profile_photo_url || "");
+      }
+
+      const fieldNode = document.querySelector(`.profile-field[data-field="${field}"]`);
+      if (fieldNode) {
+        fieldNode.classList.remove("is-editing");
+      }
+
+      editingField = null;
+      setStatus("");
+    }
+
+    function getEditedValue(field) {
+      const input = getEl(`input-${field}`);
+      if (!input) return "";
+
+      return typeof input.value === "string" ? input.value.trim() : "";
+    }
+
+    function buildPayloadWithField(field, value) {
+      const mergedUser = {
+        ...currentUser,
+        [field]: value
+      };
+
+      return {
+        nickname: (mergedUser.nickname || "").trim(),
+        email: mergedUser.email ? String(mergedUser.email).trim() : null,
+        phone: mergedUser.phone ? String(mergedUser.phone).trim() : null,
+        birth_date: mergedUser.birth_date || null,
+        country: mergedUser.country ? String(mergedUser.country).trim() : null,
+        profile_photo_url: mergedUser.profile_photo_url ? String(mergedUser.profile_photo_url).trim() : null
+      };
+    }
+
+    async function saveField(field) {
+      if (!currentUser) return;
+
+      const rawValue = getEditedValue(field);
+      const normalizedValue = rawValue || "";
+
+      if (field === "nickname" && !normalizedValue) {
+        setStatus("El nombre visible es obligatorio", true);
+        return;
+      }
+
+      try {
+        setStatus("Guardando cambio...");
+
+        const payload = buildPayloadWithField(field, normalizedValue);
+
+        if (!payload.nickname) {
+          setStatus("El nombre visible es obligatorio", true);
+          return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/me`, {
+          method: "PUT",
+          headers: authHeaders({
+            "Content-Type": "application/json"
+          }),
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "No se pudo guardar el perfil");
+        }
+
+        if (data.user) {
+          renderProfile(data.user);
+        } else {
+          currentUser = {
+            ...currentUser,
+            [field]: normalizedValue || null
+          };
+          renderProfile(currentUser);
+        }
+
+        closeAllEditors();
+        setStatus("Campo actualizado correctamente");
+      } catch (error) {
+        console.error(`Error guardando ${field}:`, error);
+        setStatus("Error al guardar el cambio", true);
+      }
     }
 
     async function loadProfile() {
@@ -294,7 +676,8 @@
           throw new Error(data.error || "No se pudo cargar el perfil");
         }
 
-        fillProfileForm(data.user);
+        renderProfile(data.user);
+        closeAllEditors();
         setStatus("");
       } catch (error) {
         console.error("Error cargando perfil:", error);
@@ -302,82 +685,63 @@
       }
     }
 
-    async function saveProfile(event) {
-      event.preventDefault();
-
-      const nicknameEl = getEl("nickname");
-      const emailEl = getEl("email");
-      const phoneEl = getEl("phone");
-      const birthDateEl = getEl("birthDate");
-      const profilePhotoUrlEl = getEl("profilePhotoUrl");
-      const countryEl = getEl("country");
-
-      const nickname = nicknameEl ? nicknameEl.value.trim() : "";
-      const email = emailEl ? emailEl.value.trim() : "";
-      const phone = phoneEl ? phoneEl.value.trim() : "";
-      const birthDate = birthDateEl ? (birthDateEl.value || null) : null;
-      const profilePhotoUrl = profilePhotoUrlEl ? profilePhotoUrlEl.value.trim() : "";
-      const country = countryEl ? countryEl.value.trim() : "";
-
-      if (!nickname) {
-        setStatus("El nombre visible es obligatorio", true);
-        return;
-      }
-
-      try {
-        setStatus("Guardando cambios...");
-
-        const response = await fetch(`${API_BASE_URL}/me`, {
-          method: "PUT",
-          headers: authHeaders({
-            "Content-Type": "application/json"
-          }),
-          body: JSON.stringify({
-            nickname,
-            email: email || null,
-            phone: phone || null,
-            birth_date: birthDate,
-            country: country || null,
-            profile_photo_url: profilePhotoUrl || null
-          })
+    function bindFieldEvents() {
+      document.querySelectorAll(".profile-field__view").forEach((node) => {
+        node.addEventListener("click", () => {
+          const fieldNode = node.closest(".profile-field");
+          const field = fieldNode?.dataset?.field;
+          if (field) {
+            openEditor(field);
+          }
         });
+      });
 
-        const data = await response.json();
+      document.querySelectorAll(".js-save-field").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const field = btn.dataset.field;
+          if (field) {
+            saveField(field);
+          }
+        });
+      });
 
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || "No se pudo guardar el perfil");
-        }
+      document.querySelectorAll(".js-cancel-field").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const field = btn.dataset.field;
+          if (field) {
+            cancelEdit(field);
+          }
+        });
+      });
 
-        if (data.user) {
-          fillProfileForm(data.user);
-        } else {
-          updateAvatar(profilePhotoUrl);
-        }
+      document.querySelectorAll(".profile-field input, .profile-field select").forEach((input) => {
+        input.addEventListener("keydown", (event) => {
+          const fieldNode = input.closest(".profile-field");
+          const field = fieldNode?.dataset?.field;
+          if (!field) return;
 
-        setStatus("Perfil actualizado correctamente");
-      } catch (error) {
-        console.error("Error guardando perfil:", error);
-        setStatus("Error al guardar el perfil", true);
+          if (event.key === "Enter") {
+            event.preventDefault();
+            saveField(field);
+          }
+
+          if (event.key === "Escape") {
+            event.preventDefault();
+            cancelEdit(field);
+          }
+        });
+      });
+
+      const photoInput = getEl("input-profile_photo_url");
+      if (photoInput) {
+        photoInput.addEventListener("input", (event) => {
+          updateAvatar(event.target.value);
+        });
       }
     }
 
-    const profilePhotoUrlEl = getEl("profilePhotoUrl");
-    if (profilePhotoUrlEl) {
-      profilePhotoUrlEl.addEventListener("input", (event) => {
-        updateAvatar(event.target.value);
-      });
-    }
-
-    const reloadBtn = getEl("reloadBtn");
-    if (reloadBtn) {
-      reloadBtn.addEventListener("click", loadProfile);
-    }
-
-    const profileForm = getEl("profileForm");
-    if (profileForm) {
-      profileForm.addEventListener("submit", saveProfile);
-    }
-
+    applyIcons();
+    bindFieldEvents();
     loadProfile();
   </script>
 </body>
