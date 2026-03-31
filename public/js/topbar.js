@@ -130,7 +130,8 @@
 
             <nav class="topbar__right">
 
-              <a href="/profile.html" class="topbar__icon-btn">
+              <a href="/profile.html" class="topbar__profile">
+                <span class="topbar__nickname">${user.nickname || ''}</span>
                 <img src="${getProfileImage(user)}" class="topbar__icon-img topbar__icon-img--profile" />
               </a>
 
