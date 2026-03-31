@@ -345,7 +345,11 @@ function belongsToTablero(play) {
       },
     };
   }
-
+  
+function getFocusPlayIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return Number(params.get("focusPlayId") || 0);
+}
 
   function renderTablero(deck, plays, state = {}) {
     const container = document.getElementById('tablero-container');
@@ -407,6 +411,18 @@ function belongsToTablero(play) {
           ${rowsHtml}
         </section>
       `;
+      const focusPlayId = getFocusPlayIdFromUrl();
+
+if (focusPlayId) {
+  const targetRow = document.getElementById(`tablero-row-${focusPlayId}`);
+
+  if (targetRow) {
+    targetRow.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  }
+}
     } catch (error) {
       console.error('Error en renderTablero', error);
       container.innerHTML = renderErrorState('No se pudo renderizar el tablero');
