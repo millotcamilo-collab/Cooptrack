@@ -47,44 +47,38 @@
   }
 
   function buildPickerHtml(parentPlayId) {
-    return `
-      <div class="qpica-panel__right">
-        <div class="qpica-panel__picker-title">Seleccionar invitado</div>
-        <div id="qpica-users-picker-${parentPlayId}"></div>
+  const ICONS = window.ICONS || {};
+  const ACTIONS = ICONS.actions || {};
 
-        <div class="qpica-panel__selected" id="qpica-selected-${parentPlayId}">
-          Nadie seleccionado
-        </div>
+  const saveIcon = ACTIONS.save || "";
+  const sendIcon = ACTIONS.send || "";
+  const cancelIcon = ACTIONS.exit || ACTIONS.cancel || "";
 
-        <div class="qpica-panel__actions">
-          <button
-            type="button"
-            class="qpica-panel__btn"
-            id="qpica-save-${parentPlayId}"
-          >
-            Save
-          </button>
+  return `
+    <div class="qpica-panel__right">
+      <div class="qpica-panel__picker-title">Seleccionar invitado</div>
+      <div id="qpica-users-picker-${parentPlayId}"></div>
 
-          <button
-            type="button"
-            class="qpica-panel__btn"
-            id="qpica-send-${parentPlayId}"
-          >
-            Send
-          </button>
-
-          <button
-            type="button"
-            class="qpica-panel__btn"
-            id="qpica-cancel-${parentPlayId}"
-          >
-            Cancelar
-          </button>
-        </div>
+      <div class="qpica-panel__selected" id="qpica-selected-${parentPlayId}">
+        Nadie seleccionado
       </div>
-    `;
-  }
 
+      <div class="qpica-panel__actions">
+        <button type="button" id="qpica-save-${parentPlayId}" title="Guardar">
+          ${saveIcon ? `<img src="${saveIcon}" alt="Guardar" />` : "Save"}
+        </button>
+
+        <button type="button" id="qpica-send-${parentPlayId}" title="Enviar">
+          ${sendIcon ? `<img src="${sendIcon}" alt="Enviar" />` : "Send"}
+        </button>
+
+        <button type="button" id="qpica-cancel-${parentPlayId}" title="Cancelar">
+          ${cancelIcon ? `<img src="${cancelIcon}" alt="Cancelar" />` : "Cancelar"}
+        </button>
+      </div>
+    </div>
+  `;
+}
   function renderQpicaPanel(parentPlayId) {
     const container = getOrCreateQpicaContainer(parentPlayId);
 
