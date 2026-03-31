@@ -30,7 +30,7 @@
 
 async function hasUserJPlays() {
   try {
-    const token = localStorage.getItem("Token");
+    const token = localStorage.getItem("cooptrackToken");
     if (!token) return false;
 
     const response = await fetch(`${API_BASE_URL}/plays/pending`, {
@@ -199,7 +199,18 @@ async function hasUserJPlays() {
                   `
                   : ""
               }
-
+${
+  userHasJPlays
+    ? `
+      <button
+        class="topbar__icon-btn"
+        title="log de jotas"
+      >
+        <img src="/assets/icons/maquina80.gif" class="topbar__icon-img" />
+      </button>
+    `
+    : ""
+}
               <a
                 href="/almanaque.html"
                 class="topbar__icon-btn"
@@ -244,19 +255,7 @@ async function hasUserJPlays() {
             </div>
 
             <nav class="topbar__right">
-${
-  userHasJPlays
-    ? `
-      <button
-        class="topbar__icon-btn"
-        title="log de jotas"
-      >
-        <img src="/assets/icons/maquina80.gif" class="topbar__icon-img" />
-      </button>
-    `
-    : ""
-}
-            
+           
               <a
                 href="/almanaque.html"
                 class="topbar__icon-btn"
