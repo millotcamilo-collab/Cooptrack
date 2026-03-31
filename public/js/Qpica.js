@@ -114,19 +114,24 @@
     if (typeof window.renderUsersPicker === "function") {
       window.renderUsersPicker(pickerId, {
         onSelect(user) {
-          selectedUser = user || null;
+  selectedUser = user || null;
 
-          window.__qpicaDraft = {
-            parentPlayId,
-            selectedUser
-          };
+  window.__qpicaDraft = {
+    parentPlayId,
+    selectedUser
+  };
 
-          if (selectedBox) {
-            selectedBox.textContent = selectedUser
-              ? `Seleccionado: ${selectedUser.nickname || selectedUser.full_name || selectedUser.name || `Usuario ${selectedUser.id}`}`
-              : "Nadie seleccionado";
-          }
-        }
+  if (selectedBox) {
+    selectedBox.textContent = selectedUser
+      ? `Seleccionado: ${selectedUser.nickname || selectedUser.full_name || selectedUser.name || `Usuario ${selectedUser.id}`}`
+      : "Nadie seleccionado";
+  }
+
+  if (selectedUser) {
+    if (btnSave) btnSave.style.display = "inline-flex";
+    if (btnSend) btnSend.style.display = "inline-flex";
+  }
+}
       });
     } else {
       const picker = document.getElementById(pickerId);
