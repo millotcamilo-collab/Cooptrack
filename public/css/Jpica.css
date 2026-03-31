@@ -155,17 +155,6 @@
   font: inherit;
 }
 
-.tablero-row--jpike .tablero-row__right button span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  min-height: 24px;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1;
-  pointer-events: none;
-}
 
 .tablero-row--jpike .tablero-row__right button[data-action="add-jclub-child"],
 .tablero-row--jpike .tablero-row__right button[data-action="add-qspade-child"] {
