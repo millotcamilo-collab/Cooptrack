@@ -41,6 +41,9 @@
   font-size: 1rem;
   font-weight: 700;
 }
+.qpica-panel-container {
+  margin: 8px 0 8px 72px;
+}
 
 .qpica-panel__error {
   color: #8a1f1f;
