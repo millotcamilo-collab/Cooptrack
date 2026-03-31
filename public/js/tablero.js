@@ -827,9 +827,10 @@ document.addEventListener("tablero:save-play", async (event) => {
 });
 
  document.addEventListener("plays:add-qspade-requested", async (event) => {
-   console.log("Q♠ enviar", { parentPlayId, targetUserId });
   try {
     const { parentPlayId, targetUserId } = event.detail || {};
+
+    console.log("Q♠ enviar", { parentPlayId, targetUserId });
 
     if (!parentPlayId || !targetUserId) {
       alert("Datos inválidos para crear Q♠");
@@ -914,8 +915,7 @@ document.addEventListener("tablero:save-play", async (event) => {
     console.error("Error en plays:add-qspade-requested", error);
     alert("Error enviando la Q♠");
   }
-});
-  
+}); 
   window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
     window.__currentDeck = deck || null;
     window.__currentState = state || {};
