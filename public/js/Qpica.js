@@ -9,30 +9,31 @@
   }
 
   function getOrCreateQpicaContainer(parentPlayId) {
-  const containerId = `qpica-panel-container-${parentPlayId}`;
-  let container = document.getElementById(containerId);
+    const containerId = `qpica-panel-container-${parentPlayId}`;
+    let container = document.getElementById(containerId);
 
-  if (container) return container;
+    if (container) return container;
 
-  container = document.createElement("div");
-  container.id = containerId;
-  container.className = "qpica-panel-container";
+    container = document.createElement("div");
+    container.id = containerId;
+    container.className = "qpica-panel-container";
 
-  const parentRow = document.getElementById(`tablero-row-${parentPlayId}`);
+    const parentRow = document.getElementById(`tablero-row-${parentPlayId}`);
 
-  if (parentRow && parentRow.parentNode) {
-    parentRow.insertAdjacentElement("afterend", container);
-  } else {
-    const tablero = document.getElementById("tablero-container");
-    if (tablero) {
-      tablero.appendChild(container);
+    if (parentRow && parentRow.parentNode) {
+      parentRow.insertAdjacentElement("afterend", container);
     } else {
-      document.body.appendChild(container);
+      const tablero = document.getElementById("tablero-container");
+      if (tablero) {
+        tablero.appendChild(container);
+      } else {
+        document.body.appendChild(container);
+      }
     }
+
+    return container;
   }
 
-  return container;
-}
   function buildCardHtml() {
     return `
       <div class="qpica-panel__left">
@@ -45,11 +46,41 @@
     `;
   }
 
-  function buildPickerHtml() {
+  function buildPickerHtml(parentPlayId) {
     return `
       <div class="qpica-panel__right">
         <div class="qpica-panel__picker-title">Seleccionar invitado</div>
-        <div id="qpica-users-picker"></div>
+        <div id="qpica-users-picker-${parentPlayId}"></div>
+
+        <div class="qpica-panel__selected" id="qpica-selected-${parentPlayId}">
+          Nadie seleccionado
+        </div>
+
+        <div class="qpica-panel__actions">
+          <button
+            type="button"
+            class="qpica-panel__btn"
+            id="qpica-save-${parentPlayId}"
+          >
+            Save
+          </button>
+
+          <button
+            type="button"
+            class="qpica-panel__btn"
+            id="qpica-send-${parentPlayId}"
+          >
+            Send
+          </button>
+
+          <button
+            type="button"
+            class="qpica-panel__btn"
+            id="qpica-cancel-${parentPlayId}"
+          >
+            Cancelar
+          </button>
+        </div>
       </div>
     `;
   }
@@ -60,23 +91,37 @@
     container.innerHTML = `
       <section class="qpica-panel" data-parent-play-id="${escapeHtml(parentPlayId)}">
         ${buildCardHtml()}
-        ${buildPickerHtml()}
+        ${buildPickerHtml(parentPlayId)}
       </section>
     `;
 
+    const pickerId = `qpica-users-picker-${parentPlayId}`;
+    const selectedBox = document.getElementById(`qpica-selected-${parentPlayId}`);
+    const btnSave = document.getElementById(`qpica-save-${parentPlayId}`);
+    const btnSend = document.getElementById(`qpica-send-${parentPlayId}`);
+    const btnCancel = document.getElementById(`qpica-cancel-${parentPlayId}`);
+
+    let selectedUser = null;
+
     if (typeof window.renderUsersPicker === "function") {
-      window.renderUsersPicker("qpica-users-picker", {
+      window.renderUsersPicker(pickerId, {
         onSelect(user) {
-          console.log("Usuario seleccionado para Q♠:", user);
+          selectedUser = user || null;
 
           window.__qpicaDraft = {
             parentPlayId,
-            selectedUser: user || null
+            selectedUser
           };
+
+          if (selectedBox) {
+            selectedBox.textContent = selectedUser
+              ? `Seleccionado: ${selectedUser.nickname || selectedUser.full_name || selectedUser.name || `Usuario ${selectedUser.id}`}`
+              : "Nadie seleccionado";
+          }
         }
       });
     } else {
-      const picker = document.getElementById("qpica-users-picker");
+      const picker = document.getElementById(pickerId);
       if (picker) {
         picker.innerHTML = `
           <div class="qpica-panel__error">
@@ -85,21 +130,76 @@
         `;
       }
     }
+
+    btnSave?.addEventListener("click", () => {
+      if (!selectedUser) {
+        alert("Primero seleccioná un usuario.");
+        return;
+      }
+
+      window.__qpicaDraft = {
+        parentPlayId,
+        selectedUser
+      };
+
+      console.log("Q♠ draft salvado:", window.__qpicaDraft);
+      alert("Selección salvada.");
+    });
+
+    btnSend?.addEventListener("click", () => {
+      if (!selectedUser) {
+        alert("Primero seleccioná un usuario.");
+        return;
+      }
+
+      document.dispatchEvent(new CustomEvent("plays:add-qspade-requested", {
+        detail: {
+          parentPlayId,
+          targetUserId: selectedUser.id
+        }
+      }));
+    });
+
+    btnCancel?.addEventListener("click", () => {
+      clearQpicaPanel(parentPlayId);
+    });
   }
 
-function clearQpicaPanel(parentPlayId) {
-  const container = document.getElementById(`qpica-panel-container-${parentPlayId}`);
-  if (container) {
-    container.remove();
+  function clearQpicaPanel(parentPlayId) {
+    const container = document.getElementById(`qpica-panel-container-${parentPlayId}`);
+    if (container) {
+      container.remove();
+    }
+
+    if (
+      window.__qpicaDraft &&
+      Number(window.__qpicaDraft.parentPlayId) === Number(parentPlayId)
+    ) {
+      window.__qpicaDraft = null;
+    }
   }
 
-  if (
-    window.__qpicaDraft &&
-    Number(window.__qpicaDraft.parentPlayId) === Number(parentPlayId)
-  ) {
-    window.__qpicaDraft = null;
+  function renderQpike(play, context = {}) {
+    const helpers = context.helpers || {};
+    const escape = helpers.escapeHtml || ((v) => String(v ?? ""));
+
+    return `
+      <article class="tablero-row tablero-row--qpike" id="tablero-row-${play.id}">
+        <div class="tablero-row__left">
+          <div class="tablero-row__card">Q♠</div>
+        </div>
+
+        <div class="tablero-row__center">
+          <div class="tablero-row__title">Invitación</div>
+          <div class="tablero-row__text">
+            Invitado: ${escape(play.target_user_nickname || play.target_nickname || play.target_user_id || "—")}
+          </div>
+        </div>
+
+        <div class="tablero-row__right"></div>
+      </article>
+    `;
   }
-}
 
   document.addEventListener("qpica:open", (event) => {
     const parentPlayId = Number(event.detail?.parentPlayId || 0);
@@ -108,12 +208,12 @@ function clearQpicaPanel(parentPlayId) {
     renderQpicaPanel(parentPlayId);
   });
 
-document.addEventListener("qpica:close", (event) => {
-  const parentPlayId = Number(event.detail?.parentPlayId || 0);
-  if (!parentPlayId) return;
+  document.addEventListener("qpica:close", (event) => {
+    const parentPlayId = Number(event.detail?.parentPlayId || 0);
+    if (!parentPlayId) return;
 
-  clearQpicaPanel(parentPlayId);
-});
+    clearQpicaPanel(parentPlayId);
+  });
 
   window.renderQpicaPanel = renderQpicaPanel;
   window.clearQpicaPanel = clearQpicaPanel;
