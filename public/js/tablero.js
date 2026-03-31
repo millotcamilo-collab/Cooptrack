@@ -643,7 +643,7 @@ document.addEventListener("tablero:add-child-play", async (event) => {
   }
 });
   
-  document.addEventListener("tablero:save-play", async (event) => {
+document.addEventListener("tablero:save-play", async (event) => {
   try {
     const {
       playId,
@@ -652,7 +652,8 @@ document.addEventListener("tablero:add-child-play", async (event) => {
       startDate,
       endDate,
       location,
-      amount
+      amount,
+      recurrence
     } = event.detail || {};
 
     console.log("SAVE DETAIL =", event.detail);
@@ -668,6 +669,7 @@ document.addEventListener("tablero:add-child-play", async (event) => {
       return;
     }
 
+    // 1. Guardar la J♠
     const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
       method: "PATCH",
       headers: {
@@ -692,6 +694,33 @@ document.addEventListener("tablero:add-child-play", async (event) => {
       return;
     }
 
+    // 2. Guardar recurrencia (si existe)
+    if (recurrence && recurrence.recurrence_type) {
+      const recurrenceResponse = await fetch(`${API_BASE_URL}/plays/${playId}/recurrence`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          recurrence_type: recurrence.recurrence_type,
+          weekdays: recurrence.weekdays,
+          months: recurrence.months,
+          until_date: recurrence.until_date,
+          timezone: recurrence.timezone
+        })
+      });
+
+      const recurrenceData = await recurrenceResponse.json();
+
+      if (!recurrenceResponse.ok || !recurrenceData.ok) {
+        console.error("Error guardando recurrencia:", recurrenceData);
+        alert("La jugada se guardó, pero la rutina falló");
+        return;
+      }
+    }
+
+    // 3. Recién ahora refrescar
     const deckId =
       window.__currentDeck?.id ||
       window.__currentState?.deck?.id ||
@@ -700,6 +729,7 @@ document.addEventListener("tablero:add-child-play", async (event) => {
     document.dispatchEvent(new CustomEvent("plays:changed", {
       detail: { deckId }
     }));
+
   } catch (error) {
     console.error("Error en tablero:save-play", error);
     alert("Error guardando la jugada");
