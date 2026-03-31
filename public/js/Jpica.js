@@ -902,13 +902,7 @@ btnAddQspade?.addEventListener("click", (event) => {
         });
       });
 
-      btnAddQspade?.addEventListener("click", () => {
-        dispatch("tablero:add-child-play", {
-          parentPlayId: playId,
-          childRank: "Q",
-          childSuit: "SPADE",
-        });
-      });
+      
 
       textInput?.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
