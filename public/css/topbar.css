@@ -95,6 +95,7 @@
 
 .topbar__icon-img--exit {
   height: 16px;
+  align-self: flex-end;
 }
 
 
