@@ -281,7 +281,8 @@
     </div>
   </div>
 </div>
-        <div class="profile-field" data-field="birth_date">
+
+<div class="profile-field" data-field="birth_date">
   <div class="profile-field__view">
     <div class="profile-field__value">
       <strong>Fecha de nacimiento:</strong>
@@ -305,6 +306,37 @@
   </div>
 </div>
 
+        <div class="profile-field" data-field="country">
+  <div class="profile-field__view">
+    <div class="profile-field__value">
+      <strong>País:</strong>
+      <span id="view-country">-</span>
+    </div>
+    <img id="editIcon-country" class="profile-field__edit-icon" alt="Editar" />
+  </div>
+
+  <div class="profile-field__edit">
+    <div class="profile-field__input-wrap">
+      <select id="input-country" autocomplete="country">
+        <option value="">Seleccionar país</option>
+        <option value="UY">Uruguay</option>
+        <option value="AR">Argentina</option>
+        <option value="CL">Chile</option>
+        <option value="BR">Brasil</option>
+        <option value="US">Estados Unidos</option>
+        <option value="ES">España</option>
+      </select>
+    </div>
+    <div class="profile-field__buttons">
+      <button type="button" class="icon-btn js-save-field" data-field="country" title="Guardar">
+        <img id="saveIcon-country" alt="Guardar" />
+      </button>
+      <button type="button" class="icon-btn js-cancel-field" data-field="country" title="Salir">
+        <img id="exitIcon-country" alt="Salir" />
+      </button>
+    </div>
+  </div>
+</div>
         <div class="profile-field" data-field="profile_photo_url">
           <div class="profile-field__label">URL de foto de perfil</div>
 
