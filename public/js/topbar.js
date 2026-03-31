@@ -124,7 +124,7 @@
 
             <div class="topbar__left">
               <a href="/index.html" class="topbar__logo" title="home">
-  <img src="/assets/icons/cooptrack.png" class="topbar__logo-img" />
+  <img src="/assets/icons/cooptrack2.png" class="topbar__logo-img" />
 </a>
             </div>
 
@@ -212,7 +212,7 @@
 
             <div class="topbar__left">
               <a href="/index.html" class="topbar__logo">
-                <img src="/assets/icons/cooptrack.png" class="topbar__logo-img" />
+                <img src="/assets/icons/cooptrack2.png" class="topbar__logo-img" />
               </a>
             </div>
 
