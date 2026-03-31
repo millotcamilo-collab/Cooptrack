@@ -8,24 +8,31 @@
       .replace(/'/g, "&#39;");
   }
 
-  function getOrCreateQpicaContainer() {
-    let container = document.getElementById("qpica-panel-container");
+  function getOrCreateQpicaContainer(parentPlayId) {
+  const containerId = `qpica-panel-container-${parentPlayId}`;
+  let container = document.getElementById(containerId);
 
-    if (!container) {
-      container = document.createElement("div");
-      container.id = "qpica-panel-container";
+  if (container) return container;
 
-      const tablero = document.getElementById("tablero-container");
-      if (tablero && tablero.parentNode) {
-        tablero.parentNode.insertBefore(container, tablero.nextSibling);
-      } else {
-        document.body.appendChild(container);
-      }
+  container = document.createElement("div");
+  container.id = containerId;
+  container.className = "qpica-panel-container";
+
+  const parentRow = document.getElementById(`tablero-row-${parentPlayId}`);
+
+  if (parentRow && parentRow.parentNode) {
+    parentRow.insertAdjacentElement("afterend", container);
+  } else {
+    const tablero = document.getElementById("tablero-container");
+    if (tablero) {
+      tablero.appendChild(container);
+    } else {
+      document.body.appendChild(container);
     }
-
-    return container;
   }
 
+  return container;
+}
   function buildCardHtml() {
     return `
       <div class="qpica-panel__left">
