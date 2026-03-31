@@ -133,3 +133,16 @@
   width: 100%;
   box-sizing: border-box;
 }
+.topbar__profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.topbar__nickname {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
