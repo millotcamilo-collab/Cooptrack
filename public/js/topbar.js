@@ -30,7 +30,7 @@
 
 async function hasUserJPlays() {
   try {
-    const token = localStorage.getItem("cooptrackToken");
+    const token = localStorage.getItem("Token");
     if (!token) return false;
 
     const response = await fetch(`${API_BASE_URL}/plays/pending`, {
@@ -54,8 +54,8 @@ async function hasUserJPlays() {
 }
   
   function logout() {
-    localStorage.removeItem("cooptrackUser");
-    localStorage.removeItem("cooptrackToken");
+    localStorage.removeItem("User");
+    localStorage.removeItem("Token");
     window.location.href = "/index.html";
   }
 
@@ -150,7 +150,7 @@ async function hasUserJPlays() {
 
             <div class="topbar__left">
               <a href="/index.html" class="topbar__logo" title="home">
-  <img src="/assets/icons/cooptrack2.png" class="topbar__logo-img" />
+  <img src="/assets/icons/cooptrack3.png" class="topbar__logo-img" />
 </a>
             </div>
 
@@ -239,7 +239,7 @@ async function hasUserJPlays() {
 
             <div class="topbar__left">
               <a href="/index.html" class="topbar__logo">
-                <img src="/assets/icons/cooptrack2.png" class="topbar__logo-img" />
+                <img src="/assets/icons/cooptrack3.png" class="topbar__logo-img" />
               </a>
             </div>
 
