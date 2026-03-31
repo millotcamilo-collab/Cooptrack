@@ -64,18 +64,32 @@
       </div>
 
       <div class="qpica-panel__actions">
-        <button type="button" id="qpica-save-${parentPlayId}" title="Guardar">
-          ${saveIcon ? `<img src="${saveIcon}" alt="Guardar" />` : "Save"}
-        </button>
+  <button
+    type="button"
+    id="qpica-save-${parentPlayId}"
+    title="Guardar"
+    style="display:none;"
+  >
+    ${saveIcon ? `<img src="${saveIcon}" alt="Guardar" />` : "Save"}
+  </button>
 
-        <button type="button" id="qpica-send-${parentPlayId}" title="Enviar">
-          ${sendIcon ? `<img src="${sendIcon}" alt="Enviar" />` : "Send"}
-        </button>
+  <button
+    type="button"
+    id="qpica-send-${parentPlayId}"
+    title="Enviar"
+    style="display:none;"
+  >
+    ${sendIcon ? `<img src="${sendIcon}" alt="Enviar" />` : "Send"}
+  </button>
 
-        <button type="button" id="qpica-cancel-${parentPlayId}" title="Cancelar">
-          ${cancelIcon ? `<img src="${cancelIcon}" alt="Cancelar" />` : "Cancelar"}
-        </button>
-      </div>
+  <button
+    type="button"
+    id="qpica-cancel-${parentPlayId}"
+    title="Cancelar"
+  >
+    ${cancelIcon ? `<img src="${cancelIcon}" alt="Cancelar" />` : "Cancelar"}
+  </button>
+</div>
     </div>
   `;
 }
