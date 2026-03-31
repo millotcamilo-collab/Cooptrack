@@ -198,7 +198,7 @@
               </a>
 
               <button class="topbar__icon-btn" id="logoutBtn">
-                <img src="/assets/icons/exit80.gif" class="topbar__icon-img" />
+                <img src="/assets/icons/exit80.gif" class="topbar__icon-img topbar__icon-img--exit" />
               </button>
 
             </nav>
