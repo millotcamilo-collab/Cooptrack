@@ -75,19 +75,54 @@
           alt="Tipo de usuario"
         />
 
-        <img
-          id="profileAvatar"
-          class="profile-avatar"
-          src="/assets/icons/singeta120.gif"
-          alt="Foto de perfil"
-        />
+<button
+  type="button"
+  id="profileAvatarButton"
+  class="profile-avatar-button"
+  title="Editar foto de perfil"
+>
+  <img
+    id="profileAvatar"
+    class="profile-avatar"
+    src="/assets/icons/singeta120.gif"
+    alt="Foto de perfil"
+  />
+</button>
 
         <div class="profile-title">
           <h1>Mi perfil</h1>
           <p>Datos personales de tu cuenta</p>
         </div>
       </div>
+<div id="profileAvatarEditor" class="profile-avatar-editor">
+  <div class="profile-avatar-editor__input-wrap">
+    <input
+      id="input-profile_photo_url"
+      type="text"
+      placeholder="URL de foto de perfil"
+    />
+  </div>
 
+  <div class="profile-field__buttons">
+    <button
+      type="button"
+      class="icon-btn"
+      id="saveProfilePhotoBtn"
+      title="Guardar"
+    >
+      <img id="saveIcon-profile_photo_url" alt="Guardar" />
+    </button>
+
+    <button
+      type="button"
+      class="icon-btn"
+      id="exitProfilePhotoBtn"
+      title="Salir"
+    >
+      <img id="exitIcon-profile_photo_url" alt="Salir" />
+    </button>
+  </div>
+</div>
       <section id="profileFields" class="profile-fields">
         <div class="profile-field" data-field="nickname">
 
@@ -209,28 +244,7 @@
     </div>
   </div>
 </div>
-        <div class="profile-field" data-field="profile_photo_url">
-          <div class="profile-field__label">URL de foto de perfil</div>
-
-          <div class="profile-field__view">
-            <div id="view-profile_photo_url" class="profile-field__value">-</div>
-            <img id="editIcon-profile_photo_url" class="profile-field__edit-icon" alt="Editar" />
-          </div>
-
-          <div class="profile-field__edit">
-            <div class="profile-field__input-wrap">
-              <input id="input-profile_photo_url" type="text" />
-            </div>
-            <div class="profile-field__buttons">
-              <button type="button" class="icon-btn js-save-field" data-field="profile_photo_url" title="Guardar">
-                <img id="saveIcon-profile_photo_url" alt="Guardar" />
-              </button>
-              <button type="button" class="icon-btn js-cancel-field" data-field="profile_photo_url" title="Salir">
-                <img id="exitIcon-profile_photo_url" alt="Salir" />
-              </button>
-            </div>
-          </div>
-        </div>
+        
       </section>
 
       <div id="statusMessage" class="status-message"></div>
@@ -379,53 +393,108 @@ function setViewValue(field, rawValue) {
     }
 
     function applyIcons() {
-      const fields = [
-        "nickname",
-        "email",
-        "phone",
-        "birth_date",
-        "country",
-        "profile_photo_url"
-      ];
+  const fields = [
+    "nickname",
+    "email",
+    "phone",
+    "birth_date",
+    "country"
+  ];
 
-      fields.forEach((field) => {
-        const editIcon = getEl(`editIcon-${field}`);
-        const saveIcon = getEl(`saveIcon-${field}`);
-        const exitIcon = getEl(`exitIcon-${field}`);
+  fields.forEach((field) => {
+    const editIcon = getEl(`editIcon-${field}`);
+    const saveIcon = getEl(`saveIcon-${field}`);
+    const exitIcon = getEl(`exitIcon-${field}`);
 
-        if (editIcon) editIcon.src = window.ICONS?.actions?.edit || "";
-        if (saveIcon) saveIcon.src = window.ICONS?.actions?.save || "";
-        if (exitIcon) exitIcon.src = window.ICONS?.actions?.exit || "";
-      });
-    }
+    if (editIcon) editIcon.src = window.ICONS?.actions?.edit || "";
+    if (saveIcon) saveIcon.src = window.ICONS?.actions?.save || "";
+    if (exitIcon) exitIcon.src = window.ICONS?.actions?.exit || "";
+  });
 
-    function renderProfile(user) {
-      currentUser = { ...user };
+  const savePhotoIcon = getEl("saveIcon-profile_photo_url");
+  const exitPhotoIcon = getEl("exitIcon-profile_photo_url");
 
-      setViewValue("nickname", user.nickname || "");
-      setViewValue("email", user.email || "");
-      setViewValue("phone", user.phone || "");
-      setViewValue("birth_date", user.birth_date || "");
-      setViewValue("country", user.country || "");
-      setViewValue("profile_photo_url", user.profile_photo_url || "");
+  if (savePhotoIcon) savePhotoIcon.src = window.ICONS?.actions?.save || "";
+  if (exitPhotoIcon) exitPhotoIcon.src = window.ICONS?.actions?.exit || "";
+}
 
-      setInputValue("nickname", user.nickname || "");
-      setInputValue("email", user.email || "");
-      setInputValue("phone", user.phone || "");
-      setInputValue("birth_date", user.birth_date || "");
-      setInputValue("country", user.country || "");
-      setInputValue("profile_photo_url", user.profile_photo_url || "");
+function openProfilePhotoEditor() {
+  if (!currentUser) return;
 
-      updateUserCategoryIcon(user);
-      updateAvatar(user.profile_photo_url || "");
-    }
+  closeAllEditors();
 
-    function closeAllEditors() {
-      document.querySelectorAll(".profile-field.is-editing").forEach((node) => {
-        node.classList.remove("is-editing");
-      });
-      editingField = null;
-    }
+  const editor = getEl("profileAvatarEditor");
+  const input = getEl("input-profile_photo_url");
+
+  if (editor) {
+    editor.classList.add("is-open");
+  }
+
+  if (input) {
+    input.value = currentUser.profile_photo_url || "";
+    input.focus();
+    input.select();
+  }
+
+  editingField = "profile_photo_url";
+}
+
+function closeProfilePhotoEditor() {
+  const editor = getEl("profileAvatarEditor");
+  if (editor) {
+    editor.classList.remove("is-open");
+  }
+
+  editingField = null;
+}
+
+function cancelProfilePhotoEdit() {
+  const input = getEl("input-profile_photo_url");
+  if (input) {
+    input.value = currentUser?.profile_photo_url || "";
+  }
+
+  updateAvatar(currentUser?.profile_photo_url || "");
+  closeProfilePhotoEditor();
+  setStatus("");
+}
+    
+function renderProfile(user) {
+  currentUser = { ...user };
+
+  setViewValue("nickname", user.nickname || "");
+  setViewValue("email", user.email || "");
+  setViewValue("phone", user.phone || "");
+  setViewValue("birth_date", user.birth_date || "");
+  setViewValue("country", user.country || "");
+
+  setInputValue("nickname", user.nickname || "");
+  setInputValue("email", user.email || "");
+  setInputValue("phone", user.phone || "");
+  setInputValue("birth_date", user.birth_date || "");
+  setInputValue("country", user.country || "");
+
+  const photoInput = getEl("input-profile_photo_url");
+  if (photoInput) {
+    photoInput.value = user.profile_photo_url || "";
+  }
+
+  updateUserCategoryIcon(user);
+  updateAvatar(user.profile_photo_url || "");
+}
+
+function closeAllEditors() {
+  document.querySelectorAll(".profile-field.is-editing").forEach((node) => {
+    node.classList.remove("is-editing");
+  });
+
+  const avatarEditor = getEl("profileAvatarEditor");
+  if (avatarEditor) {
+    avatarEditor.classList.remove("is-open");
+  }
+
+  editingField = null;
+}
 
     function openEditor(field) {
       if (!currentUser) return;
@@ -448,23 +517,24 @@ function setViewValue(field, rawValue) {
       }
     }
 
-    function cancelEdit(field) {
-      if (!currentUser) return;
+function cancelEdit(field) {
+  if (!currentUser) return;
 
-      setInputValue(field, currentUser[field] || "");
+  if (field === "profile_photo_url") {
+    cancelProfilePhotoEdit();
+    return;
+  }
 
-      if (field === "profile_photo_url") {
-        updateAvatar(currentUser.profile_photo_url || "");
-      }
+  setInputValue(field, currentUser[field] || "");
 
-      const fieldNode = document.querySelector(`.profile-field[data-field="${field}"]`);
-      if (fieldNode) {
-        fieldNode.classList.remove("is-editing");
-      }
+  const fieldNode = document.querySelector(`.profile-field[data-field="${field}"]`);
+  if (fieldNode) {
+    fieldNode.classList.remove("is-editing");
+  }
 
-      editingField = null;
-      setStatus("");
-    }
+  editingField = null;
+  setStatus("");
+}
 
     function getEditedValue(field) {
       const input = getEl(`input-${field}`);
@@ -567,6 +637,41 @@ function setViewValue(field, rawValue) {
     }
 
     function bindFieldEvents() {
+      const avatarButton = getEl("profileAvatarButton");
+if (avatarButton) {
+  avatarButton.addEventListener("click", () => {
+    openProfilePhotoEditor();
+  });
+}
+
+const savePhotoBtn = getEl("saveProfilePhotoBtn");
+if (savePhotoBtn) {
+  savePhotoBtn.addEventListener("click", () => {
+    saveField("profile_photo_url");
+  });
+}
+
+const exitPhotoBtn = getEl("exitProfilePhotoBtn");
+if (exitPhotoBtn) {
+  exitPhotoBtn.addEventListener("click", () => {
+    cancelProfilePhotoEdit();
+  });
+}
+
+
+
+  photoInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      saveField("profile_photo_url");
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      cancelProfilePhotoEdit();
+    }
+  });
+}
       document.querySelectorAll(".profile-field__view").forEach((node) => {
         node.addEventListener("click", () => {
           const fieldNode = node.closest(".profile-field");
