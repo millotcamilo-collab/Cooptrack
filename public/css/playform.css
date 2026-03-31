@@ -131,6 +131,17 @@
   background: #f3efe6;
   border-color: #444;
 }
+.playform__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.playform__icon {
+  height: 20px;
+  width: auto;
+  display: block;
+}
 
 /* RESPONSIVE */
 @media (max-width: 640px) {
