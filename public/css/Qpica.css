@@ -1,0 +1,48 @@
+#qpica-panel-container {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px 24px;
+}
+
+.qpica-panel {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 18px;
+  align-items: start;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #d8d8d8;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.qpica-panel__left {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.qpica-panel__card-image {
+  width: 180px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.qpica-panel__right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.qpica-panel__picker-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.qpica-panel__error {
+  color: #8a1f1f;
+  font-size: 0.95rem;
+}
