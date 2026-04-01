@@ -982,12 +982,14 @@ document.addEventListener("tablero:open-readers", async (event) => {
     alert("Error enviando la Q♠");
   }
 }); 
-  window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
-    window.__currentDeck = deck || null;
-    window.__currentState = state || {};
-    renderTablero(deck, plays, state);
-  };
+  
+window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
+  window.__currentDeck = deck || null;
+  window.__currentState = state || {};
+  renderTablero(deck, plays, state);
+};
 
-  window.normalizeTableroPlay = normalizePlay;
-  window.belongsToTablero = belongsToTablero;
+window.normalizeTableroPlay = normalizePlay;
+window.belongsToTablero = belongsToTablero;
+window.bindLienzoDropZone = bindLienzoDropZone;
 })();
