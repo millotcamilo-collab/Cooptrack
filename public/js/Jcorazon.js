@@ -39,6 +39,34 @@
       return !["CANCELLED", "DELETED", "REJECTED"].includes(status);
     }
 
+    function normalizeReaders(value) {
+      if (!Array.isArray(value)) return [];
+      return value
+        .map((item) => String(item || "").trim())
+        .filter(Boolean);
+    }
+
+    function isPrivateForCurrentUser(readers, userId) {
+      if (!userId || readers.length !== 1) return false;
+      return readers[0] === `U:${userId}`;
+    }
+
+    function hasMultipleReaders(readers) {
+      return readers.length > 1 || readers.includes("TODOS");
+    }
+
+    function formatReadersLabel(readers) {
+      if (!Array.isArray(readers) || readers.length === 0) {
+        return "Sin lectores";
+      }
+
+      if (readers.includes("TODOS")) {
+        return "TODOS";
+      }
+
+      return readers.join(", ");
+    }
+
     function resolveHeartAceHolderUserId(plays) {
       const aceHeartPlays = plays
         .filter((p) => {
@@ -73,6 +101,10 @@
     const isApproved = statusRaw === "APPROVED";
     const isCancelled = statusRaw === "CANCELLED";
 
+    const readers = normalizeReaders(play?.reader_user_ids);
+    const showPrivedButton = isPrivateForCurrentUser(readers, currentUserId);
+    const showReadersButton = hasMultipleReaders(readers);
+
     const spadeIcon = escapeHtml(SUITS.SPADE || "");
     const clubIcon = escapeHtml(SUITS.CLUB || "");
     const helpIcon = escapeHtml(ACTIONS.help || "");
@@ -82,6 +114,8 @@
     const deleteIcon = escapeHtml(ACTIONS.delete || "");
     const cancelIcon = escapeHtml(ACTIONS.cancel || "");
     const exitIcon = escapeHtml(ACTIONS.exit || ACTIONS.cancel || "");
+    const privedIcon = escapeHtml(ACTIONS.prived || "");
+    const readersIcon = escapeHtml(ACTIONS.readers || "");
 
     setTimeout(() => {
       const row = document.getElementById(rowId);
@@ -101,6 +135,8 @@
       const btnDelete = row.querySelector('[data-action="delete-play"]');
       const btnCancel = row.querySelector('[data-action="cancel-play"]');
       const btnExit = row.querySelector('[data-action="exit-edit"]');
+      const btnPrived = row.querySelector('[data-action="open-private-readers"]');
+      const btnReaders = row.querySelector('[data-action="show-readers"]');
 
       function getCurrentText() {
         return String(textInput?.value || "").trim();
@@ -126,7 +162,6 @@
         if (textView) textView.style.display = isEditMode ? "none" : "";
         if (textInput) textInput.style.display = isEditMode ? "block" : "none";
 
-        // Si la jugada está cancelada, queda solo como registro.
         if (isCancelled) {
           hideButton(btnSpade);
           hideButton(btnClub);
@@ -137,6 +172,8 @@
           hideButton(btnDelete);
           hideButton(btnCancel);
           hideButton(btnExit);
+          hideButton(btnPrived);
+          hideButton(btnReaders);
 
           if (textView) textView.style.display = "";
           if (textInput) textInput.style.display = "none";
@@ -183,6 +220,18 @@
           showButton(btnCancel);
         } else {
           hideButton(btnCancel);
+        }
+
+        if (!isEditMode && showPrivedButton) {
+          showButton(btnPrived);
+        } else {
+          hideButton(btnPrived);
+        }
+
+        if (!isEditMode && showReadersButton) {
+          showButton(btnReaders);
+        } else {
+          hideButton(btnReaders);
         }
 
         if (isEditMode && textInput) {
@@ -234,13 +283,13 @@
       });
 
       btnDelete?.addEventListener("click", () => {
-  const confirmed = window.confirm("¿Seguro que querés borrar esta jugada?");
-  if (!confirmed) return;
+        const confirmed = window.confirm("¿Seguro que querés borrar esta jugada?");
+        if (!confirmed) return;
 
-  dispatch("tablero:delete-play", {
-    playId
-  });
-});
+        dispatch("tablero:delete-play", {
+          playId
+        });
+      });
 
       btnCancel?.addEventListener("click", () => {
         dispatch("tablero:cancel-play", {
@@ -254,6 +303,16 @@
         }
         setMode("read");
         renderMode();
+      });
+
+      btnPrived?.addEventListener("click", () => {
+        dispatch("tablero:open-readers", {
+          playId
+        });
+      });
+
+      btnReaders?.addEventListener("click", () => {
+        window.alert(`Pueden leer esta jugada:\n\n${formatReadersLabel(readers)}`);
       });
 
       textInput?.addEventListener("keydown", (event) => {
@@ -303,6 +362,14 @@
             <img src="${clubIcon}" alt="J♣" />
           </button>
 
+          <button type="button" data-action="open-private-readers" title="Abrir lectura" style="display:none;">
+            <img src="${privedIcon}" alt="Privado" />
+          </button>
+
+          <button type="button" data-action="show-readers" title="Lectores" style="display:none;">
+            <img src="${readersIcon}" alt="Lectores" />
+          </button>
+
           <button type="button" data-action="edit-play" title="Editar">
             <img src="${editIcon}" alt="Editar" />
           </button>
@@ -326,11 +393,10 @@
           <button type="button" data-action="delete-play" title="Borrar">
             <img src="${deleteIcon}" alt="Borrar" />
           </button>
-          
+
           <button type="button" data-action="show-help" title="Ayuda">
             <img src="${helpIcon}" alt="Ayuda" />
           </button>
-          
         </div>
       </article>
     `;
