@@ -12,6 +12,10 @@ const PORT = process.env.PORT || 3000;
 const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET;
 
+const {
+  handleReadersOnPlayCreate,
+} = require('./services/play-readers');
+
 app.use(cors({
   origin: 'https://cooptrack.com',
 }));
@@ -889,10 +893,12 @@ app.post('/plays', requireAuth, async (req, res) => {
 
     if (parent_play_id) {
       const parentCheck = await client.query(
-        `SELECT id, deck_id, card_rank, card_suit, play_code
-         FROM plays
-         WHERE id = $1
-         LIMIT 1`,
+        `
+          SELECT id, deck_id, card_rank, card_suit, play_code
+          FROM plays
+          WHERE id = $1
+          LIMIT 1
+        `,
         [parent_play_id]
       );
 
@@ -932,7 +938,12 @@ app.post('/plays', requireAuth, async (req, res) => {
 
     if (target_user_id) {
       const targetCheck = await client.query(
-        `SELECT id FROM users WHERE id = $1 LIMIT 1`,
+        `
+          SELECT id
+          FROM users
+          WHERE id = $1
+          LIMIT 1
+        `,
         [target_user_id]
       );
 
@@ -945,40 +956,49 @@ app.post('/plays', requireAuth, async (req, res) => {
       }
     }
 
-const created = await insertInstitutionalPlay(client, {
-  mazoId,
-  createdByUserId: userId,
-  parentPlayId: parent_play_id,
-  targetUserId: target_user_id,
-  playCode: play_code,
-  playText: text,
-  playStatus: play_status,
-});
+    const created = await insertInstitutionalPlay(client, {
+      mazoId,
+      createdByUserId: userId,
+      parentPlayId: parent_play_id,
+      targetUserId: target_user_id,
+      playCode: play_code,
+      playText: text,
+      playStatus: play_status,
+    });
 
-if (
-  parsed.rank === 'Q' &&
-  parsed.suit === 'SPADE' &&
-  target_user_id
-) {
-  const memberCheck = await client.query(
-    `SELECT 1
-     FROM deck_members
-     WHERE deck_id = $1
-       AND user_id = $2
-     LIMIT 1`,
-    [mazoId, target_user_id]
-  );
+    // Readers iniciales de la jugada recién creada
+    await handleReadersOnPlayCreate(client, created.row);
 
-  if (!memberCheck.rows.length) {
-    await client.query(
-      `INSERT INTO deck_members (deck_id, user_id)
-       VALUES ($1, $2)`,
-      [mazoId, target_user_id]
-    );
-  }
-}
+    // Si se envía una Q♠ con destinatario,
+    // se incorpora ese usuario al mazo si aún no está
+    if (
+      parsed.rank === 'Q' &&
+      parsed.suit === 'SPADE' &&
+      target_user_id
+    ) {
+      const memberCheck = await client.query(
+        `
+          SELECT 1
+          FROM deck_members
+          WHERE deck_id = $1
+            AND user_id = $2
+          LIMIT 1
+        `,
+        [mazoId, target_user_id]
+      );
 
-await client.query('COMMIT');
+      if (!memberCheck.rows.length) {
+        await client.query(
+          `
+            INSERT INTO deck_members (deck_id, user_id)
+            VALUES ($1, $2)
+          `,
+          [mazoId, target_user_id]
+        );
+      }
+    }
+
+    await client.query('COMMIT');
 
     return res.json({
       ok: true,
@@ -988,6 +1008,7 @@ await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error en POST /plays', error);
+
     return res.status(error.statusCode || 500).json({
       ok: false,
       error: error.message || 'Error guardando jugada',
@@ -996,7 +1017,6 @@ await client.query('COMMIT');
     client.release();
   }
 });
-
 app.patch('/plays/:id', requireAuth, async (req, res) => {
   const client = await pool.connect();
 
