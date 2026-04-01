@@ -1,7 +1,6 @@
 :root {
   --lienzo-bg: #0f3d2e; /* verde oscuro elegante */
 }
-.lienzo-page {
+body {
   background: var(--lienzo-bg);
-  min-height: 100vh;
 }
