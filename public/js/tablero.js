@@ -10,15 +10,15 @@
 }
 
 function bindLienzoDropZone(deckId) {
-  const dropZone = document.getElementById("plays-view-container");
+  const dropZone = document.getElementById("tablero-container");
 
   if (!dropZone) {
-    console.warn("No se encontró plays-view-container");
+    console.warn("No se encontró tablero-container");
     return;
   }
 
   dropZone.addEventListener("dragover", (event) => {
-    event.preventDefault(); // 🔥 esto es clave
+    event.preventDefault();
     dropZone.classList.add("is-drag-over");
   });
 
@@ -46,7 +46,8 @@ function bindLienzoDropZone(deckId) {
 
     if (!rank || !suit || !deckId) return;
 
-    // 🚀 entrada triunfal al lienzo
+    console.log("DROP carta:", rank, suit);
+
     window.location.href =
       `/lienzo.html?deckId=${deckId}&rank=${rank}&suit=${suit}`;
   });
