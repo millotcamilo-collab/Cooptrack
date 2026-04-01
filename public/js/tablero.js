@@ -9,6 +9,49 @@
   return String(value || "").trim().toUpperCase();
 }
 
+function bindLienzoDropZone(deckId) {
+  const dropZone = document.getElementById("plays-view-container");
+
+  if (!dropZone) {
+    console.warn("No se encontró plays-view-container");
+    return;
+  }
+
+  dropZone.addEventListener("dragover", (event) => {
+    event.preventDefault(); // 🔥 esto es clave
+    dropZone.classList.add("is-drag-over");
+  });
+
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("is-drag-over");
+  });
+
+  dropZone.addEventListener("drop", (event) => {
+    event.preventDefault();
+    dropZone.classList.remove("is-drag-over");
+
+    let payload = null;
+
+    try {
+      payload = JSON.parse(
+        event.dataTransfer.getData("application/json") || "{}"
+      );
+    } catch (error) {
+      console.warn("Error leyendo drag data", error);
+      return;
+    }
+
+    const rank = String(payload?.rank || "").toUpperCase();
+    const suit = String(payload?.suit || "").toUpperCase();
+
+    if (!rank || !suit || !deckId) return;
+
+    // 🚀 entrada triunfal al lienzo
+    window.location.href =
+      `/lienzo.html?deckId=${deckId}&rank=${rank}&suit=${suit}`;
+  });
+}
+  
 function isStructuralPlay(play) {
   const action = safeTrim(play?.action).toLowerCase();
   return action === "init_ace" || action === "puedejugar";
