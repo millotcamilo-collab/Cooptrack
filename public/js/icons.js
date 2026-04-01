@@ -29,6 +29,6 @@ window.ICONS = {
     quit: "/assets/icons/step60.gif",
     help: "/assets/icons/bastonRecortado80.gif",
     prived: "/assets/icons/Privado80.gif",
-    readers: "/assets/icons/leer80.gif
+    readers: "/assets/icons/leer80.gif"
   }
 };
