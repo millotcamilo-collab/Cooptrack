@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CoopTrack · Lienzo</title>
+
+    <link rel="icon" href="/assets/icons/cooptrack.png" />
+    <link rel="stylesheet" href="/css/global.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
+    <link rel="stylesheet" href="/css/lienzo.css" />
+  </head>
+  <body>
+    <div id="topbar-container"></div>
+
+    <main class="page-container lienzo-page">
+      <section class="lienzo-page__header">
+        <button
+          type="button"
+          class="lienzo-page__back-btn"
+          id="lienzo-back-btn"
+        >
+          ← Volver al mazo
+        </button>
+
+        <div class="lienzo-page__title-wrap">
+          <h1 class="lienzo-page__title">Lienzo</h1>
+          <div class="lienzo-page__subtitle" id="lienzo-subtitle">
+            Vista ampliada de jugada
+          </div>
+        </div>
+      </section>
+
+      <section class="lienzo-page__body">
+        <div id="lienzo-container"></div>
+      </section>
+    </main>
+
+    <script src="/js/icons.js"></script>
+    <script src="/js/topbar.js"></script>
+    <script src="/js/users.js"></script>
+    <script src="/js/lienzo.js"></script>
+
+    <script>
+      (function () {
+        function getQueryParam(name) {
+          const params = new URLSearchParams(window.location.search);
+          return params.get(name);
+        }
+
+        function getToken() {
+          return localStorage.getItem("cooptrackToken");
+        }
+
+        async function fetchDeckState(deckId) {
+          const token = getToken();
+
+          if (!token) {
+            throw new Error("Token no encontrado");
+          }
+
+          const response = await fetch(`/mazo/${deckId}/state`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error("No se pudo cargar el estado del mazo");
+          }
+
+          return response.json();
+        }
+
+        async function initTopbar() {
+          if (typeof window.renderTopbar !== "function") return;
+
+          const topbarContainer = document.getElementById("topbar-container");
+          if (!topbarContainer) return;
+
+          await window.renderTopbar(topbarContainer);
+        }
+
+        function bindBackButton(deckId) {
+          const btn = document.getElementById("lienzo-back-btn");
+          if (!btn) return;
+
+          btn.addEventListener("click", () => {
+            if (deckId) {
+              window.location.href = `/mazo.html?id=${deckId}`;
+              return;
+            }
+
+            window.history.back();
+          });
+        }
+
+        function setSubtitle(playId, deckId) {
+          const subtitle = document.getElementById("lienzo-subtitle");
+          if (!subtitle) return;
+
+          const parts = [];
+
+          if (deckId) parts.push(`Mazo ${deckId}`);
+          if (playId) parts.push(`Jugada ${playId}`);
+
+          subtitle.textContent = parts.length
+            ? parts.join(" · ")
+            : "Vista ampliada de jugada";
+        }
+
+        async function bootstrapLienzoPage() {
+          try {
+            await initTopbar();
+
+            const deckId = Number(
+              getQueryParam("deckId") || getQueryParam("id") || 0
+            );
+            const playId = Number(getQueryParam("playId") || 0);
+
+            bindBackButton(deckId);
+            setSubtitle(playId, deckId);
+
+            if (!deckId || !playId) {
+              console.warn("Faltan deckId o playId en la URL");
+              return;
+            }
+
+            const stateResponse = await fetchDeckState(deckId);
+            const state = stateResponse?.state || stateResponse || {};
+
+            window.__currentState = state;
+
+            if (typeof window.openLienzoByPlayId === "function") {
+              window.openLienzoByPlayId(playId);
+            } else {
+              console.warn("openLienzoByPlayId no está disponible");
+            }
+          } catch (error) {
+            console.error("Error iniciando lienzo.html", error);
+
+            const container = document.getElementById("lienzo-container");
+            if (container) {
+              container.innerHTML = `
+                <div class="lienzo-page__error">
+                  No se pudo cargar el lienzo.
+                </div>
+              `;
+            }
+          }
+        }
+
+        bootstrapLienzoPage();
+      })();
+    </script>
+  </body>
+</html>
