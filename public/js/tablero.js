@@ -841,7 +841,13 @@ document.addEventListener("tablero:save-play", async (event) => {
     alert("Error aprobando la jugada");
   }
 });
+document.addEventListener("tablero:open-readers", async (event) => {
+  const { playId } = event.detail || {};
+  console.log("abrir lectores de J♥", playId);
 
+  // acá después hacemos el fetch al endpoint
+  // que suma A♥ y K♥ al reader_user_ids
+});
  document.addEventListener("plays:add-qspade-requested", async (event) => {
   try {
     const { parentPlayId, targetUserId } = event.detail || {};
