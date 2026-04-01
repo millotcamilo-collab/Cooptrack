@@ -144,33 +144,43 @@
   }
 
   function buildTopCardsHTML(enabledCards) {
-    if (!enabledCards.length) {
-      return `<div class="mazobar__topcards-empty"></div>`;
-    }
-
-    return enabledCards.map((card) => {
-      const imgSrc = getCardImageSrc(card.rank, card.suit);
-      const label = getCardLabel(card.rank, card.suit);
-
-      if (imgSrc) {
-        return `
-          <img
-            src="${imgSrc}"
-            alt="${label}"
-            title="${label}"
-            class="mazobar__topcard-image"
-          />
-        `;
-      }
-
-      return `
-        <div class="mazobar__topcard-fallback" title="${label}">
-          ${label}
-        </div>
-      `;
-    }).join("");
+  if (!enabledCards.length) {
+    return `<div class="mazobar__topcards-empty"></div>`;
   }
 
+  return enabledCards.map((card) => {
+    const imgSrc = getCardImageSrc(card.rank, card.suit);
+    const label = getCardLabel(card.rank, card.suit);
+    const rank = String(card.rank || "").toUpperCase();
+    const suit = String(card.suit || "").toUpperCase();
+
+    if (imgSrc) {
+      return `
+        <img
+          src="${imgSrc}"
+          alt="${label}"
+          title="${label}"
+          class="mazobar__topcard-image"
+          draggable="true"
+          data-rank="${rank}"
+          data-suit="${suit}"
+        />
+      `;
+    }
+
+    return `
+      <div
+        class="mazobar__topcard-fallback"
+        title="${label}"
+        draggable="true"
+        data-rank="${rank}"
+        data-suit="${suit}"
+      >
+        ${label}
+      </div>
+    `;
+  }).join("");
+}
   function hasPlayWithStatus(plays, statusList) {
     const expected = new Set(
       statusList.map((status) => String(status || "").toUpperCase())
@@ -394,7 +404,23 @@
     document.getElementById("btnAddJ")?.addEventListener("click", () => {
       document.dispatchEvent(new CustomEvent("mazobar:addJ"));
     });
+    
+document.querySelectorAll(".mazobar__topcard-image, .mazobar__topcard-fallback")
+  .forEach((cardEl) => {
+    cardEl.addEventListener("dragstart", (event) => {
+      const rank = cardEl.dataset.rank || "";
+      const suit = cardEl.dataset.suit || "";
 
+      event.dataTransfer.setData(
+        "application/json",
+        JSON.stringify({ rank, suit })
+      );
+
+      event.dataTransfer.setData("text/plain", `${rank}|${suit}`);
+      event.dataTransfer.effectAllowed = "copy";
+    });
+  });
+    
     document.querySelectorAll("[data-command-suit]").forEach((button) => {
       button.addEventListener("click", () => {
         const suit = button.dataset.commandSuit;
