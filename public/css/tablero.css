@@ -70,8 +70,12 @@
 .tablero-row--child-depth-3 {
   margin-left: 84px;
 }
-#tablero-container.is-drag-over {
-  background: var(--lienzo-bg);
+
+
+#tablero-container {
   transition: background 0.2s ease;
 }
 
+#tablero-container.is-drag-over {
+  background: var(--lienzo-bg);
+}
