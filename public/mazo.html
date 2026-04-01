@@ -279,6 +279,10 @@
   if (typeof renderTablero === "function") {
     renderTablero(deck, state.plays || [], state);
   }
+
+  if (typeof bindLienzoDropZone === "function") {
+    bindLienzoDropZone(deck.id);
+  }
 }
 document.addEventListener("tablero:change-suit", async (event) => {
   try {
