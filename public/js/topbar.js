@@ -308,13 +308,13 @@ ${
       newDeckBtn.addEventListener("click", goToCreateDeckPage);
     }
 
-    const pendingBtn = document.getElementById("pendingBtn");
-    if (pendingBtn && latestIncomingCard) {
-    pendingBtn.addEventListener("click", () => {
+   const pendingBtn = document.getElementById("pendingBtn");
+if (pendingBtn && latestIncomingCard) {
+  pendingBtn.addEventListener("click", () => {
     const deckId = latestIncomingCard.deck_id;
     const playId = latestIncomingCard.id;
 
-    window.location.href = `/mazo.html?id=${deckId}&focusPlayId=${playId}`;
+    window.location.href = `/lienzo.html?deckId=${deckId}&playId=${playId}`;
   });
 }
   }
