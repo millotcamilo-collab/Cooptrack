@@ -41,9 +41,33 @@ function bindLienzoDropZone(deckId) {
       return;
     }
 
-    const playId = Number(payload?.playId || 0);
-    const rank = String(payload?.rank || "").toUpperCase();
-    const suit = String(payload?.suit || "").toUpperCase();
+    const mode = String(payload?.mode || "").toLowerCase();
+
+    // -----------------------------------
+    // JOKER AZUL -> va a jokerazul.html
+    // -----------------------------------
+    if (mode === "joker-blue") {
+      if (!deckId) {
+        console.warn("Drop Joker azul sin deckId");
+        return;
+      }
+
+      window.location.href = `/jokerazul.html?deckId=${deckId}`;
+      return;
+    }
+
+    // -----------------------------------
+    // CARTAS A / K -> flujo actual
+    // -----------------------------------
+    const playId = Number(
+      payload?.sourcePlayId || payload?.playId || 0
+    );
+    const rank = String(
+      payload?.childRank || payload?.rank || ""
+    ).toUpperCase();
+    const suit = String(
+      payload?.childSuit || payload?.suit || ""
+    ).toUpperCase();
 
     if (!deckId || !playId) {
       console.warn("Drop sin deckId o playId", { deckId, playId, rank, suit });
@@ -55,7 +79,8 @@ function bindLienzoDropZone(deckId) {
     window.location.href =
       `/lienzo.html?deckId=${deckId}&playId=${playId}`;
   });
-}  
+}
+
 function isStructuralPlay(play) {
   const action = safeTrim(play?.action).toLowerCase();
   return action === "init_ace" || action === "puedejugar";
