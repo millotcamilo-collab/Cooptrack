@@ -246,7 +246,7 @@ ${
   user.is_admin
     ? `
       <a
-        href="/register.html"
+        href="/protected-pages/administradores.html"
         class="topbar__icon-btn"
         title="Administración de usuarios"
       >
