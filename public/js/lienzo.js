@@ -307,6 +307,26 @@ function bindDeckHeaderExit() {
 
     renderLienzo(play);
   }
+  function getLienzoParams() {
+    const params = new URLSearchParams(window.location.search);
 
+    return {
+      deckId: Number(params.get("deckId") || 0),
+      parentPlayId: Number(params.get("parentPlayId") || 0),
+      childRank: normalizeRank(params.get("childRank")),
+      childSuit: normalizeSuit(params.get("childSuit"))
+    };
+  }
+
+  function bootLienzoFromUrl() {
+    const { parentPlayId } = getLienzoParams();
+
+    if (!parentPlayId) return;
+
+    openLienzoByPlayId(parentPlayId);
+  }
+
+  window.bootLienzoFromUrl = bootLienzoFromUrl;
   window.openLienzoByPlayId = openLienzoByPlayId;
+  bootLienzoFromUrl();
 })();
