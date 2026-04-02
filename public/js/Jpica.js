@@ -805,13 +805,14 @@
             <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
             <span>${escapeHtml(
               getAppointmentReadLabel(
-                play?.start_date,
-                play?.end_date,
-                recurrenceTypeValue,
-                recurrenceWeekdaysValue,
-                recurrenceMonthsValue
-              )
-            )}</span>
+              startDateValue,
+              endDateValue,
+              recurrenceTypeValue,
+              recurrenceWeekdaysValue,
+              recurrenceMonthsValue
+            )
+          )}</span>
+          
           </div>
 
           <div class="tablero-row__field-inline">
