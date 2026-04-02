@@ -75,7 +75,7 @@ function bindLienzoDropZone(deckId) {
     }
 
     window.location.href =
-      `/lienzo-new.html?deckId=${deckId}&sourcePlayId=${sourcePlayId}&childRank=${childRank}&childSuit=${childSuit}`;
+    `/lienzo.html?deckId=${deckId}&parentPlayId=${sourcePlayId}&childRank=${childRank}&childSuit=${childSuit}`;
 
     return;
   }
