@@ -2,19 +2,9 @@
   --lienzo-bg: #0f3d2e; /* verde oscuro elegante */
 }
 
-.lienzo-page {
-  background: radial-gradient(
-    circle at center,
-    #145c44 0%,
-    #0f3d2e 60%,
-    #0a2a20 100%
-  );
-}
-
 html,
 body {
   min-height: 100%;
-  margin: 0;
 }
 
 body {
@@ -24,6 +14,12 @@ body {
     #0f3d2e 60%,
     #0a2a20 100%
   );
+}
+
+.lienzo-page {
+  min-height: calc(100vh - var(--topbar-height));
+  padding: 24px 0 40px;
+  box-sizing: border-box;
 }
 
 .lienzo-grid {
