@@ -143,7 +143,7 @@
     return ["HEART", "SPADE", "DIAMOND", "CLUB"];
   }
 
-  function buildTopCardsHTML(enabledCards) {
+function buildTopCardsHTML(enabledCards) {
   if (!enabledCards.length) {
     return `<div class="mazobar__topcards-empty"></div>`;
   }
@@ -153,6 +153,7 @@
     const label = getCardLabel(card.rank, card.suit);
     const rank = String(card.rank || "").toUpperCase();
     const suit = String(card.suit || "").toUpperCase();
+    const playId = Number(card.id || 0);
 
     if (imgSrc) {
       return `
@@ -162,6 +163,7 @@
           title="${label}"
           class="mazobar__topcard-image"
           draggable="true"
+          data-play-id="${playId}"
           data-rank="${rank}"
           data-suit="${suit}"
         />
@@ -173,6 +175,7 @@
         class="mazobar__topcard-fallback"
         title="${label}"
         draggable="true"
+        data-play-id="${playId}"
         data-rank="${rank}"
         data-suit="${suit}"
       >
@@ -181,7 +184,8 @@
     `;
   }).join("");
 }
-  function hasPlayWithStatus(plays, statusList) {
+  
+function hasPlayWithStatus(plays, statusList) {
     const expected = new Set(
       statusList.map((status) => String(status || "").toUpperCase())
     );
