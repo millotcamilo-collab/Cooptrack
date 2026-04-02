@@ -295,7 +295,9 @@
       if (!row || row.dataset.bound === "true") return;
 
       row.dataset.bound = "true";
-      row.dataset.mode = "read";
+      const hasInitialAppointmentData =
+        !!startDateValue || !!endDateValue || !!locationValue;
+        row.dataset.mode = hasInitialAppointmentData ? "read" : "edit";
 
       const textView = row.querySelector('[data-role="text-view"]');
       const textInput = row.querySelector('[data-role="text-input"]');
