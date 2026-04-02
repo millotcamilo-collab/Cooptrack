@@ -482,7 +482,8 @@ app.get('/me', requireAuth, async (req, res) => {
         profile_photo_url,
         birth_date,
         user_type,
-        country
+        country,
+        is_admin
        FROM users
        WHERE id = $1`,
       [userId]
@@ -499,6 +500,7 @@ app.get('/me', requireAuth, async (req, res) => {
       ok: true,
       user: result.rows[0],
     });
+
   } catch (error) {
     console.error('Error en GET /me', error);
     res.status(500).json({
