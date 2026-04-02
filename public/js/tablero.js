@@ -41,18 +41,21 @@ function bindLienzoDropZone(deckId) {
       return;
     }
 
+    const playId = Number(payload?.playId || 0);
     const rank = String(payload?.rank || "").toUpperCase();
     const suit = String(payload?.suit || "").toUpperCase();
 
-    if (!rank || !suit || !deckId) return;
+    if (!deckId || !playId) {
+      console.warn("Drop sin deckId o playId", { deckId, playId, rank, suit });
+      return;
+    }
 
-    console.log("DROP carta:", rank, suit);
+    console.log("DROP carta:", { playId, rank, suit });
 
     window.location.href =
-      `/lienzo.html?deckId=${deckId}&rank=${rank}&suit=${suit}`;
+      `/lienzo.html?deckId=${deckId}&playId=${playId}`;
   });
-}
-  
+}  
 function isStructuralPlay(play) {
   const action = safeTrim(play?.action).toLowerCase();
   return action === "init_ace" || action === "puedejugar";
