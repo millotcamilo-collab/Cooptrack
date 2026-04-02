@@ -250,7 +250,7 @@ ${
         class="topbar__icon-btn"
         title="Administración de usuarios"
       >
-        <img src="/assets/icons/Tools120.gif" class="topbar__icon-img" />
+        <img src="/assets/icons/Tools120IZ.gif" class="topbar__icon-img" />
       </a>
     `
     : ""
