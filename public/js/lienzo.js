@@ -2,7 +2,23 @@
   function normalizeRank(value) {
     return String(value || "").trim().toUpperCase();
   }
+  
+function bindDeckHeaderExit() {
+  const btn = document.getElementById("lienzo-exit-btn");
+  if (!btn) return;
 
+  const deck = getCurrentDeck();
+  const deckId = Number(deck?.id || getCurrentState()?.deckId || 0);
+
+  btn.addEventListener("click", () => {
+    if (deckId) {
+      window.location.href = `/mazo.html?id=${deckId}`;
+      return;
+    }
+
+    window.history.back();
+  });
+}
   function normalizeSuit(value) {
     return String(value || "").trim().toUpperCase();
   }
@@ -271,6 +287,7 @@
     `;
 
     bindUsersPicker(play);
+    bindDeckHeaderExit();
   }
 
   function openLienzoByPlayId(playId) {
