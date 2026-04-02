@@ -412,15 +412,18 @@ function hasPlayWithStatus(plays, statusList) {
 document.querySelectorAll(".mazobar__topcard-image, .mazobar__topcard-fallback")
   .forEach((cardEl) => {
     cardEl.addEventListener("dragstart", (event) => {
+      const playId = Number(cardEl.dataset.playId || 0);
       const rank = cardEl.dataset.rank || "";
       const suit = cardEl.dataset.suit || "";
 
+      const payload = { playId, rank, suit };
+
       event.dataTransfer.setData(
         "application/json",
-        JSON.stringify({ rank, suit })
+        JSON.stringify(payload)
       );
 
-      event.dataTransfer.setData("text/plain", `${rank}|${suit}`);
+      event.dataTransfer.setData("text/plain", `${playId}|${rank}|${suit}`);
       event.dataTransfer.effectAllowed = "copy";
     });
   });
