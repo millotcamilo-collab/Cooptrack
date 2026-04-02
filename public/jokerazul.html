@@ -12,36 +12,54 @@
 <body>
   <div id="topbar-container"></div>
 
-  <main class="jokerazul-page">
+  <main class="lienzo-page">
     <div class="page-container">
-      <section class="jokerazul-panel">
-        <div class="jokerazul-grid">
-          <div class="jokerazul-grid__left">
-            <div class="jokerazul-cardbox">
+      <section class="lienzo-panel">
+        <div class="lienzo-panel__header">
+          <div class="lienzo-panel__title">Joker azul</div>
+          <div class="lienzo-panel__subtitle">
+            Esta jugada habilita temporalmente el régimen azul del mazo.
+          </div>
+        </div>
+
+        <div class="lienzo-grid">
+          <div class="lienzo-grid__left">
+            <div class="lienzo-card-wrap">
               <img
                 src="/assets/icons/JokerBlue.gif"
                 alt="Joker azul"
-                class="jokerazul-cardbox__img"
+                class="lienzo-card-image"
               />
+            </div>
+
+            <div class="lienzo-card-text">
+              Vigencia provisional: 6 meses.
             </div>
           </div>
 
-          <div class="jokerazul-grid__right">
-            <div class="jokerazul-info">
-              <h1 class="jokerazul-info__title">Joker azul</h1>
-              <p class="jokerazul-info__text">
-                Esta jugada habilita temporalmente el régimen azul del mazo.
-              </p>
+          <div class="lienzo-grid__right">
+            <section class="lienzo-panel">
+              <div class="lienzo-panel__header">
+                <div class="lienzo-panel__title">Solicitud</div>
+                <div class="lienzo-panel__subtitle">
+                  CoopTrack recibirá esta solicitud como jugada pendiente.
+                </div>
+              </div>
 
-              <div class="jokerazul-info__price">Precio provisional: 1 peso</div>
-              <div class="jokerazul-info__term">Vigencia provisional: 6 meses</div>
+              <div class="lienzo-card-text">
+                Precio provisional: 1 peso.
+              </div>
 
-              <button id="sendJokerBlueBtn" class="jokerazul-info__send-btn">
-                Send
-              </button>
+              <div style="margin-top: 16px;">
+                <button id="sendJokerBlueBtn">Send</button>
+              </div>
 
-              <div id="jokerBlueMsg" class="jokerazul-info__msg"></div>
-            </div>
+              <div
+                id="jokerBlueMsg"
+                class="lienzo-card-text"
+                style="margin-top: 14px;"
+              ></div>
+            </section>
           </div>
         </div>
       </section>
