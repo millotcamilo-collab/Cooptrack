@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>CoopTrack · Noticias</title>
+
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="/css/topbar.css" />
+  <link rel="stylesheet" href="/css/noticias.css" />
+</head>
+<body>
+  <div id="topbar-container"></div>
+
+  <main class="noticias-page">
+    <div class="page-container">
+      <section class="noticias-panel">
+        <header class="noticias-panel__header">
+          <h1 class="noticias-panel__title">Noticias</h1>
+          <p class="noticias-panel__subtitle">
+            Vista provisional del log relevante de jugadas.
+          </p>
+        </header>
+
+        <div id="cooptrack-log-container" class="noticias-list">
+          <div class="noticias-empty">Cargando noticias...</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/js/topbar.js"></script>
+  <script src="/js/cooptrackLog.js"></script>
+</body>
+</html>
