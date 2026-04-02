@@ -26,59 +26,73 @@ function bindLienzoDropZone(deckId) {
     dropZone.classList.remove("is-drag-over");
   });
 
-  dropZone.addEventListener("drop", (event) => {
-    event.preventDefault();
-    dropZone.classList.remove("is-drag-over");
+ dropZone.addEventListener("drop", (event) => {
+  event.preventDefault();
+  dropZone.classList.remove("is-drag-over");
 
-    let payload = null;
+  let payload = null;
 
-    try {
-      payload = JSON.parse(
-        event.dataTransfer.getData("application/json") || "{}"
-      );
-    } catch (error) {
-      console.warn("Error leyendo drag data", error);
-      return;
-    }
-
-    const mode = String(payload?.mode || "").toLowerCase();
-
-    // -----------------------------------
-    // JOKER AZUL -> va a jokerazul.html
-    // -----------------------------------
-    if (mode === "joker-blue") {
-      if (!deckId) {
-        console.warn("Drop Joker azul sin deckId");
-        return;
-      }
-
-      window.location.href = `/jokerazul.html?deckId=${deckId}`;
-      return;
-    }
-
-    // -----------------------------------
-    // CARTAS A / K -> flujo actual
-    // -----------------------------------
-    const playId = Number(
-      payload?.sourcePlayId || payload?.playId || 0
+  try {
+    payload = JSON.parse(
+      event.dataTransfer.getData("application/json") || "{}"
     );
-    const rank = String(
-      payload?.childRank || payload?.rank || ""
-    ).toUpperCase();
-    const suit = String(
-      payload?.childSuit || payload?.suit || ""
-    ).toUpperCase();
+  } catch (error) {
+    console.warn("Error leyendo drag data", error);
+    return;
+  }
 
-    if (!deckId || !playId) {
-      console.warn("Drop sin deckId o playId", { deckId, playId, rank, suit });
+  const mode = String(payload?.mode || "").toLowerCase();
+
+  if (!deckId) {
+    console.warn("Drop sin deckId", { deckId, payload });
+    return;
+  }
+
+  // -----------------------------------
+  // JOKER AZUL
+  // -----------------------------------
+  if (mode === "joker-blue") {
+    window.location.href = `/jokerazul.html?deckId=${deckId}`;
+    return;
+  }
+
+  // -----------------------------------
+  // NUEVA JUGADA DESDE A / K
+  // -----------------------------------
+  if (mode === "new") {
+    const sourcePlayId = Number(payload?.sourcePlayId || 0);
+    const childRank = String(payload?.childRank || "").toUpperCase();
+    const childSuit = String(payload?.childSuit || "").toUpperCase();
+
+    if (!sourcePlayId || !childRank || !childSuit) {
+      console.warn("Drop new incompleto", {
+        deckId,
+        sourcePlayId,
+        childRank,
+        childSuit
+      });
       return;
     }
-
-    console.log("DROP carta:", { playId, rank, suit });
 
     window.location.href =
-      `/lienzo.html?deckId=${deckId}&playId=${playId}`;
-  });
+      `/lienzo-new.html?deckId=${deckId}&sourcePlayId=${sourcePlayId}&childRank=${childRank}&childSuit=${childSuit}`;
+
+    return;
+  }
+
+  // -----------------------------------
+  // CASO LEGACY / EXISTENTE
+  // -----------------------------------
+  const playId = Number(payload?.playId || 0);
+
+  if (!playId) {
+    console.warn("Drop sin playId válido", { deckId, payload });
+    return;
+  }
+
+  window.location.href =
+    `/lienzo.html?deckId=${deckId}&playId=${playId}`;
+});
 }
 
 function isStructuralPlay(play) {
