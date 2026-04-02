@@ -724,10 +724,6 @@ btnAddQspade?.addEventListener("click", (event) => {
 
   window.location.href = `/lienzo.html?${params.toString()}`;
 });
-
-  window.location.href = `/lienzo.html?${params.toString()}`;
-});
-
       btnRoutine?.addEventListener("click", async () => {
         await loadRecurrenceIfNeeded();
 
