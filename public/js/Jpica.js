@@ -711,14 +711,19 @@
         renderMode();
       });
 
-      btnAddQspade?.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
+btnAddQspade?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
 
-        dispatch("qpica:open", {
-          parentPlayId: playId
-        });
-      });
+  const params = new URLSearchParams({
+    deckId: String(play?.deck_id || ""),
+    parentPlayId: String(playId || ""),
+    childRank: "Q",
+    childSuit: "SPADE"
+  });
+
+  window.location.href = `/lienzo.html?${params.toString()}`;
+});
 
       btnRoutine?.addEventListener("click", async () => {
         await loadRecurrenceIfNeeded();
