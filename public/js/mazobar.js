@@ -411,7 +411,7 @@ function hasPlayWithStatus(plays, statusList) {
     document.getElementById("btnAddJ")?.addEventListener("click", () => {
       document.dispatchEvent(new CustomEvent("mazobar:addJ"));
     });
-
+ 
 document.querySelectorAll(".mazobar__joker").forEach((jokerEl) => {
   jokerEl.addEventListener("dragstart", (event) => {
     const rank = String(jokerEl.dataset.rank || "").toUpperCase();
