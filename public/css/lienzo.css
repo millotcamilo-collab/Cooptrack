@@ -4,3 +4,91 @@
 body {
   background: var(--lienzo-bg);
 }
+
+.lienzo-grid {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.lienzo-grid__left,
+.lienzo-grid__right {
+  min-width: 0;
+}
+
+.lienzo-panel {
+  background: #ffffff;
+  border: 1px solid #d8d8d8;
+  border-radius: 14px;
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.lienzo-panel__header {
+  margin-bottom: 14px;
+}
+
+.lienzo-panel__title {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.lienzo-panel__subtitle {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #666;
+}
+
+.lienzo-card-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 280px;
+  margin-bottom: 14px;
+}
+
+.lienzo-card-image {
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.lienzo-card-text {
+  font-size: 15px;
+  line-height: 1.45;
+  color: #222;
+  word-break: break-word;
+}
+
+.lienzo-users-picker {
+  min-height: 220px;
+}
+
+.lienzo-user-selected {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: #f5f5f5;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.lienzo-error {
+  padding: 16px;
+  background: #fff3f3;
+  border: 1px solid #f0caca;
+  border-radius: 12px;
+  color: #8a2d2d;
+}
+
+@media (max-width: 900px) {
+  .lienzo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lienzo-card-image {
+    width: 180px;
+  }
+}
