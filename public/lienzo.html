@@ -14,28 +14,30 @@
   <body>
     <div id="topbar-container"></div>
 
-    <main class="page-container lienzo-page">
-      <section class="lienzo-page__header">
-        <button
-          type="button"
-          class="lienzo-page__back-btn"
-          id="lienzo-back-btn"
-        >
-          ← Volver al mazo
-        </button>
+    <main class="lienzo-page">
+  <div class="page-container">
+    <section class="lienzo-page__header">
+      <button
+        type="button"
+        class="lienzo-page__back-btn"
+        id="lienzo-back-btn"
+      >
+        ← Volver al mazo
+      </button>
 
-        <div class="lienzo-page__title-wrap">
-          <h1 class="lienzo-page__title">Lienzo</h1>
-          <div class="lienzo-page__subtitle" id="lienzo-subtitle">
-            Vista ampliada de jugada
-          </div>
+      <div class="lienzo-page__title-wrap">
+        <h1 class="lienzo-page__title">Lienzo</h1>
+        <div class="lienzo-page__subtitle" id="lienzo-subtitle">
+          Vista ampliada de jugada
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section class="lienzo-page__body">
-        <div id="lienzo-container"></div>
-      </section>
-    </main>
+    <section class="lienzo-page__body">
+      <div id="lienzo-container"></div>
+    </section>
+  </div>
+</main>
 
     <script src="/js/icons.js"></script>
     <script src="/js/topbar.js"></script>
