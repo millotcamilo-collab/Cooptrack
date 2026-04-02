@@ -100,14 +100,15 @@
     return document.getElementById("lienzo-container");
   }
 
-  function renderDeckHeader(deck) {
-    const avatarSrc = getDeckAvatarSrc(deck);
-    const deckName = deck?.name || "Mazo";
-    const currencyCode = getCurrencyCode(deck);
-    const balance = getBalanceValue(deck);
+ function renderDeckHeader(deck) {
+  const avatarSrc = getDeckAvatarSrc(deck);
+  const deckName = deck?.name || "Mazo";
+  const currencyCode = getCurrencyCode(deck);
+  const balance = getBalanceValue(deck);
 
-    return `
-      <section class="lienzo-deckbar">
+  return `
+    <section class="lienzo-deckbar">
+      <div class="lienzo-deckbar__left">
         <div class="lienzo-deckbar__avatar-wrap">
           <img
             src="${escapeHtml(avatarSrc)}"
@@ -144,10 +145,26 @@
             ${escapeHtml(balance)}
           </span>
         </div>
-      </section>
-    `;
-  }
+      </div>
 
+      <div class="lienzo-deckbar__right">
+        <button
+          type="button"
+          id="lienzo-exit-btn"
+          class="lienzo-deckbar__exit-btn"
+          title="Volver al mazo"
+          aria-label="Volver al mazo"
+        >
+          <img
+            src="/assets/icons/exit80.gif"
+            alt="Salir"
+            class="lienzo-deckbar__exit-icon"
+          />
+        </button>
+      </div>
+    </section>
+  `;
+}
   function renderUsersPanel() {
     return `
       <section class="lienzo-panel lienzo-panel--users">
