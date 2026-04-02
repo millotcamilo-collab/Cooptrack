@@ -11,6 +11,21 @@
   );
 }
 
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: radial-gradient(
+    circle at center,
+    #145c44 0%,
+    #0f3d2e 60%,
+    #0a2a20 100%
+  );
+}
+
 .lienzo-grid {
   display: grid;
   grid-template-columns: 320px minmax(0, 1fr);
