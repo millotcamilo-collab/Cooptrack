@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joker Azul | CoopTrack</title>
+
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="/css/topbar.css" />
+  <link rel="stylesheet" href="/css/jokerazul.css" />
+</head>
+<body>
+  <div id="topbar-container"></div>
+
+  <main class="jokerazul-page">
+    <div class="page-container">
+      <section class="jokerazul-panel">
+        <div class="jokerazul-grid">
+          <div class="jokerazul-grid__left">
+            <div class="jokerazul-cardbox">
+              <img
+                src="/assets/icons/JokerBlue.gif"
+                alt="Joker azul"
+                class="jokerazul-cardbox__img"
+              />
+            </div>
+          </div>
+
+          <div class="jokerazul-grid__right">
+            <div class="jokerazul-info">
+              <h1 class="jokerazul-info__title">Joker azul</h1>
+              <p class="jokerazul-info__text">
+                Esta jugada habilita temporalmente el régimen azul del mazo.
+              </p>
+
+              <div class="jokerazul-info__price">Precio provisional: 1 peso</div>
+              <div class="jokerazul-info__term">Vigencia provisional: 6 meses</div>
+
+              <button id="sendJokerBlueBtn" class="jokerazul-info__send-btn">
+                Send
+              </button>
+
+              <div id="jokerBlueMsg" class="jokerazul-info__msg"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/js/topbar.js"></script>
+  <script src="/js/jokerazul.js"></script>
+</body>
+</html>
