@@ -25,6 +25,11 @@
     return Array.isArray(state.plays) ? state.plays : [];
   }
 
+  function getCurrentDeck() {
+    const state = getCurrentState();
+    return state.deck || window.__currentDeck || {};
+  }
+
   function getPlayById(playId) {
     const id = Number(playId || 0);
     if (!id) return null;
@@ -72,8 +77,75 @@
     return map[`${r}_${s}`] || "/assets/icons/Dorso70.gif";
   }
 
+  function getDeckAvatarSrc(deck) {
+    const raw = String(deck?.deck_image_url || "").trim();
+    return raw || "/assets/icons/sinPicture.gif";
+  }
+
+  function getCurrencyCode(deck) {
+    return String(deck?.currency_symbol || "").trim().toUpperCase();
+  }
+
+  function getBalanceValue(deck) {
+    const value = deck?.viewer_balance;
+
+    if (value === null || value === undefined || value === "") {
+      return "0";
+    }
+
+    return String(value);
+  }
+
   function getLienzoContainer() {
     return document.getElementById("lienzo-container");
+  }
+
+  function renderDeckHeader(deck) {
+    const avatarSrc = getDeckAvatarSrc(deck);
+    const deckName = deck?.name || "Mazo";
+    const currencyCode = getCurrencyCode(deck);
+    const balance = getBalanceValue(deck);
+
+    return `
+      <section class="lienzo-deckbar">
+        <div class="lienzo-deckbar__avatar-wrap">
+          <img
+            src="${escapeHtml(avatarSrc)}"
+            alt="Foto del mazo"
+            class="lienzo-deckbar__avatar"
+            onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
+          />
+        </div>
+
+        <div class="lienzo-deckbar__titleline">
+          <span class="lienzo-deckbar__rank">A</span>
+
+          <img
+            src="/assets/icons/cor40.gif"
+            alt="♥"
+            class="lienzo-deckbar__suit"
+          />
+
+          <span class="lienzo-deckbar__name">
+            ${escapeHtml(deckName)}
+          </span>
+
+          <img
+            src="/assets/icons/dia40.gif"
+            alt="♦"
+            class="lienzo-deckbar__balance-icon"
+          />
+
+          <span class="lienzo-deckbar__currency">
+            ${escapeHtml(currencyCode)}
+          </span>
+
+          <span class="lienzo-deckbar__balance">
+            ${escapeHtml(balance)}
+          </span>
+        </div>
+      </section>
+    `;
   }
 
   function renderUsersPanel() {
@@ -163,9 +235,13 @@
 
   function renderLienzo(play) {
     const container = getLienzoContainer();
+    const deck = getCurrentDeck();
+
     if (!container || !play) return;
 
     container.innerHTML = `
+      ${renderDeckHeader(deck)}
+
       <div class="lienzo-grid">
         <div class="lienzo-grid__left">
           ${renderCardPanel(play)}
