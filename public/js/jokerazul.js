@@ -19,6 +19,48 @@
     }
   }
 
+  async function sendJokerBlueRequest(deckId) {
+    const token = localStorage.getItem("cooptrackToken");
+
+    if (!token) {
+      setMessage("No estás logueado.", "error");
+      return;
+    }
+
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const userId = payload.userId;
+    const now = new Date().toISOString();
+
+    const playCode =
+      `${deckId}§${userId}§${now}§JOKER§BLUE§request_blue_joker§U:${userId}§manual§U:${userId}`;
+
+    const response = await fetch("https://cooptrack-backend.onrender.com/plays", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        deck_id: deckId,
+        parent_play_id: null,
+        target_user_id: null,
+        play_code: playCode,
+        play_status: "PENDING",
+        text: "Solicitud de Joker azul"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      console.error("Error backend:", data);
+      setMessage(data.error || "Error al crear la solicitud.", "error");
+      return;
+    }
+
+    setMessage("Solicitud de Joker azul enviada.", "success");
+  }
+
   function initJokerBluePage() {
     const sendBtn = document.getElementById("sendJokerBlueBtn");
     const deckId = getDeckIdFromUrl();
@@ -36,11 +78,8 @@
 
     setMessage(`Solicitud preparada para el mazo ${deckId}.`);
 
-    sendBtn.addEventListener("click", () => {
-      setMessage(
-        `Solicitud de Joker azul disparada para el mazo ${deckId}.`,
-        "success"
-      );
+    sendBtn.addEventListener("click", async () => {
+      await sendJokerBlueRequest(deckId);
     });
   }
 
