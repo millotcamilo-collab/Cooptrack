@@ -317,26 +317,29 @@ function hasPlayWithStatus(plays, statusList) {
   }
 
   function buildJokersHTML(plays) {
-    const redActive = hasRedJoker(plays);
-    const blueActive = hasBlueJoker(plays);
+  const redActive = hasRedJoker(plays);
+  const blueActive = hasBlueJoker(plays);
 
-    return `
-      <div class="mazobar__jokers">
-        <img
-          src="/assets/icons/Joker120.gif"
-          alt="Joker rojo"
-          title="Joker rojo"
-          class="mazobar__joker ${redActive ? "is-active" : "is-inactive"}"
-        />
-        <img
-          src="/assets/icons/joker_blue.gif"
-          alt="Joker azul"
-          title="Joker azul"
-          class="mazobar__joker ${blueActive ? "is-active" : "is-inactive"}"
-        />
-      </div>
-    `;
-  }
+  return `
+    <div class="mazobar__jokers">
+      <img
+        src="/assets/icons/Joker120.gif"
+        alt="Joker rojo"
+        title="Joker rojo"
+        class="mazobar__joker ${redActive ? "is-active" : "is-inactive"}"
+      />
+      <img
+        src="/assets/icons/joker_blue.gif"
+        alt="Joker azul"
+        title="Joker azul"
+        class="mazobar__joker ${blueActive ? "is-active" : "is-inactive"}"
+        draggable="true"
+        data-rank="JOKER"
+        data-suit="BLUE"
+      />
+    </div>
+  `;
+}
 
   function buildMazobarHTML(deck, plays, currentUserId) {
     const normalizedPlays = Array.isArray(plays)
@@ -408,6 +411,31 @@ function hasPlayWithStatus(plays, statusList) {
     document.getElementById("btnAddJ")?.addEventListener("click", () => {
       document.dispatchEvent(new CustomEvent("mazobar:addJ"));
     });
+
+document.querySelectorAll(".mazobar__joker").forEach((jokerEl) => {
+  jokerEl.addEventListener("dragstart", (event) => {
+    const rank = String(jokerEl.dataset.rank || "").toUpperCase();
+    const suit = String(jokerEl.dataset.suit || "").toUpperCase();
+
+    if (rank !== "JOKER" || suit !== "BLUE") {
+      return;
+    }
+
+    const payload = {
+      mode: "joker-blue",
+      rank: "JOKER",
+      suit: "BLUE"
+    };
+
+    event.dataTransfer.setData(
+      "application/json",
+      JSON.stringify(payload)
+    );
+
+    event.dataTransfer.setData("text/plain", "JOKER|BLUE");
+    event.dataTransfer.effectAllowed = "copy";
+  });
+});
     
 document.querySelectorAll(".mazobar__topcard-image, .mazobar__topcard-fallback")
   .forEach((cardEl) => {
