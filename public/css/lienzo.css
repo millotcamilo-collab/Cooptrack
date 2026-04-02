@@ -99,8 +99,10 @@ body {
   border-radius: 12px;
   color: #8a2d2d;
 }
+
 .lienzo-deckbar {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 16px;
   margin-bottom: 24px;
@@ -109,6 +111,20 @@ body {
   border: 1px solid #d8d8d8;
   border-radius: 14px;
   box-sizing: border-box;
+}
+
+.lienzo-deckbar__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+}
+
+.lienzo-deckbar__right {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
 }
 
 .lienzo-deckbar__avatar-wrap {
@@ -158,6 +174,21 @@ body {
   font-weight: 600;
   line-height: 1.2;
 }
+
+.lienzo-deckbar__exit-btn {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.lienzo-deckbar__exit-icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
 @media (max-width: 900px) {
   .lienzo-grid {
     grid-template-columns: 1fr;
