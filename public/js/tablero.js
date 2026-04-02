@@ -895,14 +895,20 @@ document.addEventListener("tablero:open-readers", async (event) => {
   // acá después hacemos el fetch al endpoint
   // que suma A♥ y K♥ al reader_user_ids
 });
- document.addEventListener("plays:add-qspade-requested", async (event) => {
+ document.addEventListener("lienzo:new-play", async (event) => {
   try {
-    const { parentPlayId, targetUserId } = event.detail || {};
+    const {
+      deckId,
+      parentPlayId,
+      childRank,
+      childSuit,
+      targetUserId
+    } = event.detail || {};
 
-    console.log("Q♠ enviar", { parentPlayId, targetUserId });
+    console.log("lienzo:new-play", event.detail);
 
-    if (!parentPlayId || !targetUserId) {
-      alert("Datos inválidos para crear Q♠");
+    if (!deckId || !parentPlayId || !childRank || !childSuit || !targetUserId) {
+      alert("Datos incompletos para crear la jugada");
       return;
     }
 
@@ -912,26 +918,13 @@ document.addEventListener("tablero:open-readers", async (event) => {
       return;
     }
 
-    const deckId =
-      window.__currentDeck?.id ||
-      window.__currentState?.deck?.id ||
-      null;
-
     const userId =
       window.__currentState?.userId ||
       window.__currentUser?.id ||
       null;
 
-    const currentPlays = Array.isArray(window.__currentState?.plays)
-      ? window.__currentState.plays
-      : [];
-
-    const parentPlay = currentPlays.find(
-      (play) => Number(play.id) === Number(parentPlayId)
-    );
-
-    if (!deckId || !userId || !parentPlay) {
-      alert("No se pudo identificar la jugada madre");
+    if (!userId) {
+      alert("No se pudo identificar el usuario");
       return;
     }
 
@@ -941,11 +934,11 @@ document.addEventListener("tablero:open-readers", async (event) => {
       deckId,
       userId,
       when,
-      "Q",
-      "SPADE",
-      "invite",
+      childRank,
+      childSuit,
+      "create_from_lienzo",
       `U:${userId}`,
-      `invite:${parentPlayId}`,
+      `child_of:${parentPlayId}`,
       `U:${targetUserId}`
     ].join("§");
 
@@ -961,31 +954,27 @@ document.addEventListener("tablero:open-readers", async (event) => {
         target_user_id: targetUserId,
         play_code: playCode,
         text: "",
-        play_status: "SENT"
+        play_status: "ACTIVE"
       })
     });
 
     const data = await response.json();
 
     if (!response.ok || !data.ok) {
-      console.error("Error creando Q♠:", data);
-      alert(data.error || "No se pudo enviar la invitación");
+      console.error("Error creando jugada desde lienzo:", data);
+      alert("No se pudo crear la jugada");
       return;
     }
 
-    document.dispatchEvent(new CustomEvent("qpica:close", {
-      detail: { parentPlayId }
-    }));
+    // volver al mazo
+    window.location.href = `/mazo.html?id=${deckId}`;
 
-    document.dispatchEvent(new CustomEvent("plays:changed", {
-      detail: { deckId }
-    }));
   } catch (error) {
-    console.error("Error en plays:add-qspade-requested", error);
-    alert("Error enviando la Q♠");
+    console.error("Error en lienzo:new-play", error);
+    alert("Error creando la jugada");
   }
-}); 
-  
+});
+
 window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
   window.__currentDeck = deck || null;
   window.__currentState = state || {};
