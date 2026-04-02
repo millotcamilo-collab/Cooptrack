@@ -3,12 +3,8 @@
 }
 
 .lienzo-page {
-  background: radial-gradient(
-    circle at center,
-    #145c44 0%,
-    #0f3d2e 60%,
-    #0a2a20 100%
-  );
+  background: var(--lienzo-bg);
+  min-height: 100vh;
 }
 
 .lienzo-grid {
