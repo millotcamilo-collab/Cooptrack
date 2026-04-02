@@ -242,7 +242,19 @@ ${
               >
                 <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
               </a>
-
+${
+  user.is_admin
+    ? `
+      <a
+        href="/register.html"
+        class="topbar__icon-btn"
+        title="Administración de usuarios"
+      >
+        <img src="/assets/icons/Tools120.gif" class="topbar__icon-img" />
+      </a>
+    `
+    : ""
+}
               <button class="topbar__icon-btn" id="logoutBtn">
                 <img src="/assets/icons/exit80.gif" class="topbar__icon-img topbar__icon-img--exit" />
               </button>
