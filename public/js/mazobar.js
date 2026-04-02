@@ -416,7 +416,12 @@ document.querySelectorAll(".mazobar__topcard-image, .mazobar__topcard-fallback")
       const rank = cardEl.dataset.rank || "";
       const suit = cardEl.dataset.suit || "";
 
-      const payload = { playId, rank, suit };
+      const payload = {
+        mode: "new",
+        sourcePlayId: playId,
+        childRank: rank,
+        childSuit: suit
+  };
 
       event.dataTransfer.setData(
         "application/json",
