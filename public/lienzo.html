@@ -68,18 +68,6 @@
           await window.renderTopbar(topbarContainer);
         }
 
-        function bindBackButton(deckId) {
-          const btn = document.getElementById("lienzo-back-btn");
-          if (!btn) return;
-
-          btn.addEventListener("click", () => {
-            if (deckId) {
-              window.location.href = `/mazo.html?id=${deckId}`;
-              return;
-            }
-
-            window.history.back();
-          });
         }
 
         function setSubtitle(playId, deckId) {
@@ -105,7 +93,6 @@
             );
             const playId = Number(getQueryParam("playId") || 0);
 
-            bindBackButton(deckId);
             setSubtitle(playId, deckId);
 
             if (!deckId || !playId) {
