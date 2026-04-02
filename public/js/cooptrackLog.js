@@ -109,40 +109,34 @@
   }
 
   async function fetchPlays() {
-    const token = getToken();
-    if (!token) {
-      renderEmpty("No hay sesión iniciada.");
-      return;
+  // 🔥 MODO PROTOTIPO (sin backend)
+
+  const fakePlays = [
+    {
+      card_rank: "A",
+      card_suit: "HEART",
+      play_text: "Se creó el mazo CoopTrack",
+      created_at: new Date().toISOString(),
+      deck_id: 1
+    },
+    {
+      card_rank: "J",
+      card_suit: "SPADE",
+      play_text: "Reunión con proveedor",
+      created_at: new Date().toISOString(),
+      deck_id: 1
+    },
+    {
+      card_rank: "Q",
+      card_suit: "CLUB",
+      play_text: "Oferta publicada",
+      created_at: new Date().toISOString(),
+      deck_id: 2
     }
+  ];
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/plays`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      const plays = Array.isArray(data?.plays)
-        ? data.plays
-        : Array.isArray(data)
-          ? data
-          : [];
-
-      const relevant = sortNewestFirst(plays).filter(isRelevantPlay);
-
-      renderPlays(relevant);
-    } catch (error) {
-      console.error("Error cargando noticias:", error);
-      renderEmpty("No se pudieron cargar las noticias.");
-    }
-  }
+  renderPlays(fakePlays);
+}
 
   document.addEventListener("DOMContentLoaded", fetchPlays);
 })();
