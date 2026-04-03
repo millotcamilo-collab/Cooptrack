@@ -210,3 +210,7 @@
   font-size: 13px;
   color: #444;
 }
+.users-picker__exit-btn img {
+  height: 16px;
+  opacity: 1;
+}
