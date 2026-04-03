@@ -259,6 +259,14 @@
 
         <div id="usersContainer" class="user-list"></div>
       </section>
+      <section class="card">
+        
+        <div class="users-header">
+        <h2>Solicitudes Joker azul</h2>
+        <button id="reloadJokerBlueBtn" class="reload-btn" type="button">Recargar</button>
+        </div>
+        <div id="jokerBlueRequestsContainer" class="user-list"></div>
+      </section>
     </div>
   </main>
 
@@ -269,7 +277,96 @@
     const msg = document.getElementById("msg");
     const usersContainer = document.getElementById("usersContainer");
     const reloadUsersBtn = document.getElementById("reloadUsersBtn");
+    const jokerBlueRequestsContainer = document.getElementById("jokerBlueRequestsContainer");
+    const reloadJokerBlueBtn = document.getElementById("reloadJokerBlueBtn");
 
+    async function loadJokerBlueRequests() {
+  jokerBlueRequestsContainer.innerHTML = `
+    <div class="empty-state">
+      Cargando solicitudes Joker azul...
+    </div>
+  `;
+
+  try {
+    const token = localStorage.getItem("cooptrackToken");
+
+    if (!token) {
+      jokerBlueRequestsContainer.innerHTML = `
+        <div class="empty-state">
+          No hay sesión iniciada.
+        </div>
+      `;
+      return;
+    }
+
+    const res = await fetch("https://cooptrack-backend.onrender.com/admin/joker-blue-requests", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await res.json();
+
+    if (!data.ok || !Array.isArray(data.requests) || data.requests.length === 0) {
+      jokerBlueRequestsContainer.innerHTML = `
+        <div class="empty-state">
+          No hay solicitudes pendientes de Joker azul.
+        </div>
+      `;
+      return;
+    }
+
+    jokerBlueRequestsContainer.innerHTML = data.requests.map(req => {
+      const photo = req.creator_profile_photo_url && req.creator_profile_photo_url.trim() !== ""
+        ? req.creator_profile_photo_url
+        : "/assets/icons/singeta120.gif";
+
+      return `
+        <div class="user-item">
+          <div class="user-info" style="display:flex; gap:14px; align-items:center;">
+            <img
+              src="${escapeHtml(photo)}"
+              alt="Foto usuario"
+              style="width:56px; height:56px; border-radius:50%; object-fit:cover; border:1px solid #d1d5db;"
+            />
+
+            <div>
+              <div class="user-name">
+                ${escapeHtml(req.creator_nickname || "Sin nickname")}
+              </div>
+
+              <div class="user-meta">
+                <div><strong>Mazo:</strong> ${escapeHtml(req.deck_name || "—")}</div>
+                <div><strong>Play ID:</strong> ${escapeHtml(req.id)}</div>
+                <div><strong>Estado:</strong> ${escapeHtml(req.play_status || "—")}</div>
+                <div><strong>Fecha:</strong> ${escapeHtml(formatDate(req.created_at))}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="user-actions">
+            <button
+              class="reload-btn"
+              type="button"
+              onclick="alert('Luego programamos approve/reject para play ${req.id}')"
+            >
+              Ver
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  } catch (error) {
+    console.error("Error cargando solicitudes Joker azul:", error);
+
+    jokerBlueRequestsContainer.innerHTML = `
+      <div class="empty-state">
+        Error cargando solicitudes Joker azul.
+      </div>
+    `;
+  }
+}
     function escapeHtml(text) {
       return String(text || "")
         .replaceAll("&", "&amp;")
