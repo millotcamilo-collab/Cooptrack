@@ -540,14 +540,7 @@ function renderCreateUserState() {
           <img src="${escapeHtml(options.sealIcon || "/assets/icons/lacre120.gif")}" alt="Registrar usuario" />
         </button>
 
-        <button
-          type="button"
-          class="users-picker__icon-btn"
-          data-users-exit-btn
-          title="Salir"
-        >
-          <img src="${escapeHtml(options.exitIcon || "/assets/icons/exit40.gif")}" alt="Salir" />
-        </button>
+        
       </div>
     </div>
   `;
@@ -638,14 +631,7 @@ function renderCreateUserState() {
           <img src="${escapeHtml(options.editIcon || "/assets/icons/desarrollo40.gif")}" alt="Editar" />
         </button>
 
-        <button
-          type="button"
-          class="users-picker__icon-btn"
-          data-users-exit-btn
-          title="Salir"
-        >
-          <img src="${escapeHtml(options.exitIcon || "/assets/icons/exit40.gif")}" alt="Salir" />
-        </button>
+        
       </div>
     </div>
   `;
