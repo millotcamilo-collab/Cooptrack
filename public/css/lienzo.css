@@ -300,6 +300,36 @@ body {
   position: relative;
   z-index: 2;
 }
+
+.lienzo-source-cards {
+  position: relative;
+  min-height: 320px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lienzo-source-stack {
+  position: relative;
+  width: 240px;
+  height: 300px;
+}
+
+.lienzo-source-stack__card {
+  position: absolute;
+  top: 24px;
+  width: 160px;
+  height: auto;
+  z-index: 1;
+}
+
+.lienzo-source-active {
+  position: absolute;
+  top: 0;
+  left: 54px;
+  z-index: 5;
+}
+
 @media (max-width: 900px) {
   .lienzo-grid {
     grid-template-columns: 1fr;
