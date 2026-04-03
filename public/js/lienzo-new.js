@@ -8,8 +8,9 @@ window.__lienzoAnimationState = window.__lienzoAnimationState || {
 };
   
 function getCurrentUserCorporateCards() {
-  console.log("state.corporateCards =", state?.corporateCards);
   const state = getCurrentState();
+  console.log("state.corporateCards =", state?.corporateCards);
+
   const currentUser = getCurrentUser();
   const userId = Number(currentUser?.id || 0);
 
@@ -23,7 +24,6 @@ function getCurrentUserCorporateCards() {
     .filter((card) => Number(card?.owner_user_id || card?.user_id || 0) === userId)
     .sort(compareCorporateCards);
 }
-
 function compareCorporateCards(a, b) {
   const order = {
     A_HEART: 1,
