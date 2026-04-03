@@ -88,8 +88,8 @@
 
 /* ICONO DE TIPO */
 .users-picker__row-type-icon {
-  width: 18px;
-  height: 18px;
+  width: auto;
+  height: 32px;
   object-fit: contain;
 }
 
