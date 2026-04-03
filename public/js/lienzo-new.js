@@ -257,7 +257,15 @@ function renderAssignedTargetPanel(user) {
       </div>
 
       <div class="lienzo-target-actions">
-       function renderActionButtons() {
+       
+      </div>
+    </section>
+  `;
+
+  bindTargetActions();
+}
+  
+  function renderActionButtons() {
   return `
     <div class="lienzo-actions">
       <button id="lienzo-save-btn" class="lienzo-btn">
@@ -269,13 +277,6 @@ function renderAssignedTargetPanel(user) {
     </div>
   `;
 }
-      </div>
-    </section>
-  `;
-
-  bindTargetActions();
-}
-  
   function bindTargetActions() {
   const saveBtn = document.getElementById("lienzo-save-btn");
   const exitBtn = document.getElementById("lienzo-exit-btn");
