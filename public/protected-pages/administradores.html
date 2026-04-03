@@ -190,7 +190,10 @@
       color: #6b7280;
       background: #fafafa;
     }
-
+.right-column {
+  display: grid;
+  gap: 24px;
+}
     @media (max-width: 900px) {
       .layout {
         grid-template-columns: 1fr;
@@ -219,56 +222,67 @@
 
   <main class="page">
     <div class="layout">
-      <section class="card">
-        <h1>Crear cuenta</h1>
-        <p class="subtitle">
-          Registrá nuevos usuarios de prueba para CoopTrack.
-        </p>
 
-        <form id="registerForm">
-          <div class="field">
-            <label for="nickname">Nickname</label>
-            <input id="nickname" required>
-          </div>
+  <!-- IZQUIERDA -->
+  <section class="card">
+    <h1>Crear cuenta</h1>
+    <p class="subtitle">
+      Registrá nuevos usuarios de prueba para CoopTrack.
+    </p>
 
-          <div class="field">
-            <label for="email">Email (opcional)</label>
-            <input id="email" type="email">
-          </div>
+    <form id="registerForm">
+      <div class="field">
+        <label for="nickname">Nickname</label>
+        <input id="nickname" required>
+      </div>
 
-          <div class="field">
-            <label for="phone">Teléfono (opcional)</label>
-            <input id="phone">
-          </div>
+      <div class="field">
+        <label for="email">Email (opcional)</label>
+        <input id="email" type="email">
+      </div>
 
-          <div class="field">
-            <label for="password">Password</label>
-            <input id="password" type="password" required>
-          </div>
+      <div class="field">
+        <label for="phone">Teléfono (opcional)</label>
+        <input id="phone">
+      </div>
 
-          <button class="primary-btn" type="submit">Crear cuenta</button>
-          <div id="msg" class="message"></div>
-        </form>
-      </section>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" required>
+      </div>
 
-      <section class="card">
-        <div class="users-header">
-          <h2>Usuarios registrados</h2>
-          <button id="reloadUsersBtn" class="reload-btn" type="button">Recargar</button>
-        </div>
+      <button class="primary-btn" type="submit">Crear cuenta</button>
+      <div id="msg" class="message"></div>
+    </form>
+  </section>
 
-        <div id="usersContainer" class="user-list"></div>
-      </section>
-      <section class="card">
-        
-        <div class="users-header">
+  <!-- DERECHA -->
+  <div class="right-column">
+
+    <!-- USUARIOS -->
+    <section class="card">
+      <div class="users-header">
+        <h2>Usuarios registrados</h2>
+        <button id="reloadUsersBtn" class="reload-btn" type="button">Recargar</button>
+      </div>
+
+      <div id="usersContainer" class="user-list"></div>
+    </section>
+
+    <!-- JOKER AZUL -->
+    <section class="card">
+      <div class="users-header">
         <h2>Solicitudes Joker azul</h2>
         <button id="reloadJokerBlueBtn" class="reload-btn" type="button">Recargar</button>
-        </div>
-        <div id="jokerBlueRequestsContainer" class="user-list"></div>
-      </section>
-    </div>
-  </main>
+      </div>
+
+      <div id="jokerBlueRequestsContainer" class="user-list"></div>
+    </section>
+
+  </div>
+
+</div>
+</main>
 
   <script src="/js/topbar.js"></script>
 
@@ -514,6 +528,9 @@
     reloadUsersBtn.addEventListener("click", loadUsers);
 
     loadUsers();
+
+    reloadJokerBlueBtn.addEventListener("click", loadJokerBlueRequests);
+    loadJokerBlueRequests();
   </script>
 
 </body>
