@@ -176,6 +176,37 @@
   flex-direction: column;
   gap: 6px;
 }
+.users-picker__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.users-picker__row-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.users-picker__row-action {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.users-picker__row-action img {
+  display: block;
+  height: 28px;
+  width: auto;
+}
 
 .users-picker__conflicts-title {
   font-size: 13px;
