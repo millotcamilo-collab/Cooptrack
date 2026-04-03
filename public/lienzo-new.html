@@ -83,7 +83,7 @@
             const state = stateResponse?.state || stateResponse || {};
 
             window.__currentState = state;
-            window.__currentDeck = state?.deck || {};
+            window.__currentDeck = state?.deck || state?.mazo || state || {};
 
             if (typeof window.openNewLienzo === "function") {
               window.openNewLienzo();
