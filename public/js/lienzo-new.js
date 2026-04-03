@@ -6,6 +6,82 @@
 window.__lienzoAnimationState = window.__lienzoAnimationState || {
   sourceCardDelivered: false
 };
+
+function bindActionButtons() {
+  const saveBtn = document.getElementById("lienzo-save-btn");
+  const exitBtn = document.getElementById("lienzo-exit-btn");
+
+  if (saveBtn) {
+    saveBtn.addEventListener("click", handleSavePlay);
+  }
+
+  if (exitBtn) {
+    exitBtn.addEventListener("click", handleExit);
+  }
+}
+ async function handleSavePlay() {
+  try {
+    const draft = window.__lienzoNewDraft;
+    const token = localStorage.getItem("cooptrackToken");
+
+    if (!draft?.deckId) {
+      alert("Deck inválido");
+      return;
+    }
+
+    if (!draft?.target_user_id) {
+      alert("Seleccioná un destinatario");
+      return;
+    }
+
+    const playPayload = {
+      deck_id: draft.deckId,
+      parent_play_id: draft.parentPlayId || null,
+      card_rank: draft.card_rank,
+      card_suit: draft.card_suit,
+      target_user_id: draft.target_user_id,
+      play_text: draft.play_text || "",
+      play_status: "ACTIVE"
+    };
+
+    const response = await fetch("/plays", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(playPayload)
+    });
+
+    if (!response.ok) {
+      throw new Error("Error guardando jugada");
+    }
+
+    const data = await response.json();
+    const newPlay = data?.play || data;
+
+    const playId = newPlay?.id;
+
+    // 👉 redirige a lienzo normal
+    window.location.href = `/lienzo.html?playId=${playId}`;
+
+  } catch (error) {
+    console.error("Error en SAVE", error);
+    alert("No se pudo guardar la jugada");
+  }
+} 
+
+function handleExit() {
+  const draft = window.__lienzoNewDraft;
+  const deckId = draft?.deckId;
+
+  if (!deckId) {
+    window.location.href = "/mazos.html";
+    return;
+  }
+
+  window.location.href = `/mazo.html?id=${deckId}`;
+}
   
 function getCurrentUserCorporateCards() {
   const state = getCurrentState();
@@ -181,13 +257,18 @@ function renderAssignedTargetPanel(user) {
       </div>
 
       <div class="lienzo-target-actions">
-        <button id="lienzo-save-btn" class="lienzo-btn">
-          Salvar
-        </button>
-
-        <button id="lienzo-exit-btn" class="lienzo-btn">
-          Exit
-        </button>
+       function renderActionButtons() {
+  return `
+    <div class="lienzo-actions">
+      <button id="lienzo-save-btn" class="lienzo-btn">
+        ${window.renderIcon ? window.renderIcon("save") : "💾"}
+      </button>
+      <button id="lienzo-exit-btn" class="lienzo-btn">
+        ${window.renderIcon ? window.renderIcon("exit") : "✖"}
+      </button>
+    </div>
+  `;
+}
       </div>
     </section>
   `;
@@ -679,4 +760,5 @@ document.addEventListener("lienzo:animate-card-to-user", (event) => {
   
   
   window.openNewLienzo = renderNewLienzo;
+  bindActionButtons();
 })();
