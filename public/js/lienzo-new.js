@@ -252,35 +252,54 @@ function getDeckAvatarSrc(deck) {
   }
 
   function bindUsersPicker(draft) {
-    const selectedBox = document.getElementById("lienzo-user-selected");
+  const selectedBox = document.getElementById("lienzo-user-selected");
 
-    if (typeof window.renderUsersPicker !== "function") {
-      const picker = document.getElementById("lienzo-users-picker");
-      if (picker) {
-        picker.innerHTML = `
-          <div class="lienzo-error">
-            No se pudo cargar users.js
-          </div>
-        `;
-      }
-      return;
+  if (typeof window.renderUsersPicker !== "function") {
+    const picker = document.getElementById("lienzo-users-picker");
+    if (picker) {
+      picker.innerHTML = `
+        <div class="lienzo-error">
+          No se pudo cargar users.js
+        </div>
+      `;
     }
+    return;
+  }
 
-    window.renderUsersPicker("lienzo-users-picker", {
-      onSelect(user) {
-        window.__lienzoNewDraft = {
-          ...window.__lienzoNewDraft,
-          target_user_id: Number(user?.id || 0) || null,
-          target_user: user || null
-        };
+  window.renderUsersPicker("lienzo-users-picker", {
+    // 🟢 Selección normal (click en fila)
+    onSelect(user) {
+      window.__lienzoNewDraft = {
+        ...window.__lienzoNewDraft,
+        target_user_id: Number(user?.id || 0) || null,
+        target_user: user || null
+      };
 
-        if (!selectedBox) return;
+      if (!selectedBox) return;
 
-        if (!user) {
-          selectedBox.textContent = "Nadie seleccionado";
-          return;
-        }
+      if (!user) {
+        selectedBox.textContent = "Nadie seleccionado";
+        return;
+      }
 
+      selectedBox.textContent =
+        "Seleccionado: " +
+        (user.nickname ||
+          user.full_name ||
+          user.name ||
+          `Usuario ${user.id}`);
+    },
+
+    // 🔥 NUEVO: click en la claqueta
+    onAnimateSelect(user) {
+      // 1. también selecciona (para mantener coherencia)
+      window.__lienzoNewDraft = {
+        ...window.__lienzoNewDraft,
+        target_user_id: Number(user?.id || 0) || null,
+        target_user: user || null
+      };
+
+      if (selectedBox && user) {
         selectedBox.textContent =
           "Seleccionado: " +
           (user.nickname ||
@@ -288,8 +307,16 @@ function getDeckAvatarSrc(deck) {
             user.name ||
             `Usuario ${user.id}`);
       }
-    });
-  }
+
+      // 2. dispara animación (la implementamos después)
+      document.dispatchEvent(
+        new CustomEvent("lienzo:animate-card-to-user", {
+          detail: { user }
+        })
+      );
+    }
+  });
+}
 
   function bindCreateButton() {
     const btn = document.getElementById("lienzo-new-save-btn");
