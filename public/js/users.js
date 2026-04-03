@@ -363,16 +363,21 @@ function handleConflictSelect(userId) {
     editBtn.addEventListener("click", handleEditSelected);
   }
 
-  rowSelectButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    handleSelect(btn.getAttribute("data-users-row-select-id"));
+  // 🚫 DESACTIVADO: click sobre toda la fila
+rowSelectButtons.forEach((btn) => {
+  btn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    // no hacemos nada → dejamos solo la claqueta activa
   });
 });
 
 rowAnimateButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     const userId = btn.getAttribute("data-users-row-animate-id");
-    handleSelect(userId);
 
     const selected =
       state.filteredUsers.find((u) => String(u.id) === String(userId)) ||
@@ -380,12 +385,13 @@ rowAnimateButtons.forEach((btn) => {
 
     if (!selected) return;
 
+    state.selectedUser = selected;
+
     if (typeof options.onAnimateSelect === "function") {
       options.onAnimateSelect(selected);
     }
   });
 });
-
   createFields.forEach((field) => {
     field.addEventListener("input", (event) => {
       const fieldName = event.target.getAttribute("data-users-create-field");
