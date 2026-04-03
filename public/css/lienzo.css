@@ -234,7 +234,72 @@ body {
 .lienzo-card-image:hover {
   transform: scale(1.03);
 }
+.lienzo-panel--source {
+  overflow: hidden;
+}
 
+.lienzo-source-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.lienzo-source-header__photo {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  object-fit: cover;
+  background: #fff;
+}
+
+.lienzo-source-header__name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111;
+}
+
+.lienzo-source-cards {
+  position: relative;
+  min-height: 280px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lienzo-source-cards__fan {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.lienzo-source-cards__fan-card {
+  position: absolute;
+  width: 150px;
+  height: auto;
+  opacity: 0.9;
+}
+
+.lienzo-source-cards__fan-card--1 {
+  transform: translateX(-26px) rotate(-10deg);
+}
+
+.lienzo-source-cards__fan-card--2 {
+  transform: translateX(0px) rotate(-2deg);
+}
+
+.lienzo-source-cards__fan-card--3 {
+  transform: translateX(26px) rotate(8deg);
+}
+
+.lienzo-source-cards__main {
+  position: relative;
+  z-index: 2;
+}
 @media (max-width: 900px) {
   .lienzo-grid {
     grid-template-columns: 1fr;
