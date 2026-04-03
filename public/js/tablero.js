@@ -2,6 +2,7 @@
   const PLAY_SEPARATOR = '§';
   let activeTableroFilter = null;
   let activeTableroStatusFilter = null;
+  let activeTableroViewMode = "J";
 
   const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
@@ -237,13 +238,34 @@ function belongsToTablero(play) {
   if (!rank || !suit) return false;
   if (isStructuralPlay(play)) return false;
 
-  if (rank === 'J') return true;
-  if (rank === 'Q') return true;
-  if (rank === 'A' && suit !== 'HEART') return true;
+  // -------------------------
+  // MODO J (default)
+  // -------------------------
+  if (activeTableroViewMode === "J") {
+    return rank === "J" || rank === "Q";
+  }
+
+  // -------------------------
+  // MODO A
+  // -------------------------
+  if (activeTableroViewMode === "A") {
+    if (rank === "A" && suit !== "HEART") return true;
+    if (rank === "JOKER" && suit === "BLUE") return true;
+    return false;
+  }
+
+  // -------------------------
+  // MODO AK
+  // -------------------------
+  if (activeTableroViewMode === "AK") {
+    if (rank === "A" && suit !== "HEART") return true;
+    if (rank === "K") return true;
+    if (rank === "JOKER" && suit === "BLUE") return true;
+    return false;
+  }
 
   return false;
-}  
-
+}
  function matchesTableroFilter(play, filterSuit) {
   const rank = normalizeRank(play?.rank);
   const suit = normalizeSuit(play?.suit);
@@ -253,44 +275,71 @@ function belongsToTablero(play) {
     return belongsToTablero(play);
   }
 
-  if (filter === 'HEART') {
-    return rank === 'J' && suit === 'HEART';
+  // primero: el play tiene que pertenecer a la vista actual
+  if (!belongsToTablero(play)) {
+    return false;
   }
 
-  if (filter === 'SPADE') {
-    return rank === 'J' && suit === 'SPADE';
+  // MODO J
+  if (activeTableroViewMode === "J") {
+    if (filter === "HEART") {
+      return rank === "J" && suit === "HEART";
+    }
+
+    if (filter === "SPADE") {
+      return rank === "J" && suit === "SPADE";
+    }
+
+    if (filter === "DIAMOND") {
+      return rank === "J" && suit === "DIAMOND";
+    }
+
+    if (filter === "CLUB") {
+      return rank === "J" && suit === "CLUB";
+    }
   }
 
-  if (filter === 'DIAMOND') {
-    return rank === 'J' && suit === 'DIAMOND';
-  }
+  // MODO A o AK
+  if (activeTableroViewMode === "A" || activeTableroViewMode === "AK") {
+    if (filter === "HEART") {
+      return false;
+    }
 
-  if (filter === 'CLUB') {
-    return (rank === 'J' && suit === 'CLUB') || (rank === 'A');
+    if (filter === "SPADE") {
+      return suit === "SPADE";
+    }
+
+    if (filter === "DIAMOND") {
+      return suit === "DIAMOND";
+    }
+
+    if (filter === "CLUB") {
+      return suit === "CLUB";
+    }
   }
 
   return belongsToTablero(play);
 }
+function getComponentName(play) {
+  const rank = normalizeRank(play?.rank);
+  const suit = normalizeSuit(play?.suit);
 
-  function getComponentName(play) {
-    const rank = normalizeRank(play?.rank);
-    const suit = normalizeSuit(play?.suit);
+  if (rank === 'J' && suit === 'HEART') return 'Jcorazon';
+  if (rank === 'J' && suit === 'SPADE') return 'Jpike';
+  if (rank === 'J' && suit === 'CLUB') return 'Jtrebol';
+  if (rank === 'J' && suit === 'DIAMOND') return 'Jdiamante';
 
-    if (rank === 'J' && suit === 'HEART') return 'Jcorazon';
-    if (rank === 'J' && suit === 'SPADE') return 'Jpike';
-    if (rank === 'J' && suit === 'CLUB') return 'Jtrebol';
-    if (rank === 'J' && suit === 'DIAMOND') return 'Jdiamante';
+  if (rank === 'Q' && suit === 'SPADE') return 'Qpike';
+  if (rank === 'Q' && suit === 'CLUB') return 'Qtrebol';
 
-    if (rank === 'Q' && suit === 'SPADE') return 'Qpike';
-    if (rank === 'Q' && suit === 'CLUB') return 'Qtrebol';
+  if (rank === 'A' && suit === 'SPADE') return 'Apike';
+  if (rank === 'A' && suit === 'DIAMOND') return 'Adiamante';
+  if (rank === 'A' && suit === 'CLUB') return 'Atrebol';
 
-    if (rank === 'A' && suit === 'SPADE') return 'Apike';
-    if (rank === 'A' && suit === 'DIAMOND') return 'Adiamante';
-    if (rank === 'A' && suit === 'CLUB') return 'Atrebol';
+  if (rank === 'JOKER' && suit === 'BLUE') return 'Jokerazul';
 
-    return null;
-  }
-
+  return null;
+}
   function getCardLabel(play) {
     const rank = normalizeRank(play?.rank) || '?';
     const suit = normalizeSuit(play?.suit) || '?';
@@ -532,6 +581,34 @@ if (focusPlayId) {
 
     renderTablero(deck, plays, state);
   });
+
+document.addEventListener("mazobar:filter-rank", (event) => {
+  const nextRank = String(event?.detail?.rank || "").toUpperCase();
+
+  if (nextRank === "A") {
+    if (activeTableroViewMode === "A") {
+      activeTableroViewMode = "J";
+    } else {
+      activeTableroViewMode = "A";
+    }
+  } else if (nextRank === "K") {
+    if (activeTableroViewMode === "AK") {
+      activeTableroViewMode = "A";
+    } else {
+      activeTableroViewMode = "AK";
+    }
+  } else {
+    activeTableroViewMode = "J";
+  }
+
+  activeTableroFilter = null;
+
+  const deck = window.__currentDeck || null;
+  const state = window.__currentState || {};
+  const plays = Array.isArray(state?.plays) ? state.plays : [];
+
+  renderTablero(deck, plays, state);
+});
   
 document.addEventListener("tablero:cancel-play", async (event) => {
   try {
