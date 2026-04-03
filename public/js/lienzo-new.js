@@ -2,7 +2,77 @@
   function normalizeRank(value) {
     return String(value || "").trim().toUpperCase();
   }
+function renderAssignedTargetPanel(user) {
+  const container = document.getElementById("lienzo-users-picker");
+  if (!container) return;
 
+  const photo =
+    user?.profile_photo_url || "/assets/icons/singeta120.gif";
+
+  const name =
+    user?.nickname ||
+    user?.full_name ||
+    user?.name ||
+    `Usuario ${user?.id || ""}`;
+
+  container.innerHTML = `
+    <section class="lienzo-panel lienzo-panel--target">
+      
+      <div class="lienzo-target-header">
+        <img
+          class="lienzo-target-header__photo"
+          src="${photo}"
+          alt="${name}"
+        />
+        <div class="lienzo-target-header__name">
+          ${name}
+        </div>
+      </div>
+
+      <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+        <!-- acá aterriza la carta -->
+      </div>
+
+      <div class="lienzo-target-actions">
+        <button id="lienzo-save-btn" class="lienzo-btn">
+          Salvar
+        </button>
+
+        <button id="lienzo-exit-btn" class="lienzo-btn">
+          Exit
+        </button>
+      </div>
+    </section>
+  `;
+
+  bindTargetActions();
+}
+
+  function bindTargetActions() {
+  const saveBtn = document.getElementById("lienzo-save-btn");
+  const exitBtn = document.getElementById("lienzo-exit-btn");
+
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      console.log("SALVAR jugada", window.__lienzoNewDraft);
+      // después conectamos POST /plays
+    });
+  }
+
+  if (exitBtn) {
+    exitBtn.addEventListener("click", () => {
+      const params = new URLSearchParams(window.location.search);
+      const deckId = params.get("deckId") || params.get("id");
+
+      if (deckId) {
+        window.location.href = `/mazo.html?id=${deckId}`;
+      } else {
+        window.location.href = "/mazos.html";
+      }
+    });
+  }
+}
+  
   function normalizeSuit(value) {
     return String(value || "").trim().toUpperCase();
   }
