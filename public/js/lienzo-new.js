@@ -27,9 +27,14 @@
 
   function getCurrentDeck() {
     const state = getCurrentState();
-    return state.deck || window.__currentDeck || {};
-  }
 
+    return (
+      state?.deck ||
+      state?.mazo ||
+      window.__currentDeck ||
+      {}
+    );
+  }
   function getPlayById(playId) {
     const id = Number(playId || 0);
     if (!id) return null;
