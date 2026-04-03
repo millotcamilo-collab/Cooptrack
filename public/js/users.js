@@ -326,8 +326,9 @@ function handleConflictSelect(userId) {
   const sealBtn = container.querySelector("[data-users-seal-btn]");
   const exitBtn = container.querySelector("[data-users-exit-btn]");
   const editBtn = container.querySelector("[data-users-edit-btn]");
-  const rowButtons = container.querySelectorAll("[data-users-row-id]");
-
+  const rowSelectButtons = container.querySelectorAll("[data-users-row-select-id]");
+  const rowAnimateButtons = container.querySelectorAll("[data-users-row-animate-id]");
+    
   const createFields = container.querySelectorAll("[data-users-create-field]");
   const saveNewBtn = container.querySelector("[data-users-save-new]");
   const cancelNewBtn = container.querySelector("[data-users-cancel-new]");
@@ -362,11 +363,28 @@ function handleConflictSelect(userId) {
     editBtn.addEventListener("click", handleEditSelected);
   }
 
-  rowButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      handleSelect(btn.getAttribute("data-users-row-id"));
-    });
+  rowSelectButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    handleSelect(btn.getAttribute("data-users-row-select-id"));
   });
+});
+
+rowAnimateButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const userId = btn.getAttribute("data-users-row-animate-id");
+    handleSelect(userId);
+
+    const selected =
+      state.filteredUsers.find((u) => String(u.id) === String(userId)) ||
+      state.allUsers.find((u) => String(u.id) === String(userId));
+
+    if (!selected) return;
+
+    if (typeof options.onAnimateSelect === "function") {
+      options.onAnimateSelect(selected);
+    }
+  });
+});
 
   createFields.forEach((field) => {
     field.addEventListener("input", (event) => {
@@ -548,27 +566,44 @@ function renderCreateUserState() {
       resultsHtml = `<div class="users-picker__empty">No se encontraron usuarios.</div>`;
     } else {
       resultsHtml = state.filteredUsers.map((user) => `
-  <button
-    type="button"
+  <div
     class="users-picker__row"
     data-users-row-id="${escapeHtml(user.id)}"
   >
-    <img
-      class="users-picker__row-type-icon"
-      src="${escapeHtml(getUserTypeIcon(user))}"
-      alt="${escapeHtml(user.qCategory || user.user_type || "Usuario")}"
-    />
+    <button
+      type="button"
+      class="users-picker__row-main"
+      data-users-row-select-id="${escapeHtml(user.id)}"
+    >
+      <img
+        class="users-picker__row-type-icon"
+        src="${escapeHtml(getUserTypeIcon(user))}"
+        alt="${escapeHtml(user.qCategory || user.user_type || "Usuario")}"
+      />
 
-    <img
-      class="users-picker__row-photo"
-      src="${escapeHtml(getUserPhoto(user))}"
-      alt="${escapeHtml(getUserDisplayName(user))}"
-    />
+      <img
+        class="users-picker__row-photo"
+        src="${escapeHtml(getUserPhoto(user))}"
+        alt="${escapeHtml(getUserDisplayName(user))}"
+      />
 
-    <span class="users-picker__row-name">${escapeHtml(getUserDisplayName(user))}</span>
-  </button>
+      <span class="users-picker__row-name">${escapeHtml(getUserDisplayName(user))}</span>
+    </button>
+
+    <button
+      type="button"
+      class="users-picker__row-action"
+      data-users-row-animate-id="${escapeHtml(user.id)}"
+      title="Enviar carta"
+    >
+      <img
+        src="/assets/icons/ClaquetaAbierta.gif"
+        alt="Enviar carta"
+      />
+    </button>
+  </div>
 `).join("");
-    }
+}
 
    return `
   ${state.isCreatingUser ? renderCreateUserState() : renderSearchState()}
