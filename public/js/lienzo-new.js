@@ -266,18 +266,21 @@ function renderAssignedTargetPanel(user) {
 }
   
   function renderActionButtons() {
+  const saveIcon = window.ICONS?.actions?.save || "/assets/icons/salvar40.gif";
+  const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
+
   return `
     <div class="lienzo-actions">
-      <button id="lienzo-save-btn" class="lienzo-btn">
-        ${window.renderIcon ? window.renderIcon("save") : "💾"}
+      <button id="lienzo-save-btn" class="lienzo-btn" title="Salvar">
+        <img src="${saveIcon}" alt="Salvar" />
       </button>
-      <button id="lienzo-exit-btn" class="lienzo-btn">
-        ${window.renderIcon ? window.renderIcon("exit") : "✖"}
+
+      <button id="lienzo-exit-btn" class="lienzo-btn" title="Exit">
+        <img src="${exitIcon}" alt="Exit" />
       </button>
     </div>
   `;
 }
-  
   
   function normalizeSuit(value) {
     return String(value || "").trim().toUpperCase();
