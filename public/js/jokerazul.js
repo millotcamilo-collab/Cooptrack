@@ -52,7 +52,7 @@
           target_user_id: ADMIN_USER_ID,
           play_code: playCode,
           play_status: "PENDING",
-          text: "Solicitud de Joker azul"
+          text: "Solicitud de certificación"
         })
       });
 
@@ -64,9 +64,9 @@
         return;
       }
 
-      setMessage("Solicitud de Joker azul enviada.", "success");
+      setMessage("Solicitud de certificaci{on enviada.", "success");
     } catch (error) {
-      console.error("Error enviando Joker azul:", error);
+      console.error("Error enviando solicitud de certificación:", error);
       setMessage("Falló el envío de la solicitud.", "error");
     }
   }
