@@ -2,8 +2,73 @@
   function normalizeRank(value) {
     return String(value || "").trim().toUpperCase();
   }
-function renderAssignedTargetPanel(user) {
+
+function animateCardToUser(user) {
+  const source = document.getElementById("lienzo-source-card");
+  if (!source) {
+    console.warn("No hay carta origen");
+    return;
+  }
+
+  const rect = source.getBoundingClientRect();
+
+  // 👻 crear carta fantasma
+  const ghost = source.cloneNode(true);
+  ghost.style.position = "fixed";
+  ghost.style.left = rect.left + "px";
+  ghost.style.top = rect.top + "px";
+  ghost.style.width = rect.width + "px";
+  ghost.style.height = rect.height + "px";
+  ghost.style.margin = "0";
+  ghost.style.zIndex = "9999";
+  ghost.style.transition = "all 450ms ease";
+  ghost.style.pointerEvents = "none";
+
+  document.body.appendChild(ghost);
+
+  // ocultar carta original
+  source.style.visibility = "hidden";
+
+  // 🎯 destino (centro del panel derecho por ahora)
   const container = document.getElementById("lienzo-users-picker");
+  const targetRect = container.getBoundingClientRect();
+
+  const targetX = targetRect.left + targetRect.width / 2 - rect.width / 2;
+  const targetY = targetRect.top + 60;
+
+  requestAnimationFrame(() => {
+    ghost.style.left = targetX + "px";
+    ghost.style.top = targetY + "px";
+    ghost.style.transform = "scale(1.05)";
+  });
+
+  ghost.addEventListener("transitionend", () => {
+    ghost.remove();
+
+    // 👇 ahora cambiamos la UI
+    renderAssignedTargetPanel(user);
+
+    // pequeña espera para asegurar DOM listo
+    setTimeout(() => {
+      mountCardInTarget(source);
+    }, 50);
+  });
+}
+
+function mountCardInTarget(sourceCard) {
+  const dropzone = document.getElementById("lienzo-target-dropzone");
+  if (!dropzone) return;
+
+  const card = sourceCard.cloneNode(true);
+
+  card.style.visibility = "visible";
+  card.removeAttribute("id");
+
+  dropzone.appendChild(card);
+}
+  
+function renderAssignedTargetPanel(user) {
+  const container = document.querySelector(".lienzo-grid__right");
   if (!container) return;
 
   const photo =
@@ -17,7 +82,6 @@ function renderAssignedTargetPanel(user) {
 
   container.innerHTML = `
     <section class="lienzo-panel lienzo-panel--target">
-      
       <div class="lienzo-target-header">
         <img
           class="lienzo-target-header__photo"
@@ -47,7 +111,7 @@ function renderAssignedTargetPanel(user) {
 
   bindTargetActions();
 }
-
+  
   function bindTargetActions() {
   const saveBtn = document.getElementById("lienzo-save-btn");
   const exitBtn = document.getElementById("lienzo-exit-btn");
@@ -274,28 +338,17 @@ function getDeckAvatarSrc(deck) {
     });
   }
 
-  function renderUsersPanel() {
-    return `
-      <section class="lienzo-panel lienzo-panel--users">
-        <div class="lienzo-panel__header">
-          <div class="lienzo-panel__subtitle">Seleccioná un destinatario</div>
-        </div>
+function renderUsersPanel() {
+  return `
+    <section class="lienzo-panel lienzo-panel--users">
+      <div class="lienzo-panel__header">
+        <div class="lienzo-panel__subtitle">Seleccioná un destinatario</div>
+      </div>
 
-        <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
-
-
-        <div class="lienzo-actions">
-          <button
-            type="button"
-            id="lienzo-new-save-btn"
-            class="lienzo-actions__btn"
-          >
-            Crear jugada
-          </button>
-        </div>
-      </section>
-    `;
-  }
+      <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
+    </section>
+  `;
+}
 
   function renderDraftCardPanel(draft) {
     const rank = normalizeRank(draft?.card_rank);
@@ -308,6 +361,7 @@ function getDeckAvatarSrc(deck) {
 
         <div class="lienzo-card-wrap">
           <img
+            id="lienzo-source-card"
             class="lienzo-card-image"
             src="${escapeHtml(imageSrc)}"
             alt="Carta ${escapeHtml(rank)}${escapeHtml(symbol)}"
@@ -476,8 +530,12 @@ function getDeckAvatarSrc(deck) {
     `;
 
     bindUsersPicker(draft);
-    bindCreateButton();
-  }
+}
+document.addEventListener("lienzo:animate-card-to-user", (event) => {
+  const user = event.detail?.user;
+  if (!user) return;
 
+  animateCardToUser(user);
+});
   window.openNewLienzo = renderNewLienzo;
 })();
