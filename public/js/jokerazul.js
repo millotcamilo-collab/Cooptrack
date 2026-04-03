@@ -66,7 +66,11 @@
 
     setMessage("Solicitud de certificación enviada.", "success");
 
-    window.location.href = `/mazo.html?id=${deckId}&tableroView=A`;
+    const createdPlayId = data?.play?.id || "";
+
+    window.location.href =
+  `/mazo.html?id=${deckId}&tableroView=A${createdPlayId ? `&focusPlayId=${createdPlayId}` : ""}`;
+    
   } catch (error) {
     console.error("Error enviando solicitud de certificación:", error);
     setMessage("Falló el envío de la solicitud.", "error");
