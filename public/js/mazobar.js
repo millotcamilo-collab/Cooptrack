@@ -263,24 +263,11 @@ function hasPlayWithStatus(plays, statusList) {
   }
 
   function buildCommandButtonsHTML(plays) {
-    const suitButtons = getVisibleCommandSuits().map((suit) => {
-      const imgSrc = getSuitButtonImageSrc(suit);
-      const symbol = getSuitSymbol(suit);
+  const suitButtons = getVisibleCommandSuits().map((suit) => {
+    const imgSrc = getSuitButtonImageSrc(suit);
+    const symbol = getSuitSymbol(suit);
 
-      if (imgSrc) {
-        return `
-          <button
-            type="button"
-            class="mazobar__cmd-btn mazobar__cmd-btn--suit"
-            data-command-suit="${suit}"
-            title="${symbol}"
-            aria-label="${symbol}"
-          >
-            <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
-          </button>
-        `;
-      }
-
+    if (imgSrc) {
       return `
         <button
           type="button"
@@ -289,33 +276,65 @@ function hasPlayWithStatus(plays, statusList) {
           title="${symbol}"
           aria-label="${symbol}"
         >
-          ${symbol}
+          <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
         </button>
       `;
-    }).join("");
-
-    const alertButtons = buildAlertButtonsHTML(plays);
+    }
 
     return `
-  <button
-  id="btnAddJ"
-  type="button"
-  class="mazobar__cmd-btn mazobar__cmd-btn--primary"
-  title="Nueva jugada"
-  aria-label="Nueva jugada"
->
-  <img
-    src="/assets/icons/maquina80.gif"
-    alt="J+"
-    class="mazobar__cmd-icon"
-  />
-</button>
-
-      ${suitButtons}
-      ${alertButtons}
+      <button
+        type="button"
+        class="mazobar__cmd-btn mazobar__cmd-btn--suit"
+        data-command-suit="${suit}"
+        title="${symbol}"
+        aria-label="${symbol}"
+      >
+        ${symbol}
+      </button>
     `;
-  }
+  }).join("");
 
+  const alertButtons = buildAlertButtonsHTML(plays);
+
+  return `
+    <button
+      id="btnAddJ"
+      type="button"
+      class="mazobar__cmd-btn mazobar__cmd-btn--primary"
+      title="Nueva jugada"
+      aria-label="Nueva jugada"
+    >
+      <img
+        src="/assets/icons/maquina80.gif"
+        alt="J+"
+        class="mazobar__cmd-icon"
+      />
+    </button>
+
+    <button
+      id="btnFilterA"
+      type="button"
+      class="mazobar__cmd-btn"
+      title="Ver As"
+      aria-label="Ver As"
+    >
+      A
+    </button>
+
+    <button
+      id="btnFilterK"
+      type="button"
+      class="mazobar__cmd-btn"
+      title="Ver Reyes"
+      aria-label="Ver Reyes"
+    >
+      K
+    </button>
+
+    ${suitButtons}
+    ${alertButtons}
+  `;
+}
   function buildJokersHTML(plays) {
   const redActive = hasRedJoker(plays);
   const blueActive = hasBlueJoker(plays);
@@ -411,7 +430,18 @@ function hasPlayWithStatus(plays, statusList) {
     document.getElementById("btnAddJ")?.addEventListener("click", () => {
       document.dispatchEvent(new CustomEvent("mazobar:addJ"));
     });
- 
+    
+ document.getElementById("btnFilterA")?.addEventListener("click", () => {
+  document.dispatchEvent(new CustomEvent("mazobar:filter-rank", {
+    detail: { rank: "A" }
+  }));
+});
+
+document.getElementById("btnFilterK")?.addEventListener("click", () => {
+  document.dispatchEvent(new CustomEvent("mazobar:filter-rank", {
+    detail: { rank: "K" }
+  }));
+});
 document.querySelectorAll(".mazobar__joker").forEach((jokerEl) => {
   jokerEl.addEventListener("dragstart", (event) => {
     const rank = String(jokerEl.dataset.rank || "").toUpperCase();
