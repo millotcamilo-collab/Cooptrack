@@ -82,10 +82,24 @@
     return map[`${r}_${s}`] || "/assets/icons/Dorso70.gif";
   }
 
-  function getDeckAvatarSrc(deck) {
-    const raw = String(deck?.deck_image_url || "").trim();
-    return raw || "/assets/icons/sinPicture.gif";
-  }
+function getDeckAvatarSrc(deck) {
+  console.log("deck completo =", deck);
+  console.log("posibles campos imagen =", {
+    deck_image_url: deck?.deck_image_url,
+    image_url: deck?.image_url,
+    photo_url: deck?.photo_url,
+    avatar: deck?.avatar
+  });
+
+  const raw =
+    deck?.deck_image_url ||
+    deck?.image_url ||
+    deck?.photo_url ||
+    deck?.avatar ||
+    "";
+
+  return String(raw).trim() || "/assets/icons/sinPicture.gif";
+}
 
   function getCurrencyCode(deck) {
     return String(deck?.currency_symbol || "").trim().toUpperCase();
@@ -135,6 +149,7 @@
   }
 
   function renderDeckHeader(deck) {
+    console.log("renderDeckHeader deck =", deck);
     const avatarSrc = getDeckAvatarSrc(deck);
     const deckName = deck?.name || "Mazo";
     const currencyCode = getCurrencyCode(deck);
