@@ -64,7 +64,7 @@
         return;
       }
 
-      setMessage("Solicitud de certificaci{on enviada.", "success");
+      setMessage("Solicitud de certificación enviada.", "success");
     } catch (error) {
       console.error("Error enviando solicitud de certificación:", error);
       setMessage("Falló el envío de la solicitud.", "error");
