@@ -257,12 +257,12 @@ function renderAssignedTargetPanel(user) {
       </div>
 
       <div class="lienzo-target-actions">
-       
+        ${renderActionButtons()}
       </div>
     </section>
   `;
 
-  bindTargetActions();
+  bindActionButtons();
 }
   
   function renderActionButtons() {
@@ -277,30 +277,7 @@ function renderAssignedTargetPanel(user) {
     </div>
   `;
 }
-  function bindTargetActions() {
-  const saveBtn = document.getElementById("lienzo-save-btn");
-  const exitBtn = document.getElementById("lienzo-exit-btn");
-
-  if (saveBtn) {
-    saveBtn.addEventListener("click", () => {
-      console.log("SALVAR jugada", window.__lienzoNewDraft);
-      // después conectamos POST /plays
-    });
-  }
-
-  if (exitBtn) {
-    exitBtn.addEventListener("click", () => {
-      const params = new URLSearchParams(window.location.search);
-      const deckId = params.get("deckId") || params.get("id");
-
-      if (deckId) {
-        window.location.href = `/mazo.html?id=${deckId}`;
-      } else {
-        window.location.href = "/mazos.html";
-      }
-    });
-  }
-}
+  
   
   function normalizeSuit(value) {
     return String(value || "").trim().toUpperCase();
