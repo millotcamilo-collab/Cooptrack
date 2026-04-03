@@ -3,6 +3,132 @@
     return String(value || "").trim().toUpperCase();
   }
 
+window.__lienzoAnimationState = window.__lienzoAnimationState || {
+  sourceCardDelivered: false
+};
+  
+function getCurrentUserCorporateCards() {
+  const state = getCurrentState();
+  const currentUser = getCurrentUser();
+  const userId = Number(currentUser?.id || 0);
+
+  if (!userId) return [];
+
+  const cards = Array.isArray(state?.corporateCards)
+    ? state.corporateCards
+    : [];
+
+  return cards
+    .filter((card) => Number(card?.owner_user_id || card?.user_id || 0) === userId)
+    .sort(compareCorporateCards);
+}
+
+function compareCorporateCards(a, b) {
+  const order = {
+    A_HEART: 1,
+    A_SPADE: 2,
+    A_DIAMOND: 3,
+    A_CLUB: 4,
+    K_HEART: 5,
+    K_SPADE: 6,
+    K_DIAMOND: 7,
+    K_CLUB: 8
+  };
+
+  const aKey = `${normalizeRank(a?.card_rank)}_${normalizeSuit(a?.card_suit)}`;
+  const bKey = `${normalizeRank(b?.card_rank)}_${normalizeSuit(b?.card_suit)}`;
+
+  return (order[aKey] || 999) - (order[bKey] || 999);
+}  
+
+function buildSourceCardsScene(draft) {
+  const ownedCards = getCurrentUserCorporateCards();
+
+  const activeRank = normalizeRank(draft?.card_rank);
+  const activeSuit = normalizeSuit(draft?.card_suit);
+
+  const backgroundCards = ownedCards.filter((card) => {
+    const rank = normalizeRank(card?.card_rank);
+    const suit = normalizeSuit(card?.card_suit);
+
+    return !(rank === activeRank && suit === activeSuit);
+  });
+
+  return {
+    backgroundCards,
+    activeCard: {
+      card_rank: activeRank,
+      card_suit: activeSuit
+    }
+  };
+}
+
+function renderSourcePlayerPanel(draft) {
+  const user = getCurrentUser();
+  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+  const userName =
+    user?.nickname ||
+    user?.full_name ||
+    user?.name ||
+    "Creador";
+
+  const scene = buildSourceCardsScene(draft);
+  const delivered =
+    window.__lienzoAnimationState?.sourceCardDelivered === true;
+
+  return `
+    <section class="lienzo-panel lienzo-panel--source">
+      <div class="lienzo-source-header">
+        <img
+          class="lienzo-source-header__photo"
+          src="${escapeHtml(userPhoto)}"
+          alt="${escapeHtml(userName)}"
+        />
+        <div class="lienzo-source-header__name">
+          ${escapeHtml(userName)}
+        </div>
+      </div>
+
+      <div class="lienzo-source-cards">
+        <div class="lienzo-source-stack">
+          ${scene.backgroundCards.map(renderBackgroundCard).join("")}
+
+          ${
+            delivered
+              ? ""
+              : `
+            <div class="lienzo-source-active">
+              <img
+                id="lienzo-source-card"
+                class="lienzo-card-image"
+                src="${escapeHtml(
+                  getCardImageSrc(
+                    scene.activeCard.card_rank,
+                    scene.activeCard.card_suit
+                  )
+                )}"
+                alt=""
+              />
+            </div>
+          `
+          }
+        </div>
+      </div>
+    </section>
+  `;
+}
+function renderBackgroundCard(card, index) {
+  const src = getCardImageSrc(card?.card_rank, card?.card_suit);
+
+  return `
+    <img
+      class="lienzo-source-stack__card"
+      src="${escapeHtml(src)}"
+      alt=""
+      style="left:${index * 18}px;"
+    />
+  `;
+}
 function animateCardToUser(user) {
   const source = document.getElementById("lienzo-source-card");
   if (!source) {
@@ -43,13 +169,26 @@ function animateCardToUser(user) {
   });
 
   ghost.addEventListener("transitionend", () => {
-  if (!ghost.parentNode) return; // evita duplicados
-    ghost.remove();
-    renderAssignedTargetPanel(user);
-    setTimeout(() => {
-      mountCardInTarget(source);
-    }, 50);
-  });
+  if (!ghost.parentNode) return;
+
+  ghost.remove();
+
+  window.__lienzoAnimationState = {
+    ...(window.__lienzoAnimationState || {}),
+    sourceCardDelivered: true
+  };
+
+  const leftContainer = document.querySelector(".lienzo-grid__left");
+  if (leftContainer) {
+    leftContainer.innerHTML = renderSourcePlayerPanel(window.__lienzoNewDraft);
+  }
+
+  renderAssignedTargetPanel(user);
+
+  setTimeout(() => {
+    mountCardInTarget(source);
+  }, 50);
+});
 }
 
 function mountCardInTarget(sourceCard) {
@@ -262,25 +401,25 @@ function getDeckAvatarSrc(deck) {
   }
 
   function buildDraftFromParams() {
-    const { deckId, parentPlayId, childRank, childSuit } = getLienzoNewParams();
-    const parentPlay = getPlayById(parentPlayId);
-    const deck = getCurrentDeck();
+  const { deckId, parentPlayId, childRank, childSuit } = getLienzoNewParams();
+  const parentPlay = getPlayById(parentPlayId);
+  const deck = getCurrentDeck();
+  const currentUser = getCurrentUser();
 
-    return {
-      mode: "new",
-      deckId: deckId || Number(deck?.id || 0),
-      parentPlayId,
-      parentPlay,
-      card_rank: childRank,
-      card_suit: childSuit,
-      // 👇 NUEVO
-      target_user_id: currentUser?.id || null,
-      target_user_id: null,
-      play_text: "",
-      status: "DRAFT"
-    };
-  }
-
+  return {
+    mode: "new",
+    deckId: deckId || Number(deck?.id || 0),
+    parentPlayId,
+    parentPlay,
+    card_rank: childRank,
+    card_suit: childSuit,
+    target_user_id: currentUser?.id || null,
+    target_user: currentUser || null,
+    play_text: "",
+    status: "DRAFT"
+  };
+}
+  
   function renderDeckHeader(deck) {
     console.log("renderDeckHeader deck =", deck);
     const avatarSrc = getDeckAvatarSrc(deck);
@@ -380,24 +519,7 @@ function renderSourcePlayerPanel(draft) {
       </div>
 
       <div class="lienzo-source-cards">
-        <div class="lienzo-source-cards__fan">
-          <img
-            class="lienzo-source-cards__fan-card lienzo-source-cards__fan-card--1"
-            src="/assets/icons/Dorso70.gif"
-            alt=""
-          />
-          <img
-            class="lienzo-source-cards__fan-card lienzo-source-cards__fan-card--2"
-            src="/assets/icons/Dorso70.gif"
-            alt=""
-          />
-          <img
-            class="lienzo-source-cards__fan-card lienzo-source-cards__fan-card--3"
-            src="/assets/icons/Dorso70.gif"
-            alt=""
-          />
-        </div>
-
+        
         <div class="lienzo-source-cards__main">
           <img
             id="lienzo-source-card"
@@ -610,5 +732,8 @@ document.addEventListener("lienzo:animate-card-to-user", (event) => {
 
   animateCardToUser(user);
 });
+
+  
+  
   window.openNewLienzo = renderNewLienzo;
 })();
