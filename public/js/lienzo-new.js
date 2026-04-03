@@ -273,6 +273,8 @@ function getDeckAvatarSrc(deck) {
       parentPlay,
       card_rank: childRank,
       card_suit: childSuit,
+      // 👇 NUEVO
+      target_user_id: currentUser?.id || null,
       target_user_id: null,
       play_text: "",
       status: "DRAFT"
@@ -444,6 +446,19 @@ function renderSourcePlayerPanel(draft) {
     return;
   }
 
+// 👇 NUEVO: mostrar anfitrión como destino inicial
+if (draft.target_user) {
+  renderAssignedTargetPanel(draft.target_user);
+
+  // opcional: montar la carta directamente si querés efecto inicial
+  const source = document.getElementById("lienzo-source-card");
+  if (source) {
+    setTimeout(() => {
+      mountCardInTarget(source);
+    }, 100);
+  }
+}
+    
   window.renderUsersPicker("lienzo-users-picker", {
     // 🟢 Selección normal (click en fila)
     onSelect(user) {
@@ -581,7 +596,7 @@ function renderSourcePlayerPanel(draft) {
           ${renderSourcePlayerPanel(draft)}
         </div>
 
-        <div class="lienzo-grid__right">
+       <div class="lienzo-grid__right" id="lienzo-right-panel">
           ${renderUsersPanel()}
         </div>
       </div>
