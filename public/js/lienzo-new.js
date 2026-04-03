@@ -346,7 +346,68 @@ function renderUsersPanel() {
     </section>
   `;
 }
+function getCurrentUser() {
+  return window.__currentUser || window.__currentState?.currentUser || null;
+}
 
+function renderSourcePlayerPanel(draft) {
+  const rank = normalizeRank(draft?.card_rank);
+  const suit = normalizeSuit(draft?.card_suit);
+  const symbol = getSuitSymbol(suit);
+  const imageSrc = getCardImageSrc(rank, suit);
+
+  const user = getCurrentUser();
+  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+  const userName =
+    user?.nickname ||
+    user?.full_name ||
+    user?.name ||
+    "Creador";
+
+  return `
+    <section class="lienzo-panel lienzo-panel--source">
+      <div class="lienzo-source-header">
+        <img
+          class="lienzo-source-header__photo"
+          src="${escapeHtml(userPhoto)}"
+          alt="${escapeHtml(userName)}"
+        />
+        <div class="lienzo-source-header__name">
+          ${escapeHtml(userName)}
+        </div>
+      </div>
+
+      <div class="lienzo-source-cards">
+        <div class="lienzo-source-cards__fan">
+          <img
+            class="lienzo-source-cards__fan-card lienzo-source-cards__fan-card--1"
+            src="/assets/icons/Dorso70.gif"
+            alt=""
+          />
+          <img
+            class="lienzo-source-cards__fan-card lienzo-source-cards__fan-card--2"
+            src="/assets/icons/Dorso70.gif"
+            alt=""
+          />
+          <img
+            class="lienzo-source-cards__fan-card lienzo-source-cards__fan-card--3"
+            src="/assets/icons/Dorso70.gif"
+            alt=""
+          />
+        </div>
+
+        <div class="lienzo-source-cards__main">
+          <img
+            id="lienzo-source-card"
+            class="lienzo-card-image"
+            src="${escapeHtml(imageSrc)}"
+            alt="Carta ${escapeHtml(rank)}${escapeHtml(symbol)}"
+          />
+        </div>
+      </div>
+    </section>
+  `;
+}
   function renderDraftCardPanel(draft) {
     const rank = normalizeRank(draft?.card_rank);
     const suit = normalizeSuit(draft?.card_suit);
@@ -517,7 +578,7 @@ function renderUsersPanel() {
 
       <div class="lienzo-grid">
         <div class="lienzo-grid__left">
-          ${renderDraftCardPanel(draft)}
+          ${renderSourcePlayerPanel(draft)}
         </div>
 
         <div class="lienzo-grid__right">
