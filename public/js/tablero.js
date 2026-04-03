@@ -76,8 +76,8 @@ function bindLienzoDropZone(deckId) {
     }
 
     window.location.href =
-  `  /lienzo-new.html?deckId=${deckId}&parentPlayId=${sourcePlayId}&childRank=${childRank}&childSuit=${childSuit}`;
-
+  `/lienzo-new.html?deckId=${deckId}&parentPlayId=${sourcePlayId}&childRank=${childRank}&childSuit=${childSuit}`;
+    
     return;
   }
 
@@ -480,6 +480,11 @@ function getComponentName(play) {
       },
     };
   }
+
+function getTableroViewFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get("tableroView") || "").toUpperCase();
+}
   
 function getFocusPlayIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -497,7 +502,15 @@ function getFocusPlayIdFromUrl() {
     try {
       const rawPlays = Array.isArray(plays) ? plays : [];
       const normalized = rawPlays.map(normalizePlay);
+const urlView = getTableroViewFromUrl();
 
+if (urlView === "A") {
+  activeTableroViewMode = "A";
+} else if (urlView === "AK") {
+  activeTableroViewMode = "AK";
+} else {
+  activeTableroViewMode = "J";
+}
      const tableroPlays = sortTableroPlays(
   normalized.filter((play) => {
     if (!belongsToTablero(play)) return false;
