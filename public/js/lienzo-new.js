@@ -180,37 +180,9 @@ function getDeckAvatarSrc(deck) {
               ${escapeHtml(deckName)}
             </span>
 
-            <img
-              src="/assets/icons/dia40.gif"
-              alt="♦"
-              class="lienzo-deckbar__balance-icon"
-            />
-
-            <span class="lienzo-deckbar__currency">
-              ${escapeHtml(currencyCode)}
-            </span>
-
-            <span class="lienzo-deckbar__balance">
-              ${escapeHtml(balance)}
-            </span>
           </div>
         </div>
 
-        <div class="lienzo-deckbar__right">
-          <button
-            type="button"
-            id="lienzo-exit-btn"
-            class="lienzo-deckbar__exit-btn"
-            title="Volver al mazo"
-            aria-label="Volver al mazo"
-          >
-            <img
-              src="/assets/icons/exit80.gif"
-              alt="Salir"
-              class="lienzo-deckbar__exit-icon"
-            />
-          </button>
-        </div>
       </section>
     `;
   }
