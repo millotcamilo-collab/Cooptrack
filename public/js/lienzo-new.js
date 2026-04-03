@@ -63,60 +63,6 @@ function buildSourceCardsScene(draft) {
   };
 }
 
-function renderSourcePlayerPanel(draft) {
-  const user = getCurrentUser();
-  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-  const userName =
-    user?.nickname ||
-    user?.full_name ||
-    user?.name ||
-    "Creador";
-
-  const scene = buildSourceCardsScene(draft);
-  const delivered =
-    window.__lienzoAnimationState?.sourceCardDelivered === true;
-
-  return `
-    <section class="lienzo-panel lienzo-panel--source">
-      <div class="lienzo-source-header">
-        <img
-          class="lienzo-source-header__photo"
-          src="${escapeHtml(userPhoto)}"
-          alt="${escapeHtml(userName)}"
-        />
-        <div class="lienzo-source-header__name">
-          ${escapeHtml(userName)}
-        </div>
-      </div>
-
-      <div class="lienzo-source-cards">
-        <div class="lienzo-source-stack">
-          ${scene.backgroundCards.map(renderBackgroundCard).join("")}
-
-          ${
-            delivered
-              ? ""
-              : `
-            <div class="lienzo-source-active">
-              <img
-                id="lienzo-source-card"
-                class="lienzo-card-image"
-                src="${escapeHtml(
-                  getCardImageSrc(
-                    scene.activeCard.card_rank,
-                    scene.activeCard.card_suit
-                  )
-                )}"
-                alt=""
-              />
-            </div>
-          `
-          }
-        </div>
-      </div>
-    </section>
-  `;
-}
 function renderBackgroundCard(card, index) {
   const src = getCardImageSrc(card?.card_rank, card?.card_suit);
 
@@ -568,21 +514,7 @@ function renderSourcePlayerPanel(draft) {
     return;
   }
 
-// 👇 NUEVO: mostrar anfitrión como destino inicial
-if (draft.target_user) {
-  renderAssignedTargetPanel(draft.target_user);
-
-  // opcional: montar la carta directamente si querés efecto inicial
-  const source = document.getElementById("lienzo-source-card");
-  if (source) {
-    setTimeout(() => {
-      mountCardInTarget(source);
-    }, 100);
-  }
-}
-    
   window.renderUsersPicker("lienzo-users-picker", {
-    // 🟢 Selección normal (click en fila)
     onSelect(user) {
       window.__lienzoNewDraft = {
         ...window.__lienzoNewDraft,
@@ -605,9 +537,7 @@ if (draft.target_user) {
           `Usuario ${user.id}`);
     },
 
-    // 🔥 NUEVO: click en la claqueta
     onAnimateSelect(user) {
-      // 1. también selecciona (para mantener coherencia)
       window.__lienzoNewDraft = {
         ...window.__lienzoNewDraft,
         target_user_id: Number(user?.id || 0) || null,
@@ -623,7 +553,6 @@ if (draft.target_user) {
             `Usuario ${user.id}`);
       }
 
-      // 2. dispara animación (la implementamos después)
       document.dispatchEvent(
         new CustomEvent("lienzo:animate-card-to-user", {
           detail: { user }
@@ -632,7 +561,6 @@ if (draft.target_user) {
     }
   });
 }
-
   function bindCreateButton() {
     const btn = document.getElementById("lienzo-new-save-btn");
     if (!btn) return;
