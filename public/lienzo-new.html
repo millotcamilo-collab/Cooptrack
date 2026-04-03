@@ -29,83 +29,89 @@
     <script src="/js/lienzo-new.js"></script>
 
     <script>
-      (function () {
-        function getQueryParam(name) {
-          const params = new URLSearchParams(window.location.search);
-          return params.get(name);
+  (function () {
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    function getToken() {
+      return localStorage.getItem("cooptrackToken");
+    }
+
+    async function fetchDeckState(deckId) {
+      const token = getToken();
+
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+
+      const response = await fetch(`/mazo/${deckId}/state`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudo cargar el estado del mazo");
+      }
+
+      return response.json();
+    }
+
+    async function initTopbar() {
+      if (typeof window.renderTopbar !== "function") return;
+      await window.renderTopbar();
+    }
+
+    async function bootstrapLienzoNewPage() {
+      try {
+        await initTopbar();
+
+        const deckId = Number(
+          getQueryParam("deckId") || getQueryParam("id") || 0
+        );
+
+        if (!deckId) {
+          console.warn("Falta deckId en la URL");
+          return;
         }
 
-        function getToken() {
-          return localStorage.getItem("cooptrackToken");
+        const stateResponse = await fetchDeckState(deckId);
+        const state = stateResponse?.state || stateResponse || {};
+
+        console.log("stateResponse =", stateResponse);
+        console.log("state =", state);
+        console.log("state.deck =", state?.deck);
+        console.log("state.mazo =", state?.mazo);
+
+        window.__currentState = state;
+        window.__currentDeck = state?.deck || state?.mazo || state || {};
+
+        console.log("window.__currentDeck =", window.__currentDeck);
+
+        if (typeof window.openNewLienzo === "function") {
+          window.openNewLienzo();
+        } else {
+          console.warn("openNewLienzo no está disponible");
         }
+      } catch (error) {
+        console.error("Error iniciando lienzo-new.html", error);
 
-        async function fetchDeckState(deckId) {
-          const token = getToken();
-
-          if (!token) {
-            throw new Error("Token no encontrado");
-          }
-
-          const response = await fetch(`/mazo/${deckId}/state`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
-
-          if (!response.ok) {
-            throw new Error("No se pudo cargar el estado del mazo");
-          }
-
-          return response.json();
+        const container = document.getElementById("lienzo-container");
+        if (container) {
+          container.innerHTML = `
+            <div class="lienzo-page__error">
+              No se pudo cargar el lienzo nuevo.
+            </div>
+          `;
         }
+      }
+    }
 
-        async function initTopbar() {
-          if (typeof window.renderTopbar !== "function") return;
-
-          await window.renderTopbar();
-        }
-
-        async function bootstrapLienzoNewPage() {
-          try {
-            await initTopbar();
-
-            const deckId = Number(
-              getQueryParam("deckId") || getQueryParam("id") || 0
-            );
-
-            if (!deckId) {
-              console.warn("Falta deckId en la URL");
-              return;
-            }
-
-            const stateResponse = await fetchDeckState(deckId);
-            const state = stateResponse?.state || stateResponse || {};
-
-            window.__currentState = state;
-            window.__currentDeck = state?.deck || state?.mazo || state || {};
-
-            if (typeof window.openNewLienzo === "function") {
-              window.openNewLienzo();
-            } else {
-              console.warn("openNewLienzo no está disponible");
-            }
-          } catch (error) {
-            console.error("Error iniciando lienzo-new.html", error);
-
-            const container = document.getElementById("lienzo-container");
-            if (container) {
-              container.innerHTML = `
-                <div class="lienzo-page__error">
-                  No se pudo cargar el lienzo nuevo.
-                </div>
-              `;
-            }
-          }
-        }
-
-        document.addEventListener("DOMContentLoaded", bootstrapLienzoNewPage);
-      })();
-    </script>
+    document.addEventListener("DOMContentLoaded", bootstrapLienzoNewPage);
+  })();
+</script>
   </body>
 </html>
