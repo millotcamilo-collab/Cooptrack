@@ -594,11 +594,11 @@ function renderCreateUserState() {
       type="button"
       class="users-picker__row-action"
       data-users-row-animate-id="${escapeHtml(user.id)}"
-      title="Enviar carta"
+      title="Asignar usuario"
     >
       <img
         src="/assets/icons/ClaquetaAbierta.gif"
-        alt="Enviar carta"
+        alt="Asignar usuario"
       />
     </button>
   </div>
