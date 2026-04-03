@@ -438,11 +438,6 @@ function getCurrentUser() {
 }
 
 function renderSourcePlayerPanel(draft) {
-  const rank = normalizeRank(draft?.card_rank);
-  const suit = normalizeSuit(draft?.card_suit);
-  const symbol = getSuitSymbol(suit);
-  const imageSrc = getCardImageSrc(rank, suit);
-
   const user = getCurrentUser();
   const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
   const userName =
@@ -450,6 +445,10 @@ function renderSourcePlayerPanel(draft) {
     user?.full_name ||
     user?.name ||
     "Creador";
+
+  const scene = buildSourceCardsScene(draft);
+  const delivered =
+    window.__lienzoAnimationState?.sourceCardDelivered === true;
 
   return `
     <section class="lienzo-panel lienzo-panel--source">
@@ -465,19 +464,34 @@ function renderSourcePlayerPanel(draft) {
       </div>
 
       <div class="lienzo-source-cards">
-        
-        <div class="lienzo-source-cards__main">
-          <img
-            id="lienzo-source-card"
-            class="lienzo-card-image"
-            src="${escapeHtml(imageSrc)}"
-            alt="Carta ${escapeHtml(rank)}${escapeHtml(symbol)}"
-          />
+        <div class="lienzo-source-stack">
+          ${scene.backgroundCards.map(renderBackgroundCard).join("")}
+
+          ${
+            delivered
+              ? ""
+              : `
+            <div class="lienzo-source-active">
+              <img
+                id="lienzo-source-card"
+                class="lienzo-card-image"
+                src="${escapeHtml(
+                  getCardImageSrc(
+                    scene.activeCard.card_rank,
+                    scene.activeCard.card_suit
+                  )
+                )}"
+                alt=""
+              />
+            </div>
+          `
+          }
         </div>
       </div>
     </section>
   `;
 }
+  
   function renderDraftCardPanel(draft) {
     const rank = normalizeRank(draft?.card_rank);
     const suit = normalizeSuit(draft?.card_suit);
