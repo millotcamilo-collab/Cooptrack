@@ -128,7 +128,36 @@
       return status === "ACTIVE" && rank === "JOKER" && suit === "BLUE";
     });
   }
+function hasPendingOrActiveBlueJoker(plays) {
+  const now = Date.now();
+  const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6;
 
+  return plays.some((p) => {
+    const rank = String(p.rank || "").toUpperCase();
+    const suit = String(p.suit || "").toUpperCase();
+    const status = String(p.status || "").toUpperCase();
+
+    if (rank !== "JOKER" || suit !== "BLUE") {
+      return false;
+    }
+
+    if (status === "PENDING") {
+      return true;
+    }
+
+    if (status === "ACTIVE") {
+      const createdAt = p.parsed?.date || p.created_at || p.updated_at;
+      if (!createdAt) return true;
+
+      const createdTime = new Date(createdAt).getTime();
+      if (Number.isNaN(createdTime)) return true;
+
+      return (now - createdTime) <= SIX_MONTHS_MS;
+    }
+
+    return false;
+  });
+}
   function hasRedJoker(plays) {
     return plays.some((p) => {
       const rank = String(p.rank || "").toUpperCase();
@@ -338,6 +367,7 @@ function hasPlayWithStatus(plays, statusList) {
   function buildJokersHTML(plays) {
   const redActive = hasRedJoker(plays);
   const blueActive = hasBlueJoker(plays);
+  const blueLocked = hasPendingOrActiveBlueJoker(plays);  
 
   return `
     <div class="mazobar__jokers">
@@ -350,12 +380,13 @@ function hasPlayWithStatus(plays, statusList) {
       <img
         src="/assets/icons/joker_blue.gif"
         alt="Joker azul"
-        title="Joker azul"
-        class="mazobar__joker ${blueActive ? "is-active" : "is-inactive"}"
-        draggable="true"
+        title="${blueLocked ? "Ya existe un Joker azul pendiente o vigente" : "Joker azul"}"
+        class="mazobar__joker ${blueActive ? "is-active" : "is-inactive"} ${blueLocked ? "is-locked" : ""}"
+        draggable="${blueLocked ? "false" : "true"}"
         data-rank="JOKER"
         data-suit="BLUE"
-      />
+        data-locked="${blueLocked ? "true" : "false"}"
+    />
     </div>
   `;
 }
@@ -444,6 +475,13 @@ document.getElementById("btnFilterK")?.addEventListener("click", () => {
 });
 document.querySelectorAll(".mazobar__joker").forEach((jokerEl) => {
   jokerEl.addEventListener("dragstart", (event) => {
+    const isLocked = String(jokerEl.dataset.locked || "").toLowerCase() === "true";
+
+    if (isLocked) {
+      event.preventDefault();
+      return;
+    }
+
     const rank = String(jokerEl.dataset.rank || "").toUpperCase();
     const suit = String(jokerEl.dataset.suit || "").toUpperCase();
 
@@ -465,8 +503,7 @@ document.querySelectorAll(".mazobar__joker").forEach((jokerEl) => {
     event.dataTransfer.setData("text/plain", "JOKER|BLUE");
     event.dataTransfer.effectAllowed = "copy";
   });
-});
-    
+});    
 document.querySelectorAll(".mazobar__topcard-image, .mazobar__topcard-fallback")
   .forEach((cardEl) => {
     cardEl.addEventListener("dragstart", (event) => {
