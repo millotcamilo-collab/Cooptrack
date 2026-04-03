@@ -855,6 +855,7 @@ async function getMazoStateHandler(req, res) {
       plays,
       corporateCards,
     });
+    console.log("corporateCards calculadas =", corporateCards);
   } catch (error) {
     console.error('Error en GET state del mazo', error);
     return res.status(500).json({
