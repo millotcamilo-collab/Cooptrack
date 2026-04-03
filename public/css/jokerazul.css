@@ -1,0 +1,35 @@
+.tablero-row--jokerazul {
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 12px;
+  background: #f0f6ff; /* leve azul */
+}
+
+.tablero-row--jokerazul .tablero-row__left {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tablero-row--jokerazul .tablero-row__center {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tablero-row--jokerazul .tablero-row__title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.tablero-row--jokerazul .tablero-row__meta {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.tablero-row--jokerazul .tablero-row__right {
+  display: flex;
+  justify-content: flex-end;
+}
