@@ -248,10 +248,6 @@ function getDeckAvatarSrc(deck) {
 
     return `
       <section class="lienzo-panel lienzo-panel--card">
-        <div class="lienzo-panel__header">
-          <div class="lienzo-panel__title">${escapeHtml(rank)}${escapeHtml(symbol)}</div>
-          <div class="lienzo-panel__subtitle">Nueva jugada</div>
-        </div>
 
         <div class="lienzo-card-wrap">
           <img
@@ -259,22 +255,6 @@ function getDeckAvatarSrc(deck) {
             src="${escapeHtml(imageSrc)}"
             alt="Carta ${escapeHtml(rank)}${escapeHtml(symbol)}"
           />
-        </div>
-
-        <div class="lienzo-card-text">
-          Preparando ${escapeHtml(rank)}${escapeHtml(symbol)}
-        </div>
-
-        <div class="lienzo-parent-box">
-          <div class="lienzo-parent-box__label">Jugada madre</div>
-          <div class="lienzo-parent-box__meta">
-            ${escapeHtml(parentRank)}${escapeHtml(parentSymbol)}
-            ·
-            ${escapeHtml(draft?.parentPlay?.id || "—")}
-          </div>
-          <div class="lienzo-parent-box__text">
-            ${escapeHtml(parentText || "Sin texto")}
-          </div>
         </div>
       </section>
     `;
