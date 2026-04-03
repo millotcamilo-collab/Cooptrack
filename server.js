@@ -73,8 +73,8 @@ function mapUserCategory(user) {
       normalizedType === 'senior'
         ? 'Senior'
         : normalizedType === 'active'
-        ? 'Active'
-        : 'Pop',
+          ? 'Active'
+          : 'Pop',
   };
 }
 
@@ -696,7 +696,7 @@ async function createMazoHandler(req, res) {
   } finally {
     client.release();
   }
-}async function listMazosHandler(req, res) {
+} async function listMazosHandler(req, res) {
   try {
     const userId = req.auth.userId;
 
@@ -810,13 +810,50 @@ async function getMazoStateHandler(req, res) {
       [mazoId, userId]
     );
 
+    const plays = result.rows;
+
+    const corporateCards = plays
+      .filter((play) => {
+        const rank = String(play.card_rank || '').toUpperCase();
+        const suit = String(play.card_suit || '').toUpperCase();
+        const authorId = Number(play.created_by_user_id || 0);
+        const targetId = Number(play.target_user_id || 0);
+
+        const isCorporateRank = rank === 'A' || rank === 'K';
+        const isCorporateSuit =
+          suit === 'HEART' ||
+          suit === 'SPADE' ||
+          suit === 'DIAMOND' ||
+          suit === 'CLUB';
+
+        const isActive =
+          String(play.play_status || '').toUpperCase() !== 'BLOCKED';
+
+        return (
+          isCorporateRank &&
+          isCorporateSuit &&
+          isActive &&
+          (authorId === userId || targetId === userId)
+        );
+      })
+      .map((play) => ({
+        play_id: play.id,
+        owner_user_id: Number(
+          play.target_user_id || play.created_by_user_id || 0
+        ),
+        card_rank: String(play.card_rank || '').toUpperCase(),
+        card_suit: String(play.card_suit || '').toUpperCase(),
+        play_status: play.play_status,
+      }));
+
     return res.json({
       ok: true,
       mazoId,
       userId,
       mazo,
       deck: mazo,
-      plays: result.rows,
+      plays,
+      corporateCards,
     });
   } catch (error) {
     console.error('Error en GET state del mazo', error);
@@ -826,6 +863,7 @@ async function getMazoStateHandler(req, res) {
     });
   }
 }
+
 app.get('/mazos/:mazoId/state', requireAuth, getMazoStateHandler);
 app.get('/mazo/:deckId/state', requireAuth, getMazoStateHandler);
 
@@ -1101,10 +1139,10 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     const nextAmount =
       amount !== undefined
         ? (
-            String(amount).trim() === ''
-              ? null
-              : Number(amount)
-          )
+          String(amount).trim() === ''
+            ? null
+            : Number(amount)
+        )
         : current.amount;
 
     if (amount !== undefined && nextAmount !== null && Number.isNaN(nextAmount)) {
@@ -1361,7 +1399,7 @@ app.get('/mazos/:mazoId/plays', requireAuth, async (req, res) => {
 // Alias viejo
 app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
   req.params.mazoId = req.params.deckId;
-  return app._router.handle(req, res, () => {});
+  return app._router.handle(req, res, () => { });
 });
 
 app.get('/plays/pending', requireAuth, async (req, res) => {
@@ -1574,7 +1612,7 @@ app.get('/mazos/:mazoId/q-users', requireAuth, async (req, res) => {
 // Alias viejo
 app.get('/decks/:deckId/q-users', requireAuth, async (req, res) => {
   req.params.mazoId = req.params.deckId;
-  return app._router.handle(req, res, () => {});
+  return app._router.handle(req, res, () => { });
 });
 
 app.get('/users-picker', requireAuth, async (req, res) => {
@@ -1604,8 +1642,8 @@ app.get('/users-picker', requireAuth, async (req, res) => {
       ...u,
       qCategory:
         String(u.user_type || '').toLowerCase() === 'senior' ? 'Senior'
-        : String(u.user_type || '').toLowerCase() === 'active' ? 'Active'
-        : 'Pop'
+          : String(u.user_type || '').toLowerCase() === 'active' ? 'Active'
+            : 'Pop'
     }));
 
     res.json({
