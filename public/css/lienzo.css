@@ -330,6 +330,12 @@ body {
   z-index: 5;
 }
 
+.lienzo-btn img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
 @media (max-width: 900px) {
   .lienzo-grid {
     grid-template-columns: 1fr;
