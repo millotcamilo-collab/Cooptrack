@@ -253,6 +253,11 @@
   padding-left: 14px;
   padding-right: 14px;
 }
+.mazobar__joker.is-locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* Responsive */
 
 @media (max-width: 1024px) {
