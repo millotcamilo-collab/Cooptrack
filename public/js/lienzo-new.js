@@ -237,15 +237,6 @@ function getDeckAvatarSrc(deck) {
     const symbol = getSuitSymbol(suit);
     const imageSrc = getCardImageSrc(rank, suit);
 
-    const parentText = draft?.parentPlay?.play_text || "";
-    const parentRank = normalizeRank(
-      draft?.parentPlay?.card_rank || draft?.parentPlay?.rank
-    );
-    const parentSuit = normalizeSuit(
-      draft?.parentPlay?.card_suit || draft?.parentPlay?.suit
-    );
-    const parentSymbol = getSuitSymbol(parentSuit);
-
     return `
       <section class="lienzo-panel lienzo-panel--card">
 
@@ -391,7 +382,6 @@ function getDeckAvatarSrc(deck) {
       </div>
     `;
 
-    bindDeckHeaderExit();
     bindUsersPicker(draft);
     bindCreateButton();
   }
