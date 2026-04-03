@@ -1876,6 +1876,67 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
   }
 });
 
+app.get('/admin/joker-blue-requests', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const adminResult = await pool.query(
+      `
+      SELECT is_admin
+      FROM users
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [userId]
+    );
+
+    if (!adminResult.rows.length || !adminResult.rows[0].is_admin) {
+      return res.status(403).json({
+        ok: false,
+        error: 'Acceso solo para administradores'
+      });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT
+        p.id,
+        p.deck_id,
+        p.created_by_user_id,
+        p.target_user_id,
+        p.play_status,
+        p.play_text,
+        p.play_code,
+        p.created_at,
+        p.updated_at,
+        creator.nickname AS creator_nickname,
+        creator.profile_photo_url AS creator_profile_photo_url,
+        d.name AS deck_name
+      FROM plays p
+      LEFT JOIN users creator
+        ON creator.id = p.created_by_user_id
+      LEFT JOIN decks d
+        ON d.id = p.deck_id
+      WHERE UPPER(COALESCE(p.card_rank, '')) = 'JOKER'
+        AND UPPER(COALESCE(p.card_suit, '')) = 'BLUE'
+        AND UPPER(COALESCE(p.play_status, '')) = 'PENDING'
+      ORDER BY p.created_at DESC, p.id DESC
+      `
+    );
+
+    return res.json({
+      ok: true,
+      requests: result.rows
+    });
+  } catch (error) {
+    console.error('Error en GET /admin/joker-blue-requests', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'Error cargando solicitudes Joker azul'
+    });
+  }
+});
+
 // =====================================================
 // START
 // =====================================================
