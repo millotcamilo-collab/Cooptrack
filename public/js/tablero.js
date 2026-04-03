@@ -3,6 +3,7 @@
   let activeTableroFilter = null;
   let activeTableroStatusFilter = null;
   let activeTableroViewMode = "J";
+  let hasInitializedTableroViewFromUrl = false;
 
   const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
@@ -480,7 +481,48 @@ function getComponentName(play) {
       },
     };
   }
+function setTableroViewMode(nextMode) {
+  const normalized = String(nextMode || "").toUpperCase();
 
+  if (normalized === "A" || normalized === "AK" || normalized === "J") {
+    activeTableroViewMode = normalized;
+    return;
+  }
+
+  activeTableroViewMode = "J";
+}
+
+function syncTableroViewInUrl(mode) {
+  try {
+    const url = new URL(window.location.href);
+
+    if (mode === "A" || mode === "AK") {
+      url.searchParams.set("tableroView", mode);
+    } else {
+      url.searchParams.delete("tableroView");
+    }
+
+    window.history.replaceState({}, "", url.toString());
+  } catch (error) {
+    console.warn("No se pudo sincronizar tableroView en URL", error);
+  }
+}
+
+function initTableroViewFromUrlOnce() {
+  if (hasInitializedTableroViewFromUrl) return;
+
+  const urlView = getTableroViewFromUrl();
+
+  if (urlView === "A") {
+    setTableroViewMode("A");
+  } else if (urlView === "AK") {
+    setTableroViewMode("AK");
+  } else {
+    setTableroViewMode("J");
+  }
+
+  hasInitializedTableroViewFromUrl = true;
+}
 function getTableroViewFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return String(params.get("tableroView") || "").toUpperCase();
@@ -502,17 +544,9 @@ function getFocusPlayIdFromUrl() {
     try {
       const rawPlays = Array.isArray(plays) ? plays : [];
       const normalized = rawPlays.map(normalizePlay);
-const urlView = getTableroViewFromUrl();
-
-if (urlView === "A") {
-  activeTableroViewMode = "A";
-} else if (urlView === "AK") {
-  activeTableroViewMode = "AK";
-} else {
-  activeTableroViewMode = "J";
-}
+      initTableroViewFromUrlOnce();
      const tableroPlays = sortTableroPlays(
-  normalized.filter((play) => {
+      normalized.filter((play) => {
     if (!belongsToTablero(play)) return false;
     if (!matchesTableroFilter(play, activeTableroFilter)) return false;
     if (!matchesStatusFilter(play, activeTableroStatusFilter)) return false;
@@ -600,19 +634,23 @@ document.addEventListener("mazobar:filter-rank", (event) => {
 
   if (nextRank === "A") {
     if (activeTableroViewMode === "A") {
-      activeTableroViewMode = "J";
+      setTableroViewMode("J");
     } else {
-      activeTableroViewMode = "A";
+      setTableroViewMode("A");
     }
   } else if (nextRank === "K") {
     if (activeTableroViewMode === "AK") {
-      activeTableroViewMode = "A";
+      setTableroViewMode("A");
+    } else if (activeTableroViewMode === "A") {
+      setTableroViewMode("AK");
     } else {
-      activeTableroViewMode = "AK";
+      setTableroViewMode("AK");
     }
   } else {
-    activeTableroViewMode = "J";
+    setTableroViewMode("J");
   }
+
+  syncTableroViewInUrl(activeTableroViewMode);
 
   activeTableroFilter = null;
 
@@ -621,8 +659,7 @@ document.addEventListener("mazobar:filter-rank", (event) => {
   const plays = Array.isArray(state?.plays) ? state.plays : [];
 
   renderTablero(deck, plays, state);
-});
-  
+});  
 document.addEventListener("tablero:cancel-play", async (event) => {
   try {
     const playId = Number(event?.detail?.playId || 0);
