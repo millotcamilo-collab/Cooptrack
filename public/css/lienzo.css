@@ -226,6 +226,15 @@ body {
   background: #fff;
   cursor: pointer;
 }
+
+.lienzo-card-image {
+  transition: transform 0.2s ease;
+}
+
+.lienzo-card-image:hover {
+  transform: scale(1.03);
+}
+
 @media (max-width: 900px) {
   .lienzo-grid {
     grid-template-columns: 1fr;
