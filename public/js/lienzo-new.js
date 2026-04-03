@@ -29,20 +29,49 @@ function bindActionButtons() {
       return;
     }
 
+    if (!draft?.parentPlayId) {
+      alert("Falta la jugada madre");
+      return;
+    }
+
+    if (!draft?.card_rank || !draft?.card_suit) {
+      alert("Falta la carta a crear");
+      return;
+    }
+
     if (!draft?.target_user_id) {
       alert("Seleccioná un destinatario");
       return;
     }
 
-    const playPayload = {
-      deck_id: draft.deckId,
-      parent_play_id: draft.parentPlayId || null,
-      card_rank: draft.card_rank,
-      card_suit: draft.card_suit,
-      target_user_id: draft.target_user_id,
-      play_text: draft.play_text || "",
-      play_status: "ACTIVE"
-    };
+    if (!token) {
+      alert("No estás logueado");
+      return;
+    }
+
+    const userId =
+      window.__currentState?.userId ||
+      window.__currentUser?.id ||
+      null;
+
+    if (!userId) {
+      alert("No se pudo identificar el usuario");
+      return;
+    }
+
+    const when = new Date().toISOString();
+
+    const playCode = [
+      draft.deckId,
+      userId,
+      when,
+      String(draft.card_rank).toUpperCase(),
+      String(draft.card_suit).toUpperCase(),
+      "create_from_lienzo",
+      `U:${userId}`,
+      `child_of:${draft.parentPlayId}`,
+      `U:${draft.target_user_id}`
+    ].join("§");
 
     const response = await fetch("/plays", {
       method: "POST",
@@ -50,27 +79,38 @@ function bindActionButtons() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify(playPayload)
+      body: JSON.stringify({
+        deck_id: draft.deckId,
+        parent_play_id: draft.parentPlayId,
+        target_user_id: draft.target_user_id,
+        play_code: playCode,
+        text: draft.play_text || "",
+        play_status: "ACTIVE"
+      })
     });
 
-    if (!response.ok) {
-      throw new Error("Error guardando jugada");
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error guardando jugada:", data);
+      alert(data?.error || "No se pudo guardar la jugada");
+      return;
     }
 
-    const data = await response.json();
-    const newPlay = data?.play || data;
+    const newPlay = data.play || null;
+    const playId = Number(newPlay?.id || 0);
 
-    const playId = newPlay?.id;
+    if (!playId) {
+      alert("La jugada se guardó, pero no volvió el id");
+      return;
+    }
 
-    // 👉 redirige a lienzo normal
-    window.location.href = `/lienzo.html?playId=${playId}`;
-
+    window.location.href = `/lienzo.html?deckId=${draft.deckId}&playId=${playId}`;
   } catch (error) {
     console.error("Error en SAVE", error);
     alert("No se pudo guardar la jugada");
   }
-} 
-
+}
 function handleExit() {
   const draft = window.__lienzoNewDraft;
   const deckId = draft?.deckId;
