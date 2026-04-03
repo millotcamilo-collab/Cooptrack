@@ -8,6 +8,7 @@ window.__lienzoAnimationState = window.__lienzoAnimationState || {
 };
   
 function getCurrentUserCorporateCards() {
+  console.log("state.corporateCards =", state?.corporateCards);
   const state = getCurrentState();
   const currentUser = getCurrentUser();
   const userId = Number(currentUser?.id || 0);
