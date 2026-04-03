@@ -208,15 +208,11 @@ function getDeckAvatarSrc(deck) {
     return `
       <section class="lienzo-panel lienzo-panel--users">
         <div class="lienzo-panel__header">
-          <div class="lienzo-panel__title">Usuarios</div>
           <div class="lienzo-panel__subtitle">Seleccioná un destinatario</div>
         </div>
 
         <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
 
-        <div id="lienzo-user-selected" class="lienzo-user-selected">
-          Nadie seleccionado
-        </div>
 
         <div class="lienzo-actions">
           <button
