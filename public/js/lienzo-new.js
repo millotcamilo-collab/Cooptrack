@@ -30,11 +30,11 @@ function animateCardToUser(user) {
   source.style.visibility = "hidden";
 
   // 🎯 destino (centro del panel derecho por ahora)
-  const container = document.getElementById("lienzo-users-picker");
+  const container = document.querySelector(".lienzo-grid__right");
   const targetRect = container.getBoundingClientRect();
 
   const targetX = targetRect.left + targetRect.width / 2 - rect.width / 2;
-  const targetY = targetRect.top + 60;
+  const targetY = targetRect.top + targetRect.height / 3;
 
   requestAnimationFrame(() => {
     ghost.style.left = targetX + "px";
@@ -43,12 +43,9 @@ function animateCardToUser(user) {
   });
 
   ghost.addEventListener("transitionend", () => {
+  if (!ghost.parentNode) return; // evita duplicados
     ghost.remove();
-
-    // 👇 ahora cambiamos la UI
     renderAssignedTargetPanel(user);
-
-    // pequeña espera para asegurar DOM listo
     setTimeout(() => {
       mountCardInTarget(source);
     }, 50);
