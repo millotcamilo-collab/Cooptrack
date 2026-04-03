@@ -778,6 +778,15 @@ async function getMazoStateHandler(req, res) {
       });
     }
 
+    const mazo = await getMazoByIdForUser(pool, mazoId, userId);
+
+    if (!mazo) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Mazo no encontrado',
+      });
+    }
+
     const result = await pool.query(
       `SELECT
          p.*,
@@ -805,6 +814,8 @@ async function getMazoStateHandler(req, res) {
       ok: true,
       mazoId,
       userId,
+      mazo,
+      deck: mazo,
       plays: result.rows,
     });
   } catch (error) {
@@ -815,7 +826,6 @@ async function getMazoStateHandler(req, res) {
     });
   }
 }
-
 app.get('/mazos/:mazoId/state', requireAuth, getMazoStateHandler);
 app.get('/mazo/:deckId/state', requireAuth, getMazoStateHandler);
 
