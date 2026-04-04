@@ -263,15 +263,6 @@
             <button id="helpBtn" class="icon-btn" type="button" title="Ayuda" aria-label="Ayuda">
               <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda" />
             </button>
-
-            <button id="createDeckBtn" class="icon-btn is-hidden" type="button" title="Guardar mazo"
-              aria-label="Guardar mazo">
-              <img src="/assets/icons/salvar40.gif" alt="Guardar" />
-            </button>
-
-            <button id="cancelBtn" class="icon-btn" type="button" title="Salir" aria-label="Salir">
-              <img src="/assets/icons/exit80.gif" alt="Salir" />
-            </button>
           </div>
 
 
@@ -307,6 +298,17 @@
 
               <div id="founder-target-zone" class="lienzo-card-wrap">
                 <img src="/assets/icons/Acorazon.gif" class="lienzo-card-image" />
+              </div>
+
+              <div class="lienzo-target-actions nuevo-mazo-target-actions">
+                <button id="createDeckBtn" class="icon-btn is-hidden" type="button" title="Guardar mazo"
+                  aria-label="Guardar mazo">
+                  <img src="/assets/icons/salvar40.gif" alt="Guardar" />
+                </button>
+
+                <button id="cancelBtn" class="icon-btn" type="button" title="Salir" aria-label="Salir">
+                  <img src="/assets/icons/exit80.gif" alt="Salir" />
+                </button>
               </div>
 
             </div>
@@ -546,7 +548,7 @@
       state.step = "ready";
       setStatus("Listo para guardar");
       getEl("createDeckBtn")?.focus();
-      
+
       setTimeout(() => {
         animateFounderAcesToUser();
       }, 150);
