@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,95 +9,199 @@
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="stylesheet" href="/css/topbar.css" />
   <link rel="stylesheet" href="/css/help.css" />
-<link rel="icon" type="image/png" href="/assets/icons/bigote.png">
+  <link rel="icon" type="image/png" href="/assets/icons/bigote.png">
   <style>
     .nuevo-mazo-page {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 10px;
-    }
-
-    .nuevo-mazo-box {
-      width: 100%;
-      max-width: 860px;
-      margin: 18px auto 0;
-      border: 1px dotted #777;
-      padding: 12px 14px;
-      background: transparent;
+      min-height: calc(100vh - var(--topbar-height));
+      padding: 24px 0 40px;
       box-sizing: border-box;
     }
 
-    .nuevo-mazo-layout {
-      display: grid;
-      grid-template-columns: 170px 1fr;
-      align-items: center;
-      column-gap: 18px;
+    .nuevo-mazo-shell {
+      width: 100%;
     }
 
-    .nuevo-mazo-left {
+    .nuevo-mazo-bar {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       align-items: center;
-      min-height: 110px;
+      gap: 18px;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid #d8d8d8;
+      border-radius: 14px;
+      box-sizing: border-box;
     }
 
-    .nuevo-mazo-card-icon {
-      height: 120px;
-      width: auto;
+    .nuevo-mazo-bar__left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 0 0 auto;
+    }
+
+    .nuevo-mazo-bar__ace {
+      width: 78px;
+      height: auto;
       display: block;
     }
 
-    .nuevo-mazo-right {
+    .nuevo-mazo-bar__photo-wrap {
+      flex: 0 0 auto;
+    }
+
+    .nuevo-mazo-bar__photo {
+      width: 58px;
+      height: 58px;
+      object-fit: cover;
+      border-radius: 10px;
+      display: block;
+      background: #f3f3f3;
+      border: 1px solid #d8d8d8;
+    }
+
+    .nuevo-mazo-bar__center {
+      min-width: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .nuevo-mazo-bar__titleline {
       display: flex;
       align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex-wrap: wrap;
     }
 
-    .nuevo-mazo-form-table {
-      width: 100%;
-      border-collapse: collapse;
+    .nuevo-mazo-bar__rank {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+      color: #111;
     }
 
-    .nuevo-mazo-form-table td {
-      padding: 4px 6px;
-      vertical-align: middle;
+    .nuevo-mazo-bar__heart,
+    .nuevo-mazo-bar__diamond {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      display: block;
+      flex: 0 0 auto;
     }
 
-    .nuevo-mazo-label {
-      width: 92px;
+    .nuevo-mazo-bar__title-input,
+    .nuevo-mazo-bar__title-readonly {
+      min-width: 180px;
+      max-width: 100%;
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #111;
+    }
+
+    .nuevo-mazo-bar__title-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 0;
+    }
+
+    .nuevo-mazo-bar__title-input::placeholder {
+      color: #999;
+      font-weight: 600;
+    }
+
+    .nuevo-mazo-bar__title-readonly {
+      flex: 1;
+      word-break: break-word;
+    }
+
+    .nuevo-mazo-bar__currency-input,
+    .nuevo-mazo-bar__currency-name-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 0;
+      color: #111;
+    }
+
+    .nuevo-mazo-bar__currency-input {
+      width: 54px;
+      font-size: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .nuevo-mazo-bar__currency-name-input {
+      min-width: 150px;
       font-size: 18px;
-      color: #222;
+      font-weight: 600;
+    }
+
+    .nuevo-mazo-bar__editor {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .nuevo-mazo-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 34px;
+    }
+
+    .nuevo-mazo-step__label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
       white-space: nowrap;
     }
 
-    .nuevo-mazo-input {
+    .nuevo-mazo-step__input {
       width: 100%;
-      height: 28px;
+      max-width: 520px;
+      height: 34px;
       box-sizing: border-box;
-      padding: 4px 8px;
-      font-size: 16px;
-      border: 1px solid #999;
+      padding: 6px 10px;
+      font-size: 15px;
+      border: 1px solid #bdbdbd;
+      border-radius: 8px;
       background: #fff;
     }
 
-    .nuevo-mazo-input[readonly] {
-      background: #f4f4f4;
+    .nuevo-mazo-step__hint {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .nuevo-mazo-status {
+      min-height: 20px;
+      font-size: 14px;
       color: #333;
     }
 
-    .nuevo-mazo-actions {
-      white-space: nowrap;
-      width: 150px;
+    .nuevo-mazo-bar__right {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .icon-btn {
       background: transparent;
       border: none;
-      padding: 0;
-      margin: 0 4px 0 0;
+      padding: 4px;
+      margin: 0;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      border-radius: 8px;
     }
 
     .icon-btn img {
@@ -110,39 +215,32 @@
       transform: scale(1.08);
     }
 
-    .status-row td {
-      padding-top: 8px;
+    .is-hidden {
+      display: none !important;
     }
 
-    .status-msg {
-      min-height: 20px;
-      font-size: 14px;
-      color: #333;
-    }
-
-    @media (max-width: 700px) {
-      .nuevo-mazo-layout {
-        grid-template-columns: 1fr;
-        row-gap: 10px;
+    @media (max-width: 900px) {
+      .nuevo-mazo-bar {
+        flex-direction: column;
+        align-items: stretch;
       }
 
-      .nuevo-mazo-left {
+      .nuevo-mazo-bar__left,
+      .nuevo-mazo-bar__right {
         justify-content: center;
       }
 
-      .nuevo-mazo-form-table td {
-        display: block;
+      .nuevo-mazo-bar__center {
         width: 100%;
-        box-sizing: border-box;
       }
 
-      .nuevo-mazo-label {
-        margin-bottom: 4px;
+      .nuevo-mazo-step {
+        flex-direction: column;
+        align-items: stretch;
       }
 
-      .nuevo-mazo-actions {
-        width: auto;
-        padding-top: 8px;
+      .nuevo-mazo-step__input {
+        max-width: 100%;
       }
     }
   </style>
@@ -152,117 +250,71 @@
   <div id="topbar-container"></div>
 
   <main class="nuevo-mazo-page">
-    <div class="nuevo-mazo-box">
-      <div class="nuevo-mazo-layout">
-        <div class="nuevo-mazo-left">
-          <img
-            src="/assets/icons/Acorazon.gif"
-            alt="A corazón"
-            class="nuevo-mazo-card-icon"
-          />
+    <div class="page-container">
+      <section class="nuevo-mazo-shell">
+        <div class="nuevo-mazo-bar">
+
+          <div class="nuevo-mazo-bar__left">
+            <img src="/assets/icons/Acorazon.gif" alt="A corazón" class="nuevo-mazo-bar__ace" />
+
+            <div class="nuevo-mazo-bar__photo-wrap">
+              <img id="deckPhotoPreview" src="/assets/icons/sinPicture.gif" alt="Foto del mazo"
+                class="nuevo-mazo-bar__photo" />
+            </div>
+          </div>
+
+          <div class="nuevo-mazo-bar__center">
+            <div class="nuevo-mazo-bar__titleline">
+              <span class="nuevo-mazo-bar__rank">A</span>
+              <img src="/assets/icons/cor40.gif" alt="♥" class="nuevo-mazo-bar__heart" />
+
+              <input id="deckName" class="nuevo-mazo-bar__title-input" type="text" autocomplete="off" placeholder="" />
+
+              <div id="deckNameReadonly" class="nuevo-mazo-bar__title-readonly is-hidden"></div>
+
+              <img id="diamondIcon" src="/assets/icons/dia40.gif" alt="♦" class="nuevo-mazo-bar__diamond is-hidden" />
+
+              <input id="deckCurrencyCode" class="nuevo-mazo-bar__currency-input is-hidden" type="text" maxlength="3"
+                autocomplete="off" readonly />
+
+              <input id="deckCurrencyName" class="nuevo-mazo-bar__currency-name-input is-hidden" type="text"
+                autocomplete="off" readonly />
+            </div>
+
+            <div class="nuevo-mazo-bar__editor">
+              <div id="imageStep" class="nuevo-mazo-step is-hidden">
+                <label class="nuevo-mazo-step__label" for="deckImage">Imagen</label>
+                <input id="deckImage" class="nuevo-mazo-step__input" type="text" placeholder="https://..."
+                  autocomplete="off" />
+              </div>
+
+              <div id="currencyStep" class="nuevo-mazo-step is-hidden">
+                <span class="nuevo-mazo-step__hint">
+                  Presioná Enter para confirmar moneda
+                </span>
+              </div>
+
+              <div id="statusMsg" class="nuevo-mazo-status"></div>
+            </div>
+          </div>
+
+          <div class="nuevo-mazo-bar__right">
+            <button id="helpBtn" class="icon-btn" type="button" title="Ayuda" aria-label="Ayuda">
+              <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda" />
+            </button>
+
+            <button id="createDeckBtn" class="icon-btn is-hidden" type="button" title="Guardar mazo"
+              aria-label="Guardar mazo">
+              <img src="/assets/icons/salvar40.gif" alt="Guardar" />
+            </button>
+
+            <button id="cancelBtn" class="icon-btn" type="button" title="Salir" aria-label="Salir">
+              <img src="/assets/icons/exit80.gif" alt="Salir" />
+            </button>
+          </div>
+
         </div>
-
-        <div class="nuevo-mazo-right">
-          <table class="nuevo-mazo-form-table">
-            <tr>
-              <td class="nuevo-mazo-label">Título</td>
-              <td>
-                <input
-                  id="deckName"
-                  class="nuevo-mazo-input"
-                  type="text"
-                  placeholder=""
-                  autocomplete="off"
-                />
-              </td>
-              <td class="nuevo-mazo-actions"></td>
-            </tr>
-
-            <tr>
-              <td class="nuevo-mazo-label">Imagen</td>
-              <td>
-                <input
-                  id="deckImage"
-                  class="nuevo-mazo-input"
-                  type="text"
-                  placeholder="https://..."
-                  autocomplete="off"
-                />
-              </td>
-              <td></td>
-            </tr>
-
-            <tr>
-              <td class="nuevo-mazo-label">Cod. mon.</td>
-              <td>
-                <input
-                  id="deckCurrencyCode"
-                  class="nuevo-mazo-input"
-                  type="text"
-                  value=""
-                  maxlength="3"
-                  autocomplete="off"
-                  readonly
-                />
-              </td>
-              <td class="nuevo-mazo-actions">
-                <button
-                  id="helpBtn"
-                  class="icon-btn"
-                  type="button"
-                  title="Ayuda"
-                  aria-label="Ayuda"
-                >
-                  <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda" />
-                </button>
-
-                <button
-                  id="createDeckBtn"
-                  class="icon-btn"
-                  type="button"
-                  title="Guardar mazo"
-                  aria-label="Guardar mazo"
-                >
-                  <img src="/assets/icons/salvar40.gif" alt="Guardar" />
-                </button>
-
-                <button
-                  id="cancelBtn"
-                  class="icon-btn"
-                  type="button"
-                  title="Salir"
-                  aria-label="Salir"
-                >
-                  <img src="/assets/icons/exit80.gif" alt="Salir" />
-                </button>
-              </td>
-            </tr>
-
-            <tr>
-              <td class="nuevo-mazo-label">Moneda</td>
-              <td>
-                <input
-                  id="deckCurrencyName"
-                  class="nuevo-mazo-input"
-                  type="text"
-                  value=""
-                  autocomplete="off"
-                  readonly
-                />
-              </td>
-              <td></td>
-            </tr>
-
-            <tr class="status-row">
-              <td></td>
-              <td>
-                <div id="statusMsg" class="status-msg"></div>
-              </td>
-              <td></td>
-            </tr>
-          </table>
-        </div>
-      </div>
+      </section>
     </div>
   </main>
 
@@ -281,12 +333,27 @@
       ES: { code: "EUR", name: "Euro" }
     };
 
+    const state = {
+      step: "title",
+      currencyLoaded: false
+    };
+
     function getToken() {
       return localStorage.getItem("cooptrackToken");
     }
 
     function getEl(id) {
       return document.getElementById(id);
+    }
+
+    function showEl(id) {
+      const el = getEl(id);
+      if (el) el.classList.remove("is-hidden");
+    }
+
+    function hideEl(id) {
+      const el = getEl(id);
+      if (el) el.classList.add("is-hidden");
     }
 
     function setStatus(message, isError = false) {
@@ -299,6 +366,85 @@
 
     function goBack() {
       window.location.href = "/index.html";
+    }
+
+    function setPhotoPreview(src) {
+      const photo = getEl("deckPhotoPreview");
+      if (!photo) return;
+
+      const safeSrc = String(src || "").trim();
+      photo.src = safeSrc || "/assets/icons/sinPicture.gif";
+    }
+
+    function commitTitleStep() {
+      const nameInput = getEl("deckName");
+      const readonly = getEl("deckNameReadonly");
+      const name = String(nameInput?.value || "").trim();
+
+      if (!name) {
+        setStatus("El título es obligatorio", true);
+        nameInput?.focus();
+        return;
+      }
+
+      if (readonly) {
+        readonly.textContent = name;
+      }
+
+      hideEl("deckName");
+      showEl("deckNameReadonly");
+      showEl("imageStep");
+
+      state.step = "image";
+      setStatus("");
+
+      getEl("deckImage")?.focus();
+    }
+
+    function commitImageStep() {
+      const imageInput = getEl("deckImage");
+      const image = String(imageInput?.value || "").trim();
+
+      setPhotoPreview(image);
+      hideEl("imageStep");
+
+      showEl("diamondIcon");
+      showEl("deckCurrencyCode");
+      showEl("deckCurrencyName");
+      showEl("currencyStep");
+
+      state.step = "currency";
+      setStatus("");
+
+      getEl("deckCurrencyCode")?.focus();
+    }
+
+    function commitCurrencyStep() {
+      const codeInput = getEl("deckCurrencyCode");
+      const nameInput = getEl("deckCurrencyName");
+
+      const code = String(codeInput?.value || "").trim().toUpperCase();
+      const name = String(nameInput?.value || "").trim();
+
+      if (code && code.length !== 3) {
+        setStatus("El código de moneda debe tener 3 caracteres", true);
+        return;
+      }
+
+      if (!code && !name) {
+        setStatus("No se pudo determinar la moneda del perfil", true);
+        return;
+      }
+
+      hideEl("currencyStep");
+      showEl("createDeckBtn");
+
+      if (codeInput) codeInput.readOnly = true;
+      if (nameInput) nameInput.readOnly = true;
+
+      state.step = "ready";
+      setStatus("Listo para guardar");
+      getEl("createDeckBtn")?.focus();
     }
 
     async function loadDefaultCurrencyFromProfile() {
@@ -330,9 +476,11 @@
         if (currency) {
           codeInput.value = currency.code;
           nameInput.value = currency.name;
+          state.currencyLoaded = true;
         } else {
           codeInput.value = "";
           nameInput.value = "";
+          state.currencyLoaded = false;
         }
       } catch (error) {
         console.error("No se pudo cargar la moneda por defecto:", error);
@@ -340,12 +488,12 @@
     }
 
     async function createDeck() {
-      const nameInput = getEl("deckName");
+      const nameReadonly = getEl("deckNameReadonly");
       const imageInput = getEl("deckImage");
       const currencyCodeInput = getEl("deckCurrencyCode");
       const currencyNameInput = getEl("deckCurrencyName");
 
-      const name = (nameInput?.value || "").trim();
+      const name = String(nameReadonly?.textContent || "").trim();
       const image = (imageInput?.value || "").trim();
       const currencyCode = (currencyCodeInput?.value || "").trim().toUpperCase();
       const currencyName = (currencyNameInput?.value || "").trim();
@@ -358,7 +506,6 @@
 
       if (!name) {
         setStatus("El título es obligatorio", true);
-        if (nameInput) nameInput.focus();
         return;
       }
 
@@ -406,49 +553,55 @@
       }
     }
 
-    getEl("createDeckBtn")?.addEventListener("click", createDeck);
-    getEl("cancelBtn")?.addEventListener("click", goBack);
+    function bindEvents() {
+      getEl("createDeckBtn")?.addEventListener("click", createDeck);
+      getEl("cancelBtn")?.addEventListener("click", goBack);
 
-    getEl("helpBtn")?.addEventListener("click", () => {
-      if (typeof window.openPlayHelp === "function") {
-        window.openPlayHelp("A_HEART");
-      }
-    });
+      getEl("helpBtn")?.addEventListener("click", () => {
+        if (typeof window.openPlayHelp === "function") {
+          window.openPlayHelp("A_HEART");
+        }
+      });
 
-    getEl("deckName")?.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        createDeck();
-      }
-    });
+      getEl("deckName")?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          commitTitleStep();
+        }
+      });
 
-    getEl("deckImage")?.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        createDeck();
-      }
-    });
+      getEl("deckImage")?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          commitImageStep();
+        }
+      });
 
-    getEl("deckCurrencyCode")?.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        createDeck();
-      }
-    });
+      getEl("deckCurrencyCode")?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          commitCurrencyStep();
+        }
+      });
 
-    getEl("deckCurrencyName")?.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        createDeck();
-      }
-    });
+      getEl("deckCurrencyName")?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          commitCurrencyStep();
+        }
+      });
+
+      getEl("deckPhotoPreview")?.addEventListener("error", () => {
+        setPhotoPreview("");
+      });
+    }
 
     window.addEventListener("DOMContentLoaded", async () => {
-      const nameInput = getEl("deckName");
-      if (nameInput) nameInput.focus();
-
       await loadDefaultCurrencyFromProfile();
+      bindEvents();
+      getEl("deckName")?.focus();
     });
   </script>
 </body>
+
 </html>

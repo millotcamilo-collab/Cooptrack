@@ -642,11 +642,6 @@ async function createMazoHandler(req, res) {
     );
 
     const seedPlays = [
-      { rank: 'A', suit: 'HEART', action: 'init_ace', status: 'ACTIVE' },
-      { rank: 'A', suit: 'SPADE', action: 'init_ace', status: 'ACTIVE' },
-      { rank: 'A', suit: 'DIAMOND', action: 'init_ace', status: 'ACTIVE' },
-      { rank: 'A', suit: 'CLUB', action: 'init_ace', status: 'ACTIVE' },
-
       { rank: 'K', suit: 'HEART', action: 'puedeJugar', status: 'ACTIVE' },
       { rank: 'K', suit: 'SPADE', action: 'puedeJugar', status: 'ACTIVE' },
       { rank: 'K', suit: 'DIAMOND', action: 'puedeJugar', status: 'BLOCKED' },
@@ -656,9 +651,15 @@ async function createMazoHandler(req, res) {
       { rank: 'Q', suit: 'SPADE', action: 'puedeJugar', status: 'ACTIVE' },
       { rank: 'Q', suit: 'DIAMOND', action: 'puedeJugar', status: 'BLOCKED' },
       { rank: 'Q', suit: 'CLUB', action: 'puedeJugar', status: 'BLOCKED' },
+
+      { rank: 'A', suit: 'HEART', action: 'init_ace', status: 'BLOCKED' },
+      { rank: 'A', suit: 'SPADE', action: 'init_ace', status: 'BLOCKED' },
+      { rank: 'A', suit: 'DIAMOND', action: 'init_ace', status: 'BLOCKED'},
+      { rank: 'A', suit: 'CLUB', action: 'init_ace', status: 'BLOCKED' },
     ];
 
-    for (const seed of seedPlays) {
+    // 1. ACL (K y Q)
+    for (const seed of seedPlays.filter(s => s.rank === 'K' || s.rank === 'Q')) {
       const playCode = buildPlayCode({
         mazoId: mazo.id,
         userId,
@@ -666,8 +667,8 @@ async function createMazoHandler(req, res) {
         suit: seed.suit,
         action: seed.action,
         authorized: `U:${userId}`,
-        flow: 'system',
-        recipients: `U:${userId}`,
+        flow: 'acl',
+        recipients: '', // 👈 importante: no hay dueño
       });
 
       await insertInstitutionalPlay(client, {
@@ -678,117 +679,96 @@ async function createMazoHandler(req, res) {
       });
     }
 
-    await client.query('COMMIT');
+    // 2. Ases (propiedad)
+    for (const seed of seedPlays.filter(s => s.rank === 'A')) {
+      const playCode = buildPlayCode({
+        mazoId: mazo.id,
+        userId,
+        rank: seed.rank,
+        suit: seed.suit,
+        action: seed.action,
+        authorized: `U:${userId}`,
+        flow: 'foundation',
+        recipients: `U:${userId}`, // 👈 ahora sí hay dueño
+      });
 
-    return res.json({
-      ok: true,
-      mazo,
-      seededPlaysCount: seedPlays.length,
-    });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error en crear mazo', error);
-
-    return res.status(500).json({
-      ok: false,
-      error: 'Error al crear mazo',
-    });
-  } finally {
-    client.release();
-  }
-} async function listMazosHandler(req, res) {
-  try {
-    const userId = req.auth.userId;
-
-    const result = await pool.query(
-      `SELECT d.*
-       FROM decks d
-       INNER JOIN deck_members dm
-         ON dm.deck_id = d.id
-       WHERE dm.user_id = $1
-       ORDER BY d.id DESC`,
-      [userId]
-    );
-
-    return res.json({
-      ok: true,
-      mazos: result.rows,
-    });
-  } catch (error) {
-    console.error('Error en listar mazos', error);
-    return res.status(500).json({ ok: false });
-  }
-}
-
-async function getMazoHandler(req, res) {
-  try {
-    const mazoId = Number(req.params.mazoId || req.params.deckId);
-    const userId = req.auth.userId;
-
-    if (!Number.isInteger(mazoId) || mazoId <= 0) {
-      return res.status(400).json({
-        ok: false,
-        error: 'mazoId inválido',
+      await insertInstitutionalPlay(client, {
+        mazoId: mazo.id,
+        createdByUserId: userId,
+        playCode,
+        playStatus: seed.status,
       });
     }
 
-    const mazo = await getMazoByIdForUser(pool, mazoId, userId);
+    async function getMazoHandler(req, res) {
+      try {
+        const mazoId = Number(req.params.mazoId || req.params.deckId);
+        const userId = req.auth.userId;
 
-    if (!mazo) {
-      return res.status(404).json({
-        ok: false,
-        error: 'Mazo no encontrado',
-      });
+        if (!Number.isInteger(mazoId) || mazoId <= 0) {
+          return res.status(400).json({
+            ok: false,
+            error: 'mazoId inválido',
+          });
+        }
+
+        const mazo = await getMazoByIdForUser(pool, mazoId, userId);
+
+        if (!mazo) {
+          return res.status(404).json({
+            ok: false,
+            error: 'Mazo no encontrado',
+          });
+        }
+
+        return res.json({
+          ok: true,
+          mazo,
+        });
+      } catch (error) {
+        console.error('Error en GET mazo', error);
+        return res.status(500).json({
+          ok: false,
+          error: 'Error al cargar mazo',
+        });
+      }
     }
+    // Alias compatibles
+    app.post('/mazos', requireAuth, createMazoHandler);
+    app.post('/decks', requireAuth, createMazoHandler);
 
-    return res.json({
-      ok: true,
-      mazo,
-    });
-  } catch (error) {
-    console.error('Error en GET mazo', error);
-    return res.status(500).json({
-      ok: false,
-      error: 'Error al cargar mazo',
-    });
-  }
-}
-// Alias compatibles
-app.post('/mazos', requireAuth, createMazoHandler);
-app.post('/decks', requireAuth, createMazoHandler);
+    app.get('/mazos', requireAuth, listMazosHandler);
+    app.get('/decks', requireAuth, listMazosHandler);
 
-app.get('/mazos', requireAuth, listMazosHandler);
-app.get('/decks', requireAuth, listMazosHandler);
+    app.get('/mazos/:mazoId', requireAuth, getMazoHandler);
+    app.get('/decks/:deckId', requireAuth, getMazoHandler);
+    // =====================================================
+    // ESTADO DEL MAZO
+    // =====================================================
 
-app.get('/mazos/:mazoId', requireAuth, getMazoHandler);
-app.get('/decks/:deckId', requireAuth, getMazoHandler);
-// =====================================================
-// ESTADO DEL MAZO
-// =====================================================
+    async function getMazoStateHandler(req, res) {
+      try {
+        const userId = req.auth.userId;
+        const mazoId = Number(req.params.mazoId || req.params.deckId);
 
-async function getMazoStateHandler(req, res) {
-  try {
-    const userId = req.auth.userId;
-    const mazoId = Number(req.params.mazoId || req.params.deckId);
+        if (!Number.isInteger(mazoId) || mazoId <= 0) {
+          return res.status(400).json({
+            ok: false,
+            error: 'mazoId inválido',
+          });
+        }
 
-    if (!Number.isInteger(mazoId) || mazoId <= 0) {
-      return res.status(400).json({
-        ok: false,
-        error: 'mazoId inválido',
-      });
-    }
+        const mazo = await getMazoByIdForUser(pool, mazoId, userId);
 
-    const mazo = await getMazoByIdForUser(pool, mazoId, userId);
+        if (!mazo) {
+          return res.status(404).json({
+            ok: false,
+            error: 'Mazo no encontrado',
+          });
+        }
 
-    if (!mazo) {
-      return res.status(404).json({
-        ok: false,
-        error: 'Mazo no encontrado',
-      });
-    }
-
-    const result = await pool.query(
-      `SELECT
+        const result = await pool.query(
+          `SELECT
          p.*,
          creator.nickname AS created_by_nickname,
          target.nickname AS target_user_nickname,
@@ -807,386 +787,390 @@ async function getMazoStateHandler(req, res) {
        WHERE p.deck_id = $1
          AND dm.user_id = $2
        ORDER BY p.id ASC`,
-      [mazoId, userId]
-    );
-
-    const plays = result.rows;
-
-    const corporateCards = plays
-      .filter((play) => {
-        const rank = String(play.card_rank || '').toUpperCase();
-        const suit = String(play.card_suit || '').toUpperCase();
-        const authorId = Number(play.created_by_user_id || 0);
-        const targetId = Number(play.target_user_id || 0);
-
-        const isCorporateRank = rank === 'A' || rank === 'K';
-        const isCorporateSuit =
-          suit === 'HEART' ||
-          suit === 'SPADE' ||
-          suit === 'DIAMOND' ||
-          suit === 'CLUB';
-
-        const isActive =
-          String(play.play_status || '').toUpperCase() !== 'BLOCKED';
-
-        return (
-          isCorporateRank &&
-          isCorporateSuit &&
-          isActive &&
-          (authorId === userId || targetId === userId)
+          [mazoId, userId]
         );
-      })
-      .map((play) => ({
-        play_id: play.id,
-        owner_user_id: Number(
-          play.target_user_id || play.created_by_user_id || 0
-        ),
-        card_rank: String(play.card_rank || '').toUpperCase(),
-        card_suit: String(play.card_suit || '').toUpperCase(),
-        play_status: play.play_status,
-      }));
 
-    return res.json({
-      ok: true,
-      mazoId,
-      userId,
-      mazo,
-      deck: mazo,
-      plays,
-      corporateCards,
-    });
-    console.log("corporateCards calculadas =", corporateCards);
-  } catch (error) {
-    console.error('Error en GET state del mazo', error);
-    return res.status(500).json({
-      ok: false,
-      error: 'Error obteniendo estado del mazo',
-    });
-  }
-}
+        const plays = result.rows;
 
-app.get('/mazos/:mazoId/state', requireAuth, getMazoStateHandler);
-app.get('/mazo/:deckId/state', requireAuth, getMazoStateHandler);
+        const corporateCards = plays
+          .filter((play) => {
+            const rank = String(play.card_rank || '').toUpperCase();
+            const suit = String(play.card_suit || '').toUpperCase();
+            const flow = String(play.play_code || '').split('§')[7] || '';
+            const targetId = Number(play.target_user_id || 0);
+            const authorId = Number(play.created_by_user_id || 0);
 
-// =====================================================
-// JUGADAS
-// =====================================================
+            const isAce = rank === 'A';
+            const isCorporateSuit =
+              suit === 'HEART' ||
+              suit === 'SPADE' ||
+              suit === 'DIAMOND' ||
+              suit === 'CLUB';
 
-app.post('/plays', requireAuth, async (req, res) => {
-  const userId = req.auth.userId;
+            const isActive =
+              String(play.play_status || '').toUpperCase() !== 'BLOCKED';
 
-  const {
-    mazo_id,
-    deck_id,
-    parent_play_id = null,
-    target_user_id = null,
-    play_code,
-    text = '',
-    play_status = 'ACTIVE',
-  } = req.body;
+            const isFoundation = String(flow).trim().toLowerCase() === 'foundation';
 
-  const mazoId = mazo_id || deck_id;
+            return (
+              isAce &&
+              isCorporateSuit &&
+              isActive &&
+              isFoundation &&
+              (targetId === userId || authorId === userId)
+            );
+          })
+          .map((play) => ({
+            play_id: play.id,
+            owner_user_id: Number(
+              play.target_user_id || play.created_by_user_id || 0
+            ),
+            card_rank: String(play.card_rank || '').toUpperCase(),
+            card_suit: String(play.card_suit || '').toUpperCase(),
+            play_status: play.play_status,
+          }));
 
-  if (!mazoId) {
-    return res.status(400).json({
-      ok: false,
-      error: 'Falta mazo_id',
-    });
-  }
-
-  if (!play_code) {
-    return res.status(400).json({
-      ok: false,
-      error: 'Falta play_code',
-    });
-  }
-
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-
-    const mazo = await getMazoByIdForUser(client, mazoId, userId);
-
-    if (!mazo) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({
-        ok: false,
-        error: 'Mazo no encontrado o sin acceso',
-      });
+        return res.json({
+          ok: true,
+          mazoId,
+          userId,
+          mazo,
+          deck: mazo,
+          plays,
+          corporateCards,
+        });
+        console.log("corporateCards calculadas =", corporateCards);
+      } catch (error) {
+        console.error('Error en GET state del mazo', error);
+        return res.status(500).json({
+          ok: false,
+          error: 'Error obteniendo estado del mazo',
+        });
+      }
     }
 
-    const parsed = parseAndValidatePlayCode(play_code);
+    app.get('/mazos/:mazoId/state', requireAuth, getMazoStateHandler);
+    app.get('/mazo/:deckId/state', requireAuth, getMazoStateHandler);
 
-    if (!parsed.ok) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({
-        ok: false,
-        error: `play_code inválido: ${parsed.errors.join(', ')}`,
-      });
-    }
+    // =====================================================
+    // JUGADAS
+    // =====================================================
 
-    if (String(parsed.deckId) !== String(mazoId)) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({
-        ok: false,
-        error: 'play_code.deckId no coincide con mazo_id',
-      });
-    }
+    app.post('/plays', requireAuth, async (req, res) => {
+      const userId = req.auth.userId;
 
-    if (parsed.userId && String(parsed.userId) !== String(userId)) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({
-        ok: false,
-        error: 'play_code.userId no coincide con el usuario autenticado',
-      });
-    }
+      const {
+        mazo_id,
+        deck_id,
+        parent_play_id = null,
+        target_user_id = null,
+        play_code,
+        text = '',
+        play_status = 'ACTIVE',
+      } = req.body;
 
-    if (parent_play_id) {
-      const parentCheck = await client.query(
-        `
+      const mazoId = mazo_id || deck_id;
+
+      if (!mazoId) {
+        return res.status(400).json({
+          ok: false,
+          error: 'Falta mazo_id',
+        });
+      }
+
+      if (!play_code) {
+        return res.status(400).json({
+          ok: false,
+          error: 'Falta play_code',
+        });
+      }
+
+      const client = await pool.connect();
+
+      try {
+        await client.query('BEGIN');
+
+        const mazo = await getMazoByIdForUser(client, mazoId, userId);
+
+        if (!mazo) {
+          await client.query('ROLLBACK');
+          return res.status(404).json({
+            ok: false,
+            error: 'Mazo no encontrado o sin acceso',
+          });
+        }
+
+        const parsed = parseAndValidatePlayCode(play_code);
+
+        if (!parsed.ok) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({
+            ok: false,
+            error: `play_code inválido: ${parsed.errors.join(', ')}`,
+          });
+        }
+
+        if (String(parsed.deckId) !== String(mazoId)) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({
+            ok: false,
+            error: 'play_code.deckId no coincide con mazo_id',
+          });
+        }
+
+        if (parsed.userId && String(parsed.userId) !== String(userId)) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({
+            ok: false,
+            error: 'play_code.userId no coincide con el usuario autenticado',
+          });
+        }
+
+        if (parent_play_id) {
+          const parentCheck = await client.query(
+            `
           SELECT id, deck_id, card_rank, card_suit, play_code
           FROM plays
           WHERE id = $1
           LIMIT 1
         `,
-        [parent_play_id]
-      );
+            [parent_play_id]
+          );
 
-      if (!parentCheck.rows.length) {
-        await client.query('ROLLBACK');
-        return res.status(404).json({
-          ok: false,
-          error: 'parent_play_id no encontrado',
-        });
-      }
+          if (!parentCheck.rows.length) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({
+              ok: false,
+              error: 'parent_play_id no encontrado',
+            });
+          }
 
-      if (String(parentCheck.rows[0].deck_id) !== String(mazoId)) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({
-          ok: false,
-          error: 'La jugada madre pertenece a otro mazo',
-        });
-      }
+          if (String(parentCheck.rows[0].deck_id) !== String(mazoId)) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+              ok: false,
+              error: 'La jugada madre pertenece a otro mazo',
+            });
+          }
 
-      // Regla mínima conservada del modelo actual:
-      // Q♠ debe colgar de una J♠
-      if (parsed.rank === 'Q' && parsed.suit === 'SPADE') {
-        const parent = parentCheck.rows[0];
+          // Regla mínima conservada del modelo actual:
+          // Q♠ debe colgar de una J♠
+          if (parsed.rank === 'Q' && parsed.suit === 'SPADE') {
+            const parent = parentCheck.rows[0];
 
-        if (
-          String(parent.card_rank || '').toUpperCase() !== 'J' ||
-          String(parent.card_suit || '').toUpperCase() !== 'SPADE'
-        ) {
-          await client.query('ROLLBACK');
-          return res.status(400).json({
-            ok: false,
-            error: 'La Q♠ debe tener una J♠ como madre',
-          });
+            if (
+              String(parent.card_rank || '').toUpperCase() !== 'J' ||
+              String(parent.card_suit || '').toUpperCase() !== 'SPADE'
+            ) {
+              await client.query('ROLLBACK');
+              return res.status(400).json({
+                ok: false,
+                error: 'La Q♠ debe tener una J♠ como madre',
+              });
+            }
+          }
         }
-      }
-    }
 
-    if (target_user_id) {
-      const targetCheck = await client.query(
-        `
+        if (target_user_id) {
+          const targetCheck = await client.query(
+            `
           SELECT id
           FROM users
           WHERE id = $1
           LIMIT 1
         `,
-        [target_user_id]
-      );
+            [target_user_id]
+          );
 
-      if (!targetCheck.rows.length) {
-        await client.query('ROLLBACK');
-        return res.status(404).json({
-          ok: false,
-          error: 'target_user_id no encontrado',
+          if (!targetCheck.rows.length) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({
+              ok: false,
+              error: 'target_user_id no encontrado',
+            });
+          }
+        }
+
+        const created = await insertInstitutionalPlay(client, {
+          mazoId,
+          createdByUserId: userId,
+          parentPlayId: parent_play_id,
+          targetUserId: target_user_id,
+          playCode: play_code,
+          playText: text,
+          playStatus: play_status,
         });
-      }
-    }
 
-    const created = await insertInstitutionalPlay(client, {
-      mazoId,
-      createdByUserId: userId,
-      parentPlayId: parent_play_id,
-      targetUserId: target_user_id,
-      playCode: play_code,
-      playText: text,
-      playStatus: play_status,
-    });
+        // Readers iniciales de la jugada recién creada
+        await handleReadersOnPlayCreate(client, created.row);
 
-    // Readers iniciales de la jugada recién creada
-    await handleReadersOnPlayCreate(client, created.row);
-
-    // Si se envía una Q♠ con destinatario,
-    // se incorpora ese usuario al mazo si aún no está
-    if (
-      parsed.rank === 'Q' &&
-      parsed.suit === 'SPADE' &&
-      target_user_id
-    ) {
-      const memberCheck = await client.query(
-        `
+        // Si se envía una Q♠ con destinatario,
+        // se incorpora ese usuario al mazo si aún no está
+        if (
+          parsed.rank === 'Q' &&
+          parsed.suit === 'SPADE' &&
+          target_user_id
+        ) {
+          const memberCheck = await client.query(
+            `
           SELECT 1
           FROM deck_members
           WHERE deck_id = $1
             AND user_id = $2
           LIMIT 1
         `,
-        [mazoId, target_user_id]
-      );
+            [mazoId, target_user_id]
+          );
 
-      if (!memberCheck.rows.length) {
-        await client.query(
-          `
+          if (!memberCheck.rows.length) {
+            await client.query(
+              `
             INSERT INTO deck_members (deck_id, user_id)
             VALUES ($1, $2)
           `,
-          [mazoId, target_user_id]
-        );
+              [mazoId, target_user_id]
+            );
+          }
+        }
+
+        await client.query('COMMIT');
+
+        return res.json({
+          ok: true,
+          play: created.row,
+          parsed: created.parsed,
+        });
+      } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error en POST /plays', error);
+
+        return res.status(error.statusCode || 500).json({
+          ok: false,
+          error: error.message || 'Error guardando jugada',
+        });
+      } finally {
+        client.release();
       }
-    }
-
-    await client.query('COMMIT');
-
-    return res.json({
-      ok: true,
-      play: created.row,
-      parsed: created.parsed,
     });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error en POST /plays', error);
+    app.patch('/plays/:id', requireAuth, async (req, res) => {
+      const client = await pool.connect();
 
-    return res.status(error.statusCode || 500).json({
-      ok: false,
-      error: error.message || 'Error guardando jugada',
-    });
-  } finally {
-    client.release();
-  }
-});
-app.patch('/plays/:id', requireAuth, async (req, res) => {
-  const client = await pool.connect();
+      try {
+        console.log("PATCH /plays/:id req.body =", req.body);
 
-  try {
-    console.log("PATCH /plays/:id req.body =", req.body);
+        const playId = Number(req.params.id);
+        const {
+          text,
+          spadeMode,
+          startDate,
+          endDate,
+          location,
+          amount,
+          play_status,
+          card_suit
+        } = req.body || {};
 
-    const playId = Number(req.params.id);
-    const {
-      text,
-      spadeMode,
-      startDate,
-      endDate,
-      location,
-      amount,
-      play_status,
-      card_suit
-    } = req.body || {};
+        if (!playId) {
+          return res.status(400).json({
+            ok: false,
+            error: 'playId inválido'
+          });
+        }
 
-    if (!playId) {
-      return res.status(400).json({
-        ok: false,
-        error: 'playId inválido'
-      });
-    }
-
-    const existingResult = await client.query(
-      `
+        const existingResult = await client.query(
+          `
       SELECT *
       FROM plays
       WHERE id = $1
       LIMIT 1
       `,
-      [playId]
-    );
+          [playId]
+        );
 
-    if (!existingResult.rows.length) {
-      return res.status(404).json({
-        ok: false,
-        error: 'Jugada no encontrada'
-      });
-    }
+        if (!existingResult.rows.length) {
+          return res.status(404).json({
+            ok: false,
+            error: 'Jugada no encontrada'
+          });
+        }
 
-    const current = existingResult.rows[0];
+        const current = existingResult.rows[0];
 
-    // -----------------------------
-    // NORMALIZACIÓN DE CAMPOS
-    // -----------------------------
+        // -----------------------------
+        // NORMALIZACIÓN DE CAMPOS
+        // -----------------------------
 
-    const nextPlayText =
-      text !== undefined
-        ? (String(text || '').trim() || null)
-        : current.play_text;
+        const nextPlayText =
+          text !== undefined
+            ? (String(text || '').trim() || null)
+            : current.play_text;
 
-    const nextSpadeMode =
-      spadeMode !== undefined
-        ? (String(spadeMode || '').trim().toUpperCase() || null)
-        : current.spade_mode;
+        const nextSpadeMode =
+          spadeMode !== undefined
+            ? (String(spadeMode || '').trim().toUpperCase() || null)
+            : current.spade_mode;
 
-    const nextStartDate =
-      startDate !== undefined ? (startDate || null) : current.start_date;
+        const nextStartDate =
+          startDate !== undefined ? (startDate || null) : current.start_date;
 
-    const nextEndDate =
-      endDate !== undefined ? (endDate || null) : current.end_date;
+        const nextEndDate =
+          endDate !== undefined ? (endDate || null) : current.end_date;
 
-    const nextLocation =
-      location !== undefined
-        ? (String(location || '').trim() || null)
-        : current.location;
+        const nextLocation =
+          location !== undefined
+            ? (String(location || '').trim() || null)
+            : current.location;
 
-    const nextAmount =
-      amount !== undefined
-        ? (
-          String(amount).trim() === ''
-            ? null
-            : Number(amount)
-        )
-        : current.amount;
+        const nextAmount =
+          amount !== undefined
+            ? (
+              String(amount).trim() === ''
+                ? null
+                : Number(amount)
+            )
+            : current.amount;
 
-    if (amount !== undefined && nextAmount !== null && Number.isNaN(nextAmount)) {
-      return res.status(400).json({
-        ok: false,
-        error: 'amount inválido'
-      });
-    }
+        if (amount !== undefined && nextAmount !== null && Number.isNaN(nextAmount)) {
+          return res.status(400).json({
+            ok: false,
+            error: 'amount inválido'
+          });
+        }
 
-    const nextPlayStatus =
-      play_status !== undefined
-        ? (String(play_status || '').trim().toUpperCase() || null)
-        : current.play_status;
+        const nextPlayStatus =
+          play_status !== undefined
+            ? (String(play_status || '').trim().toUpperCase() || null)
+            : current.play_status;
 
-    const nextCardSuit =
-      card_suit !== undefined
-        ? (String(card_suit || '').trim().toUpperCase() || null)
-        : current.card_suit;
+        const nextCardSuit =
+          card_suit !== undefined
+            ? (String(card_suit || '').trim().toUpperCase() || null)
+            : current.card_suit;
 
-    // -----------------------------
-    // RECONSTRUCCIÓN DE play_code
-    // -----------------------------
+        // -----------------------------
+        // RECONSTRUCCIÓN DE play_code
+        // -----------------------------
 
-    let nextPlayCode = current.play_code;
+        let nextPlayCode = current.play_code;
 
-    if (card_suit !== undefined && current.play_code) {
-      const parts = String(current.play_code).split('§');
+        if (card_suit !== undefined && current.play_code) {
+          const parts = String(current.play_code).split('§');
 
-      // asegurar 9 segmentos
-      while (parts.length < 9) parts.push('');
+          // asegurar 9 segmentos
+          while (parts.length < 9) parts.push('');
 
-      if (parts.length === 9) {
-        parts[4] = nextCardSuit; // posición del palo
-        nextPlayCode = parts.join('§');
-      }
-    }
+          if (parts.length === 9) {
+            parts[4] = nextCardSuit; // posición del palo
+            nextPlayCode = parts.join('§');
+          }
+        }
 
-    // -----------------------------
-    // UPDATE
-    // -----------------------------
+        // -----------------------------
+        // UPDATE
+        // -----------------------------
 
-    const result = await client.query(
-      `
+        const result = await client.query(
+          `
       UPDATE plays
       SET
         play_text = $1,
@@ -1202,122 +1186,122 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       WHERE id = $10
       RETURNING *
       `,
-      [
-        nextPlayText,
-        nextSpadeMode,
-        nextStartDate,
-        nextEndDate,
-        nextLocation,
-        nextAmount,
-        nextPlayStatus,
-        nextCardSuit,
-        nextPlayCode,
-        playId
-      ]
-    );
+          [
+            nextPlayText,
+            nextSpadeMode,
+            nextStartDate,
+            nextEndDate,
+            nextLocation,
+            nextAmount,
+            nextPlayStatus,
+            nextCardSuit,
+            nextPlayCode,
+            playId
+          ]
+        );
 
-    return res.json({
-      ok: true,
-      play: result.rows[0]
+        return res.json({
+          ok: true,
+          play: result.rows[0]
+        });
+
+      } catch (error) {
+        console.error('Error actualizando play:', error);
+        return res.status(500).json({
+          ok: false,
+          error: 'No se pudo actualizar la jugada'
+        });
+      } finally {
+        client.release();
+      }
     });
 
-  } catch (error) {
-    console.error('Error actualizando play:', error);
-    return res.status(500).json({
-      ok: false,
-      error: 'No se pudo actualizar la jugada'
-    });
-  } finally {
-    client.release();
-  }
-});
+    app.delete('/plays/:id', requireAuth, async (req, res) => {
+      const playId = Number(req.params.id);
+      const userId = req.auth.userId;
 
-app.delete('/plays/:id', requireAuth, async (req, res) => {
-  const playId = Number(req.params.id);
-  const userId = req.auth.userId;
+      if (!Number.isInteger(playId) || playId <= 0) {
+        return res.status(400).json({
+          ok: false,
+          error: 'playId inválido',
+        });
+      }
 
-  if (!Number.isInteger(playId) || playId <= 0) {
-    return res.status(400).json({
-      ok: false,
-      error: 'playId inválido',
-    });
-  }
+      const client = await pool.connect();
 
-  const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
 
-  try {
-    await client.query('BEGIN');
-
-    const existingResult = await client.query(
-      `SELECT *
+        const existingResult = await client.query(
+          `SELECT *
        FROM plays
        WHERE id = $1
        LIMIT 1`,
-      [playId]
-    );
+          [playId]
+        );
 
-    if (!existingResult.rows.length) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({
-        ok: false,
-        error: 'Play no encontrada',
-      });
-    }
+        if (!existingResult.rows.length) {
+          await client.query('ROLLBACK');
+          return res.status(404).json({
+            ok: false,
+            error: 'Play no encontrada',
+          });
+        }
 
-    const existingPlay = existingResult.rows[0];
+        const existingPlay = existingResult.rows[0];
 
-    const mazo = await getMazoByIdForUser(client, existingPlay.deck_id, userId);
+        const mazo = await getMazoByIdForUser(client, existingPlay.deck_id, userId);
 
-    if (!mazo) {
-      await client.query('ROLLBACK');
-      return res.status(403).json({
-        ok: false,
-        error: 'Sin acceso a esta jugada',
-      });
-    }
+        if (!mazo) {
+          await client.query('ROLLBACK');
+          return res.status(403).json({
+            ok: false,
+            error: 'Sin acceso a esta jugada',
+          });
+        }
 
-    await client.query(
-      `DELETE FROM plays
+        await client.query(
+          `DELETE FROM plays
        WHERE id = $1`,
-      [playId]
-    );
+          [playId]
+        );
 
-    await client.query('COMMIT');
+        await client.query('COMMIT');
 
-    return res.json({
-      ok: true,
-      deletedPlayId: playId,
+        return res.json({
+          ok: true,
+          deletedPlayId: playId,
+        });
+      } catch (error) {
+        try {
+          await client.query('ROLLBACK');
+        } catch (rollbackError) {
+          console.error('Error haciendo ROLLBACK en DELETE /plays/:id', rollbackError);
+        }
+
+        console.error('Error en DELETE /plays/:id', error);
+
+        return res.status(500).json({
+          ok: false,
+          error: 'Error borrando jugada',
+        });
+      } finally {
+        client.release();
+      }
     });
-  } catch (error) {
-    try {
-      await client.query('ROLLBACK');
-    } catch (rollbackError) {
-      console.error('Error haciendo ROLLBACK en DELETE /plays/:id', rollbackError);
-    }
+    app.get('/plays', requireAuth, async (req, res) => {
+      try {
+        const mazoId = Number(req.query.mazoId || req.query.deckId);
 
-    console.error('Error en DELETE /plays/:id', error);
+        if (!Number.isInteger(mazoId) || mazoId <= 0) {
+          return res.status(400).json({
+            ok: false,
+            error: 'Falta mazoId válido',
+          });
+        }
 
-    return res.status(500).json({
-      ok: false,
-      error: 'Error borrando jugada',
-    });
-  } finally {
-    client.release();
-  }
-});
-app.get('/plays', requireAuth, async (req, res) => {
-  try {
-    const mazoId = Number(req.query.mazoId || req.query.deckId);
-
-    if (!Number.isInteger(mazoId) || mazoId <= 0) {
-      return res.status(400).json({
-        ok: false,
-        error: 'Falta mazoId válido',
-      });
-    }
-
-    const result = await pool.query(
-      `SELECT
+        const result = await pool.query(
+          `SELECT
          p.*,
          creator.nickname AS created_by_nickname,
          target.nickname AS target_user_nickname,
@@ -1333,36 +1317,36 @@ app.get('/plays', requireAuth, async (req, res) => {
          ON target.id = p.target_user_id
        WHERE p.deck_id = $1
        ORDER BY p.created_at DESC, p.id DESC`,
-      [mazoId]
-    );
+          [mazoId]
+        );
 
-    return res.json({
-      ok: true,
-      plays: result.rows,
+        return res.json({
+          ok: true,
+          plays: result.rows,
+        });
+      } catch (error) {
+        console.error('Error en GET /plays', error);
+        return res.status(500).json({
+          ok: false,
+          error: 'Error obteniendo jugadas',
+        });
+      }
     });
-  } catch (error) {
-    console.error('Error en GET /plays', error);
-    return res.status(500).json({
-      ok: false,
-      error: 'Error obteniendo jugadas',
-    });
-  }
-});
 
-app.get('/mazos/:mazoId/plays', requireAuth, async (req, res) => {
-  try {
-    const userId = req.auth.userId;
-    const mazoId = Number(req.params.mazoId);
+    app.get('/mazos/:mazoId/plays', requireAuth, async (req, res) => {
+      try {
+        const userId = req.auth.userId;
+        const mazoId = Number(req.params.mazoId);
 
-    if (!Number.isInteger(mazoId) || mazoId <= 0) {
-      return res.status(400).json({
-        ok: false,
-        error: 'mazoId inválido',
-      });
-    }
+        if (!Number.isInteger(mazoId) || mazoId <= 0) {
+          return res.status(400).json({
+            ok: false,
+            error: 'mazoId inválido',
+          });
+        }
 
-    const result = await pool.query(
-      `SELECT
+        const result = await pool.query(
+          `SELECT
          p.*,
          creator.nickname AS created_by_nickname,
          target.nickname AS target_user_nickname,
@@ -1381,34 +1365,34 @@ app.get('/mazos/:mazoId/plays', requireAuth, async (req, res) => {
        WHERE p.deck_id = $1
          AND dm.user_id = $2
        ORDER BY p.id ASC`,
-      [mazoId, userId]
-    );
+          [mazoId, userId]
+        );
 
-    return res.json({
-      ok: true,
-      plays: result.rows,
+        return res.json({
+          ok: true,
+          plays: result.rows,
+        });
+      } catch (error) {
+        console.error('Error en GET /mazos/:mazoId/plays', error);
+        return res.status(500).json({
+          ok: false,
+          error: 'Error obteniendo jugadas del mazo',
+        });
+      }
     });
-  } catch (error) {
-    console.error('Error en GET /mazos/:mazoId/plays', error);
-    return res.status(500).json({
-      ok: false,
-      error: 'Error obteniendo jugadas del mazo',
+
+    // Alias viejo
+    app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
+      req.params.mazoId = req.params.deckId;
+      return app._router.handle(req, res, () => { });
     });
-  }
-});
 
-// Alias viejo
-app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
-  req.params.mazoId = req.params.deckId;
-  return app._router.handle(req, res, () => { });
-});
+    app.get('/plays/pending', requireAuth, async (req, res) => {
+      try {
+        const userId = req.auth.userId;
 
-app.get('/plays/pending', requireAuth, async (req, res) => {
-  try {
-    const userId = req.auth.userId;
-
-    const result = await pool.query(
-      `SELECT
+        const result = await pool.query(
+          `SELECT
          p.id,
          p.deck_id,
          p.parent_play_id,
@@ -1435,123 +1419,123 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
          AND p.card_suit = 'SPADE'
          AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
        ORDER BY p.created_at DESC`,
-      [userId]
-    );
+          [userId]
+        );
 
-    return res.json({
-      ok: true,
-      plays: result.rows,
+        return res.json({
+          ok: true,
+          plays: result.rows,
+        });
+      } catch (error) {
+        console.error('Error en GET /plays/pending', error);
+        return res.status(500).json({
+          ok: false,
+          error: 'Error obteniendo pendientes',
+        });
+      }
     });
-  } catch (error) {
-    console.error('Error en GET /plays/pending', error);
-    return res.status(500).json({
-      ok: false,
-      error: 'Error obteniendo pendientes',
-    });
-  }
-});
 
-// =====================================================
-// RECURRENCIAS
-// =====================================================
+    // =====================================================
+    // RECURRENCIAS
+    // =====================================================
 
-app.post('/plays/:id/recurrence', requireAuth, async (req, res) => {
-  console.log("RECURRENCE BODY =", req.body);
-  const playId = parseInt(req.params.id, 10);
-  const {
-    recurrence_type,
-    weekdays,
-    day_of_month,
-    months,
-    start_time,
-    end_time,
-    until_date,
-    timezone,
-  } = req.body;
+    app.post('/plays/:id/recurrence', requireAuth, async (req, res) => {
+      console.log("RECURRENCE BODY =", req.body);
+      const playId = parseInt(req.params.id, 10);
+      const {
+        recurrence_type,
+        weekdays,
+        day_of_month,
+        months,
+        start_time,
+        end_time,
+        until_date,
+        timezone,
+      } = req.body;
 
-  try {
-    await pool.query(
-      `DELETE FROM play_recurrences WHERE play_id = $1`,
-      [playId]
-    );
+      try {
+        await pool.query(
+          `DELETE FROM play_recurrences WHERE play_id = $1`,
+          [playId]
+        );
 
-    const result = await pool.query(
-      `INSERT INTO play_recurrences
+        const result = await pool.query(
+          `INSERT INTO play_recurrences
       (play_id, recurrence_type, weekdays, day_of_month, months,
        start_time, end_time, until_date, timezone)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
       RETURNING *`,
-      [
-        playId,
-        recurrence_type,
-        weekdays || null,
-        day_of_month || null,
-        months || null,
-        start_time || null,
-        end_time || null,
-        until_date || null,
-        timezone || null,
-      ]
-    );
+          [
+            playId,
+            recurrence_type,
+            weekdays || null,
+            day_of_month || null,
+            months || null,
+            start_time || null,
+            end_time || null,
+            until_date || null,
+            timezone || null,
+          ]
+        );
 
-    return res.json({ ok: true, recurrence: result.rows[0] });
-  } catch (error) {
-    console.error('Error en POST /plays/:id/recurrence', error);
-    return res.status(500).json({
-      ok: false,
-      error: 'Error guardando recurrencia',
+        return res.json({ ok: true, recurrence: result.rows[0] });
+      } catch (error) {
+        console.error('Error en POST /plays/:id/recurrence', error);
+        return res.status(500).json({
+          ok: false,
+          error: 'Error guardando recurrencia',
+        });
+      }
     });
-  }
-});
 
-app.get('/plays/:id/recurrence', requireAuth, async (req, res) => {
-  const playId = parseInt(req.params.id, 10);
+    app.get('/plays/:id/recurrence', requireAuth, async (req, res) => {
+      const playId = parseInt(req.params.id, 10);
 
-  try {
-    const result = await pool.query(
-      `SELECT * FROM play_recurrences WHERE play_id = $1`,
-      [playId]
-    );
+      try {
+        const result = await pool.query(
+          `SELECT * FROM play_recurrences WHERE play_id = $1`,
+          [playId]
+        );
 
-    return res.json({
-      ok: true,
-      recurrence: result.rows[0] || null,
+        return res.json({
+          ok: true,
+          recurrence: result.rows[0] || null,
+        });
+      } catch (error) {
+        console.error('Error en GET /plays/:id/recurrence', error);
+        return res.status(500).json({ ok: false });
+      }
     });
-  } catch (error) {
-    console.error('Error en GET /plays/:id/recurrence', error);
-    return res.status(500).json({ ok: false });
-  }
-});
 
-// =====================================================
-// USUARIOS PARA Q
-// =====================================================
+    // =====================================================
+    // USUARIOS PARA Q
+    // =====================================================
 
-app.get('/mazos/:mazoId/q-users', requireAuth, async (req, res) => {
-  const userId = req.auth.userId;
-  const mazoId = Number(req.params.mazoId);
+    app.get('/mazos/:mazoId/q-users', requireAuth, async (req, res) => {
+      const userId = req.auth.userId;
+      const mazoId = Number(req.params.mazoId);
 
-  if (!Number.isInteger(mazoId) || mazoId <= 0) {
-    return res.status(400).json({
-      ok: false,
-      error: 'mazoId inválido',
-    });
-  }
+      if (!Number.isInteger(mazoId) || mazoId <= 0) {
+        return res.status(400).json({
+          ok: false,
+          error: 'mazoId inválido',
+        });
+      }
 
-  const client = await pool.connect();
+      const client = await pool.connect();
 
-  try {
-    const isMember = await userIsMazoMember(client, mazoId, userId);
+      try {
+        const isMember = await userIsMazoMember(client, mazoId, userId);
 
-    if (!isMember) {
-      return res.status(403).json({
-        ok: false,
-        error: 'No pertenecés a este mazo',
-      });
-    }
+        if (!isMember) {
+          return res.status(403).json({
+            ok: false,
+            error: 'No pertenecés a este mazo',
+          });
+        }
 
-    const result = await client.query(
-      `SELECT
+        const result = await client.query(
+          `SELECT
          u.id,
          u.nickname,
          u.email,
@@ -1570,57 +1554,57 @@ app.get('/mazos/:mazoId/q-users', requireAuth, async (req, res) => {
          END,
          LOWER(COALESCE(u.nickname, '')) ASC,
          u.id ASC`,
-      [mazoId]
-    );
+          [mazoId]
+        );
 
-    const users = result.rows.map((u) => {
-      const normalizedType = String(u.user_type || '').toLowerCase();
+        const users = result.rows.map((u) => {
+          const normalizedType = String(u.user_type || '').toLowerCase();
 
-      let qCategory = 'Pop';
-      let categoryIcon = '/assets/icons/q-pop.gif';
+          let qCategory = 'Pop';
+          let categoryIcon = '/assets/icons/q-pop.gif';
 
-      if (normalizedType === 'senior') {
-        qCategory = 'Senior';
-        categoryIcon = '/assets/icons/q-senior.gif';
-      } else if (normalizedType === 'active') {
-        qCategory = 'Active';
-        categoryIcon = '/assets/icons/q-active.gif';
+          if (normalizedType === 'senior') {
+            qCategory = 'Senior';
+            categoryIcon = '/assets/icons/q-senior.gif';
+          } else if (normalizedType === 'active') {
+            qCategory = 'Active';
+            categoryIcon = '/assets/icons/q-active.gif';
+          }
+
+          return {
+            ...u,
+            qCategory,
+            categoryIcon,
+          };
+        });
+
+        return res.json({
+          ok: true,
+          mazoId,
+          users,
+        });
+      } catch (error) {
+        console.error('Error en GET /mazos/:mazoId/q-users', error);
+        return res.status(500).json({
+          ok: false,
+          error: 'Error cargando usuarios para Q',
+        });
+      } finally {
+        client.release();
       }
-
-      return {
-        ...u,
-        qCategory,
-        categoryIcon,
-      };
     });
 
-    return res.json({
-      ok: true,
-      mazoId,
-      users,
+    // Alias viejo
+    app.get('/decks/:deckId/q-users', requireAuth, async (req, res) => {
+      req.params.mazoId = req.params.deckId;
+      return app._router.handle(req, res, () => { });
     });
-  } catch (error) {
-    console.error('Error en GET /mazos/:mazoId/q-users', error);
-    return res.status(500).json({
-      ok: false,
-      error: 'Error cargando usuarios para Q',
-    });
-  } finally {
-    client.release();
-  }
-});
 
-// Alias viejo
-app.get('/decks/:deckId/q-users', requireAuth, async (req, res) => {
-  req.params.mazoId = req.params.deckId;
-  return app._router.handle(req, res, () => { });
-});
+    app.get('/users-picker', requireAuth, async (req, res) => {
+      const client = await pool.connect();
 
-app.get('/users-picker', requireAuth, async (req, res) => {
-  const client = await pool.connect();
-
-  try {
-    const result = await client.query(`
+      try {
+        const result = await client.query(`
       SELECT
         id,
         nickname,
@@ -1639,64 +1623,64 @@ app.get('/users-picker', requireAuth, async (req, res) => {
         id ASC
     `);
 
-    const users = result.rows.map((u) => ({
-      ...u,
-      qCategory:
-        String(u.user_type || '').toLowerCase() === 'senior' ? 'Senior'
-          : String(u.user_type || '').toLowerCase() === 'active' ? 'Active'
-            : 'Pop'
-    }));
+        const users = result.rows.map((u) => ({
+          ...u,
+          qCategory:
+            String(u.user_type || '').toLowerCase() === 'senior' ? 'Senior'
+              : String(u.user_type || '').toLowerCase() === 'active' ? 'Active'
+                : 'Pop'
+        }));
 
-    res.json({
-      ok: true,
-      users
+        res.json({
+          ok: true,
+          users
+        });
+      } catch (error) {
+        console.error('Error en GET /users-picker', error);
+        res.status(500).json({
+          ok: false,
+          error: 'Error cargando usuarios'
+        });
+      } finally {
+        client.release();
+      }
     });
-  } catch (error) {
-    console.error('Error en GET /users-picker', error);
-    res.status(500).json({
-      ok: false,
-      error: 'Error cargando usuarios'
-    });
-  } finally {
-    client.release();
-  }
-});
 
-app.post('/users/resolve', requireAuth, async (req, res) => {
-  const client = await pool.connect();
-  let transactionStarted = false;
+    app.post('/users/resolve', requireAuth, async (req, res) => {
+      const client = await pool.connect();
+      let transactionStarted = false;
 
-  try {
-    const rawNickname = String(req.body.nickname || '').trim();
-    const rawEmail = String(req.body.email || '').trim();
-    const rawPhone = String(req.body.phone || '').trim();
+      try {
+        const rawNickname = String(req.body.nickname || '').trim();
+        const rawEmail = String(req.body.email || '').trim();
+        const rawPhone = String(req.body.phone || '').trim();
 
-    const email = normalizeEmail(rawEmail);
-    const phone = normalizePhone(rawPhone);
+        const email = normalizeEmail(rawEmail);
+        const phone = normalizePhone(rawPhone);
 
-    if (!rawNickname) {
-      return res.status(400).json({
-        ok: false,
-        error: 'nickname es obligatorio',
-      });
-    }
+        if (!rawNickname) {
+          return res.status(400).json({
+            ok: false,
+            error: 'nickname es obligatorio',
+          });
+        }
 
-    if (!email && !phone) {
-      return res.status(400).json({
-        ok: false,
-        error: 'Debe ingresar email o teléfono',
-      });
-    }
+        if (!email && !phone) {
+          return res.status(400).json({
+            ok: false,
+            error: 'Debe ingresar email o teléfono',
+          });
+        }
 
-    await client.query('BEGIN');
-    transactionStarted = true;
+        await client.query('BEGIN');
+        transactionStarted = true;
 
-    let existingByEmail = null;
-    let existingByPhone = null;
+        let existingByEmail = null;
+        let existingByPhone = null;
 
-    if (email) {
-      const emailResult = await client.query(
-        `SELECT
+        if (email) {
+          const emailResult = await client.query(
+            `SELECT
            id,
            nickname,
            email,
@@ -1711,14 +1695,14 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
          FROM users
          WHERE LOWER(email) = $1
          LIMIT 1`,
-        [email]
-      );
-      existingByEmail = emailResult.rows[0] || null;
-    }
+            [email]
+          );
+          existingByEmail = emailResult.rows[0] || null;
+        }
 
-    if (phone) {
-      const phoneResult = await client.query(
-        `SELECT
+        if (phone) {
+          const phoneResult = await client.query(
+            `SELECT
            id,
            nickname,
            email,
@@ -1733,53 +1717,53 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
          FROM users
          WHERE phone = $1
          LIMIT 1`,
-        [phone]
-      );
-      existingByPhone = phoneResult.rows[0] || null;
-    }
+            [phone]
+          );
+          existingByPhone = phoneResult.rows[0] || null;
+        }
 
-    if (
-      existingByEmail &&
-      existingByPhone &&
-      String(existingByEmail.id) !== String(existingByPhone.id)
-    ) {
-      await client.query('ROLLBACK');
-      transactionStarted = false;
+        if (
+          existingByEmail &&
+          existingByPhone &&
+          String(existingByEmail.id) !== String(existingByPhone.id)
+        ) {
+          await client.query('ROLLBACK');
+          transactionStarted = false;
 
-      return res.status(409).json({
-        ok: false,
-        error: 'El email y el teléfono pertenecen a usuarios distintos',
-        existingUsers: [
-          mapUserCategory(existingByEmail),
-          mapUserCategory(existingByPhone),
-        ],
-      });
-    }
+          return res.status(409).json({
+            ok: false,
+            error: 'El email y el teléfono pertenecen a usuarios distintos',
+            existingUsers: [
+              mapUserCategory(existingByEmail),
+              mapUserCategory(existingByPhone),
+            ],
+          });
+        }
 
-    const existingUser = existingByEmail || existingByPhone;
+        const existingUser = existingByEmail || existingByPhone;
 
-    if (existingUser) {
-      await client.query('COMMIT');
-      transactionStarted = false;
+        if (existingUser) {
+          await client.query('COMMIT');
+          transactionStarted = false;
 
-      return res.json({
-        ok: true,
-        mode: 'existing',
-        user: mapUserCategory(existingUser),
-        accountStatus: existingUser.account_status || 'ACTIVE',
-        message:
-          (existingUser.account_status || 'ACTIVE') === 'PENDING'
-            ? 'El contacto ya existe como usuario pendiente.'
-            : 'El contacto ya existe. Seleccionalo para continuar.',
-      });
-    }
+          return res.json({
+            ok: true,
+            mode: 'existing',
+            user: mapUserCategory(existingUser),
+            accountStatus: existingUser.account_status || 'ACTIVE',
+            message:
+              (existingUser.account_status || 'ACTIVE') === 'PENDING'
+                ? 'El contacto ya existe como usuario pendiente.'
+                : 'El contacto ya existe. Seleccionalo para continuar.',
+          });
+        }
 
-    const activationCode = generateActivationCode();
-    const activationExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
-    const invitedByUserId = req.auth?.userId || null;
+        const activationCode = generateActivationCode();
+        const activationExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
+        const invitedByUserId = req.auth?.userId || null;
 
-    const insertUserResult = await client.query(
-      `INSERT INTO users (
+        const insertUserResult = await client.query(
+          `INSERT INTO users (
          nickname,
          email,
          phone,
@@ -1803,102 +1787,102 @@ app.post('/users/resolve', requireAuth, async (req, res) => {
          activation_code,
          activation_expires_at,
          invited_by_user_id`,
-      [
-        rawNickname,
-        email || null,
-        phone || null,
-        null,
-        'guest',
-        'PENDING',
-        activationCode,
-        activationExpiresAt,
-        invitedByUserId,
-      ]
-    );
+          [
+            rawNickname,
+            email || null,
+            phone || null,
+            null,
+            'guest',
+            'PENDING',
+            activationCode,
+            activationExpiresAt,
+            invitedByUserId,
+          ]
+        );
 
-    const createdUser = insertUserResult.rows[0];
+        const createdUser = insertUserResult.rows[0];
 
-    if (email) {
-      await client.query(
-        `INSERT INTO user_contacts_history (
+        if (email) {
+          await client.query(
+            `INSERT INTO user_contacts_history (
            user_id,
            contact_type,
            contact_value,
            is_current
          )
          VALUES ($1, 'EMAIL', $2, true)`,
-        [createdUser.id, email]
-      );
-    }
+            [createdUser.id, email]
+          );
+        }
 
-    if (phone) {
-      await client.query(
-        `INSERT INTO user_contacts_history (
+        if (phone) {
+          await client.query(
+            `INSERT INTO user_contacts_history (
            user_id,
            contact_type,
            contact_value,
            is_current
          )
          VALUES ($1, 'PHONE', $2, true)`,
-        [createdUser.id, phone]
-      );
-    }
+            [createdUser.id, phone]
+          );
+        }
 
-    await client.query('COMMIT');
-    transactionStarted = false;
+        await client.query('COMMIT');
+        transactionStarted = false;
 
-    return res.json({
-      ok: true,
-      mode: 'created_pending',
-      user: mapUserCategory(createdUser),
-      accountStatus: createdUser.account_status,
-      activationCode: createdUser.activation_code,
-      activationExpiresAt: createdUser.activation_expires_at,
-      message: 'Usuario pendiente creado correctamente',
-    });
-  } catch (error) {
-    if (transactionStarted) {
-      try {
-        await client.query('ROLLBACK');
-      } catch (rollbackError) {
-        console.error('Error haciendo ROLLBACK en /users/resolve', rollbackError);
+        return res.json({
+          ok: true,
+          mode: 'created_pending',
+          user: mapUserCategory(createdUser),
+          accountStatus: createdUser.account_status,
+          activationCode: createdUser.activation_code,
+          activationExpiresAt: createdUser.activation_expires_at,
+          message: 'Usuario pendiente creado correctamente',
+        });
+      } catch (error) {
+        if (transactionStarted) {
+          try {
+            await client.query('ROLLBACK');
+          } catch (rollbackError) {
+            console.error('Error haciendo ROLLBACK en /users/resolve', rollbackError);
+          }
+        }
+
+        console.error('Error en POST /users/resolve', error);
+
+        return res.status(500).json({
+          ok: false,
+          error: 'Error resolviendo usuario',
+        });
+      } finally {
+        client.release();
       }
-    }
-
-    console.error('Error en POST /users/resolve', error);
-
-    return res.status(500).json({
-      ok: false,
-      error: 'Error resolviendo usuario',
     });
-  } finally {
-    client.release();
-  }
-});
 
-app.get('/admin/joker-blue-requests', requireAuth, async (req, res) => {
-  try {
-    const userId = req.auth.userId;
+    app.get('/admin/joker-blue-requests', requireAuth, async (req, res) => {
+      try {
+        const userId = req.auth.userId;
 
-    const adminResult = await pool.query(
-      `
+        const adminResult = await pool.query(
+          `
       SELECT is_admin
       FROM users
       WHERE id = $1
       LIMIT 1
       `,
-      [userId]
-    );
+          [userId]
+        );
 
-    if (!adminResult.rows.length || !adminResult.rows[0].is_admin) {
-      return res.status(403).json({
-        ok: false,
-        error: 'Acceso solo para administradores'
-      });
-    }
+        if (!adminResult.rows.length || !adminResult.rows[0].is_admin) {
+          return res.status(403).json({
+            ok: false,
+            error: 'Acceso solo para administradores'
+          });
+        }
 
-    const result = await pool.query(
-      `
+        const result = await pool.query(
+          `
       SELECT
         p.id,
         p.deck_id,
@@ -1922,26 +1906,26 @@ app.get('/admin/joker-blue-requests', requireAuth, async (req, res) => {
         AND UPPER(COALESCE(p.play_status, '')) = 'PENDING'
       ORDER BY p.created_at DESC, p.id DESC
       `
-    );
+        );
 
-    return res.json({
-      ok: true,
-      requests: result.rows
+        return res.json({
+          ok: true,
+          requests: result.rows
+        });
+      } catch (error) {
+        console.error('Error en GET /admin/joker-blue-requests', error);
+        return res.status(500).json({
+          ok: false,
+          error: 'Error cargando solicitudes Joker azul'
+        });
+      }
     });
-  } catch (error) {
-    console.error('Error en GET /admin/joker-blue-requests', error);
-    return res.status(500).json({
-      ok: false,
-      error: 'Error cargando solicitudes Joker azul'
+
+    // =====================================================
+    // START
+    // =====================================================
+
+    console.log('PORT recibido:', PORT);
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`CoopTrack server running on port ${PORT}`);
     });
-  }
-});
-
-// =====================================================
-// START
-// =====================================================
-
-console.log('PORT recibido:', PORT);
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`CoopTrack server running on port ${PORT}`);
-});
