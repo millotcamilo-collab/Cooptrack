@@ -354,6 +354,7 @@
       const el = getEl(id);
       if (el) el.classList.add("is-hidden");
     }
+
     function animateFounderAcesToUser() {
       if (animationState.founderAcesDelivered) return;
 
@@ -400,12 +401,47 @@
       }, { once: true });
     }
 
+    function renderServerNextActionsPanel() {
+      return `
+    <div class="lienzo-server-next">
+      <div class="lienzo-server-next__title">Se habilitará</div>
+
+      <div class="lienzo-server-next__item">
+        <img
+          src="/assets/icons/Sello40.gif"
+          alt="Aprobar"
+          class="lienzo-server-next__icon"
+        />
+        <span class="lienzo-server-next__label">Aprobar J</span>
+      </div>
+
+      <div class="lienzo-server-next__item">
+        <img
+          src="/assets/icons/buzon60.gif"
+          alt="Enviar"
+          class="lienzo-server-next__icon"
+        />
+        <span class="lienzo-server-next__label">Enviar Q</span>
+      </div>
+
+      <div class="lienzo-server-next__item">
+        <img
+          src="/assets/icons/pistola60.gif"
+          alt="Despedir"
+          class="lienzo-server-next__icon"
+        />
+        <span class="lienzo-server-next__label">Despedir Q</span>
+      </div>
+    </div>
+  `;
+    }
+
     function renderFounderFourAcesStack() {
       const sourcePanel = document.querySelector(".lienzo-grid__left .lienzo-source-cards");
       const targetZone = document.getElementById("founder-target-zone");
 
       if (sourcePanel) {
-        sourcePanel.innerHTML = "";
+        sourcePanel.innerHTML = renderServerNextActionsPanel();
       }
 
       if (!targetZone) return;

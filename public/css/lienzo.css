@@ -71,8 +71,8 @@ body {
   max-width: 100%;
   height: auto;
   display: block;
+  transition: transform 0.2s ease;
 }
-
 
 .lienzo-source-stack--four {
   width: 260px;
@@ -241,9 +241,6 @@ body {
   cursor: pointer;
 }
 
-.lienzo-card-image {
-  transition: transform 0.2s ease;
-}
 
 .lienzo-card-image:hover {
   transform: scale(1.03);
@@ -348,6 +345,51 @@ body {
   width: 24px;
   height: 24px;
   display: block;
+}
+
+.lienzo-server-next {
+  width: 100%;
+  max-width: 220px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  background: #f7f7f7;
+  border: 1px solid #d8d8d8;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.lienzo-server-next__title {
+  margin-bottom: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #222;
+  text-align: left;
+}
+
+.lienzo-server-next__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.lienzo-server-next__item + .lienzo-server-next__item {
+  margin-top: 10px;
+}
+
+.lienzo-server-next__icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+  flex: 0 0 auto;
+}
+
+.lienzo-server-next__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  line-height: 1.2;
 }
 
 @media (max-width: 900px) {
