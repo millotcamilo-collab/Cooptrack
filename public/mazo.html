@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,29 +14,32 @@
   <link rel="stylesheet" href="/css/tablero.css" />
   <link rel="stylesheet" href="/css/Jcorazon.css" />
   <link rel="stylesheet" href="/css/Jtrebol.css" />
-   <link rel="stylesheet" href="/css/Jpica.css" />
+  <link rel="stylesheet" href="/css/Jpica.css" />
   <link rel="stylesheet" href="/css/Qpica.css" />
-    <link rel="stylesheet" href="/css/jokerazul.css" />
-   <link rel="icon" type="image/png" href="/assets/icons/bigote.png">
+  <link rel="stylesheet" href="/css/jokerazul.css" />
+  <link rel="icon" type="image/png" href="/assets/icons/bigote.png">
 </head>
-<body>
-  <div id="topbar-container"></div>
-  <div id="mazobar-container"></div>
-  <div id="tablero-container"></div>
-  <div id="playform-container"></div>
 
-  <script src="/js/mazobar.js"></script>
-  <script src="/js/playform.js"></script>
+<body>
+  <!-- UTILIDADES -->
   <script src="/js/icons.js"></script>
   <script src="/js/help.js"></script>
-  <script src="/js/tablero.js"></script>
+
+  <!-- COMPONENTES DE FILAS -->
+  <script src="/js/Arow.js"></script>
+  <script src="/js/Krow.js"></script>
   <script src="/js/Jcorazon.js"></script>
   <script src="/js/Jtrebol.js"></script>
   <script src="/js/Jpica.js"></script>
   <script src="/js/JpicaBomba.js"></script>
   <script src="/js/Qpica.js"></script>
   <script src="/js/jokerazulRow.js"></script>
-  <script src="/js/topbar.js"></script>
+
+  <!-- MÓDULOS PRINCIPALES -->
+  <script src="/js/mazobar.js"></script>
+  <script src="/js/playform.js"></script>
+  <script src="/js/tablero.js"></script>
+  <script src="/js/autoridades.js"></script>
 
   <script>
     window.API_BASE_URL = window.API_BASE_URL || "https://cooptrack-backend.onrender.com";
@@ -80,7 +84,7 @@
           throw new Error(data.message || "Error cargando mazo");
         }
 
-         return data.mazo || data.deck;
+        return data.mazo || data.deck;
       } catch (error) {
         console.error("Error trayendo deck:", error);
         return null;
@@ -88,67 +92,67 @@
     }
 
     async function fetchDeckState(deckId) {
-  try {
-    const token = getToken();
+      try {
+        const token = getToken();
 
-    if (!token) {
-      throw new Error("Token no encontrado");
-    }
+        if (!token) {
+          throw new Error("Token no encontrado");
+        }
 
-    const response = await fetch(`${API_BASE_URL}/mazo/${deckId}/state`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
+        const response = await fetch(`${API_BASE_URL}/mazo/${deckId}/state`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const rawText = await response.text();
+        console.log("STATE RAW RESPONSE:", rawText);
+
+        let data;
+        try {
+          data = JSON.parse(rawText);
+        } catch (error) {
+          console.error("No es JSON válido:", rawText);
+          throw new Error("El backend devolvió HTML o error");
+        }
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "Error cargando estado del mazo");
+        }
+
+        return data;
+      } catch (error) {
+        console.error("Error trayendo estado del mazo:", error);
+
+        // 👇 clave: devolvemos estructura mínima para que el tablero no muera
+        return {
+          plays: [],
+          userId: null
+        };
       }
-    });
-
-    const rawText = await response.text();
-    console.log("STATE RAW RESPONSE:", rawText);
-
-    let data;
-    try {
-      data = JSON.parse(rawText);
-    } catch (error) {
-      console.error("No es JSON válido:", rawText);
-      throw new Error("El backend devolvió HTML o error");
     }
-
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || "Error cargando estado del mazo");
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error trayendo estado del mazo:", error);
-
-    // 👇 clave: devolvemos estructura mínima para que el tablero no muera
-    return {
-      plays: [],
-      userId: null
-    };
-  }
-}
 
     async function patchPlay(playId, patch) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-      method: "PATCH",
-      headers: getAuthHeaders(true),
-      body: JSON.stringify(patch)
-    });
+      try {
+        const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+          method: "PATCH",
+          headers: getAuthHeaders(true),
+          body: JSON.stringify(patch)
+        });
 
-    const data = await response.json();
+        const data = await response.json();
 
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || "Error actualizando play");
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "Error actualizando play");
+        }
+
+        return data.play || data;
+      } catch (error) {
+        console.error("Error en patchPlay:", error);
+        throw error;
+      }
     }
-
-    return data.play || data;
-  } catch (error) {
-    console.error("Error en patchPlay:", error);
-    throw error;
-  }
-}
 
     async function deletePlayRequest(playId) {
       try {
@@ -229,154 +233,158 @@
       return data.play;
     }
     function clearDeckView() {
-  const ids = [
-    "mazobar-container",
-    "playform-container",
-    "tablero-container"
-  ];
+      const ids = [
+        "mazobar-container",
+        "playform-container",
+        "tablero-container"
+      ];
 
-  ids.forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = "";
-  });
-}
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = "";
+      });
+    }
     async function initMazoPage() {
-  const params = new URLSearchParams(window.location.search);
-  const deckId = params.get("id");
+      const params = new URLSearchParams(window.location.search);
+      const deckId = params.get("id");
 
-  clearDeckView();
+      if (typeof renderAutoridades === "function") {
+        renderAutoridades(deck, state.plays || [], state);
+      }
 
-  if (!deckId) {
-    console.warn("Mazo sin id");
-    return;
-  }
+      clearDeckView();
 
-  const [deck, state] = await Promise.all([
-    fetchDeckById(deckId),
-    fetchDeckState(deckId)
-  ]);
+      if (!deckId) {
+        console.warn("Mazo sin id");
+        return;
+      }
 
-  console.log("deck:", deck);
-  console.log("state:", state);
+      const [deck, state] = await Promise.all([
+        fetchDeckById(deckId),
+        fetchDeckState(deckId)
+      ]);
 
-  if (!deck) {
-    console.warn("No se pudo cargar el mazo");
-    return;
-  }
+      console.log("deck:", deck);
+      console.log("state:", state);
 
-  if (!state) {
-    console.warn("No se pudo cargar el estado del mazo");
-    return;
-  }
+      if (!deck) {
+        console.warn("No se pudo cargar el mazo");
+        return;
+      }
 
-  if (typeof renderMazobar === "function") {
-    renderMazobar(deck, state.plays || [], state.userId);
-  }
+      if (!state) {
+        console.warn("No se pudo cargar el estado del mazo");
+        return;
+      }
 
-  if (typeof renderPlayform === "function") {
-    renderPlayform(deck, state);
-  }
+      if (typeof renderMazobar === "function") {
+        renderMazobar(deck, state.plays || [], state.userId);
+      }
 
-  if (typeof renderTablero === "function") {
-    renderTablero(deck, state.plays || [], state);
-  }
+      if (typeof renderPlayform === "function") {
+        renderPlayform(deck, state);
+      }
 
-  if (typeof bindLienzoDropZone === "function") {
-    bindLienzoDropZone(deck.id);
-  }
-}
-document.addEventListener("tablero:change-suit", async (event) => {
-  try {
-    const playId = event.detail?.playId;
-    const nextSuit = event.detail?.nextSuit;
+      if (typeof renderTablero === "function") {
+        renderTablero(deck, state.plays || [], state);
+      }
 
-    if (!playId || !nextSuit) return;
+      if (typeof bindLienzoDropZone === "function") {
+        bindLienzoDropZone(deck.id);
+      }
+    }
+    document.addEventListener("tablero:change-suit", async (event) => {
+      try {
+        const playId = event.detail?.playId;
+        const nextSuit = event.detail?.nextSuit;
 
-    console.log("TABLERO CHANGE SUIT", playId, nextSuit);
+        if (!playId || !nextSuit) return;
 
-    await patchPlay(playId, {
-      card_suit: nextSuit
+        console.log("TABLERO CHANGE SUIT", playId, nextSuit);
+
+        await patchPlay(playId, {
+          card_suit: nextSuit
+        });
+
+        await initMazoPage();
+      } catch (error) {
+        console.error("Error en tablero:change-suit", error);
+      }
     });
 
-    await initMazoPage();
-  } catch (error) {
-    console.error("Error en tablero:change-suit", error);
-  }
-});
+    document.addEventListener("tablero:save-play", async (event) => {
+      try {
+        const {
+          playId,
+          text,
+          spadeMode,
+          startDate,
+          endDate,
+          location
+        } = event.detail || {};
 
-document.addEventListener("tablero:save-play", async (event) => {
-  try {
-    const {
-      playId,
-      text,
-      spadeMode,
-      startDate,
-      endDate,
-      location
-    } = event.detail || {};
+        if (!playId) return;
 
-    if (!playId) return;
+        console.log("TABLERO SAVE PLAY", event.detail);
 
-    console.log("TABLERO SAVE PLAY", event.detail);
+        await patchPlay(playId, {
+          text,
+          spadeMode,
+          startDate,
+          endDate,
+          location
+        });
 
-    await patchPlay(playId, {
-      text,
-      spadeMode,
-      startDate,
-      endDate,
-      location
+        await initMazoPage();
+      } catch (error) {
+        console.error("Error en tablero:save-play", error);
+      }
     });
 
-    await initMazoPage();
-  } catch (error) {
-    console.error("Error en tablero:save-play", error);
-  }
-});
-    
     document.addEventListener("tablero:approve-play", async (event) => {
-  try {
-    const playId = event.detail?.playId;
-    if (!playId) return;
+      try {
+        const playId = event.detail?.playId;
+        if (!playId) return;
 
-    console.log("TABLERO APPROVE PLAY", playId);
+        console.log("TABLERO APPROVE PLAY", playId);
 
-    await patchPlay(playId, {
-      play_status: "APPROVED"
+        await patchPlay(playId, {
+          play_status: "APPROVED"
+        });
+
+        await initMazoPage();
+      } catch (error) {
+        console.error("Error en tablero:approve-play", error);
+      }
     });
 
-    await initMazoPage();
-  } catch (error) {
-    console.error("Error en tablero:approve-play", error);
-  }
-});
+    document.addEventListener("tablero:delete-play", async (event) => {
+      try {
+        const playId = event.detail?.playId;
+        if (!playId) return;
 
-document.addEventListener("tablero:delete-play", async (event) => {
-  try {
-    const playId = event.detail?.playId;
-    if (!playId) return;
+        console.log("TABLERO DELETE PLAY", playId);
 
-    console.log("TABLERO DELETE PLAY", playId);
+        await deletePlayRequest(playId);
+        await initMazoPage();
+      } catch (error) {
+        console.error("Error en tablero:delete-play", error);
+      }
+    });
 
-    await deletePlayRequest(playId);
-    await initMazoPage();
-  } catch (error) {
-    console.error("Error en tablero:delete-play", error);
-  }
-});
+    document.addEventListener("tablero:cancel-play", async (event) => {
+      try {
+        const playId = event.detail?.playId;
+        if (!playId) return;
 
-document.addEventListener("tablero:cancel-play", async (event) => {
-  try {
-    const playId = event.detail?.playId;
-    if (!playId) return;
+        console.log("TABLERO CANCEL PLAY", playId);
 
-    console.log("TABLERO CANCEL PLAY", playId);
+        await initMazoPage();
+      } catch (error) {
+        console.error("Error en tablero:cancel-play", error);
+      }
+    });
 
-    await initMazoPage();
-  } catch (error) {
-    console.error("Error en tablero:cancel-play", error);
-  }
-});
-    
     document.addEventListener("plays:patch-requested", async (event) => {
       try {
         const playId = event.detail?.playId;
@@ -442,7 +450,7 @@ document.addEventListener("tablero:cancel-play", async (event) => {
         console.error("Error en plays:delete-requested", error);
       }
     });
-    
+
     document.addEventListener("plays:add-child-diamond-requested", async (event) => {
       try {
         const parentPlayId = event.detail?.parentPlayId;
@@ -478,4 +486,5 @@ document.addEventListener("tablero:cancel-play", async (event) => {
     initMazoPage();
   </script>
 </body>
+
 </html>

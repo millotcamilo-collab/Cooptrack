@@ -128,36 +128,87 @@
       return status === "ACTIVE" && rank === "JOKER" && suit === "BLUE";
     });
   }
-function hasPendingOrActiveBlueJoker(plays) {
-  const now = Date.now();
-  const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6;
+  function showElement(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "";
+  }
 
-  return plays.some((p) => {
-    const rank = String(p.rank || "").toUpperCase();
-    const suit = String(p.suit || "").toUpperCase();
-    const status = String(p.status || "").toUpperCase();
+  function hideElement(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  }
 
-    if (rank !== "JOKER" || suit !== "BLUE") {
+  function closePlayformIfOpen() {
+    const form = document.getElementById("playform-j");
+    if (form) {
+      form.classList.add("is-hidden");
+    }
+
+    try {
+      sessionStorage.setItem("activePlayform", "");
+    } catch (error) {
+      console.warn("No se pudo limpiar activePlayform", error);
+    }
+  }
+
+  function showAddJButton() {
+    showElement("btnAddJ");
+  }
+
+  function hideAddJButton() {
+    hideElement("btnAddJ");
+  }
+
+  function showTableroView() {
+    hideElement("autoridades-container");
+    showElement("tablero-container");
+    showElement("playform-container");
+    showAddJButton();
+  }
+
+  function showAutoridadesView(mode) {
+    hideElement("tablero-container");
+    showElement("autoridades-container");
+    hideElement("playform-container");
+    hideAddJButton();
+    closePlayformIfOpen();
+
+    document.dispatchEvent(
+      new CustomEvent("mazobar:showAutoridades", {
+        detail: { mode }
+      })
+    );
+  }
+  function hasPendingOrActiveBlueJoker(plays) {
+    const now = Date.now();
+    const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6;
+
+    return plays.some((p) => {
+      const rank = String(p.rank || "").toUpperCase();
+      const suit = String(p.suit || "").toUpperCase();
+      const status = String(p.status || "").toUpperCase();
+
+      if (rank !== "JOKER" || suit !== "BLUE") {
+        return false;
+      }
+
+      if (status === "PENDING") {
+        return true;
+      }
+
+      if (status === "ACTIVE") {
+        const createdAt = p.parsed?.date || p.created_at || p.updated_at;
+        if (!createdAt) return true;
+
+        const createdTime = new Date(createdAt).getTime();
+        if (Number.isNaN(createdTime)) return true;
+
+        return (now - createdTime) <= SIX_MONTHS_MS;
+      }
+
       return false;
-    }
-
-    if (status === "PENDING") {
-      return true;
-    }
-
-    if (status === "ACTIVE") {
-      const createdAt = p.parsed?.date || p.created_at || p.updated_at;
-      if (!createdAt) return true;
-
-      const createdTime = new Date(createdAt).getTime();
-      if (Number.isNaN(createdTime)) return true;
-
-      return (now - createdTime) <= SIX_MONTHS_MS;
-    }
-
-    return false;
-  });
-}
+    });
+  }
   function hasRedJoker(plays) {
     return plays.some((p) => {
       const rank = String(p.rank || "").toUpperCase();
@@ -172,20 +223,20 @@ function hasPendingOrActiveBlueJoker(plays) {
     return ["HEART", "SPADE", "DIAMOND", "CLUB"];
   }
 
-function buildTopCardsHTML(enabledCards) {
-  if (!enabledCards.length) {
-    return `<div class="mazobar__topcards-empty"></div>`;
-  }
+  function buildTopCardsHTML(enabledCards) {
+    if (!enabledCards.length) {
+      return `<div class="mazobar__topcards-empty"></div>`;
+    }
 
-  return enabledCards.map((card) => {
-    const imgSrc = getCardImageSrc(card.rank, card.suit);
-    const label = getCardLabel(card.rank, card.suit);
-    const rank = String(card.rank || "").toUpperCase();
-    const suit = String(card.suit || "").toUpperCase();
-    const playId = Number(card.id || 0);
+    return enabledCards.map((card) => {
+      const imgSrc = getCardImageSrc(card.rank, card.suit);
+      const label = getCardLabel(card.rank, card.suit);
+      const rank = String(card.rank || "").toUpperCase();
+      const suit = String(card.suit || "").toUpperCase();
+      const playId = Number(card.id || 0);
 
-    if (imgSrc) {
-      return `
+      if (imgSrc) {
+        return `
         <img
           src="${imgSrc}"
           alt="${label}"
@@ -197,9 +248,9 @@ function buildTopCardsHTML(enabledCards) {
           data-suit="${suit}"
         />
       `;
-    }
+      }
 
-    return `
+      return `
       <div
         class="mazobar__topcard-fallback"
         title="${label}"
@@ -211,10 +262,10 @@ function buildTopCardsHTML(enabledCards) {
         ${label}
       </div>
     `;
-  }).join("");
-}
-  
-function hasPlayWithStatus(plays, statusList) {
+    }).join("");
+  }
+
+  function hasPlayWithStatus(plays, statusList) {
     const expected = new Set(
       statusList.map((status) => String(status || "").toUpperCase())
     );
@@ -292,12 +343,12 @@ function hasPlayWithStatus(plays, statusList) {
   }
 
   function buildCommandButtonsHTML(plays) {
-  const suitButtons = getVisibleCommandSuits().map((suit) => {
-    const imgSrc = getSuitButtonImageSrc(suit);
-    const symbol = getSuitSymbol(suit);
+    const suitButtons = getVisibleCommandSuits().map((suit) => {
+      const imgSrc = getSuitButtonImageSrc(suit);
+      const symbol = getSuitSymbol(suit);
 
-    if (imgSrc) {
-      return `
+      if (imgSrc) {
+        return `
         <button
           type="button"
           class="mazobar__cmd-btn mazobar__cmd-btn--suit"
@@ -308,9 +359,9 @@ function hasPlayWithStatus(plays, statusList) {
           <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
         </button>
       `;
-    }
+      }
 
-    return `
+      return `
       <button
         type="button"
         class="mazobar__cmd-btn mazobar__cmd-btn--suit"
@@ -321,11 +372,11 @@ function hasPlayWithStatus(plays, statusList) {
         ${symbol}
       </button>
     `;
-  }).join("");
+    }).join("");
 
-  const alertButtons = buildAlertButtonsHTML(plays);
+    const alertButtons = buildAlertButtonsHTML(plays);
 
-  return `
+    return `
     <button
       id="btnAddJ"
       type="button"
@@ -363,13 +414,13 @@ function hasPlayWithStatus(plays, statusList) {
     ${suitButtons}
     ${alertButtons}
   `;
-}
+  }
   function buildJokersHTML(plays) {
-  const redActive = hasRedJoker(plays);
-  const blueActive = hasBlueJoker(plays);
-  const blueLocked = hasPendingOrActiveBlueJoker(plays);  
+    const redActive = hasRedJoker(plays);
+    const blueActive = hasBlueJoker(plays);
+    const blueLocked = hasPendingOrActiveBlueJoker(plays);
 
-  return `
+    return `
     <div class="mazobar__jokers">
       <img
         src="/assets/icons/Joker120.gif"
@@ -389,7 +440,7 @@ function hasPlayWithStatus(plays, statusList) {
     />
     </div>
   `;
-}
+  }
 
   function buildMazobarHTML(deck, plays, currentUserId) {
     const normalizedPlays = Array.isArray(plays)
@@ -459,81 +510,84 @@ function hasPlayWithStatus(plays, statusList) {
 
   function bindMazobarEvents() {
     document.getElementById("btnAddJ")?.addEventListener("click", () => {
+      showTableroView();
       document.dispatchEvent(new CustomEvent("mazobar:addJ"));
     });
-    
- document.getElementById("btnFilterA")?.addEventListener("click", () => {
-  document.dispatchEvent(new CustomEvent("mazobar:filter-rank", {
-    detail: { rank: "A" }
-  }));
-});
 
-document.getElementById("btnFilterK")?.addEventListener("click", () => {
-  document.dispatchEvent(new CustomEvent("mazobar:filter-rank", {
-    detail: { rank: "K" }
-  }));
-});
-document.querySelectorAll(".mazobar__joker").forEach((jokerEl) => {
-  jokerEl.addEventListener("dragstart", (event) => {
-    const isLocked = String(jokerEl.dataset.locked || "").toLowerCase() === "true";
-
-    if (isLocked) {
-      event.preventDefault();
-      return;
-    }
-
-    const rank = String(jokerEl.dataset.rank || "").toUpperCase();
-    const suit = String(jokerEl.dataset.suit || "").toUpperCase();
-
-    if (rank !== "JOKER" || suit !== "BLUE") {
-      return;
-    }
-
-    const payload = {
-      mode: "joker-blue",
-      rank: "JOKER",
-      suit: "BLUE"
-    };
-
-    event.dataTransfer.setData(
-      "application/json",
-      JSON.stringify(payload)
-    );
-
-    event.dataTransfer.setData("text/plain", "JOKER|BLUE");
-    event.dataTransfer.effectAllowed = "copy";
-  });
-});    
-document.querySelectorAll(".mazobar__topcard-image, .mazobar__topcard-fallback")
-  .forEach((cardEl) => {
-    cardEl.addEventListener("dragstart", (event) => {
-      const playId = Number(cardEl.dataset.playId || 0);
-      const rank = cardEl.dataset.rank || "";
-      const suit = cardEl.dataset.suit || "";
-
-      const payload = {
-        mode: "new",
-        sourcePlayId: playId,
-        childRank: rank,
-        childSuit: suit
-  };
-
-      event.dataTransfer.setData(
-        "application/json",
-        JSON.stringify(payload)
-      );
-
-      event.dataTransfer.setData("text/plain", `${playId}|${rank}|${suit}`);
-      event.dataTransfer.effectAllowed = "copy";
+    document.getElementById("btnFilterA")?.addEventListener("click", () => {
+      showAutoridadesView("A");
     });
-  });
-    
+
+    document.getElementById("btnFilterK")?.addEventListener("click", () => {
+      showAutoridadesView("AK");
+    });
+
+    document.querySelectorAll(".mazobar__joker").forEach((jokerEl) => {
+      jokerEl.addEventListener("dragstart", (event) => {
+        const isLocked = String(jokerEl.dataset.locked || "").toLowerCase() === "true";
+
+        if (isLocked) {
+          event.preventDefault();
+          return;
+        }
+
+        const rank = String(jokerEl.dataset.rank || "").toUpperCase();
+        const suit = String(jokerEl.dataset.suit || "").toUpperCase();
+
+        if (rank !== "JOKER" || suit !== "BLUE") {
+          return;
+        }
+
+        const payload = {
+          mode: "joker-blue",
+          rank: "JOKER",
+          suit: "BLUE"
+        };
+
+        event.dataTransfer.setData(
+          "application/json",
+          JSON.stringify(payload)
+        );
+
+        event.dataTransfer.setData("text/plain", "JOKER|BLUE");
+        event.dataTransfer.effectAllowed = "copy";
+      });
+    });
+    document.querySelectorAll(".mazobar__topcard-image, .mazobar__topcard-fallback")
+      .forEach((cardEl) => {
+        cardEl.addEventListener("dragstart", (event) => {
+          const playId = Number(cardEl.dataset.playId || 0);
+          const rank = cardEl.dataset.rank || "";
+          const suit = cardEl.dataset.suit || "";
+
+          const payload = {
+            mode: "new",
+            sourcePlayId: playId,
+            childRank: rank,
+            childSuit: suit
+          };
+
+          event.dataTransfer.setData(
+            "application/json",
+            JSON.stringify(payload)
+          );
+
+          event.dataTransfer.setData("text/plain", `${playId}|${rank}|${suit}`);
+          event.dataTransfer.effectAllowed = "copy";
+        });
+      });
+
     document.querySelectorAll("[data-command-suit]").forEach((button) => {
       button.addEventListener("click", () => {
         const suit = button.dataset.commandSuit;
-        document.dispatchEvent(new CustomEvent("mazobar:filter", {
-          detail: { filter: suit }
-        }));
+
+        showTableroView();
+
+        document.dispatchEvent(
+          new CustomEvent("mazobar:filterSuit", {
+            detail: { suit }
+          })
+        );
       });
     });
 
