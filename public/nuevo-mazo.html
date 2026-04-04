@@ -33,19 +33,22 @@
       border-radius: 14px;
       box-sizing: border-box;
     }
-    
-.nuevo-mazo-bar__rank {
-  font-size: 25px;
-  font-weight: 700; /* negrita */
-  color: #d32f2f;   /* rojo elegante */
-  line-height: 1;
-}
 
-.nuevo-mazo-bar__heart {
-  height: 22px;
-  width: auto;
-  display: block;
-}
+    .nuevo-mazo-bar__rank {
+      font-size: 25px;
+      font-weight: 700;
+      /* negrita */
+      color: #d32f2f;
+      /* rojo elegante */
+      line-height: 1;
+    }
+
+    .nuevo-mazo-bar__heart {
+      height: 22px;
+      width: auto;
+      display: block;
+    }
+
     .nuevo-mazo-bar__left {
       display: flex;
       align-items: center;
@@ -69,7 +72,8 @@
 
     .nuevo-mazo-bar__center {
       min-width: 0;
-      flex: 1;
+      flex: 0 1 auto;
+      /* 👈 cambio clave */
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -78,9 +82,11 @@
     .nuevo-mazo-bar__title-input {
       flex: 1;
       border: 1px solid #bdbdbd;
+      border-radius: 6px;
+      background: #fff;
+      padding: 4px 8px;
+      /* 👈 clave */
       outline: none;
-      background: transparent;
-      padding: 0;
     }
 
     .nuevo-mazo-bar__title-input::placeholder {
@@ -91,6 +97,10 @@
     .nuevo-mazo-bar__title-readonly {
       flex: 1;
       word-break: break-word;
+      font-size: 16px;
+      /* 👈 tamaño */
+      font-weight: 700;
+      /* 👈 negrita */
     }
 
     .nuevo-mazo-bar__currency-input,
@@ -104,15 +114,15 @@
 
     .nuevo-mazo-bar__currency-input {
       width: 54px;
-      font-size: 20px;
-      font-weight: 700;
+      font-size: 14px;
+      font-weight: 600;
       text-transform: uppercase;
     }
 
     .nuevo-mazo-bar__currency-name-input {
       min-width: 150px;
-      font-size: 18px;
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 400;
     }
 
     .nuevo-mazo-bar__editor {
@@ -221,8 +231,9 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      min-width: 0;
       flex-wrap: wrap;
+      justify-content: flex-start;
+      /* 👈 asegurás alineación */
     }
 
     .nuevo-mazo-bar__title-input,
@@ -236,6 +247,8 @@
       align-items: center;
       gap: 6px;
       white-space: nowrap;
+      flex: 0 0 auto;
+      /* 👈 CLAVE */
     }
 
     .nuevo-mazo-bar__currency-input,
@@ -548,7 +561,7 @@
       setPhotoPreview(image);
       hideEl("imageStep");
 
-     showEl("currencyBlock");
+      showEl("currencyBlock");
       showEl("currencyStep");
 
       state.step = "currency";
