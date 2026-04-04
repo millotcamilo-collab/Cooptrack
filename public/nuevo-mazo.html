@@ -287,7 +287,7 @@
               </div>
 
               <div class="lienzo-source-cards">
-                <div class="lienzo-source-stack">
+                <div id="server-aces-stack" class="lienzo-source-stack">
                   <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:0px;" />
                   <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:18px;" />
                   <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:36px;" />
@@ -305,7 +305,7 @@
                 <span id="userName" class="lienzo-target-header__name"></span>
               </div>
 
-              <div class="lienzo-card-wrap">
+              <div id="founder-target-zone" class="lienzo-card-wrap">
                 <img src="/assets/icons/Acorazon.gif" class="lienzo-card-image" />
               </div>
 
@@ -354,6 +354,71 @@
       const el = getEl(id);
       if (el) el.classList.add("is-hidden");
     }
+    function animateFounderAcesToUser() {
+      if (animationState.founderAcesDelivered) return;
+
+      const source = document.getElementById("server-aces-stack");
+      const target = document.getElementById("founder-target-zone");
+
+      if (!source || !target) return;
+
+      const sourceRect = source.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+
+      const ghost = source.cloneNode(true);
+      ghost.id = "server-aces-stack-ghost";
+      ghost.style.position = "fixed";
+      ghost.style.left = sourceRect.left + "px";
+      ghost.style.top = sourceRect.top + "px";
+      ghost.style.width = sourceRect.width + "px";
+      ghost.style.height = sourceRect.height + "px";
+      ghost.style.margin = "0";
+      ghost.style.zIndex = "9999";
+      ghost.style.pointerEvents = "none";
+      ghost.style.transition = "all 600ms ease";
+
+      document.body.appendChild(ghost);
+
+      source.style.visibility = "hidden";
+
+      const targetX = targetRect.left + (targetRect.width / 2) - (sourceRect.width / 2);
+      const targetY = targetRect.top + (targetRect.height / 2) - (sourceRect.height / 2);
+
+      requestAnimationFrame(() => {
+        ghost.style.left = targetX + "px";
+        ghost.style.top = targetY + "px";
+        ghost.style.transform = "scale(1.02)";
+      });
+
+      ghost.addEventListener("transitionend", () => {
+        if (ghost.parentNode) {
+          ghost.remove();
+        }
+
+        animationState.founderAcesDelivered = true;
+        renderFounderFourAcesStack();
+      }, { once: true });
+    }
+
+    function renderFounderFourAcesStack() {
+      const sourcePanel = document.querySelector(".lienzo-grid__left .lienzo-source-cards");
+      const targetZone = document.getElementById("founder-target-zone");
+
+      if (sourcePanel) {
+        sourcePanel.innerHTML = "";
+      }
+
+      if (!targetZone) return;
+
+      targetZone.innerHTML = `
+    <div class="lienzo-source-stack lienzo-source-stack--four">
+      <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:0px;" />
+      <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:18px;" />
+      <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:36px;" />
+      <img src="/assets/icons/Acorazon.gif" class="lienzo-source-stack__card" style="left:54px; z-index:5;" />
+    </div>
+  `;
+    }
 
     function setStatus(message, isError = false) {
       const statusMsg = getEl("statusMsg");
@@ -398,6 +463,9 @@
       setStatus("");
 
       getEl("deckImage")?.focus();
+      setTimeout(() => {
+        animateFounderAcesToUser();
+      }, 150);
     }
 
     function commitImageStep() {
@@ -625,6 +693,11 @@
           `Usuario ${user.id}`;
       }
     }
+    const animationState = {
+      founderAcesDelivered: false
+    };
+
+
   </script>
 </body>
 
