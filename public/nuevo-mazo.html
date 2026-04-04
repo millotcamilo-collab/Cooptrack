@@ -204,6 +204,33 @@
         max-width: 100%;
       }
     }
+
+    .nuevo-mazo-bar__titleline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex-wrap: wrap;
+    }
+
+    .nuevo-mazo-bar__title-input,
+    .nuevo-mazo-bar__title-readonly {
+      flex: 0 1 auto;
+      min-width: 120px;
+    }
+
+    .nuevo-mazo-bar__currency-block {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .nuevo-mazo-bar__currency-input,
+    .nuevo-mazo-bar__currency-name-input {
+      width: auto;
+      min-width: 0;
+    }
   </style>
 </head>
 
@@ -229,17 +256,15 @@
               <span class="nuevo-mazo-bar__rank">A</span>
               <img src="/assets/icons/cor40.gif" alt="♥" class="nuevo-mazo-bar__heart" />
 
-              <input id="deckName" class="nuevo-mazo-bar__title-input" type="text" autocomplete="off" placeholder="" />
-
+              <input id="deckName" class="nuevo-mazo-bar__title-input" type="text" />
               <div id="deckNameReadonly" class="nuevo-mazo-bar__title-readonly is-hidden"></div>
 
-              <img id="diamondIcon" src="/assets/icons/dia40.gif" alt="♦" class="nuevo-mazo-bar__diamond is-hidden" />
-
-              <input id="deckCurrencyCode" class="nuevo-mazo-bar__currency-input is-hidden" type="text" maxlength="3"
-                autocomplete="off" readonly />
-
-              <input id="deckCurrencyName" class="nuevo-mazo-bar__currency-name-input is-hidden" type="text"
-                autocomplete="off" readonly />
+              <div id="currencyBlock" class="nuevo-mazo-bar__currency-block is-hidden">
+                <img id="diamondIcon" src="/assets/icons/dia40.gif" alt="♦" class="nuevo-mazo-bar__diamond" />
+                <input id="deckCurrencyCode" class="nuevo-mazo-bar__currency-input" type="text" maxlength="3"
+                  readonly />
+                <input id="deckCurrencyName" class="nuevo-mazo-bar__currency-name-input" type="text" readonly />
+              </div>
             </div>
 
             <div class="nuevo-mazo-bar__editor">
@@ -511,9 +536,7 @@
       setPhotoPreview(image);
       hideEl("imageStep");
 
-      showEl("diamondIcon");
-      showEl("deckCurrencyCode");
-      showEl("deckCurrencyName");
+     showEl("currencyBlock");
       showEl("currencyStep");
 
       state.step = "currency";
