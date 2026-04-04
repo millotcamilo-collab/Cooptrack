@@ -67,7 +67,7 @@ body {
 }
 
 .lienzo-card-image {
-  width: 220px;
+  width: 180px;
   max-width: 100%;
   height: auto;
   display: block;
@@ -318,7 +318,7 @@ body {
 .lienzo-source-stack__card {
   position: absolute;
   top: 24px;
-  width: 160px;
+  width: 180px;
   height: auto;
   z-index: 1;
 }
