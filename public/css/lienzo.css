@@ -73,18 +73,6 @@ body {
   display: block;
 }
 
-.lienzo-source-stack--four {
-  width: 260px;
-  height: 300px;
-  margin: 0 auto;
-}
-
-#founder-target-zone {
-  min-height: 320px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
 .lienzo-source-stack--four {
   width: 260px;
