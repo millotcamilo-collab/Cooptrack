@@ -451,7 +451,7 @@
       <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:0px;" />
       <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:18px;" />
       <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:36px;" />
-      <img src="/assets/icons/Acorazon.gif" class="lienzo-source-stack__card" style="left:54px; z-index:5;" />
+      <img src="/assets/icons/Acorazon.gif" class="lienzo-source-stack__card" style="left:54px; z-index:0;" />
     </div>
   `;
     }
@@ -499,9 +499,7 @@
       setStatus("");
 
       getEl("deckImage")?.focus();
-      setTimeout(() => {
-        animateFounderAcesToUser();
-      }, 150);
+
     }
 
     function commitImageStep() {
@@ -548,6 +546,10 @@
       state.step = "ready";
       setStatus("Listo para guardar");
       getEl("createDeckBtn")?.focus();
+      
+      setTimeout(() => {
+        animateFounderAcesToUser();
+      }, 150);
     }
 
     async function loadDefaultCurrencyFromProfile() {
