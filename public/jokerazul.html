@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,25 +9,25 @@
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="stylesheet" href="/css/topbar.css" />
   <link rel="stylesheet" href="/css/lienzo.css" />
+  <link rel="stylesheet" href="/css/placard.css" />
 </head>
+
 <body>
   <div id="topbar-container"></div>
-
+  <div class="page-container">
+    <div id="jokerBluePlacard"></div>
+  </div>
   <main class="lienzo-page">
     <div class="page-container">
       <section class="lienzo-panel">
         <div class="lienzo-panel__header">
-         
+
         </div>
 
         <div class="lienzo-grid">
           <div class="lienzo-grid__left">
             <div class="lienzo-card-wrap">
-              <img
-                src="/assets/icons/joker_blue.gif"
-                alt="Joker azul"
-                class="lienzo-card-image"
-              />
+              <img src="/assets/icons/joker_blue.gif" alt="Joker azul" class="lienzo-card-image" />
             </div>
           </div>
 
@@ -47,11 +48,7 @@
                 <button id="sendJokerBlueBtn">Send</button>
               </div>
 
-              <div
-                id="jokerBlueMsg"
-                class="lienzo-card-text"
-                style="margin-top: 14px;"
-              ></div>
+              <div id="jokerBlueMsg" class="lienzo-card-text" style="margin-top: 14px;"></div>
             </section>
           </div>
         </div>
@@ -60,6 +57,8 @@
   </main>
 
   <script src="/js/topbar.js"></script>
+  <script src="/js/placard.js"></script>
   <script src="/js/jokerazul.js"></script>
 </body>
+
 </html>

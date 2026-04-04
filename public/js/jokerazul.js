@@ -21,7 +21,21 @@
       msgEl.style.color = "#222";
     }
   }
+  function renderJokerBluePlacard(deckId) {
+    const host = document.getElementById("jokerBluePlacard");
+    if (!host) return;
+    if (typeof window.renderPlacard !== "function") return;
 
+    window.renderPlacard(host, {
+      photoUrl: "/assets/icons/joker_blue.gif",
+      rank: "JOKER",
+      suit: "BLUE",
+      title: `Solicitud Joker azul`,
+      currencyCode: "",
+      currencyName: "",
+      showCurrency: false
+    });
+  }
   async function sendJokerBlueRequest(deckId) {
     try {
       const token = localStorage.getItem("cooptrackToken");
@@ -79,6 +93,8 @@
   function initJokerBluePage() {
     const sendBtn = document.getElementById("sendJokerBlueBtn");
     const deckId = getDeckIdFromUrl();
+
+    renderJokerBluePlacard(deckId);
 
     if (!sendBtn) {
       console.warn("sendJokerBlueBtn no encontrado");
