@@ -10,50 +10,24 @@
   <link rel="stylesheet" href="/css/topbar.css" />
   <link rel="stylesheet" href="/css/help.css" />
   <link rel="stylesheet" href="/css/lienzo.css" />
+  <link rel="stylesheet" href="/css/placard.css" />
   <link rel="icon" type="image/png" href="/assets/icons/bigote.png">
   <style>
-    .nuevo-mazo-page {
-      min-height: calc(100vh - var(--topbar-height));
-      padding: 24px 0 40px;
-      box-sizing: border-box;
-    }
-
-    .nuevo-mazo-shell {
-      width: 100%;
-    }
-
     .nuevo-mazo-bar {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 18px;
+      align-items: flex-start;
+      gap: 14px;
       padding: 14px 18px;
-      background: rgba(221, 211, 221, 0.94);
+      background: rgba(255, 255, 255, 0.94);
       border: 1px solid #d8d8d8;
       border-radius: 14px;
       box-sizing: border-box;
     }
 
-    .nuevo-mazo-bar__rank {
-      font-size: 25px;
-      font-weight: 700;
-      /* negrita */
-      color: #d32f2f;
-      /* rojo elegante */
-      line-height: 1;
-    }
-
-    .nuevo-mazo-bar__heart {
-      height: 22px;
-      width: auto;
-      display: block;
-    }
-
     .nuevo-mazo-bar__left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
       flex: 0 0 auto;
+      display: flex;
+      align-items: flex-start;
     }
 
     .nuevo-mazo-bar__photo-wrap {
@@ -72,21 +46,55 @@
 
     .nuevo-mazo-bar__center {
       min-width: 0;
-      flex: 0 1 auto;
-      /* 👈 cambio clave */
+      flex: 1 1 auto;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
+    }
+
+    .nuevo-mazo-bar__right {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: flex-start;
+      margin-left: auto;
+    }
+
+    .nuevo-mazo-bar__titleline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex-wrap: nowrap;
+    }
+
+    .nuevo-mazo-bar__rank {
+      flex: 0 0 auto;
+      font-size: 25px;
+      font-weight: 700;
+      color: #d32f2f;
+      line-height: 1;
+    }
+
+    .nuevo-mazo-bar__heart,
+    .nuevo-mazo-bar__diamond {
+      flex: 0 0 auto;
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      display: block;
     }
 
     .nuevo-mazo-bar__title-input {
-      flex: 1;
+      min-width: 160px;
+      flex: 0 1 320px;
       border: 1px solid #bdbdbd;
       border-radius: 6px;
       background: #fff;
       padding: 4px 8px;
-      /* 👈 clave */
       outline: none;
+      font-size: 16px;
+      font-weight: 600;
+      color: #111;
     }
 
     .nuevo-mazo-bar__title-input::placeholder {
@@ -95,12 +103,21 @@
     }
 
     .nuevo-mazo-bar__title-readonly {
-      flex: 1;
-      word-break: break-word;
+      min-width: 0;
+      flex: 0 1 auto;
       font-size: 16px;
-      /* 👈 tamaño */
       font-weight: 700;
-      /* 👈 negrita */
+      color: #111;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .nuevo-mazo-bar__currency-block {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
     }
 
     .nuevo-mazo-bar__currency-input,
@@ -110,17 +127,17 @@
       background: transparent;
       padding: 0;
       color: #111;
+      width: auto;
+      min-width: 0;
     }
 
     .nuevo-mazo-bar__currency-input {
-      width: 54px;
       font-size: 14px;
       font-weight: 600;
       text-transform: uppercase;
     }
 
     .nuevo-mazo-bar__currency-name-input {
-      min-width: 150px;
       font-size: 14px;
       font-weight: 400;
     }
@@ -128,78 +145,8 @@
     .nuevo-mazo-bar__editor {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-    }
-
-    .nuevo-mazo-step {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-height: 34px;
-    }
-
-    .nuevo-mazo-step__label {
-      font-size: 15px;
-      font-weight: 600;
-      color: #333;
-      white-space: nowrap;
-    }
-
-    .nuevo-mazo-step__input {
-      width: 100%;
-      max-width: 520px;
-      height: 34px;
-      box-sizing: border-box;
-      padding: 6px 10px;
-      font-size: 15px;
-      border: 1px solid #bdbdbd;
-      border-radius: 8px;
-      background: #fff;
-    }
-
-    .nuevo-mazo-step__hint {
-      font-size: 14px;
-      color: #666;
-    }
-
-    .nuevo-mazo-status {
-      min-height: 20px;
-      font-size: 14px;
-      color: #333;
-    }
-
-    .nuevo-mazo-bar__right {
-      flex: 0 0 auto;
-      display: flex;
-      align-items: center;
       gap: 8px;
-    }
-
-    .icon-btn {
-      background: transparent;
-      border: none;
-      padding: 4px;
-      margin: 0;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-    }
-
-    .icon-btn img {
-      height: 24px;
-      width: auto;
-      display: block;
-      transition: transform 0.12s ease;
-    }
-
-    .icon-btn:hover img {
-      transform: scale(1.08);
-    }
-
-    .is-hidden {
-      display: none !important;
+      min-width: 0;
     }
 
     @media (max-width: 900px) {
@@ -208,53 +155,14 @@
         align-items: stretch;
       }
 
-      .nuevo-mazo-bar__left,
       .nuevo-mazo-bar__right {
-        justify-content: center;
+        margin-left: 0;
+        justify-content: flex-end;
       }
 
-      .nuevo-mazo-bar__center {
-        width: 100%;
+      .nuevo-mazo-bar__titleline {
+        flex-wrap: wrap;
       }
-
-      .nuevo-mazo-step {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .nuevo-mazo-step__input {
-        max-width: 100%;
-      }
-    }
-
-    .nuevo-mazo-bar__titleline {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-start;
-      /* 👈 asegurás alineación */
-    }
-
-    .nuevo-mazo-bar__title-input,
-    .nuevo-mazo-bar__title-readonly {
-      flex: 0 1 auto;
-      min-width: 120px;
-    }
-
-    .nuevo-mazo-bar__currency-block {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-      flex: 0 0 auto;
-      /* 👈 CLAVE */
-    }
-
-    .nuevo-mazo-bar__currency-input,
-    .nuevo-mazo-bar__currency-name-input {
-      width: auto;
-      min-width: 0;
     }
   </style>
 </head>
@@ -329,8 +237,8 @@
 
               <div class="lienzo-source-cards">
                 <div id="server-aces-stack" class="lienzo-source-stack">
-                  <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:0px;" />
-                  <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:18px;" />
+                  <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:0px;" />
+                  <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
                   <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:36px;" />
                 </div>
               </div>
@@ -370,6 +278,7 @@
   </main>
 
   <script src="/js/help.js"></script>
+  <script src="/js/placard.js"></script>
   <script src="/js/topbar.js"></script>
 
   <script>

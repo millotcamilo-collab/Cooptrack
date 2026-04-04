@@ -1,0 +1,118 @@
+/* ===== PLACARD (modo lectura) ===== */
+
+.placard {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #d8d8d8;
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+/* IZQUIERDA (foto) */
+.placard__left {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+}
+
+.placard__photo {
+  width: 58px;
+  height: 58px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+  background: #f3f3f3;
+  border: 1px solid #d8d8d8;
+}
+
+/* CENTRO */
+.placard__center {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* LÍNEA PRINCIPAL */
+.placard__titleline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+/* CARTA */
+.placard__rank {
+  flex: 0 0 auto;
+  font-size: 24px;
+  font-weight: 700;
+  color: #d32f2f; /* rojo */
+  line-height: 1;
+}
+
+.placard__suit {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* NOMBRE */
+.placard__name {
+  flex: 0 1 auto;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+}
+
+/* MONEDA */
+.placard__currency {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.placard__currency-code {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.placard__currency-name {
+  font-size: 14px;
+  font-weight: 400;
+  color: #333;
+}
+
+/* DERECHA (acciones futuras si querés) */
+.placard__right {
+  flex: 0 0 auto;
+  margin-left: auto;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .placard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .placard__titleline {
+    flex-wrap: wrap;
+  }
+
+  .placard__right {
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+}

@@ -3,187 +3,187 @@
     return String(value || "").trim().toUpperCase();
   }
 
-window.__lienzoAnimationState = window.__lienzoAnimationState || {
-  sourceCardDelivered: false
-};
+  window.__lienzoAnimationState = window.__lienzoAnimationState || {
+    sourceCardDelivered: false
+  };
 
-function bindActionButtons() {
-  const saveBtn = document.getElementById("lienzo-save-btn");
-  const exitBtn = document.getElementById("lienzo-exit-btn");
+  function bindActionButtons() {
+    const saveBtn = document.getElementById("lienzo-save-btn");
+    const exitBtn = document.getElementById("lienzo-exit-btn");
 
-  if (saveBtn) {
-    saveBtn.addEventListener("click", handleSavePlay);
+    if (saveBtn) {
+      saveBtn.addEventListener("click", handleSavePlay);
+    }
+
+    if (exitBtn) {
+      exitBtn.addEventListener("click", handleExit);
+    }
   }
+  async function handleSavePlay() {
+    try {
+      const draft = window.__lienzoNewDraft;
+      const token = localStorage.getItem("cooptrackToken");
 
-  if (exitBtn) {
-    exitBtn.addEventListener("click", handleExit);
+      if (!draft?.deckId) {
+        alert("Deck inválido");
+        return;
+      }
+
+      if (!draft?.parentPlayId) {
+        alert("Falta la jugada madre");
+        return;
+      }
+
+      if (!draft?.card_rank || !draft?.card_suit) {
+        alert("Falta la carta a crear");
+        return;
+      }
+
+      if (!draft?.target_user_id) {
+        alert("Seleccioná un destinatario");
+        return;
+      }
+
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      const userId =
+        window.__currentState?.userId ||
+        window.__currentUser?.id ||
+        null;
+
+      if (!userId) {
+        alert("No se pudo identificar el usuario");
+        return;
+      }
+
+      const when = new Date().toISOString();
+
+      const playCode = [
+        draft.deckId,
+        userId,
+        when,
+        String(draft.card_rank).toUpperCase(),
+        String(draft.card_suit).toUpperCase(),
+        "create_from_lienzo",
+        `U:${userId}`,
+        `child_of:${draft.parentPlayId}`,
+        `U:${draft.target_user_id}`
+      ].join("§");
+
+      const response = await fetch("/plays", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          deck_id: draft.deckId,
+          parent_play_id: draft.parentPlayId,
+          target_user_id: draft.target_user_id,
+          play_code: playCode,
+          text: draft.play_text || "",
+          play_status: "ACTIVE"
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("Error guardando jugada:", data);
+        alert(data?.error || "No se pudo guardar la jugada");
+        return;
+      }
+
+      const newPlay = data.play || null;
+      const playId = Number(newPlay?.id || 0);
+
+      if (!playId) {
+        alert("La jugada se guardó, pero no volvió el id");
+        return;
+      }
+
+      window.location.href = `/lienzo.html?deckId=${draft.deckId}&playId=${playId}`;
+    } catch (error) {
+      console.error("Error en SAVE", error);
+      alert("No se pudo guardar la jugada");
+    }
   }
-}
- async function handleSavePlay() {
-  try {
+  function handleExit() {
     const draft = window.__lienzoNewDraft;
-    const token = localStorage.getItem("cooptrackToken");
+    const deckId = draft?.deckId;
 
-    if (!draft?.deckId) {
-      alert("Deck inválido");
+    if (!deckId) {
+      window.location.href = "/mazos.html";
       return;
     }
 
-    if (!draft?.parentPlayId) {
-      alert("Falta la jugada madre");
-      return;
-    }
+    window.location.href = `/mazo.html?id=${deckId}`;
+  }
 
-    if (!draft?.card_rank || !draft?.card_suit) {
-      alert("Falta la carta a crear");
-      return;
-    }
+  function getCurrentUserCorporateCards() {
+    const state = getCurrentState();
+    console.log("state.corporateCards =", state?.corporateCards);
 
-    if (!draft?.target_user_id) {
-      alert("Seleccioná un destinatario");
-      return;
-    }
+    const currentUser = getCurrentUser();
+    const userId = Number(currentUser?.id || 0);
 
-    if (!token) {
-      alert("No estás logueado");
-      return;
-    }
+    if (!userId) return [];
 
-    const userId =
-      window.__currentState?.userId ||
-      window.__currentUser?.id ||
-      null;
+    const cards = Array.isArray(state?.corporateCards)
+      ? state.corporateCards
+      : [];
 
-    if (!userId) {
-      alert("No se pudo identificar el usuario");
-      return;
-    }
+    return cards
+      .filter((card) => Number(card?.owner_user_id || card?.user_id || 0) === userId)
+      .sort(compareCorporateCards);
+  }
+  function compareCorporateCards(a, b) {
+    const order = {
+      A_HEART: 1,
+      A_SPADE: 2,
+      A_DIAMOND: 3,
+      A_CLUB: 4,
+      K_HEART: 5,
+      K_SPADE: 6,
+      K_DIAMOND: 7,
+      K_CLUB: 8
+    };
 
-    const when = new Date().toISOString();
+    const aKey = `${normalizeRank(a?.card_rank)}_${normalizeSuit(a?.card_suit)}`;
+    const bKey = `${normalizeRank(b?.card_rank)}_${normalizeSuit(b?.card_suit)}`;
 
-    const playCode = [
-      draft.deckId,
-      userId,
-      when,
-      String(draft.card_rank).toUpperCase(),
-      String(draft.card_suit).toUpperCase(),
-      "create_from_lienzo",
-      `U:${userId}`,
-      `child_of:${draft.parentPlayId}`,
-      `U:${draft.target_user_id}`
-    ].join("§");
+    return (order[aKey] || 999) - (order[bKey] || 999);
+  }
 
-    const response = await fetch("/plays", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        deck_id: draft.deckId,
-        parent_play_id: draft.parentPlayId,
-        target_user_id: draft.target_user_id,
-        play_code: playCode,
-        text: draft.play_text || "",
-        play_status: "ACTIVE"
-      })
+  function buildSourceCardsScene(draft) {
+    const ownedCards = getCurrentUserCorporateCards();
+
+    const activeRank = normalizeRank(draft?.card_rank);
+    const activeSuit = normalizeSuit(draft?.card_suit);
+
+    const backgroundCards = ownedCards.filter((card) => {
+      const rank = normalizeRank(card?.card_rank);
+      const suit = normalizeSuit(card?.card_suit);
+
+      return !(rank === activeRank && suit === activeSuit);
     });
 
-    const data = await response.json();
-
-    if (!response.ok || !data.ok) {
-      console.error("Error guardando jugada:", data);
-      alert(data?.error || "No se pudo guardar la jugada");
-      return;
-    }
-
-    const newPlay = data.play || null;
-    const playId = Number(newPlay?.id || 0);
-
-    if (!playId) {
-      alert("La jugada se guardó, pero no volvió el id");
-      return;
-    }
-
-    window.location.href = `/lienzo.html?deckId=${draft.deckId}&playId=${playId}`;
-  } catch (error) {
-    console.error("Error en SAVE", error);
-    alert("No se pudo guardar la jugada");
-  }
-}
-function handleExit() {
-  const draft = window.__lienzoNewDraft;
-  const deckId = draft?.deckId;
-
-  if (!deckId) {
-    window.location.href = "/mazos.html";
-    return;
+    return {
+      backgroundCards,
+      activeCard: {
+        card_rank: activeRank,
+        card_suit: activeSuit
+      }
+    };
   }
 
-  window.location.href = `/mazo.html?id=${deckId}`;
-}
-  
-function getCurrentUserCorporateCards() {
-  const state = getCurrentState();
-  console.log("state.corporateCards =", state?.corporateCards);
+  function renderBackgroundCard(card, index) {
+    const src = getCardImageSrc(card?.card_rank, card?.card_suit);
 
-  const currentUser = getCurrentUser();
-  const userId = Number(currentUser?.id || 0);
-
-  if (!userId) return [];
-
-  const cards = Array.isArray(state?.corporateCards)
-    ? state.corporateCards
-    : [];
-
-  return cards
-    .filter((card) => Number(card?.owner_user_id || card?.user_id || 0) === userId)
-    .sort(compareCorporateCards);
-}
-function compareCorporateCards(a, b) {
-  const order = {
-    A_HEART: 1,
-    A_SPADE: 2,
-    A_DIAMOND: 3,
-    A_CLUB: 4,
-    K_HEART: 5,
-    K_SPADE: 6,
-    K_DIAMOND: 7,
-    K_CLUB: 8
-  };
-
-  const aKey = `${normalizeRank(a?.card_rank)}_${normalizeSuit(a?.card_suit)}`;
-  const bKey = `${normalizeRank(b?.card_rank)}_${normalizeSuit(b?.card_suit)}`;
-
-  return (order[aKey] || 999) - (order[bKey] || 999);
-}  
-
-function buildSourceCardsScene(draft) {
-  const ownedCards = getCurrentUserCorporateCards();
-
-  const activeRank = normalizeRank(draft?.card_rank);
-  const activeSuit = normalizeSuit(draft?.card_suit);
-
-  const backgroundCards = ownedCards.filter((card) => {
-    const rank = normalizeRank(card?.card_rank);
-    const suit = normalizeSuit(card?.card_suit);
-
-    return !(rank === activeRank && suit === activeSuit);
-  });
-
-  return {
-    backgroundCards,
-    activeCard: {
-      card_rank: activeRank,
-      card_suit: activeSuit
-    }
-  };
-}
-
-function renderBackgroundCard(card, index) {
-  const src = getCardImageSrc(card?.card_rank, card?.card_suit);
-
-  return `
+    return `
     <img
       class="lienzo-source-stack__card"
       src="${escapeHtml(src)}"
@@ -191,95 +191,95 @@ function renderBackgroundCard(card, index) {
       style="left:${index * 18}px;"
     />
   `;
-}
-function animateCardToUser(user) {
-  const source = document.getElementById("lienzo-source-card");
-  if (!source) {
-    console.warn("No hay carta origen");
-    return;
+  }
+  function animateCardToUser(user) {
+    const source = document.getElementById("lienzo-source-card");
+    if (!source) {
+      console.warn("No hay carta origen");
+      return;
+    }
+
+    const rect = source.getBoundingClientRect();
+
+    // 👻 crear carta fantasma
+    const ghost = source.cloneNode(true);
+    ghost.style.position = "fixed";
+    ghost.style.left = rect.left + "px";
+    ghost.style.top = rect.top + "px";
+    ghost.style.width = rect.width + "px";
+    ghost.style.height = rect.height + "px";
+    ghost.style.margin = "0";
+    ghost.style.zIndex = "9999";
+    ghost.style.transition = "all 450ms ease";
+    ghost.style.pointerEvents = "none";
+
+    document.body.appendChild(ghost);
+
+    // ocultar carta original
+    source.style.visibility = "hidden";
+
+    // 🎯 destino (centro del panel derecho por ahora)
+    const container = document.querySelector(".lienzo-grid__right");
+    const targetRect = container.getBoundingClientRect();
+
+    const targetX = targetRect.left + targetRect.width / 2 - rect.width / 2;
+    const targetY = targetRect.top + targetRect.height / 3;
+
+    requestAnimationFrame(() => {
+      ghost.style.left = targetX + "px";
+      ghost.style.top = targetY + "px";
+      ghost.style.transform = "scale(1.05)";
+    });
+
+    ghost.addEventListener("transitionend", () => {
+      if (!ghost.parentNode) return;
+
+      ghost.remove();
+
+      window.__lienzoAnimationState = {
+        ...(window.__lienzoAnimationState || {}),
+        sourceCardDelivered: true
+      };
+
+      const leftContainer = document.querySelector(".lienzo-grid__left");
+      if (leftContainer) {
+        leftContainer.innerHTML = renderSourcePlayerPanel(window.__lienzoNewDraft);
+      }
+
+      renderAssignedTargetPanel(user);
+
+      setTimeout(() => {
+        mountCardInTarget(source);
+      }, 50);
+    });
   }
 
-  const rect = source.getBoundingClientRect();
+  function mountCardInTarget(sourceCard) {
+    const dropzone = document.getElementById("lienzo-target-dropzone");
+    if (!dropzone) return;
 
-  // 👻 crear carta fantasma
-  const ghost = source.cloneNode(true);
-  ghost.style.position = "fixed";
-  ghost.style.left = rect.left + "px";
-  ghost.style.top = rect.top + "px";
-  ghost.style.width = rect.width + "px";
-  ghost.style.height = rect.height + "px";
-  ghost.style.margin = "0";
-  ghost.style.zIndex = "9999";
-  ghost.style.transition = "all 450ms ease";
-  ghost.style.pointerEvents = "none";
+    const card = sourceCard.cloneNode(true);
 
-  document.body.appendChild(ghost);
+    card.style.visibility = "visible";
+    card.removeAttribute("id");
 
-  // ocultar carta original
-  source.style.visibility = "hidden";
-
-  // 🎯 destino (centro del panel derecho por ahora)
-  const container = document.querySelector(".lienzo-grid__right");
-  const targetRect = container.getBoundingClientRect();
-
-  const targetX = targetRect.left + targetRect.width / 2 - rect.width / 2;
-  const targetY = targetRect.top + targetRect.height / 3;
-
-  requestAnimationFrame(() => {
-    ghost.style.left = targetX + "px";
-    ghost.style.top = targetY + "px";
-    ghost.style.transform = "scale(1.05)";
-  });
-
-  ghost.addEventListener("transitionend", () => {
-  if (!ghost.parentNode) return;
-
-  ghost.remove();
-
-  window.__lienzoAnimationState = {
-    ...(window.__lienzoAnimationState || {}),
-    sourceCardDelivered: true
-  };
-
-  const leftContainer = document.querySelector(".lienzo-grid__left");
-  if (leftContainer) {
-    leftContainer.innerHTML = renderSourcePlayerPanel(window.__lienzoNewDraft);
+    dropzone.appendChild(card);
   }
 
-  renderAssignedTargetPanel(user);
+  function renderAssignedTargetPanel(user) {
+    const container = document.querySelector(".lienzo-grid__right");
+    if (!container) return;
 
-  setTimeout(() => {
-    mountCardInTarget(source);
-  }, 50);
-});
-}
+    const photo =
+      user?.profile_photo_url || "/assets/icons/singeta120.gif";
 
-function mountCardInTarget(sourceCard) {
-  const dropzone = document.getElementById("lienzo-target-dropzone");
-  if (!dropzone) return;
+    const name =
+      user?.nickname ||
+      user?.full_name ||
+      user?.name ||
+      `Usuario ${user?.id || ""}`;
 
-  const card = sourceCard.cloneNode(true);
-
-  card.style.visibility = "visible";
-  card.removeAttribute("id");
-
-  dropzone.appendChild(card);
-}
-  
-function renderAssignedTargetPanel(user) {
-  const container = document.querySelector(".lienzo-grid__right");
-  if (!container) return;
-
-  const photo =
-    user?.profile_photo_url || "/assets/icons/singeta120.gif";
-
-  const name =
-    user?.nickname ||
-    user?.full_name ||
-    user?.name ||
-    `Usuario ${user?.id || ""}`;
-
-  container.innerHTML = `
+    container.innerHTML = `
     <section class="lienzo-panel lienzo-panel--target">
       <div class="lienzo-target-header">
         <img
@@ -302,14 +302,14 @@ function renderAssignedTargetPanel(user) {
     </section>
   `;
 
-  bindActionButtons();
-}
-  
-  function renderActionButtons() {
-  const saveIcon = window.ICONS?.actions?.save || "/assets/icons/salvar40.gif";
-  const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
+    bindActionButtons();
+  }
 
-  return `
+  function renderActionButtons() {
+    const saveIcon = window.ICONS?.actions?.save || "/assets/icons/salvar40.gif";
+    const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
+
+    return `
     <div class="lienzo-actions">
       <button id="lienzo-save-btn" class="lienzo-btn" title="Salvar">
         <img src="${saveIcon}" alt="Salvar" />
@@ -320,8 +320,8 @@ function renderAssignedTargetPanel(user) {
       </button>
     </div>
   `;
-}
-  
+  }
+
   function normalizeSuit(value) {
     return String(value || "").trim().toUpperCase();
   }
@@ -401,24 +401,24 @@ function renderAssignedTargetPanel(user) {
     return map[`${r}_${s}`] || "/assets/icons/Dorso70.gif";
   }
 
-function getDeckAvatarSrc(deck) {
-  console.log("deck completo =", deck);
-  console.log("posibles campos imagen =", {
-    deck_image_url: deck?.deck_image_url,
-    image_url: deck?.image_url,
-    photo_url: deck?.photo_url,
-    avatar: deck?.avatar
-  });
+  function getDeckAvatarSrc(deck) {
+    console.log("deck completo =", deck);
+    console.log("posibles campos imagen =", {
+      deck_image_url: deck?.deck_image_url,
+      image_url: deck?.image_url,
+      photo_url: deck?.photo_url,
+      avatar: deck?.avatar
+    });
 
-  const raw =
-    deck?.deck_image_url ||
-    deck?.image_url ||
-    deck?.photo_url ||
-    deck?.avatar ||
-    "";
+    const raw =
+      deck?.deck_image_url ||
+      deck?.image_url ||
+      deck?.photo_url ||
+      deck?.avatar ||
+      "";
 
-  return String(raw).trim() || "/assets/icons/sinPicture.gif";
-}
+    return String(raw).trim() || "/assets/icons/sinPicture.gif";
+  }
 
   function getCurrencyCode(deck) {
     return String(deck?.currency_symbol || "").trim().toUpperCase();
@@ -450,62 +450,61 @@ function getDeckAvatarSrc(deck) {
   }
 
   function buildDraftFromParams() {
-  const { deckId, parentPlayId, childRank, childSuit } = getLienzoNewParams();
-  const parentPlay = getPlayById(parentPlayId);
-  const deck = getCurrentDeck();
-  const currentUser = getCurrentUser();
+    const { deckId, parentPlayId, childRank, childSuit } = getLienzoNewParams();
+    const parentPlay = getPlayById(parentPlayId);
+    const deck = getCurrentDeck();
+    const currentUser = getCurrentUser();
 
-  return {
-    mode: "new",
-    deckId: deckId || Number(deck?.id || 0),
-    parentPlayId,
-    parentPlay,
-    card_rank: childRank,
-    card_suit: childSuit,
-    target_user_id: currentUser?.id || null,
-    target_user: currentUser || null,
-    play_text: "",
-    status: "DRAFT"
-  };
-}
-  
+    return {
+      mode: "new",
+      deckId: deckId || Number(deck?.id || 0),
+      parentPlayId,
+      parentPlay,
+      card_rank: childRank,
+      card_suit: childSuit,
+      target_user_id: currentUser?.id || null,
+      target_user: currentUser || null,
+      play_text: "",
+      status: "DRAFT"
+    };
+  }
+
   function renderDeckHeader(deck) {
-    console.log("renderDeckHeader deck =", deck);
     const avatarSrc = getDeckAvatarSrc(deck);
     const deckName = deck?.name || "Mazo";
     const currencyCode = getCurrencyCode(deck);
-    const balance = getBalanceValue(deck);
+    const currencyName =
+      String(deck?.currency_name || "").trim() ||
+      String(deck?.currency_label || "").trim() ||
+      "";
 
     return `
-      <section class="lienzo-deckbar">
-        <div class="lienzo-deckbar__left">
-          <div class="lienzo-deckbar__avatar-wrap">
-            <img
-              src="${escapeHtml(avatarSrc)}"
-              alt="Foto del mazo"
-              class="lienzo-deckbar__avatar"
-              onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
-            />
-          </div>
+    <div
+      id="lienzo-placard"
+      data-photo-url="${escapeHtml(avatarSrc)}"
+      data-rank="A"
+      data-suit="HEART"
+      data-title="${escapeHtml(deckName)}"
+      data-currency-code="${escapeHtml(currencyCode)}"
+      data-currency-name="${escapeHtml(currencyName)}"
+    ></div>
+  `;
+  }
 
-          <div class="lienzo-deckbar__titleline">
-            <span class="lienzo-deckbar__rank">A</span>
+  function mountPlacardFromDataset() {
+    const placardHost = document.getElementById("lienzo-placard");
+    if (!placardHost) return;
+    if (typeof window.renderPlacard !== "function") return;
 
-            <img
-              src="/assets/icons/cor40.gif"
-              alt="♥"
-              class="lienzo-deckbar__suit"
-            />
-
-            <span class="lienzo-deckbar__name">
-              ${escapeHtml(deckName)}
-            </span>
-
-          </div>
-        </div>
-
-      </section>
-    `;
+    window.renderPlacard(placardHost, {
+      photoUrl: placardHost.dataset.photoUrl || "",
+      rank: placardHost.dataset.rank || "A",
+      suit: placardHost.dataset.suit || "HEART",
+      title: placardHost.dataset.title || "Mazo",
+      currencyCode: placardHost.dataset.currencyCode || "",
+      currencyName: placardHost.dataset.currencyName || "",
+      showCurrency: false
+    });
   }
 
   function bindDeckHeaderExit() {
@@ -525,8 +524,8 @@ function getDeckAvatarSrc(deck) {
     });
   }
 
-function renderUsersPanel() {
-  return `
+  function renderUsersPanel() {
+    return `
     <section class="lienzo-panel lienzo-panel--users">
       <div class="lienzo-panel__header">
         <div class="lienzo-panel__subtitle">Seleccioná un destinatario</div>
@@ -535,25 +534,25 @@ function renderUsersPanel() {
       <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
     </section>
   `;
-}
-function getCurrentUser() {
-  return window.__currentUser || window.__currentState?.currentUser || null;
-}
+  }
+  function getCurrentUser() {
+    return window.__currentUser || window.__currentState?.currentUser || null;
+  }
 
-function renderSourcePlayerPanel(draft) {
-  const user = getCurrentUser();
-  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-  const userName =
-    user?.nickname ||
-    user?.full_name ||
-    user?.name ||
-    "Creador";
+  function renderSourcePlayerPanel(draft) {
+    const user = getCurrentUser();
+    const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+    const userName =
+      user?.nickname ||
+      user?.full_name ||
+      user?.name ||
+      "Creador";
 
-  const scene = buildSourceCardsScene(draft);
-  const delivered =
-    window.__lienzoAnimationState?.sourceCardDelivered === true;
+    const scene = buildSourceCardsScene(draft);
+    const delivered =
+      window.__lienzoAnimationState?.sourceCardDelivered === true;
 
-  return `
+    return `
     <section class="lienzo-panel lienzo-panel--source">
       <div class="lienzo-source-header">
         <img
@@ -570,31 +569,30 @@ function renderSourcePlayerPanel(draft) {
         <div class="lienzo-source-stack">
           ${scene.backgroundCards.map(renderBackgroundCard).join("")}
 
-          ${
-            delivered
-              ? ""
-              : `
+          ${delivered
+        ? ""
+        : `
             <div class="lienzo-source-active">
               <img
                 id="lienzo-source-card"
                 class="lienzo-card-image"
                 src="${escapeHtml(
-                  getCardImageSrc(
-                    scene.activeCard.card_rank,
-                    scene.activeCard.card_suit
-                  )
-                )}"
+          getCardImageSrc(
+            scene.activeCard.card_rank,
+            scene.activeCard.card_suit
+          )
+        )}"
                 alt=""
               />
             </div>
           `
-          }
+      }
         </div>
       </div>
     </section>
   `;
-}
-  
+  }
+
   function renderDraftCardPanel(draft) {
     const rank = normalizeRank(draft?.card_rank);
     const suit = normalizeSuit(draft?.card_suit);
@@ -617,67 +615,67 @@ function renderSourcePlayerPanel(draft) {
   }
 
   function bindUsersPicker(draft) {
-  const selectedBox = document.getElementById("lienzo-user-selected");
+    const selectedBox = document.getElementById("lienzo-user-selected");
 
-  if (typeof window.renderUsersPicker !== "function") {
-    const picker = document.getElementById("lienzo-users-picker");
-    if (picker) {
-      picker.innerHTML = `
+    if (typeof window.renderUsersPicker !== "function") {
+      const picker = document.getElementById("lienzo-users-picker");
+      if (picker) {
+        picker.innerHTML = `
         <div class="lienzo-error">
           No se pudo cargar users.js
         </div>
       `;
-    }
-    return;
-  }
-
-  window.renderUsersPicker("lienzo-users-picker", {
-    onSelect(user) {
-      window.__lienzoNewDraft = {
-        ...window.__lienzoNewDraft,
-        target_user_id: Number(user?.id || 0) || null,
-        target_user: user || null
-      };
-
-      if (!selectedBox) return;
-
-      if (!user) {
-        selectedBox.textContent = "Nadie seleccionado";
-        return;
       }
+      return;
+    }
 
-      selectedBox.textContent =
-        "Seleccionado: " +
-        (user.nickname ||
-          user.full_name ||
-          user.name ||
-          `Usuario ${user.id}`);
-    },
+    window.renderUsersPicker("lienzo-users-picker", {
+      onSelect(user) {
+        window.__lienzoNewDraft = {
+          ...window.__lienzoNewDraft,
+          target_user_id: Number(user?.id || 0) || null,
+          target_user: user || null
+        };
 
-    onAnimateSelect(user) {
-      window.__lienzoNewDraft = {
-        ...window.__lienzoNewDraft,
-        target_user_id: Number(user?.id || 0) || null,
-        target_user: user || null
-      };
+        if (!selectedBox) return;
 
-      if (selectedBox && user) {
+        if (!user) {
+          selectedBox.textContent = "Nadie seleccionado";
+          return;
+        }
+
         selectedBox.textContent =
           "Seleccionado: " +
           (user.nickname ||
             user.full_name ||
             user.name ||
             `Usuario ${user.id}`);
-      }
+      },
 
-      document.dispatchEvent(
-        new CustomEvent("lienzo:animate-card-to-user", {
-          detail: { user }
-        })
-      );
-    }
-  });
-}
+      onAnimateSelect(user) {
+        window.__lienzoNewDraft = {
+          ...window.__lienzoNewDraft,
+          target_user_id: Number(user?.id || 0) || null,
+          target_user: user || null
+        };
+
+        if (selectedBox && user) {
+          selectedBox.textContent =
+            "Seleccionado: " +
+            (user.nickname ||
+              user.full_name ||
+              user.name ||
+              `Usuario ${user.id}`);
+        }
+
+        document.dispatchEvent(
+          new CustomEvent("lienzo:animate-card-to-user", {
+            detail: { user }
+          })
+        );
+      }
+    });
+  }
   function bindCreateButton() {
     const btn = document.getElementById("lienzo-new-save-btn");
     if (!btn) return;
@@ -756,30 +754,29 @@ function renderSourcePlayerPanel(draft) {
     window.__lienzoNewDraft = draft;
 
     container.innerHTML = `
-      ${renderDeckHeader(deck)}
+  ${renderDeckHeader(deck)}
 
-      <div class="lienzo-grid">
-        <div class="lienzo-grid__left">
-          ${renderSourcePlayerPanel(draft)}
-        </div>
+  <div class="lienzo-grid">
+    <div class="lienzo-grid__left">
+      ${renderSourcePlayerPanel(draft)}
+    </div>
 
-       <div class="lienzo-grid__right" id="lienzo-right-panel">
-          ${renderUsersPanel()}
-        </div>
-      </div>
-    `;
-
+    <div class="lienzo-grid__right" id="lienzo-right-panel">
+      ${renderUsersPanel()}
+    </div>
+  </div>
+`;
     bindUsersPicker(draft);
-}
-document.addEventListener("lienzo:animate-card-to-user", (event) => {
-  const user = event.detail?.user;
-  if (!user) return;
+  }
+  document.addEventListener("lienzo:animate-card-to-user", (event) => {
+    const user = event.detail?.user;
+    if (!user) return;
 
-  animateCardToUser(user);
-});
+    animateCardToUser(user);
+  });
 
-  
-  
+
+
   window.openNewLienzo = renderNewLienzo;
   bindActionButtons();
 })();
