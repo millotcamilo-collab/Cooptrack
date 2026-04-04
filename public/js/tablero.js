@@ -8,108 +8,108 @@
   const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
   function normalizeStatus(value) {
-  return String(value || "").trim().toUpperCase();
-}
-
-function bindLienzoDropZone(deckId) {
-  const dropZone = document.getElementById("tablero-container");
-
-  if (!dropZone) {
-    console.warn("No se encontró tablero-container");
-    return;
+    return String(value || "").trim().toUpperCase();
   }
 
-  dropZone.addEventListener("dragover", (event) => {
-    event.preventDefault();
-    dropZone.classList.add("is-drag-over");
-  });
+  function bindLienzoDropZone(deckId) {
+    const dropZone = document.getElementById("tablero-container");
 
-  dropZone.addEventListener("dragleave", () => {
-    dropZone.classList.remove("is-drag-over");
-  });
-
- dropZone.addEventListener("drop", (event) => {
-  event.preventDefault();
-  dropZone.classList.remove("is-drag-over");
-
-  let payload = null;
-
-  try {
-    payload = JSON.parse(
-      event.dataTransfer.getData("application/json") || "{}"
-    );
-  } catch (error) {
-    console.warn("Error leyendo drag data", error);
-    return;
-  }
-
-  const mode = String(payload?.mode || "").toLowerCase();
-
-  if (!deckId) {
-    console.warn("Drop sin deckId", { deckId, payload });
-    return;
-  }
-
-  // -----------------------------------
-  // JOKER AZUL
-  // -----------------------------------
-  if (mode === "joker-blue") {
-    window.location.href = `/jokerazul.html?deckId=${deckId}`;
-    return;
-  }
-
-  // -----------------------------------
-  // NUEVA JUGADA DESDE A / K
-  // -----------------------------------
-  if (mode === "new") {
-    const sourcePlayId = Number(payload?.sourcePlayId || 0);
-    const childRank = String(payload?.childRank || "").toUpperCase();
-    const childSuit = String(payload?.childSuit || "").toUpperCase();
-
-    if (!sourcePlayId || !childRank || !childSuit) {
-      console.warn("Drop new incompleto", {
-        deckId,
-        sourcePlayId,
-        childRank,
-        childSuit
-      });
+    if (!dropZone) {
+      console.warn("No se encontró tablero-container");
       return;
     }
 
-    window.location.href =
-  `/lienzo-new.html?deckId=${deckId}&parentPlayId=${sourcePlayId}&childRank=${childRank}&childSuit=${childSuit}`;
-    
-    return;
+    dropZone.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      dropZone.classList.add("is-drag-over");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("is-drag-over");
+    });
+
+    dropZone.addEventListener("drop", (event) => {
+      event.preventDefault();
+      dropZone.classList.remove("is-drag-over");
+
+      let payload = null;
+
+      try {
+        payload = JSON.parse(
+          event.dataTransfer.getData("application/json") || "{}"
+        );
+      } catch (error) {
+        console.warn("Error leyendo drag data", error);
+        return;
+      }
+
+      const mode = String(payload?.mode || "").toLowerCase();
+
+      if (!deckId) {
+        console.warn("Drop sin deckId", { deckId, payload });
+        return;
+      }
+
+      // -----------------------------------
+      // JOKER AZUL
+      // -----------------------------------
+      if (mode === "joker-blue") {
+        window.location.href = `/jokerazul.html?deckId=${deckId}`;
+        return;
+      }
+
+      // -----------------------------------
+      // NUEVA JUGADA DESDE A / K
+      // -----------------------------------
+      if (mode === "new") {
+        const sourcePlayId = Number(payload?.sourcePlayId || 0);
+        const childRank = String(payload?.childRank || "").toUpperCase();
+        const childSuit = String(payload?.childSuit || "").toUpperCase();
+
+        if (!sourcePlayId || !childRank || !childSuit) {
+          console.warn("Drop new incompleto", {
+            deckId,
+            sourcePlayId,
+            childRank,
+            childSuit
+          });
+          return;
+        }
+
+        window.location.href =
+          `/lienzo-new.html?deckId=${deckId}&parentPlayId=${sourcePlayId}&childRank=${childRank}&childSuit=${childSuit}`;
+
+        return;
+      }
+
+      // -----------------------------------
+      // CASO LEGACY / EXISTENTE
+      // -----------------------------------
+      const playId = Number(payload?.playId || 0);
+
+      if (!playId) {
+        console.warn("Drop sin playId válido", { deckId, payload });
+        return;
+      }
+
+      window.location.href =
+        `/lienzo.html?deckId=${deckId}&playId=${playId}`;
+    });
   }
 
-  // -----------------------------------
-  // CASO LEGACY / EXISTENTE
-  // -----------------------------------
-  const playId = Number(payload?.playId || 0);
-
-  if (!playId) {
-    console.warn("Drop sin playId válido", { deckId, payload });
-    return;
+  function isStructuralPlay(play) {
+    const action = safeTrim(play?.action).toLowerCase();
+    return action === "init_ace" || action === "puedejugar";
   }
 
-  window.location.href =
-    `/lienzo.html?deckId=${deckId}&playId=${playId}`;
-});
-}
+  function matchesStatusFilter(play, statusFilter) {
+    const currentStatus = normalizeStatus(play?.play_status || play?.status);
 
-function isStructuralPlay(play) {
-  const action = safeTrim(play?.action).toLowerCase();
-  return action === "init_ace" || action === "puedejugar";
-}
+    if (!statusFilter) return true;
 
-function matchesStatusFilter(play, statusFilter) {
-  const currentStatus = normalizeStatus(play?.play_status || play?.status);
+    return currentStatus === normalizeStatus(statusFilter);
+  }
 
-  if (!statusFilter) return true;
-
-  return currentStatus === normalizeStatus(statusFilter);
-}
-  
   function safeTrim(value) {
     if (value === null || value === undefined) return '';
     return String(value).trim();
@@ -232,115 +232,115 @@ function matchesStatusFilter(play, statusFilter) {
     };
   }
 
-function belongsToTablero(play) {
-  const rank = normalizeRank(play?.rank);
-  const suit = normalizeSuit(play?.suit);
+  function belongsToTablero(play) {
+    const rank = normalizeRank(play?.rank);
+    const suit = normalizeSuit(play?.suit);
 
-  if (!rank || !suit) return false;
-  if (isStructuralPlay(play)) return false;
+    if (!rank || !suit) return false;
+    if (isStructuralPlay(play)) return false;
 
-  // -------------------------
-  // MODO J (default)
-  // -------------------------
-  if (activeTableroViewMode === "J") {
-    return rank === "J" || rank === "Q";
-  }
-
-  // -------------------------
-  // MODO A
-  // -------------------------
-  if (activeTableroViewMode === "A") {
-    if (rank === "A" && suit !== "HEART") return true;
-    if (rank === "JOKER" && suit === "BLUE") return true;
-    return false;
-  }
-
-  // -------------------------
-  // MODO AK
-  // -------------------------
-  if (activeTableroViewMode === "AK") {
-    if (rank === "A" && suit !== "HEART") return true;
-    if (rank === "K") return true;
-    if (rank === "JOKER" && suit === "BLUE") return true;
-    return false;
-  }
-
-  return false;
-}
- function matchesTableroFilter(play, filterSuit) {
-  const rank = normalizeRank(play?.rank);
-  const suit = normalizeSuit(play?.suit);
-  const filter = normalizeSuit(filterSuit);
-
-  if (!filter) {
-    return belongsToTablero(play);
-  }
-
-  // primero: el play tiene que pertenecer a la vista actual
-  if (!belongsToTablero(play)) {
-    return false;
-  }
-
-  // MODO J
-  if (activeTableroViewMode === "J") {
-    if (filter === "HEART") {
-      return rank === "J" && suit === "HEART";
+    // -------------------------
+    // MODO J (default)
+    // -------------------------
+    if (activeTableroViewMode === "J") {
+      return rank === "J" || rank === "Q";
     }
 
-    if (filter === "SPADE") {
-      return rank === "J" && suit === "SPADE";
-    }
-
-    if (filter === "DIAMOND") {
-      return rank === "J" && suit === "DIAMOND";
-    }
-
-    if (filter === "CLUB") {
-      return rank === "J" && suit === "CLUB";
-    }
-  }
-
-  // MODO A o AK
-  if (activeTableroViewMode === "A" || activeTableroViewMode === "AK") {
-    if (filter === "HEART") {
+    // -------------------------
+    // MODO A
+    // -------------------------
+    if (activeTableroViewMode === "A") {
+      if (rank === "A" && suit !== "HEART") return true;
+      if (rank === "JOKER" && suit === "BLUE") return true;
       return false;
     }
 
-    if (filter === "SPADE") {
-      return suit === "SPADE";
+    // -------------------------
+    // MODO AK
+    // -------------------------
+    if (activeTableroViewMode === "AK") {
+      if (rank === "A" && suit !== "HEART") return true;
+      if (rank === "K") return true;
+      if (rank === "JOKER" && suit === "BLUE") return true;
+      return false;
     }
 
-    if (filter === "DIAMOND") {
-      return suit === "DIAMOND";
-    }
-
-    if (filter === "CLUB") {
-      return suit === "CLUB";
-    }
+    return false;
   }
+  function matchesTableroFilter(play, filterSuit) {
+    const rank = normalizeRank(play?.rank);
+    const suit = normalizeSuit(play?.suit);
+    const filter = normalizeSuit(filterSuit);
 
-  return belongsToTablero(play);
-}
-function getComponentName(play) {
-  const rank = normalizeRank(play?.rank);
-  const suit = normalizeSuit(play?.suit);
+    if (!filter) {
+      return belongsToTablero(play);
+    }
 
-  if (rank === 'J' && suit === 'HEART') return 'Jcorazon';
-  if (rank === 'J' && suit === 'SPADE') return 'Jpike';
-  if (rank === 'J' && suit === 'CLUB') return 'Jtrebol';
-  if (rank === 'J' && suit === 'DIAMOND') return 'Jdiamante';
+    // primero: el play tiene que pertenecer a la vista actual
+    if (!belongsToTablero(play)) {
+      return false;
+    }
 
-  if (rank === 'Q' && suit === 'SPADE') return 'Qpike';
-  if (rank === 'Q' && suit === 'CLUB') return 'Qtrebol';
+    // MODO J
+    if (activeTableroViewMode === "J") {
+      if (filter === "HEART") {
+        return rank === "J" && suit === "HEART";
+      }
 
-  if (rank === 'A' && suit === 'SPADE') return 'Apike';
-  if (rank === 'A' && suit === 'DIAMOND') return 'Adiamante';
-  if (rank === 'A' && suit === 'CLUB') return 'Atrebol';
+      if (filter === "SPADE") {
+        return rank === "J" && suit === "SPADE";
+      }
 
-  if (rank === 'JOKER' && suit === 'BLUE') return 'Jokerazul';
+      if (filter === "DIAMOND") {
+        return rank === "J" && suit === "DIAMOND";
+      }
 
-  return null;
-}
+      if (filter === "CLUB") {
+        return rank === "J" && suit === "CLUB";
+      }
+    }
+
+    // MODO A o AK
+    if (activeTableroViewMode === "A" || activeTableroViewMode === "AK") {
+      if (filter === "HEART") {
+        return false;
+      }
+
+      if (filter === "SPADE") {
+        return suit === "SPADE";
+      }
+
+      if (filter === "DIAMOND") {
+        return suit === "DIAMOND";
+      }
+
+      if (filter === "CLUB") {
+        return suit === "CLUB";
+      }
+    }
+
+    return belongsToTablero(play);
+  }
+  function getComponentName(play) {
+    const rank = normalizeRank(play?.rank);
+    const suit = normalizeSuit(play?.suit);
+
+    if (rank === 'J' && suit === 'HEART') return 'Jcorazon';
+    if (rank === 'J' && suit === 'SPADE') return 'Jpike';
+    if (rank === 'J' && suit === 'CLUB') return 'Jtrebol';
+    if (rank === 'J' && suit === 'DIAMOND') return 'Jdiamante';
+
+    if (rank === 'Q' && suit === 'SPADE') return 'Qpike';
+    if (rank === 'Q' && suit === 'CLUB') return 'Qtrebol';
+
+    if (rank === 'A' && suit === 'SPADE') return 'Apike';
+    if (rank === 'A' && suit === 'DIAMOND') return 'Adiamante';
+    if (rank === 'A' && suit === 'CLUB') return 'Atrebol';
+
+    if (rank === 'JOKER' && suit === 'BLUE') return 'Jokerazul';
+
+    return null;
+  }
   function getCardLabel(play) {
     const rank = normalizeRank(play?.rank) || '?';
     const suit = normalizeSuit(play?.suit) || '?';
@@ -412,56 +412,56 @@ function getComponentName(play) {
   }
 
   function sortTableroPlays(plays) {
-  const sorted = [...plays].sort((a, b) => {
-    const aDate = new Date(a.displayDate || a.created_at || 0).getTime();
-    const bDate = new Date(b.displayDate || b.created_at || 0).getTime();
+    const sorted = [...plays].sort((a, b) => {
+      const aDate = new Date(a.displayDate || a.created_at || 0).getTime();
+      const bDate = new Date(b.displayDate || b.created_at || 0).getTime();
 
-    if (aDate !== bDate) return aDate - bDate;
+      if (aDate !== bDate) return aDate - bDate;
 
-    const aId = Number(a.id || 0);
-    const bId = Number(b.id || 0);
+      const aId = Number(a.id || 0);
+      const bId = Number(b.id || 0);
 
-    return aId - bId;
-  });
-
-  const byParent = new Map();
-  const roots = [];
-
-  for (const play of sorted) {
-    const parentId = play?.parent_play_id ? Number(play.parent_play_id) : null;
-
-    if (!parentId) {
-      roots.push(play);
-      continue;
-    }
-
-    if (!byParent.has(parentId)) {
-      byParent.set(parentId, []);
-    }
-
-    byParent.get(parentId).push(play);
-  }
-
-  const result = [];
-
-  function appendWithChildren(play, depth = 0) {
-    result.push({
-      ...play,
-      __treeDepth: depth
+      return aId - bId;
     });
 
-    const children = byParent.get(Number(play.id)) || [];
-    for (const child of children) {
-      appendWithChildren(child, depth + 1);
+    const byParent = new Map();
+    const roots = [];
+
+    for (const play of sorted) {
+      const parentId = play?.parent_play_id ? Number(play.parent_play_id) : null;
+
+      if (!parentId) {
+        roots.push(play);
+        continue;
+      }
+
+      if (!byParent.has(parentId)) {
+        byParent.set(parentId, []);
+      }
+
+      byParent.get(parentId).push(play);
     }
-  }
 
-  for (const root of roots) {
-    appendWithChildren(root, 0);
-  }
+    const result = [];
 
-  return result;
-}
+    function appendWithChildren(play, depth = 0) {
+      result.push({
+        ...play,
+        __treeDepth: depth
+      });
+
+      const children = byParent.get(Number(play.id)) || [];
+      for (const child of children) {
+        appendWithChildren(child, depth + 1);
+      }
+    }
+
+    for (const root of roots) {
+      appendWithChildren(root, 0);
+    }
+
+    return result;
+  }
 
   function buildContext(deck, state) {
     return {
@@ -481,57 +481,57 @@ function getComponentName(play) {
       },
     };
   }
-function setTableroViewMode(nextMode) {
-  const normalized = String(nextMode || "").toUpperCase();
+  function setTableroViewMode(nextMode) {
+    const normalized = String(nextMode || "").toUpperCase();
 
-  if (normalized === "A" || normalized === "AK" || normalized === "J") {
-    activeTableroViewMode = normalized;
-    return;
-  }
-
-  activeTableroViewMode = "J";
-}
-
-function syncTableroViewInUrl(mode) {
-  try {
-    const url = new URL(window.location.href);
-
-    if (mode === "A" || mode === "AK") {
-      url.searchParams.set("tableroView", mode);
-    } else {
-      url.searchParams.delete("tableroView");
+    if (normalized === "A" || normalized === "AK" || normalized === "J") {
+      activeTableroViewMode = normalized;
+      return;
     }
 
-    window.history.replaceState({}, "", url.toString());
-  } catch (error) {
-    console.warn("No se pudo sincronizar tableroView en URL", error);
-  }
-}
-
-function initTableroViewFromUrlOnce() {
-  if (hasInitializedTableroViewFromUrl) return;
-
-  const urlView = getTableroViewFromUrl();
-
-  if (urlView === "A") {
-    setTableroViewMode("A");
-  } else if (urlView === "AK") {
-    setTableroViewMode("AK");
-  } else {
-    setTableroViewMode("J");
+    activeTableroViewMode = "J";
   }
 
-  hasInitializedTableroViewFromUrl = true;
-}
-function getTableroViewFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  return String(params.get("tableroView") || "").toUpperCase();
-}
-  
-function getFocusPlayIdFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  return Number(params.get("focusPlayId") || 0);
-}
+  function syncTableroViewInUrl(mode) {
+    try {
+      const url = new URL(window.location.href);
+
+      if (mode === "A" || mode === "AK") {
+        url.searchParams.set("tableroView", mode);
+      } else {
+        url.searchParams.delete("tableroView");
+      }
+
+      window.history.replaceState({}, "", url.toString());
+    } catch (error) {
+      console.warn("No se pudo sincronizar tableroView en URL", error);
+    }
+  }
+
+  function initTableroViewFromUrlOnce() {
+    if (hasInitializedTableroViewFromUrl) return;
+
+    const urlView = getTableroViewFromUrl();
+
+    if (urlView === "A") {
+      setTableroViewMode("A");
+    } else if (urlView === "AK") {
+      setTableroViewMode("AK");
+    } else {
+      setTableroViewMode("J");
+    }
+
+    hasInitializedTableroViewFromUrl = true;
+  }
+  function getTableroViewFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return String(params.get("tableroView") || "").toUpperCase();
+  }
+
+  function getFocusPlayIdFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return Number(params.get("focusPlayId") || 0);
+  }
 
   function renderTablero(deck, plays, state = {}) {
     const container = document.getElementById('tablero-container');
@@ -545,14 +545,14 @@ function getFocusPlayIdFromUrl() {
       const rawPlays = Array.isArray(plays) ? plays : [];
       const normalized = rawPlays.map(normalizePlay);
       initTableroViewFromUrlOnce();
-     const tableroPlays = sortTableroPlays(
-      normalized.filter((play) => {
-    if (!belongsToTablero(play)) return false;
-    if (!matchesTableroFilter(play, activeTableroFilter)) return false;
-    if (!matchesStatusFilter(play, activeTableroStatusFilter)) return false;
-    return true;
-  })
-);
+      const tableroPlays = sortTableroPlays(
+        normalized.filter((play) => {
+          if (!belongsToTablero(play)) return false;
+          if (!matchesTableroFilter(play, activeTableroFilter)) return false;
+          if (!matchesStatusFilter(play, activeTableroStatusFilter)) return false;
+          return true;
+        })
+      );
 
       if (!tableroPlays.length) {
         container.innerHTML = renderEmptyState();
@@ -572,12 +572,12 @@ function getFocusPlayIdFromUrl() {
 
               if (play.__treeDepth && play.__treeDepth > 0) {
                 return html.replace(
-                'class="tablero-row ',
-                `class="tablero-row tablero-row--child tablero-row--child-depth-${play.__treeDepth} `
-              );
-            }
+                  'class="tablero-row ',
+                  `class="tablero-row tablero-row--child tablero-row--child-depth-${play.__treeDepth} `
+                );
+              }
 
-            return html;
+              return html;
             } catch (error) {
               console.error(`Error renderizando ${componentName}`, error);
               return renderFallbackRow(play);
@@ -595,24 +595,24 @@ function getFocusPlayIdFromUrl() {
       `;
       const focusPlayId = getFocusPlayIdFromUrl();
 
-if (focusPlayId) {
-  const targetRow = document.getElementById(`tablero-row-${focusPlayId}`);
+      if (focusPlayId) {
+        const targetRow = document.getElementById(`tablero-row-${focusPlayId}`);
 
-  if (targetRow) {
-    targetRow.scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
-  }
-}
+        if (targetRow) {
+          targetRow.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+        }
+      }
     } catch (error) {
       console.error('Error en renderTablero', error);
       container.innerHTML = renderErrorState('No se pudo renderizar el tablero');
     }
   }
 
-  document.addEventListener('mazobar:filter', (event) => {
-    const nextFilter = normalizeSuit(event?.detail?.filter);
+  document.addEventListener("mazobar:filterSuit", (event) => {
+    const nextFilter = normalizeSuit(event?.detail?.suit);
 
     if (!nextFilter) {
       activeTableroFilter = null;
@@ -622,6 +622,8 @@ if (focusPlayId) {
       activeTableroFilter = nextFilter;
     }
 
+    activeTableroViewMode = "J";
+
     const deck = window.__currentDeck || null;
     const state = window.__currentState || {};
     const plays = Array.isArray(state?.plays) ? state.plays : [];
@@ -629,525 +631,525 @@ if (focusPlayId) {
     renderTablero(deck, plays, state);
   });
 
-document.addEventListener("mazobar:filter-rank", (event) => {
-  const nextRank = String(event?.detail?.rank || "").toUpperCase();
+  document.addEventListener("mazobar:filter-rank", (event) => {
+    const nextRank = String(event?.detail?.rank || "").toUpperCase();
 
-  if (nextRank === "A") {
-    if (activeTableroViewMode === "A") {
+    if (nextRank === "A") {
+      if (activeTableroViewMode === "A") {
+        setTableroViewMode("J");
+      } else {
+        setTableroViewMode("A");
+      }
+    } else if (nextRank === "K") {
+      if (activeTableroViewMode === "AK") {
+        setTableroViewMode("A");
+      } else if (activeTableroViewMode === "A") {
+        setTableroViewMode("AK");
+      } else {
+        setTableroViewMode("AK");
+      }
+    } else {
       setTableroViewMode("J");
-    } else {
-      setTableroViewMode("A");
-    }
-  } else if (nextRank === "K") {
-    if (activeTableroViewMode === "AK") {
-      setTableroViewMode("A");
-    } else if (activeTableroViewMode === "A") {
-      setTableroViewMode("AK");
-    } else {
-      setTableroViewMode("AK");
-    }
-  } else {
-    setTableroViewMode("J");
-  }
-
-  syncTableroViewInUrl(activeTableroViewMode);
-
-  activeTableroFilter = null;
-
-  const deck = window.__currentDeck || null;
-  const state = window.__currentState || {};
-  const plays = Array.isArray(state?.plays) ? state.plays : [];
-
-  renderTablero(deck, plays, state);
-});  
-document.addEventListener("tablero:cancel-play", async (event) => {
-  try {
-    const playId = Number(event?.detail?.playId || 0);
-    if (!playId) return;
-
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) {
-      alert("No estás logueado");
-      return;
     }
 
-    const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        play_status: "CANCELLED"
-      })
-    });
+    syncTableroViewInUrl(activeTableroViewMode);
 
-    const data = await response.json();
-
-    if (!response.ok || !data.ok) {
-      console.error("Error cancelando jugada:", data);
-      alert("No se pudo cancelar la jugada");
-      return;
-    }
-
-    const deckId =
-      data.deckId ||
-      window.__currentDeck?.id ||
-      window.__currentState?.deck?.id ||
-      null;
-
-    document.dispatchEvent(new CustomEvent("plays:changed", {
-      detail: { deckId }
-    }));
-  } catch (error) {
-    console.error("Error en tablero:cancel-play", error);
-    alert("Error cancelando la jugada");
-  }
-});
-
-document.addEventListener("tablero:change-suit", async (event) => {
-  try {
-    const {
-      playId,
-      nextSuit
-    } = event.detail || {};
-
-    if (!playId || !nextSuit) {
-      alert("Datos inválidos para cambiar de palo");
-      return;
-    }
-
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) {
-      alert("No estás logueado");
-      return;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        card_suit: nextSuit
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data.ok || !data.play) {
-      console.error("Error cambiando palo:", data);
-      alert("No se pudo cambiar el palo de la jugada");
-      return;
-    }
+    activeTableroFilter = null;
 
     const deck = window.__currentDeck || null;
     const state = window.__currentState || {};
-    const currentPlays = Array.isArray(state.plays) ? state.plays : [];
+    const plays = Array.isArray(state?.plays) ? state.plays : [];
 
-    const nextPlays = currentPlays.map((play) =>
-      Number(play.id) === Number(data.play.id) ? data.play : play
-    );
+    renderTablero(deck, plays, state);
+  });
+  document.addEventListener("tablero:cancel-play", async (event) => {
+    try {
+      const playId = Number(event?.detail?.playId || 0);
+      if (!playId) return;
 
-    const nextState = {
-      ...state,
-      plays: nextPlays
-    };
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
 
-    window.__currentState = nextState;
-    renderTablero(deck, nextPlays, nextState);
-  } catch (error) {
-    console.error("Error en tablero:change-suit", error);
-    alert("Error cambiando el palo");
-  }
-});
-  
-document.addEventListener("mazobar:showCancelled", () => {
-  if (activeTableroStatusFilter === "CANCELLED") {
-    activeTableroStatusFilter = null;
-  } else {
-    activeTableroStatusFilter = "CANCELLED";
-  }
+      const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_status: "CANCELLED"
+        })
+      });
 
-  activeTableroFilter = null;
+      const data = await response.json();
 
-  const deck = window.__currentDeck || null;
-  const state = window.__currentState || {};
-  const plays = Array.isArray(state?.plays) ? state.plays : [];
+      if (!response.ok || !data.ok) {
+        console.error("Error cancelando jugada:", data);
+        alert("No se pudo cancelar la jugada");
+        return;
+      }
 
-  renderTablero(deck, plays, state);
-});
+      const deckId =
+        data.deckId ||
+        window.__currentDeck?.id ||
+        window.__currentState?.deck?.id ||
+        null;
 
-document.addEventListener("tablero:add-child-play", async (event) => {
-  try {
-    const {
-      parentPlayId,
-      childRank,
-      childSuit
-    } = event.detail || {};
+      document.dispatchEvent(new CustomEvent("plays:changed", {
+        detail: { deckId }
+      }));
+    } catch (error) {
+      console.error("Error en tablero:cancel-play", error);
+      alert("Error cancelando la jugada");
+    }
+  });
 
-    if (!parentPlayId || !childRank || !childSuit) {
-      alert("Datos inválidos para crear jugada hija");
-      return;
+  document.addEventListener("tablero:change-suit", async (event) => {
+    try {
+      const {
+        playId,
+        nextSuit
+      } = event.detail || {};
+
+      if (!playId || !nextSuit) {
+        alert("Datos inválidos para cambiar de palo");
+        return;
+      }
+
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          card_suit: nextSuit
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok || !data.play) {
+        console.error("Error cambiando palo:", data);
+        alert("No se pudo cambiar el palo de la jugada");
+        return;
+      }
+
+      const deck = window.__currentDeck || null;
+      const state = window.__currentState || {};
+      const currentPlays = Array.isArray(state.plays) ? state.plays : [];
+
+      const nextPlays = currentPlays.map((play) =>
+        Number(play.id) === Number(data.play.id) ? data.play : play
+      );
+
+      const nextState = {
+        ...state,
+        plays: nextPlays
+      };
+
+      window.__currentState = nextState;
+      renderTablero(deck, nextPlays, nextState);
+    } catch (error) {
+      console.error("Error en tablero:change-suit", error);
+      alert("Error cambiando el palo");
+    }
+  });
+
+  document.addEventListener("mazobar:showCancelled", () => {
+    if (activeTableroStatusFilter === "CANCELLED") {
+      activeTableroStatusFilter = null;
+    } else {
+      activeTableroStatusFilter = "CANCELLED";
     }
 
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) {
-      alert("No estás logueado");
-      return;
-    }
+    activeTableroFilter = null;
 
-    const deckId =
-      window.__currentDeck?.id ||
-      window.__currentState?.deck?.id ||
-      null;
+    const deck = window.__currentDeck || null;
+    const state = window.__currentState || {};
+    const plays = Array.isArray(state?.plays) ? state.plays : [];
 
-    const userId =
-      window.__currentState?.userId ||
-      window.__currentUser?.id ||
-      null;
+    renderTablero(deck, plays, state);
+  });
 
-    const currentPlays = Array.isArray(window.__currentState?.plays)
-      ? window.__currentState.plays
-      : [];
+  document.addEventListener("tablero:add-child-play", async (event) => {
+    try {
+      const {
+        parentPlayId,
+        childRank,
+        childSuit
+      } = event.detail || {};
 
-    const parentPlay = currentPlays.find(
-      (play) => Number(play.id) === Number(parentPlayId)
-    );
+      if (!parentPlayId || !childRank || !childSuit) {
+        alert("Datos inválidos para crear jugada hija");
+        return;
+      }
 
-    if (!deckId || !userId || !parentPlay) {
-      alert("No se pudo identificar la jugada madre");
-      return;
-    }
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
 
-    const text = childRank === "J" && childSuit === "CLUB"
-      ? ""
-      : String(parentPlay.play_text || "").trim();
+      const deckId =
+        window.__currentDeck?.id ||
+        window.__currentState?.deck?.id ||
+        null;
 
-    
-    const when = new Date().toISOString();
+      const userId =
+        window.__currentState?.userId ||
+        window.__currentUser?.id ||
+        null;
 
-    const playCode = [
-      deckId,
-      userId,
-      when,
-      String(childRank).toUpperCase(),
-      String(childSuit).toUpperCase(),
-      "create_child",
-      `U:${userId}`,
-      `child_of:${parentPlayId}`,
-      `U:${userId}`
-    ].join("§");
+      const currentPlays = Array.isArray(window.__currentState?.plays)
+        ? window.__currentState.plays
+        : [];
 
-    const response = await fetch(`${API_BASE_URL}/plays`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        deck_id: deckId,
-        parent_play_id: parentPlayId,
-        play_code: playCode,
-        text,
-        play_status: "ACTIVE"
-      })
-    });
+      const parentPlay = currentPlays.find(
+        (play) => Number(play.id) === Number(parentPlayId)
+      );
 
-    const data = await response.json();
+      if (!deckId || !userId || !parentPlay) {
+        alert("No se pudo identificar la jugada madre");
+        return;
+      }
 
-    if (!response.ok || !data.ok) {
-      console.error("Error creando jugada hija:", data);
-      alert("No se pudo crear la jugada hija");
-      return;
-    }
+      const text = childRank === "J" && childSuit === "CLUB"
+        ? ""
+        : String(parentPlay.play_text || "").trim();
 
-    document.dispatchEvent(new CustomEvent("plays:changed", {
-      detail: { deckId }
-    }));
-  } catch (error) {
-    console.error("Error en tablero:add-child-play", error);
-    alert("Error creando la jugada hija");
-  }
-});
-  
-document.addEventListener("tablero:save-play", async (event) => {
-  try {
-    const {
-      playId,
-      text,
-      spadeMode,
-      startDate,
-      endDate,
-      location,
-      amount,
-      recurrence
-    } = event.detail || {};
 
-    console.log("SAVE DETAIL =", event.detail);
-    console.log("SAVE RECURRENCE IN SAVE-PLAY =", recurrence);
-    if (!playId) {
-      alert("playId inválido");
-      return;
-    }
+      const when = new Date().toISOString();
 
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) {
-      alert("No estás logueado");
-      return;
-    }
+      const playCode = [
+        deckId,
+        userId,
+        when,
+        String(childRank).toUpperCase(),
+        String(childSuit).toUpperCase(),
+        "create_child",
+        `U:${userId}`,
+        `child_of:${parentPlayId}`,
+        `U:${userId}`
+      ].join("§");
 
-    // 1. Guardar la J♠
-    const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        text,
-        spadeMode,
-        startDate,
-        endDate,
-        location,
-        amount
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data.ok) {
-      console.error("Error guardando play:", data);
-      alert("No se pudo guardar la jugada");
-      return;
-    }
-
-    // 2. Guardar recurrencia (si existe)
-    if (recurrence && recurrence.recurrence_type) {
-      console.log("ENTRA A POST /recurrence", recurrence);
-      const recurrenceResponse = await fetch(`${API_BASE_URL}/plays/${playId}/recurrence`, {
+      const response = await fetch(`${API_BASE_URL}/plays`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          recurrence_type: recurrence.recurrence_type,
-          weekdays: recurrence.weekdays,
-          months: recurrence.months,
-          until_date: recurrence.until_date,
-          timezone: recurrence.timezone
+          deck_id: deckId,
+          parent_play_id: parentPlayId,
+          play_code: playCode,
+          text,
+          play_status: "ACTIVE"
         })
       });
 
-      const recurrenceData = await recurrenceResponse.json();
+      const data = await response.json();
 
-      if (!recurrenceResponse.ok || !recurrenceData.ok) {
-        console.error("Error guardando recurrencia:", recurrenceData);
-        alert("La jugada se guardó, pero la rutina falló");
+      if (!response.ok || !data.ok) {
+        console.error("Error creando jugada hija:", data);
+        alert("No se pudo crear la jugada hija");
         return;
       }
+
+      document.dispatchEvent(new CustomEvent("plays:changed", {
+        detail: { deckId }
+      }));
+    } catch (error) {
+      console.error("Error en tablero:add-child-play", error);
+      alert("Error creando la jugada hija");
     }
+  });
 
-    // 3. Recién ahora refrescar
-    const deckId =
-      window.__currentDeck?.id ||
-      window.__currentState?.deck?.id ||
-      null;
-
-    document.dispatchEvent(new CustomEvent("plays:changed", {
-      detail: { deckId }
-    }));
-
-  } catch (error) {
-    console.error("Error en tablero:save-play", error);
-    alert("Error guardando la jugada");
-  }
-});
-
-
-  document.addEventListener("tablero:approve-play", async (event) => {
-  try {
-    const {
-      playId,
-      text,
-      spadeMode,
-      startDate,
-      endDate,
-      location,
-      amount,
-      recurrence
-    } = event.detail || {};
-
-    if (!playId) {
-      alert("playId inválido");
-      return;
-    }
-
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) {
-      alert("No estás logueado");
-      return;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
+  document.addEventListener("tablero:save-play", async (event) => {
+    try {
+      const {
+        playId,
         text,
         spadeMode,
         startDate,
         endDate,
         location,
         amount,
-        play_status: "APPROVED"
-      })
-    });
+        recurrence
+      } = event.detail || {};
 
-    const data = await response.json();
+      console.log("SAVE DETAIL =", event.detail);
+      console.log("SAVE RECURRENCE IN SAVE-PLAY =", recurrence);
+      if (!playId) {
+        alert("playId inválido");
+        return;
+      }
 
-    if (!response.ok || !data.ok) {
-      console.error("Error aprobando play:", data);
-      alert("No se pudo aprobar la jugada");
-      return;
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      // 1. Guardar la J♠
+      const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          text,
+          spadeMode,
+          startDate,
+          endDate,
+          location,
+          amount
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("Error guardando play:", data);
+        alert("No se pudo guardar la jugada");
+        return;
+      }
+
+      // 2. Guardar recurrencia (si existe)
+      if (recurrence && recurrence.recurrence_type) {
+        console.log("ENTRA A POST /recurrence", recurrence);
+        const recurrenceResponse = await fetch(`${API_BASE_URL}/plays/${playId}/recurrence`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            recurrence_type: recurrence.recurrence_type,
+            weekdays: recurrence.weekdays,
+            months: recurrence.months,
+            until_date: recurrence.until_date,
+            timezone: recurrence.timezone
+          })
+        });
+
+        const recurrenceData = await recurrenceResponse.json();
+
+        if (!recurrenceResponse.ok || !recurrenceData.ok) {
+          console.error("Error guardando recurrencia:", recurrenceData);
+          alert("La jugada se guardó, pero la rutina falló");
+          return;
+        }
+      }
+
+      // 3. Recién ahora refrescar
+      const deckId =
+        window.__currentDeck?.id ||
+        window.__currentState?.deck?.id ||
+        null;
+
+      document.dispatchEvent(new CustomEvent("plays:changed", {
+        detail: { deckId }
+      }));
+
+    } catch (error) {
+      console.error("Error en tablero:save-play", error);
+      alert("Error guardando la jugada");
     }
+  });
 
-    if (recurrence && recurrence.recurrence_type) {
-      const recurrenceResponse = await fetch(`${API_BASE_URL}/plays/${playId}/recurrence`, {
+
+  document.addEventListener("tablero:approve-play", async (event) => {
+    try {
+      const {
+        playId,
+        text,
+        spadeMode,
+        startDate,
+        endDate,
+        location,
+        amount,
+        recurrence
+      } = event.detail || {};
+
+      if (!playId) {
+        alert("playId inválido");
+        return;
+      }
+
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          text,
+          spadeMode,
+          startDate,
+          endDate,
+          location,
+          amount,
+          play_status: "APPROVED"
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("Error aprobando play:", data);
+        alert("No se pudo aprobar la jugada");
+        return;
+      }
+
+      if (recurrence && recurrence.recurrence_type) {
+        const recurrenceResponse = await fetch(`${API_BASE_URL}/plays/${playId}/recurrence`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            recurrence_type: recurrence.recurrence_type,
+            weekdays: recurrence.weekdays,
+            months: recurrence.months,
+            until_date: recurrence.until_date,
+            timezone: recurrence.timezone
+          })
+        });
+
+        const recurrenceData = await recurrenceResponse.json();
+
+        if (!recurrenceResponse.ok || !recurrenceData.ok) {
+          console.error("Error guardando recurrencia al aprobar:", recurrenceData);
+          alert("La jugada se aprobó, pero no se pudo guardar la recurrencia");
+          return;
+        }
+      }
+
+      const deckId =
+        window.__currentDeck?.id ||
+        window.__currentState?.deck?.id ||
+        null;
+
+      document.dispatchEvent(new CustomEvent("plays:changed", {
+        detail: { deckId }
+      }));
+    } catch (error) {
+      console.error("Error en tablero:approve-play", error);
+      alert("Error aprobando la jugada");
+    }
+  });
+  document.addEventListener("tablero:open-readers", async (event) => {
+    const { playId } = event.detail || {};
+    console.log("abrir lectores de J♥", playId);
+
+    // acá después hacemos el fetch al endpoint
+    // que suma A♥ y K♥ al reader_user_ids
+  });
+  document.addEventListener("lienzo:new-play", async (event) => {
+    try {
+      const {
+        deckId,
+        parentPlayId,
+        childRank,
+        childSuit,
+        targetUserId
+      } = event.detail || {};
+
+      console.log("lienzo:new-play", event.detail);
+
+      if (!deckId || !parentPlayId || !childRank || !childSuit || !targetUserId) {
+        alert("Datos incompletos para crear la jugada");
+        return;
+      }
+
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      const userId =
+        window.__currentState?.userId ||
+        window.__currentUser?.id ||
+        null;
+
+      if (!userId) {
+        alert("No se pudo identificar el usuario");
+        return;
+      }
+
+      const when = new Date().toISOString();
+
+      const playCode = [
+        deckId,
+        userId,
+        when,
+        childRank,
+        childSuit,
+        "create_from_lienzo",
+        `U:${userId}`,
+        `child_of:${parentPlayId}`,
+        `U:${targetUserId}`
+      ].join("§");
+
+      const response = await fetch(`${API_BASE_URL}/plays`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          recurrence_type: recurrence.recurrence_type,
-          weekdays: recurrence.weekdays,
-          months: recurrence.months,
-          until_date: recurrence.until_date,
-          timezone: recurrence.timezone
+          deck_id: deckId,
+          parent_play_id: parentPlayId,
+          target_user_id: targetUserId,
+          play_code: playCode,
+          text: "",
+          play_status: "ACTIVE"
         })
       });
 
-      const recurrenceData = await recurrenceResponse.json();
+      const data = await response.json();
 
-      if (!recurrenceResponse.ok || !recurrenceData.ok) {
-        console.error("Error guardando recurrencia al aprobar:", recurrenceData);
-        alert("La jugada se aprobó, pero no se pudo guardar la recurrencia");
+      if (!response.ok || !data.ok) {
+        console.error("Error creando jugada desde lienzo:", data);
+        alert("No se pudo crear la jugada");
         return;
       }
+
+      // volver al mazo
+      window.location.href = `/mazo.html?id=${deckId}`;
+
+    } catch (error) {
+      console.error("Error en lienzo:new-play", error);
+      alert("Error creando la jugada");
     }
+  });
 
-    const deckId =
-      window.__currentDeck?.id ||
-      window.__currentState?.deck?.id ||
-      null;
+  window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
+    window.__currentDeck = deck || null;
+    window.__currentState = state || {};
+    renderTablero(deck, plays, state);
+  };
 
-    document.dispatchEvent(new CustomEvent("plays:changed", {
-      detail: { deckId }
-    }));
-  } catch (error) {
-    console.error("Error en tablero:approve-play", error);
-    alert("Error aprobando la jugada");
-  }
-});
-document.addEventListener("tablero:open-readers", async (event) => {
-  const { playId } = event.detail || {};
-  console.log("abrir lectores de J♥", playId);
-
-  // acá después hacemos el fetch al endpoint
-  // que suma A♥ y K♥ al reader_user_ids
-});
- document.addEventListener("lienzo:new-play", async (event) => {
-  try {
-    const {
-      deckId,
-      parentPlayId,
-      childRank,
-      childSuit,
-      targetUserId
-    } = event.detail || {};
-
-    console.log("lienzo:new-play", event.detail);
-
-    if (!deckId || !parentPlayId || !childRank || !childSuit || !targetUserId) {
-      alert("Datos incompletos para crear la jugada");
-      return;
-    }
-
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) {
-      alert("No estás logueado");
-      return;
-    }
-
-    const userId =
-      window.__currentState?.userId ||
-      window.__currentUser?.id ||
-      null;
-
-    if (!userId) {
-      alert("No se pudo identificar el usuario");
-      return;
-    }
-
-    const when = new Date().toISOString();
-
-    const playCode = [
-      deckId,
-      userId,
-      when,
-      childRank,
-      childSuit,
-      "create_from_lienzo",
-      `U:${userId}`,
-      `child_of:${parentPlayId}`,
-      `U:${targetUserId}`
-    ].join("§");
-
-    const response = await fetch(`${API_BASE_URL}/plays`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        deck_id: deckId,
-        parent_play_id: parentPlayId,
-        target_user_id: targetUserId,
-        play_code: playCode,
-        text: "",
-        play_status: "ACTIVE"
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data.ok) {
-      console.error("Error creando jugada desde lienzo:", data);
-      alert("No se pudo crear la jugada");
-      return;
-    }
-
-    // volver al mazo
-    window.location.href = `/mazo.html?id=${deckId}`;
-
-  } catch (error) {
-    console.error("Error en lienzo:new-play", error);
-    alert("Error creando la jugada");
-  }
-});
-
-window.renderTablero = function renderTableroWithState(deck, plays, state = {}) {
-  window.__currentDeck = deck || null;
-  window.__currentState = state || {};
-  renderTablero(deck, plays, state);
-};
-
-window.normalizeTableroPlay = normalizePlay;
-window.belongsToTablero = belongsToTablero;
-window.bindLienzoDropZone = bindLienzoDropZone;
+  window.normalizeTableroPlay = normalizePlay;
+  window.belongsToTablero = belongsToTablero;
+  window.bindLienzoDropZone = bindLienzoDropZone;
 })();

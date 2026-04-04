@@ -21,6 +21,12 @@
 </head>
 
 <body>
+  <div id="topbar-container"></div>
+  <div id="mazobar-container"></div>
+  <div id="playform-container"></div>
+  <div id="autoridades-container"></div>
+  <div id="tablero-container"></div>
+
   <!-- UTILIDADES -->
   <script src="/js/icons.js"></script>
   <script src="/js/help.js"></script>
@@ -124,8 +130,6 @@
         return data;
       } catch (error) {
         console.error("Error trayendo estado del mazo:", error);
-
-        // 👇 clave: devolvemos estructura mínima para que el tablero no muera
         return {
           plays: [],
           userId: null
@@ -133,109 +137,11 @@
       }
     }
 
-    async function patchPlay(playId, patch) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-          method: "PATCH",
-          headers: getAuthHeaders(true),
-          body: JSON.stringify(patch)
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || "Error actualizando play");
-        }
-
-        return data.play || data;
-      } catch (error) {
-        console.error("Error en patchPlay:", error);
-        throw error;
-      }
-    }
-
-    async function deletePlayRequest(playId) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-          method: "DELETE",
-          headers: getAuthHeaders(false)
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || "Error borrando play");
-        }
-
-        return true;
-      } catch (error) {
-        console.error("Error en deletePlayRequest:", error);
-        throw error;
-      }
-    }
-    function getDeckIdFromUrl() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("id");
-    }
-
-    function getCurrentUserIdFromToken() {
-      const token = getToken();
-      if (!token) return null;
-
-      try {
-        const payloadBase64 = token.split(".")[1];
-        const payloadJson = atob(payloadBase64);
-        const payload = JSON.parse(payloadJson);
-        return payload.userId || null;
-      } catch (error) {
-        console.error("Error leyendo token:", error);
-        return null;
-      }
-    }
-
-    function buildChildDiamondPlayCode(deckId, userId) {
-      const nowIso = new Date().toISOString();
-      return `${deckId}§${userId}§${nowIso}§J§CLUB§child_expense§U:${userId}§child§U:${userId}`;
-    }
-
-    async function createChildDiamondPlay(parentPlayId) {
-      const deckId = getDeckIdFromUrl();
-      const userId = getCurrentUserIdFromToken();
-
-      if (!deckId) {
-        throw new Error("No se encontró deckId en la URL");
-      }
-
-      if (!userId) {
-        throw new Error("No se encontró userId en el token");
-      }
-
-      const response = await fetch(`${API_BASE_URL}/plays`, {
-        method: "POST",
-        headers: getAuthHeaders(true),
-        body: JSON.stringify({
-          deck_id: Number(deckId),
-          parent_play_id: Number(parentPlayId),
-          play_code: buildChildDiamondPlayCode(deckId, userId),
-          card_rank: "J",
-          card_suit: "CLUB",
-          play_status: "ACTIVE",
-          text: ""
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.ok) {
-        throw new Error(data.error || "Error creando J♦ hija");
-      }
-
-      return data.play;
-    }
     function clearDeckView() {
       const ids = [
         "mazobar-container",
         "playform-container",
+        "autoridades-container",
         "tablero-container"
       ];
 
@@ -244,13 +150,10 @@
         if (el) el.innerHTML = "";
       });
     }
+
     async function initMazoPage() {
       const params = new URLSearchParams(window.location.search);
       const deckId = params.get("id");
-
-      if (typeof renderAutoridades === "function") {
-        renderAutoridades(deck, state.plays || [], state);
-      }
 
       clearDeckView();
 
@@ -285,6 +188,10 @@
         renderPlayform(deck, state);
       }
 
+      if (typeof renderAutoridades === "function") {
+        renderAutoridades(deck, state.plays || [], state);
+      }
+
       if (typeof renderTablero === "function") {
         renderTablero(deck, state.plays || [], state);
       }
@@ -293,195 +200,6 @@
         bindLienzoDropZone(deck.id);
       }
     }
-    document.addEventListener("tablero:change-suit", async (event) => {
-      try {
-        const playId = event.detail?.playId;
-        const nextSuit = event.detail?.nextSuit;
-
-        if (!playId || !nextSuit) return;
-
-        console.log("TABLERO CHANGE SUIT", playId, nextSuit);
-
-        await patchPlay(playId, {
-          card_suit: nextSuit
-        });
-
-        await initMazoPage();
-      } catch (error) {
-        console.error("Error en tablero:change-suit", error);
-      }
-    });
-
-    document.addEventListener("tablero:save-play", async (event) => {
-      try {
-        const {
-          playId,
-          text,
-          spadeMode,
-          startDate,
-          endDate,
-          location
-        } = event.detail || {};
-
-        if (!playId) return;
-
-        console.log("TABLERO SAVE PLAY", event.detail);
-
-        await patchPlay(playId, {
-          text,
-          spadeMode,
-          startDate,
-          endDate,
-          location
-        });
-
-        await initMazoPage();
-      } catch (error) {
-        console.error("Error en tablero:save-play", error);
-      }
-    });
-
-    document.addEventListener("tablero:approve-play", async (event) => {
-      try {
-        const playId = event.detail?.playId;
-        if (!playId) return;
-
-        console.log("TABLERO APPROVE PLAY", playId);
-
-        await patchPlay(playId, {
-          play_status: "APPROVED"
-        });
-
-        await initMazoPage();
-      } catch (error) {
-        console.error("Error en tablero:approve-play", error);
-      }
-    });
-
-    document.addEventListener("tablero:delete-play", async (event) => {
-      try {
-        const playId = event.detail?.playId;
-        if (!playId) return;
-
-        console.log("TABLERO DELETE PLAY", playId);
-
-        await deletePlayRequest(playId);
-        await initMazoPage();
-      } catch (error) {
-        console.error("Error en tablero:delete-play", error);
-      }
-    });
-
-    document.addEventListener("tablero:cancel-play", async (event) => {
-      try {
-        const playId = event.detail?.playId;
-        if (!playId) return;
-
-        console.log("TABLERO CANCEL PLAY", playId);
-
-        await initMazoPage();
-      } catch (error) {
-        console.error("Error en tablero:cancel-play", error);
-      }
-    });
-
-    document.addEventListener("plays:patch-requested", async (event) => {
-      try {
-        const playId = event.detail?.playId;
-        const patch = event.detail?.patch;
-
-        if (!playId || !patch) return;
-
-        console.log("PATCH PLAY", playId, patch);
-
-        await patchPlay(playId, patch);
-        await initMazoPage();
-      } catch (error) {
-        console.error("Error en plays:patch-requested", error);
-      }
-    });
-
-    document.addEventListener("plays:approve-requested", async (event) => {
-      try {
-        const playId = event.detail?.playId;
-        if (!playId) return;
-
-        console.log("APPROVE PLAY", playId);
-
-        await patchPlay(playId, {
-          play_status: "APPROVED"
-        });
-
-        await initMazoPage();
-      } catch (error) {
-        console.error("Error en plays:approve-requested", error);
-      }
-    });
-
-    document.addEventListener("plays:transform-suit-requested", async (event) => {
-      try {
-        const playId = event.detail?.playId;
-        const suit = event.detail?.suit;
-
-        if (!playId || !suit) return;
-
-        console.log("TRANSFORM SUIT", playId, suit);
-
-        await patchPlay(playId, {
-          card_suit: suit
-        });
-
-        await initMazoPage();
-      } catch (error) {
-        console.error("Error en plays:transform-suit-requested", error);
-      }
-    });
-
-    document.addEventListener("plays:delete-requested", async (event) => {
-      try {
-        const playId = event.detail?.playId;
-        if (!playId) return;
-
-        console.log("DELETE PLAY", playId);
-
-        await deletePlayRequest(playId);
-        await initMazoPage();
-      } catch (error) {
-        console.error("Error en plays:delete-requested", error);
-      }
-    });
-
-    document.addEventListener("plays:add-child-diamond-requested", async (event) => {
-      try {
-        const parentPlayId = event.detail?.parentPlayId;
-        if (!parentPlayId) return;
-
-        console.log("ADD CHILD DIAMOND", parentPlayId);
-
-        await createChildDiamondPlay(parentPlayId);
-        await initMazoPage();
-      } catch (error) {
-        console.error("Error en plays:add-child-diamond-requested", error);
-      }
-    });
-    document.addEventListener("plays:deadline-requested", async (event) => {
-      try {
-        const playId = event.detail?.playId;
-        if (!playId) return;
-
-        console.log("DEADLINE REQUESTED", playId);
-      } catch (error) {
-        console.error("Error en plays:deadline-requested", error);
-      }
-    });
-
-    document.addEventListener("plays:changed", async (event) => {
-      const deckId = event.detail?.deckId;
-      if (!deckId) return;
-
-      console.log("REFRESCANDO MAZO", deckId);
-      await initMazoPage();
-    });
 
     initMazoPage();
   </script>
