@@ -766,6 +766,7 @@
     </div>
   </div>
 `;
+    mountPlacardFromDataset();
     bindUsersPicker(draft);
   }
   document.addEventListener("lienzo:animate-card-to-user", (event) => {
