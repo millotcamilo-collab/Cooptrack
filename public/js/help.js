@@ -8,6 +8,8 @@
         La jugada puede ser salvada si tiene un título, pero para ser aprobada, debe contener imagen y moneda.
 
         Una vez aprobada, solo será editable la imagen del mazo. Y se le otorgarán al autor los 3 ases restantes que definen las autoridades máximas del mazo.
+
+        A su creador se le otorgará la propiedad instransferible del A♥, que le otorga el titulo "Editor" del mazo. Se le entregará además A♠, A♦ y A♣ que le otorgará los roles adicionales de Gerente, Tesorero y Anfitrión respectivamente
       `
     },
 
