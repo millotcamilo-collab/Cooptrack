@@ -122,3 +122,29 @@ body {
 .decks-view__suit-btn:hover {
   transform: translateY(-1px);
 }
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 8px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+.icon-btn img {
+  height: 24px;
+  width: auto;
+  display: block;
+}
