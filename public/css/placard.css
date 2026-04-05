@@ -100,6 +100,16 @@
   align-items: flex-start;
 }
 
+.nuevo-mazo-bar,
+.placard,
+.lienzo-deckbar {
+  height: var(--placard-height);
+  padding: var(--placard-padding);
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
 /* RESPONSIVE */
 @media (max-width: 900px) {
   .placard {

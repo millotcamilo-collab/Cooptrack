@@ -402,8 +402,10 @@ body {
 }
 
 :root {
-  --placard-height: 92px;
-  --placard-photo-size: 60px;
+  --placard-padding: 18px;
+  --placard-photo-size: 66px;
+  --placard-height: calc(var(--placard-photo-size) + var(--placard-padding) * 2);
+
   --lienzo-panels-height: 520px;
   --lienzo-panel-header-height: 64px;
   --lienzo-panel-actions-height: 64px;
