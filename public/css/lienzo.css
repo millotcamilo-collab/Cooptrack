@@ -291,6 +291,17 @@ body {
   color: #111;
 }
 
+.lienzo-card-text,
+.lienzo-panel__subtitle,
+.lienzo-server-next__label {
+  color: #e0e0e0;
+}
+
+.lienzo-panel__title,
+.lienzo-server-next__title {
+  color: #ffffff;
+}
+
 .lienzo-source-cards {
   position: relative;
   min-height: 280px;
@@ -511,6 +522,18 @@ body {
   flex: 1 1 auto;
   min-height: 0;
   margin-bottom: 0;
+}
+
+/* lectura */
+.lienzo-panel,
+.nuevo-mazo-bar {
+  color: #f5f5f5;
+}
+
+/* edición puntual */
+.lienzo-edit-input {
+  background: #fff;
+  color: #111;
 }
 
 @media (max-width: 900px) {
