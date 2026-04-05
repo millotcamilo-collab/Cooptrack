@@ -757,11 +757,11 @@
   ${renderDeckHeader(deck)}
 
   <div class="lienzo-grid">
-    <div class="lienzo-grid__left">
+    <div id="colombes" class="lienzo-grid__left">
       ${renderSourcePlayerPanel(draft)}
     </div>
 
-    <div class="lienzo-grid__right" id="lienzo-right-panel">
+    <div id="amsterdam" class="lienzo-grid__right" id="lienzo-right-panel">
       ${renderUsersPanel()}
     </div>
   </div>

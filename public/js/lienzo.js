@@ -276,11 +276,11 @@ function bindDeckHeaderExit() {
       ${renderDeckHeader(deck)}
 
       <div class="lienzo-grid">
-        <div class="lienzo-grid__left">
+        <div id="colombes" class="lienzo-grid__left">
           ${renderCardPanel(play)}
         </div>
 
-        <div class="lienzo-grid__right">
+        <div id="amsterdam" class="lienzo-grid__right">
           ${renderUsersPanel()}
         </div>
       </div>
