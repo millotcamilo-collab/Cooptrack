@@ -189,39 +189,55 @@
               <span class="nuevo-mazo-bar__rank">A</span>
               <img src="/assets/icons/cor40.gif" alt="♥" class="nuevo-mazo-bar__heart" />
 
-              <input id="deckName" class="nuevo-mazo-bar__title-input" type="text" />
+              <!-- PASO 1: TITULO -->
+              <div id="titleStep" class="nuevo-mazo-inline-step">
+                <input id="deckName" class="nuevo-mazo-bar__title-input" type="text" placeholder="Título del mazo"
+                  autocomplete="off" />
+                <button id="saveTitleBtn" type="button" class="nuevo-mazo-inline-save" title="Confirmar título"
+                  aria-label="Confirmar título">
+                  <img src="/assets/icons/salvar40.gif" alt="Guardar título" />
+                </button>
+              </div>
+
               <div id="deckNameReadonly" class="nuevo-mazo-bar__title-readonly is-hidden"></div>
 
+              <!-- PASO 2: FOTO -->
+              <div id="imageStep" class="nuevo-mazo-inline-step is-hidden">
+                <input id="deckImage" class="nuevo-mazo-inline-input" type="text" placeholder="URL de imagen"
+                  autocomplete="off" />
+                <button id="saveImageBtn" type="button" class="nuevo-mazo-inline-save" title="Confirmar imagen"
+                  aria-label="Confirmar imagen">
+                  <img src="/assets/icons/salvar40.gif" alt="Guardar imagen" />
+                </button>
+              </div>
+
+              <!-- PASO 3: MONEDA -->
+              <div id="currencyStep" class="nuevo-mazo-inline-step is-hidden">
+                <img src="/assets/icons/dia40.gif" alt="♦" class="nuevo-mazo-bar__diamond" />
+
+                <input id="deckCurrencyCode" class="nuevo-mazo-inline-input nuevo-mazo-inline-input--code" type="text"
+                  maxlength="3" placeholder="UYU" autocomplete="off" />
+
+                <input id="deckCurrencyName" class="nuevo-mazo-inline-input nuevo-mazo-inline-input--name" type="text"
+                  placeholder="Peso uruguayo" autocomplete="off" />
+
+                <button id="saveCurrencyBtn" type="button" class="nuevo-mazo-inline-save" title="Confirmar moneda"
+                  aria-label="Confirmar moneda">
+                  <img src="/assets/icons/salvar40.gif" alt="Guardar moneda" />
+                </button>
+              </div>
+
+              <!-- MODO LECTURA MONEDA -->
               <div id="currencyBlock" class="nuevo-mazo-bar__currency-block is-hidden">
                 <img id="diamondIcon" src="/assets/icons/dia40.gif" alt="♦" class="nuevo-mazo-bar__diamond" />
-                <input id="deckCurrencyCode" class="nuevo-mazo-bar__currency-input" type="text" maxlength="3"
-                  readonly />
-                <input id="deckCurrencyName" class="nuevo-mazo-bar__currency-name-input" type="text" readonly />
+                <span id="deckCurrencyCodeReadonly" class="nuevo-mazo-bar__currency-code-readonly"></span>
+                <span id="deckCurrencyNameReadonly" class="nuevo-mazo-bar__currency-name-readonly"></span>
               </div>
             </div>
 
-            <div class="nuevo-mazo-bar__editor">
-              <div id="imageStep" class="nuevo-mazo-step is-hidden">
-                <label class="nuevo-mazo-step__label" for="deckImage">Imagen</label>
-                <input id="deckImage" class="nuevo-mazo-step__input" type="text" placeholder="https://..."
-                  autocomplete="off" />
-              </div>
-
-              <div id="currencyStep" class="nuevo-mazo-step is-hidden">
-                <span class="nuevo-mazo-step__hint">
-                  Presioná Enter para confirmar moneda
-                </span>
-              </div>
-
-              <div id="statusMsg" class="nuevo-mazo-status"></div>
-            </div>
+            <div id="statusMsg" class="nuevo-mazo-status"></div>
           </div>
 
-          <div class="nuevo-mazo-bar__right">
-            <button id="helpBtn" class="icon-btn" type="button" title="Ayuda" aria-label="Ayuda">
-              <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda" />
-            </button>
-          </div>
 
 
         </div>
@@ -259,6 +275,10 @@
               </div>
 
               <div class="lienzo-target-actions nuevo-mazo-target-actions">
+                <button id="helpBtn" class="icon-btn" type="button" title="Ayuda" aria-label="Ayuda">
+                  <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda" />
+                </button>
+
                 <button id="createDeckBtn" class="icon-btn is-hidden" type="button" title="Guardar mazo"
                   aria-label="Guardar mazo">
                   <img src="/assets/icons/salvar40.gif" alt="Guardar" />
@@ -469,8 +489,6 @@
 
       setPhotoPreview(image);
       hideEl("imageStep");
-
-      showEl("currencyBlock");
       showEl("currencyStep");
 
       state.step = "currency";
@@ -496,11 +514,20 @@
         return;
       }
 
-      hideEl("currencyStep");
-      showEl("createDeckBtn");
+      const codeReadonly = getEl("deckCurrencyCodeReadonly");
+      const nameReadonly = getEl("deckCurrencyNameReadonly");
 
-      if (codeInput) codeInput.readOnly = true;
-      if (nameInput) nameInput.readOnly = true;
+      if (codeReadonly) {
+        codeReadonly.textContent = code;
+      }
+
+      if (nameReadonly) {
+        nameReadonly.textContent = name;
+      }
+
+      hideEl("currencyStep");
+      showEl("currencyBlock");
+      showEl("createDeckBtn");
 
       state.step = "ready";
       setStatus("Listo para guardar");
@@ -626,6 +653,10 @@
           window.openPlayHelp("A_HEART");
         }
       });
+
+      getEl("saveTitleBtn")?.addEventListener("click", commitTitleStep);
+      getEl("saveImageBtn")?.addEventListener("click", commitImageStep);
+      getEl("saveCurrencyBtn")?.addEventListener("click", commitCurrencyStep);
 
       getEl("deckName")?.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
