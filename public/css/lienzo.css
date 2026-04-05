@@ -434,9 +434,9 @@ body {
   --lienzo-panel-header-height: 64px;
   --lienzo-panel-actions-height: 64px;
 
-  --lienzo-gap: 24px;
-  --lienzo-panels-height: 460px;
-  --lienzo-veil-bg: rgba(0, 0, 0, 0.9);
+  --lienzo-gap: 5px;
+  --lienzo-panels-height: 420px;
+  --lienzo-veil-bg: rgba(0, 0, 0, 0.2);
   --lienzo-veil-border: rgba(255, 255, 255, 0.12);
 }
 
