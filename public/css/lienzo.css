@@ -1,5 +1,6 @@
 :root {
-  --lienzo-bg: #0f3d2e; /* verde oscuro elegante */
+  --lienzo-bg: #0f3d2e;
+  /* verde oscuro elegante */
 }
 
 html,
@@ -8,12 +9,10 @@ body {
 }
 
 body {
-  background: radial-gradient(
-    circle at center,
-    #145c44 0%,
-    #0f3d2e 60%,
-    #0a2a20 100%
-  );
+  background: radial-gradient(circle at center,
+      #145c44 0%,
+      #0f3d2e 60%,
+      #0a2a20 100%);
 }
 
 .lienzo-page {
@@ -202,6 +201,7 @@ body {
   height: 22px;
   display: block;
 }
+
 .lienzo-target-header {
   display: flex;
   align-items: center;
@@ -245,6 +245,7 @@ body {
 .lienzo-card-image:hover {
   transform: scale(1.03);
 }
+
 .lienzo-panel--source {
   overflow: hidden;
 }
@@ -381,7 +382,7 @@ body {
   min-height: 40px;
 }
 
-.lienzo-server-next__item + .lienzo-server-next__item {
+.lienzo-server-next__item+.lienzo-server-next__item {
   margin-top: 10px;
 }
 
@@ -398,6 +399,86 @@ body {
   font-weight: 500;
   color: #222;
   line-height: 1.2;
+}
+
+:root {
+  --placard-height: 92px;
+  --placard-photo-size: 60px;
+  --lienzo-panels-height: 520px;
+  --lienzo-panel-header-height: 64px;
+  --lienzo-panel-actions-height: 64px;
+  --lienzo-gap: 24px;
+}
+
+/* 1) Placard / barra superior */
+.placard,
+.nuevo-mazo-bar,
+.lienzo-deckbar {
+  min-height: var(--placard-height);
+  box-sizing: border-box;
+  align-items: center;
+}
+
+.placard__photo,
+.nuevo-mazo-bar__photo,
+.lienzo-deckbar__avatar {
+  width: var(--placard-photo-size);
+  height: var(--placard-photo-size);
+}
+
+/* 2) Cancha */
+.lienzo-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: var(--lienzo-gap);
+  align-items: stretch;
+  min-height: var(--lienzo-panels-height);
+}
+
+.lienzo-grid__left,
+.lienzo-grid__right {
+  min-width: 0;
+  height: 100%;
+}
+
+/* 3) Paneles iguales en altura */
+.lienzo-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 4) Estructura interna compartida */
+.lienzo-panel__header {
+  flex: 0 0 var(--lienzo-panel-header-height);
+  min-height: var(--lienzo-panel-header-height);
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+.lienzo-panel__content {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lienzo-panel__actions {
+  flex: 0 0 var(--lienzo-panel-actions-height);
+  min-height: var(--lienzo-panel-actions-height);
+  display: flex;
+  align-items: center;
+  margin-top: auto;
+}
+
+/* 5) Ajuste para cartas/zonas centrales ya existentes */
+.lienzo-card-wrap,
+.lienzo-source-cards,
+#founder-target-zone {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-bottom: 0;
 }
 
 @media (max-width: 900px) {

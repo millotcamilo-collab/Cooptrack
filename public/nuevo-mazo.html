@@ -15,7 +15,7 @@
   <style>
     .nuevo-mazo-bar {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 14px;
       padding: 14px 18px;
       background: rgba(255, 255, 255, 0.94);
@@ -52,12 +52,6 @@
       gap: 8px;
     }
 
-    .nuevo-mazo-bar__right {
-      flex: 0 0 auto;
-      display: flex;
-      align-items: flex-start;
-      margin-left: auto;
-    }
 
     .nuevo-mazo-bar__titleline {
       display: flex;
@@ -155,11 +149,6 @@
         align-items: stretch;
       }
 
-      .nuevo-mazo-bar__right {
-        margin-left: 0;
-        justify-content: flex-end;
-      }
-
       .nuevo-mazo-bar__titleline {
         flex-wrap: wrap;
       }
@@ -246,17 +235,25 @@
           <div id="colombes" class="lienzo-grid__left">
             <div class="lienzo-panel lienzo-panel--source">
 
-              <div class="lienzo-source-header">
-                <img src="/assets/icons/Compila60.gif" class="lienzo-source-header__photo" />
-                <span class="lienzo-source-header__name">Cooptrack server</span>
+              <div class="lienzo-panel__header">
+                <div class="lienzo-source-header">
+                  <img src="/assets/icons/Compila60.gif" class="lienzo-source-header__photo" />
+                  <span class="lienzo-source-header__name">Cooptrack server</span>
+                </div>
               </div>
 
-              <div class="lienzo-source-cards">
-                <div id="server-aces-stack" class="lienzo-source-stack">
-                  <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:0px;" />
-                  <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
-                  <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:36px;" />
+              <div class="lienzo-panel__content">
+                <div class="lienzo-source-cards">
+                  <div id="server-aces-stack" class="lienzo-source-stack">
+                    <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:0px;" />
+                    <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
+                    <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:36px;" />
+                  </div>
                 </div>
+              </div>
+
+              <div class="lienzo-panel__actions">
+                <div class="lienzo-source-actions"></div>
               </div>
 
             </div>
@@ -265,28 +262,34 @@
           <div id="amsterdam" class="lienzo-grid__right">
             <div class="lienzo-panel">
 
-              <div class="lienzo-target-header">
-                <img id="userPhoto" class="lienzo-target-header__photo" />
-                <span id="userName" class="lienzo-target-header__name"></span>
+              <div class="lienzo-panel__header">
+                <div class="lienzo-target-header">
+                  <img id="userPhoto" class="lienzo-target-header__photo" />
+                  <span id="userName" class="lienzo-target-header__name"></span>
+                </div>
               </div>
 
-              <div id="founder-target-zone" class="lienzo-card-wrap">
-                <img src="/assets/icons/Acorazon.gif" class="lienzo-card-image" />
+              <div class="lienzo-panel__content">
+                <div id="founder-target-zone" class="lienzo-card-wrap">
+                  <img src="/assets/icons/Acorazon.gif" class="lienzo-card-image" />
+                </div>
               </div>
 
-              <div class="lienzo-target-actions nuevo-mazo-target-actions">
-                <button id="helpBtn" class="icon-btn" type="button" title="Ayuda" aria-label="Ayuda">
-                  <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda" />
-                </button>
+              <div class="lienzo-panel__actions">
+                <div class="lienzo-target-actions nuevo-mazo-target-actions">
+                  <button id="helpBtn" class="icon-btn" type="button" title="Ayuda" aria-label="Ayuda">
+                    <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda" />
+                  </button>
 
-                <button id="createDeckBtn" class="icon-btn is-hidden" type="button" title="Guardar mazo"
-                  aria-label="Guardar mazo">
-                  <img src="/assets/icons/salvar40.gif" alt="Guardar" />
-                </button>
+                  <button id="createDeckBtn" class="icon-btn is-hidden" type="button" title="Guardar mazo"
+                    aria-label="Guardar mazo">
+                    <img src="/assets/icons/salvar40.gif" alt="Guardar" />
+                  </button>
 
-                <button id="cancelBtn" class="icon-btn" type="button" title="Salir" aria-label="Salir">
-                  <img src="/assets/icons/exit80.gif" alt="Salir" />
-                </button>
+                  <button id="cancelBtn" class="icon-btn" type="button" title="Salir" aria-label="Salir">
+                    <img src="/assets/icons/exit80.gif" alt="Salir" />
+                  </button>
+                </div>
               </div>
 
             </div>
