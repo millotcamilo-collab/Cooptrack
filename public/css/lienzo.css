@@ -23,22 +23,20 @@ body {
 
 .lienzo-grid {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
+  height: 520px;
 }
 
 .lienzo-grid__left,
 .lienzo-grid__right {
   min-width: 0;
+  height: 100%;
 }
 
 .lienzo-panel {
-  background: #ffffff;
-  border: 1px solid #d8d8d8;
-  border-radius: 14px;
-  padding: 18px;
-  box-sizing: border-box;
+  height: 100%;
 }
 
 .lienzo-panel__header {
@@ -232,6 +230,12 @@ body {
   display: flex;
   gap: 10px;
   margin-top: 12px;
+}
+
+.lienzo-target-actions img {
+  height: 35px;
+  width: auto;
+  display: block;
 }
 
 .lienzo-btn {
