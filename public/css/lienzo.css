@@ -36,7 +36,15 @@ body {
 }
 
 .lienzo-panel {
+  background: var(--lienzo-veil-bg);
+  border: 1px solid var(--lienzo-veil-border);
+  border-radius: 14px;
+  padding: 18px;
+  box-sizing: border-box;
+
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .lienzo-panel__header {
@@ -212,6 +220,13 @@ body {
   height: 40px;
   border-radius: 4px;
   border: 1px solid #ccc;
+}
+
+.lienzo-target-actions .icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
 }
 
 .lienzo-target-header__name {
@@ -405,15 +420,24 @@ body {
   line-height: 1.2;
 }
 
+.nuevo-mazo-shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lienzo-gap);
+}
+
 :root {
   --placard-padding: 18px;
   --placard-photo-size: 66px;
   --placard-height: calc(var(--placard-photo-size) + var(--placard-padding) * 2);
 
-  --lienzo-panels-height: 520px;
   --lienzo-panel-header-height: 64px;
   --lienzo-panel-actions-height: 64px;
+
   --lienzo-gap: 24px;
+  --lienzo-panels-height: 460px;
+  --lienzo-veil-bg: rgba(0, 0, 0, 0.9);
+  --lienzo-veil-border: rgba(255, 255, 255, 0.12);
 }
 
 /* 1) Placard / barra superior */
@@ -433,11 +457,13 @@ body {
 }
 
 /* 2) Cancha */
+
 .lienzo-grid {
-  grid-template-columns: 1fr 1fr;
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
   gap: var(--lienzo-gap);
   align-items: stretch;
-  min-height: var(--lienzo-panels-height);
+  height: var(--lienzo-panels-height);
 }
 
 .lienzo-grid__left,
