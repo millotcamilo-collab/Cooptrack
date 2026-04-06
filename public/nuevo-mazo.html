@@ -218,6 +218,49 @@
       height: 88px;
     }
 
+    //los jokers ahora
+    .nuevo-mazo-server-pack-vertical {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      width: 170px;
+    }
+
+    .nuevo-mazo-server-pack-vertical__aces {
+      position: relative;
+      width: 130px;
+      height: 120px;
+    }
+
+    .nuevo-mazo-jokers-stack {
+      position: relative;
+      width: 78px;
+      height: 96px;
+      margin-left: 6px;
+      /* leve corrimiento para que parezca mismo manojo */
+    }
+
+    .nuevo-mazo-jokers-stack__card {
+      position: absolute;
+      left: 0;
+      width: auto;
+      height: 82px;
+      display: block;
+    }
+
+    .nuevo-mazo-jokers-stack__card--top {
+      top: 0;
+      z-index: 2;
+    }
+
+    .nuevo-mazo-jokers-stack__card--bottom {
+      top: 12px;
+      left: 8px;
+      z-index: 1;
+    }
+
+    //los jokers antes
     .nuevo-mazo-server-pack {
       position: relative;
       display: inline-block;
@@ -373,16 +416,18 @@
 
               <div class="lienzo-panel__content">
                 <div class="lienzo-source-cards">
-                  <div class="nuevo-mazo-server-pack">
-                    <div class="nuevo-mazo-server-pack__jokers" id="server-fixed-jokers">
-                      <img src="/assets/icons/joker_blue.gif" class="nuevo-mazo-server-joker" />
-                      <img src="/assets/icons/Joker.gif" class="nuevo-mazo-server-joker" />
-                    </div>
-
-                    <div id="server-aces-stack" class="lienzo-source-stack">
+                  <div class="nuevo-mazo-server-pack-vertical">
+                    <div id="server-aces-stack" class="lienzo-source-stack nuevo-mazo-server-pack-vertical__aces">
                       <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:0px;" />
                       <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
                       <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:36px;" />
+                    </div>
+
+                    <div id="server-jokers-stack" class="nuevo-mazo-jokers-stack">
+                      <img src="/assets/icons/joker_blue.gif"
+                        class="nuevo-mazo-jokers-stack__card nuevo-mazo-jokers-stack__card--top" />
+                      <img src="/assets/icons/Joker.gif"
+                        class="nuevo-mazo-jokers-stack__card nuevo-mazo-jokers-stack__card--bottom" />
                     </div>
                   </div>
                 </div>
