@@ -84,14 +84,14 @@
 }
 
 .placard__currency-code {
-  font-size: 1rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: #ffffff;
   text-transform: uppercase;
 }
 
 .placard__currency-name {
-  font-size: 1rem;
+  font-size: 0.7rem;
   font-weight: 400;
   color: #e4e4e4;
 }

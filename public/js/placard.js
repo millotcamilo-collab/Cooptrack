@@ -30,18 +30,88 @@
 
     return `
       <div class="placard__currency">
-        ${iconSrc
-        ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__suit" />`
-        : ""
-      }
-        ${currencyCode
-        ? `<span class="placard__currency-code">${escapeHtml(currencyCode)}</span>`
-        : ""
-      }
-        ${currencyName
-        ? `<span class="placard__currency-name">${escapeHtml(currencyName)}</span>`
-        : ""
-      }
+        ${
+          iconSrc
+            ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__suit" />`
+            : ""
+        }
+        ${
+          currencyCode
+            ? `<span class="placard__currency-code">${escapeHtml(currencyCode)}</span>`
+            : ""
+        }
+        ${
+          currencyName
+            ? `<span class="placard__currency-name">${escapeHtml(currencyName)}</span>`
+            : ""
+        }
+      </div>
+    `;
+  }
+
+  function buildPhotoHTML(photoUrl, canEditPhoto) {
+    if (canEditPhoto) {
+      return `
+        <button
+          type="button"
+          class="placard__photo-button"
+          id="placardPhotoBtn"
+          title="Editar foto del mazo"
+          aria-label="Editar foto del mazo"
+        >
+          <img
+            src="${escapeHtml(photoUrl)}"
+            alt="Foto del mazo"
+            class="placard__photo"
+            onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
+          />
+        </button>
+      `;
+    }
+
+    return `
+      <img
+        src="${escapeHtml(photoUrl)}"
+        alt="Foto del mazo"
+        class="placard__photo"
+        onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
+      />
+    `;
+  }
+
+  function buildPhotoEditorHTML(config) {
+    if (!(config?.canEditPhoto && config?.isEditingPhoto)) return "";
+
+    return `
+      <div class="placard__photo-editor" id="placardPhotoEditor">
+        <input
+          id="placardPhotoUrlInput"
+          class="placard__photo-input"
+          type="text"
+          placeholder="URL picture"
+          value="${escapeHtml(config?.draftPhotoUrl || "")}"
+          autocomplete="off"
+        />
+
+        <button
+          id="placardPhotoSaveBtn"
+          class="placard__photo-action"
+          type="button"
+          title="Guardar"
+          aria-label="Guardar"
+        >
+          <img src="/assets/icons/salvar40.gif" alt="Guardar" />
+        </button>
+
+        <button
+          id="placardPhotoCancelBtn"
+          class="placard__photo-action"
+          type="button"
+          title="Salir"
+          aria-label="Salir"
+        >
+          <img src="/assets/icons/exit80.gif" alt="Salir" />
+        </button>
       </div>
     `;
   }
@@ -66,38 +136,41 @@
     const currencyCode = String(config?.currencyCode || "").trim();
     const currencyName = String(config?.currencyName || "").trim();
     const showCurrency = Boolean(config?.showCurrency);
+    const canEditPhoto = Boolean(config?.canEditPhoto);
 
     const rightHtml = config?.rightHtml
       ? `<div class="placard__right">${config.rightHtml}</div>`
       : "";
 
+    const photoHtml = buildPhotoHTML(photoUrl, canEditPhoto);
+    const photoEditorHtml = buildPhotoEditorHTML(config);
+
     container.innerHTML = `
       <section class="placard">
         <div class="placard__left">
-          <img
-            src="${escapeHtml(photoUrl)}"
-            alt="Foto"
-            class="placard__photo"
-            onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
-          />
+          ${photoHtml}
         </div>
 
         <div class="placard__center">
           <div class="placard__titleline">
             <span class="placard__rank">${escapeHtml(rank)}</span>
 
-            ${suitIcon
-        ? `<img src="${escapeHtml(suitIcon)}" alt="" class="placard__suit" />`
-        : ""
-      }
+            ${
+              suitIcon
+                ? `<img src="${escapeHtml(suitIcon)}" alt="" class="placard__suit" />`
+                : ""
+            }
 
             <span class="placard__name">${escapeHtml(title)}</span>
 
-            ${showCurrency
-        ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
-        : ""
-      }
+            ${
+              showCurrency
+                ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
+                : ""
+            }
           </div>
+
+          ${photoEditorHtml}
         </div>
 
         ${rightHtml}
