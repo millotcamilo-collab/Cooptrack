@@ -219,56 +219,51 @@
     }
 
     //los jokers ahora
+    /* Manojo compuesto: ases arriba, jokers debajo, como una sola unidad */
     .nuevo-mazo-server-pack-vertical {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-      width: 170px;
+      position: relative;
+      width: 150px;
+      height: 190px;
     }
 
+    /* Stack de ases: es el que vuela */
     .nuevo-mazo-server-pack-vertical__aces {
-      position: relative;
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 130px;
       height: 120px;
+      z-index: 2;
     }
 
+    /* Stack de jokers: queda quieto debajo */
     .nuevo-mazo-jokers-stack {
-      position: relative;
-      width: 78px;
-      height: 96px;
-      margin-left: 6px;
-      /* leve corrimiento para que parezca mismo manojo */
+      position: absolute;
+      top: 92px;
+      left: 10px;
+      width: 86px;
+      height: 86px;
+      z-index: 1;
     }
 
     .nuevo-mazo-jokers-stack__card {
       position: absolute;
-      left: 0;
       width: auto;
-      height: 82px;
+      height: 74px;
       display: block;
     }
 
     .nuevo-mazo-jokers-stack__card--top {
       top: 0;
+      left: 0;
       z-index: 2;
     }
 
     .nuevo-mazo-jokers-stack__card--bottom {
-      top: 12px;
+      top: 6px;
       left: 8px;
       z-index: 1;
     }
-
-    //los jokers antes
-    .nuevo-mazo-server-pack {
-      position: relative;
-      display: inline-block;
-      width: 210px;
-      height: 190px;
-    }
-
-    
 
     @media (max-width: 900px) {
       .nuevo-mazo-bar {
