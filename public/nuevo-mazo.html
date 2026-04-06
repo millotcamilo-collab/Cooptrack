@@ -8,6 +8,12 @@
 
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="stylesheet" href="/css/lienzo.css" />
+  <link rel="stylesheet" href="/css/placard.css" />
+
+  <script src="/js/placard.js"></script>
+
+
+
 
   <style>
     body {
@@ -350,6 +356,7 @@
 </head>
 
 <body>
+  <div id="placard-container"></div>
   <div class="lienzo-grid">
 
     <!-- COLOMBES -->
@@ -650,6 +657,23 @@
       if (form) form.classList.add("is-hidden");
 
       hideEl("saveAllBtn");
+
+      const placardEl = document.getElementById("placard-container");
+
+      renderPlacard("placard-container", {
+        photoUrl: document.getElementById("userPhoto")?.src,
+        rank: "A",
+        suit: "HEART",
+        title: document.getElementById("deckName")?.value,
+        currencyCode: document.getElementById("deckCurrencyCode")?.value,
+        currencyName: document.getElementById("deckCurrencyName")?.value,
+        showCurrency: true
+      });
+
+      // 👇 trigger animación (clave usar RAF)
+      requestAnimationFrame(() => {
+        placardEl.classList.add("is-visible");
+      });
 
       start();
     }

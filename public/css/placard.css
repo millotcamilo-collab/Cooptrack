@@ -110,6 +110,17 @@
   box-sizing: border-box;
 }
 
+#placard-container {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+#placard-container.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* RESPONSIVE */
 @media (max-width: 900px) {
   .placard {
