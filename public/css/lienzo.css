@@ -63,11 +63,6 @@ body {
   color: #666;
 }
 
-.lienzo-card-wrap {
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-}
 
 .lienzo-card-image {
   width: auto;
@@ -84,7 +79,7 @@ body {
 }
 
 #founder-target-zone {
-  min-height: 320px;
+  min-height: 140px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -245,6 +240,7 @@ body {
   margin-top: 12px;
 }
 
+
 .lienzo-target-actions img {
   height: 35px;
   width: auto;
@@ -314,6 +310,7 @@ body {
   margin-top: 12px;
 }
 
+
 .lienzo-source-cards__fan {
   position: absolute;
   inset: 0;
@@ -347,23 +344,15 @@ body {
   z-index: 2;
 }
 
-.lienzo-source-cards {
-  position: relative;
-  min-height: 320px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .lienzo-source-stack {
   position: relative;
   width: 240px;
-  height: 300px;
+  height: 140px;   /* antes era 300px */
 }
 
 .lienzo-source-stack__card {
   position: absolute;
-  top: 24px;
+  top: 5px;
   width: auto;
   height: 120px;
   z-index: 1;
@@ -479,38 +468,65 @@ body {
   height: 100%;
 }
 
-/* 3) Paneles iguales en altura */
+/* 1) La tribuna mantiene header arriba, contenido al medio, acciones abajo */
 .lienzo-panel {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-/* 4) Estructura interna compartida */
+/* 2) Header siempre a la izquierda */
 .lienzo-panel__header {
   flex: 0 0 var(--lienzo-panel-header-height);
   min-height: var(--lienzo-panel-header-height);
   margin-bottom: 0;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
 }
 
+/* 3) Contenido: arriba e izquierda, no centrado */
 .lienzo-panel__content {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
-  align-items: flex-start;   /* 👈 CLAVE: sube las cartas */
-  justify-content: flex-start; /* 👈 alineación horizontal */
-  padding-top: 10px; /* opcional, ajusta fine tuning */
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-top: 8px;
 }
 
+/* 4) Actions: abajo y a la derecha */
 .lienzo-panel__actions {
   flex: 0 0 var(--lienzo-panel-actions-height);
   min-height: var(--lienzo-panel-actions-height);
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   margin-top: auto;
 }
+
+/* 5) La carta sola de Amsterdam */
+.lienzo-card-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-bottom: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+/* 6) El manojo de Colombes */
+.lienzo-source-cards {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-bottom: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
 
 /* 5) Ajuste para cartas/zonas centrales ya existentes */
 .lienzo-card-wrap,
