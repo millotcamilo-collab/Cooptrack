@@ -619,11 +619,6 @@
       return true;
     }
 
-    function goToApprovalStep() {
-      hideEl("saveAllBtn");
-      showEl("createDeckBtn");
-    }
-
     function enableServerNextPanel() {
       const panel = document.getElementById("serverNextPanel");
       if (!panel) return;
@@ -651,11 +646,12 @@
       const ok = validateStepOne();
       if (!ok) return;
 
-      // ocultar formulario
       const form = document.getElementById("colombesForm");
       if (form) form.classList.add("is-hidden");
 
-      goToApprovalStep();
+      hideEl("saveAllBtn");
+
+      start();
     }
 
     function checkAllServerNextItems() {
@@ -723,6 +719,7 @@
 
         enableServerNextPanel();
         checkAllServerNextItems();
+        showEl("createDeckBtn");
 
         done = true;
       }, { once: true });
