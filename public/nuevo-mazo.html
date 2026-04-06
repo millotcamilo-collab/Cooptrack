@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,6 +11,7 @@
   <link rel="stylesheet" href="/css/lienzo.css" />
   <link rel="stylesheet" href="/css/placard.css" />
   <link rel="icon" type="image/png" href="/assets/icons/bigote.png">
+
   <style>
     .nuevo-mazo-bar {
       display: flex;
@@ -38,7 +38,6 @@
       height: 66px;
       width: auto;
       max-width: 120px;
-      /* 👈 límite que vos mismo mencionaste */
       object-fit: cover;
       border-radius: 10px;
       display: block;
@@ -54,13 +53,12 @@
       gap: 8px;
     }
 
-
     .nuevo-mazo-bar__titleline {
       display: flex;
       align-items: center;
       gap: 8px;
       min-width: 0;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
     }
 
     .nuevo-mazo-bar__rank {
@@ -116,33 +114,32 @@
       white-space: nowrap;
     }
 
-    .nuevo-mazo-bar__currency-input,
-    .nuevo-mazo-bar__currency-name-input {
-      border: none;
+    .nuevo-mazo-inline-step {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nuevo-mazo-inline-input {
+      border: 1px solid #bdbdbd;
+      border-radius: 6px;
+      background: #fff;
+      padding: 4px 8px;
       outline: none;
-      background: transparent;
-      padding: 0;
+      font-size: 14px;
       color: #111;
-      width: auto;
-      min-width: 0;
+      min-width: 140px;
     }
 
-    .nuevo-mazo-bar__currency-input {
-      font-size: 14px;
-      font-weight: 600;
+    .nuevo-mazo-inline-input--code {
+      width: 70px;
+      min-width: 70px;
       text-transform: uppercase;
+      text-align: center;
     }
 
-    .nuevo-mazo-bar__currency-name-input {
-      font-size: 14px;
-      font-weight: 400;
-    }
-
-    .nuevo-mazo-bar__editor {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      min-width: 0;
+    .nuevo-mazo-inline-input--name {
+      min-width: 160px;
     }
 
     .nuevo-mazo-inline-save {
@@ -157,10 +154,6 @@
       border-radius: 6px;
     }
 
-    .is-hidden {
-      display: none !important;
-    }
-
     .nuevo-mazo-inline-save img {
       width: 20px;
       height: 20px;
@@ -169,6 +162,15 @@
 
     .nuevo-mazo-inline-save:hover {
       background: rgba(255, 255, 255, 0.08);
+    }
+
+    .nuevo-mazo-status {
+      min-height: 20px;
+      font-size: 14px;
+    }
+
+    .is-hidden {
+      display: none !important;
     }
 
     @media (max-width: 900px) {
@@ -190,14 +192,16 @@
   <main class="nuevo-mazo-page">
     <div class="page-container">
       <section class="nuevo-mazo-shell">
+
         <div class="nuevo-mazo-bar">
-
           <div class="nuevo-mazo-bar__left">
-
-
             <div class="nuevo-mazo-bar__photo-wrap">
-              <img id="deckPhotoPreview" src="/assets/icons/sinPicture.gif" alt="Foto del mazo"
-                class="nuevo-mazo-bar__photo" />
+              <img
+                id="deckPhotoPreview"
+                src="/assets/icons/sinPicture.gif"
+                alt="Foto del mazo"
+                class="nuevo-mazo-bar__photo"
+              />
             </div>
           </div>
 
@@ -206,125 +210,137 @@
               <span class="nuevo-mazo-bar__rank">A</span>
               <img src="/assets/icons/cor40.gif" alt="♥" class="nuevo-mazo-bar__heart" />
 
-              <!-- PASO 1: TITULO -->
               <div id="titleStep" class="nuevo-mazo-inline-step">
-                <input id="deckName" class="nuevo-mazo-bar__title-input" type="text" placeholder="Título del mazo"
-                  autocomplete="off" />
-
+                <input
+                  id="deckName"
+                  class="nuevo-mazo-bar__title-input"
+                  type="text"
+                  placeholder="Título del mazo"
+                  autocomplete="off"
+                />
               </div>
 
               <div id="deckNameReadonly" class="nuevo-mazo-bar__title-readonly is-hidden"></div>
 
-              <!-- PASO 2: FOTO -->
-              <div id="imageStep" class="nuevo-mazo-inline-step is-hidden">
-                <input id="deckImage" class="nuevo-mazo-inline-input" type="text" placeholder="URL de imagen"
-                  autocomplete="off" />
-
+              <div id="imageStep" class="nuevo-mazo-inline-step">
+                <input
+                  id="deckImage"
+                  class="nuevo-mazo-inline-input"
+                  type="text"
+                  placeholder="URL de imagen"
+                  autocomplete="off"
+                />
               </div>
 
-              <!-- PASO 3: MONEDA -->
-              <div id="currencyStep" class="nuevo-mazo-inline-step is-hidden">
+              <div id="currencyStep" class="nuevo-mazo-inline-step">
                 <img src="/assets/icons/dia40.gif" alt="♦" class="nuevo-mazo-bar__diamond" />
 
-                <div id="currencyStep" class="nuevo-mazo-inline-step">
-                  <img src="/assets/icons/dia40.gif" alt="♦" class="nuevo-mazo-bar__diamond" />
+                <select id="deckCurrencyCode" class="nuevo-mazo-inline-input nuevo-mazo-inline-input--code">
+                  <option value="">---</option>
+                  <option value="UYU">UYU</option>
+                  <option value="ARS">ARS</option>
+                  <option value="CLP">CLP</option>
+                  <option value="BRL">BRL</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                </select>
 
-                  <select id="deckCurrencyCode" class="nuevo-mazo-inline-input nuevo-mazo-inline-input--code">
-                    <option value="">---</option>
-                    <option value="UYU">UYU</option>
-                    <option value="ARS">ARS</option>
-                    <option value="CLP">CLP</option>
-                    <option value="BRL">BRL</option>
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                  </select>
-
-                  <input id="deckCurrencyName" class="nuevo-mazo-inline-input nuevo-mazo-inline-input--name" type="text"
-                    placeholder="Peso uruguayo" autocomplete="off" />
-
-                </div>
-                <button id="saveAllBtn" type="button" class="nuevo-mazo-inline-save" title="Confirmar datos"
-                  aria-label="Confirmar datos">
-                  <img src="/assets/icons/salvar40.gif" alt="Guardar datos" />
-                </button>
-                <!-- MODO LECTURA MONEDA -->
-                <div id="currencyBlock" class="nuevo-mazo-bar__currency-block is-hidden">
-                  <img id="diamondIcon" src="/assets/icons/dia40.gif" alt="♦" class="nuevo-mazo-bar__diamond" />
-                  <span id="deckCurrencyCodeReadonly" class="nuevo-mazo-bar__currency-code-readonly"></span>
-                  <span id="deckCurrencyNameReadonly" class="nuevo-mazo-bar__currency-name-readonly"></span>
-                </div>
+                <input
+                  id="deckCurrencyName"
+                  class="nuevo-mazo-inline-input nuevo-mazo-inline-input--name"
+                  type="text"
+                  placeholder="Peso uruguayo"
+                  autocomplete="off"
+                />
               </div>
 
-              <div id="statusMsg" class="nuevo-mazo-status"></div>
+              <button
+                id="saveAllBtn"
+                type="button"
+                class="nuevo-mazo-inline-save"
+                title="Confirmar datos"
+                aria-label="Confirmar datos"
+              >
+                <img src="/assets/icons/salvar40.gif" alt="Guardar datos" />
+              </button>
+
+              <div id="currencyBlock" class="nuevo-mazo-bar__currency-block is-hidden">
+                <img id="diamondIcon" src="/assets/icons/dia40.gif" alt="♦" class="nuevo-mazo-bar__diamond" />
+                <span id="deckCurrencyCodeReadonly" class="nuevo-mazo-bar__currency-code-readonly"></span>
+                <span id="deckCurrencyNameReadonly" class="nuevo-mazo-bar__currency-name-readonly"></span>
+              </div>
             </div>
 
-
-
+            <div id="statusMsg" class="nuevo-mazo-status"></div>
           </div>
-          <div class="lienzo-grid">
+        </div>
 
-            <div id="amsterdam" class="lienzo-grid__right">
-              <div class="lienzo-panel">
-
-                <div class="lienzo-panel__header">
-                  <div class="lienzo-target-header">
-                    <img id="userPhoto" class="lienzo-target-header__photo" />
-                    <span id="userName" class="lienzo-target-header__name"></span>
-                  </div>
+        <div class="lienzo-grid">
+          <div id="amsterdam" class="lienzo-grid__right">
+            <div class="lienzo-panel">
+              <div class="lienzo-panel__header">
+                <div class="lienzo-target-header">
+                  <img id="userPhoto" class="lienzo-target-header__photo" />
+                  <span id="userName" class="lienzo-target-header__name"></span>
                 </div>
-
-                <div class="lienzo-panel__content">
-                  <div id="founder-target-zone" class="lienzo-card-wrap">
-                    <img src="/assets/icons/Acorazon.gif" class="lienzo-card-image" />
-                  </div>
-                </div>
-
-                <div class="lienzo-panel__actions">
-                  <div class="lienzo-target-actions nuevo-mazo-target-actions">
-                    <button id="helpBtn" class="icon-btn" type="button" title="Ayuda" aria-label="Ayuda">
-                      <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda" />
-                    </button>
-
-                    <button id="createDeckBtn" class="icon-btn is-hidden" type="button" title="Guardar mazo"
-                      aria-label="Guardar mazo">
-                      <img src="/assets/icons/salvar40.gif" alt="Guardar" />
-                    </button>
-
-                    <button id="cancelBtn" class="icon-btn" type="button" title="Salir" aria-label="Salir">
-                      <img src="/assets/icons/exit80.gif" alt="Salir" />
-                    </button>
-                  </div>
-                </div>
-
               </div>
-            </div>
-            <div id="colombes" class="lienzo-grid__left">
-              <div class="lienzo-panel lienzo-panel--source">
 
-                <div class="lienzo-panel__header">
-                  <div class="lienzo-source-header">
-                    <img src="/assets/icons/Compila60.gif" class="lienzo-source-header__photo" />
-                    <span class="lienzo-source-header__name">Cooptrack server</span>
-                  </div>
+              <div class="lienzo-panel__content">
+                <div id="founder-target-zone" class="lienzo-card-wrap">
+                  <img src="/assets/icons/Acorazon.gif" class="lienzo-card-image" />
                 </div>
+              </div>
 
-                <div class="lienzo-panel__content">
-                  <div class="lienzo-source-cards">
-                    <div id="server-aces-stack" class="lienzo-source-stack">
-                      <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:0px;" />
-                      <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
-                      <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:36px;" />
-                    </div>
-                  </div>
+              <div class="lienzo-panel__actions">
+                <div class="lienzo-target-actions nuevo-mazo-target-actions">
+                  <button id="helpBtn" class="icon-btn" type="button" title="Ayuda" aria-label="Ayuda">
+                    <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda" />
+                  </button>
+
+                  <button
+                    id="createDeckBtn"
+                    class="icon-btn is-hidden"
+                    type="button"
+                    title="Guardar mazo"
+                    aria-label="Guardar mazo"
+                  >
+                    <img src="/assets/icons/salvar40.gif" alt="Guardar" />
+                  </button>
+
+                  <button id="cancelBtn" class="icon-btn" type="button" title="Salir" aria-label="Salir">
+                    <img src="/assets/icons/exit80.gif" alt="Salir" />
+                  </button>
                 </div>
-
-                <div class="lienzo-panel__actions">
-                  <div class="lienzo-source-actions"></div>
-                </div>
-
               </div>
             </div>
           </div>
+
+          <div id="colombes" class="lienzo-grid__left">
+            <div class="lienzo-panel lienzo-panel--source">
+              <div class="lienzo-panel__header">
+                <div class="lienzo-source-header">
+                  <img src="/assets/icons/Compila60.gif" class="lienzo-source-header__photo" />
+                  <span class="lienzo-source-header__name">Cooptrack server</span>
+                </div>
+              </div>
+
+              <div class="lienzo-panel__content">
+                <div class="lienzo-source-cards">
+                  <div id="server-aces-stack" class="lienzo-source-stack">
+                    <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:0px;" />
+                    <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
+                    <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:36px;" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="lienzo-panel__actions">
+                <div class="lienzo-source-actions"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
     </div>
   </main>
@@ -345,9 +361,8 @@
       ES: { code: "EUR", name: "Euro" }
     };
 
-    const state = {
-      step: "title",
-      currencyLoaded: false
+    const animationState = {
+      founderAcesDelivered: false
     };
 
     function getToken() {
@@ -366,6 +381,25 @@
     function hideEl(id) {
       const el = getEl(id);
       if (el) el.classList.add("is-hidden");
+    }
+
+    function setStatus(message, isError = false) {
+      const statusMsg = getEl("statusMsg");
+      if (!statusMsg) return;
+      statusMsg.textContent = message || "";
+      statusMsg.style.color = isError ? "#b00020" : "#333";
+    }
+
+    function goBack() {
+      window.location.href = "/index.html";
+    }
+
+    function setPhotoPreview(src) {
+      const photo = getEl("deckPhotoPreview");
+      if (!photo) return;
+
+      const safeSrc = String(src || "").trim();
+      photo.src = safeSrc || "/assets/icons/sinPicture.gif";
     }
 
     function animateFounderAcesToUser() {
@@ -392,7 +426,6 @@
       ghost.style.transition = "all 600ms ease";
 
       document.body.appendChild(ghost);
-
       source.style.visibility = "hidden";
 
       const targetX = targetRect.left + (targetRect.width / 2) - (sourceRect.width / 2);
@@ -405,10 +438,7 @@
       });
 
       ghost.addEventListener("transitionend", () => {
-        if (ghost.parentNode) {
-          ghost.remove();
-        }
-
+        if (ghost.parentNode) ghost.remove();
         animationState.founderAcesDelivered = true;
         renderFounderFourAcesStack();
       }, { once: true });
@@ -416,29 +446,28 @@
 
     function renderServerNextActionsPanel() {
       return `
-    <div class="lienzo-server-next">
+        <div class="lienzo-server-next">
+          <div class="lienzo-server-next__item">
+            <img src="/assets/icons/Sello40.gif" class="lienzo-server-next__icon" />
+            <span class="lienzo-server-next__label">Aprobar J</span>
+            <span class="lienzo-server-next__check">✓</span>
+          </div>
 
-      <div class="lienzo-server-next__item">
-        <img src="/assets/icons/Sello40.gif" class="lienzo-server-next__icon" />
-        <span class="lienzo-server-next__label">Aprobar J</span>
-        <span class="lienzo-server-next__check">✓</span>
-      </div>
+          <div class="lienzo-server-next__item">
+            <img src="/assets/icons/buzon60.gif" class="lienzo-server-next__icon" />
+            <span class="lienzo-server-next__label">Enviar Q</span>
+            <span class="lienzo-server-next__check">✓</span>
+          </div>
 
-      <div class="lienzo-server-next__item">
-        <img src="/assets/icons/buzon60.gif" class="lienzo-server-next__icon" />
-        <span class="lienzo-server-next__label">Enviar Q</span>
-        <span class="lienzo-server-next__check">✓</span>
-      </div>
-
-      <div class="lienzo-server-next__item">
-        <img src="/assets/icons/pistola60.gif" class="lienzo-server-next__icon" />
-        <span class="lienzo-server-next__label">Despedir Q</span>
-        <span class="lienzo-server-next__check">✓</span>
-      </div>
-
-    </div>
-  `;
+          <div class="lienzo-server-next__item">
+            <img src="/assets/icons/pistola60.gif" class="lienzo-server-next__icon" />
+            <span class="lienzo-server-next__label">Despedir Q</span>
+            <span class="lienzo-server-next__check">✓</span>
+          </div>
+        </div>
+      `;
     }
+
     function renderFounderFourAcesStack() {
       const sourcePanel = document.querySelector(".lienzo-grid__left .lienzo-source-cards");
       const targetZone = document.getElementById("founder-target-zone");
@@ -450,157 +479,49 @@
       if (!targetZone) return;
 
       targetZone.innerHTML = `
-  <div class="lienzo-source-stack lienzo-source-stack--four">
-    <img src="/assets/icons/Acorazon.gif" class="lienzo-source-stack__card" style="left:0px; z-index:0;" />
-    <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
-    <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:36px;" />
-    <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:54px;" />
-  </div>
-`;
+        <div class="lienzo-source-stack lienzo-source-stack--four">
+          <img src="/assets/icons/Acorazon.gif" class="lienzo-source-stack__card" style="left:0px; z-index:0;" />
+          <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
+          <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:36px;" />
+          <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:54px;" />
+        </div>
+      `;
     }
 
-    function setStatus(message, isError = false) {
-      const statusMsg = getEl("statusMsg");
-      if (!statusMsg) return;
-
-      statusMsg.textContent = message || "";
-      statusMsg.style.color = isError ? "#b00020" : "#333";
-    }
-
-    function goBack() {
-      window.location.href = "/index.html";
-    }
-
-    function setPhotoPreview(src) {
-      const photo = getEl("deckPhotoPreview");
-      if (!photo) return;
-
-      const safeSrc = String(src || "").trim();
-      photo.src = safeSrc || "/assets/icons/sinPicture.gif";
-    }
     function commitAllStep() {
       const name = String(getEl("deckName")?.value || "").trim();
       const image = String(getEl("deckImage")?.value || "").trim();
       const code = String(getEl("deckCurrencyCode")?.value || "").trim().toUpperCase();
       const currencyName = String(getEl("deckCurrencyName")?.value || "").trim();
 
-      // VALIDACIONES
       if (!name) {
         setStatus("El título es obligatorio", true);
+        getEl("deckName")?.focus();
         return;
       }
 
       if (code && code.length !== 3) {
         setStatus("El código de moneda debe tener 3 caracteres", true);
+        getEl("deckCurrencyCode")?.focus();
         return;
       }
 
-      // PASAR A MODO LECTURA
-
-      // Título
       getEl("deckNameReadonly").textContent = name;
       hideEl("titleStep");
       showEl("deckNameReadonly");
 
-      // Imagen
       setPhotoPreview(image);
       hideEl("imageStep");
 
-      // Moneda
       getEl("deckCurrencyCodeReadonly").textContent = code;
       getEl("deckCurrencyNameReadonly").textContent = currencyName;
-
       hideEl("currencyStep");
       showEl("currencyBlock");
 
-      // ocultar botón salvar arriba
       hideEl("saveAllBtn");
-
-      // mostrar botón crear abajo
       showEl("createDeckBtn");
 
       setStatus("Listo para guardar");
-
-      // animación
-      setTimeout(() => {
-        animateFounderAcesToUser();
-      }, 150);
-    }
-    function commitTitleStep() {
-      const nameInput = getEl("deckName");
-      const readonly = getEl("deckNameReadonly");
-      const name = String(nameInput?.value || "").trim();
-
-      if (!name) {
-        setStatus("El título es obligatorio", true);
-        nameInput?.focus();
-        return;
-      }
-
-      if (readonly) {
-        readonly.textContent = name;
-      }
-
-      hideEl("titleStep");
-      showEl("deckNameReadonly");
-      showEl("imageStep");
-
-      state.step = "image";
-      setStatus("");
-
-      getEl("deckImage")?.focus();
-
-    }
-
-    function commitImageStep() {
-      const imageInput = getEl("deckImage");
-      const image = String(imageInput?.value || "").trim();
-
-      setPhotoPreview(image);
-      hideEl("imageStep");
-      showEl("currencyStep");
-
-      state.step = "currency";
-      setStatus("");
-
-      getEl("deckCurrencyCode")?.focus();
-    }
-
-    function commitCurrencyStep() {
-      const codeInput = getEl("deckCurrencyCode");
-      const nameInput = getEl("deckCurrencyName");
-
-      const code = String(codeInput?.value || "").trim().toUpperCase();
-      const name = String(nameInput?.value || "").trim();
-
-      if (code && code.length !== 3) {
-        setStatus("El código de moneda debe tener 3 caracteres", true);
-        return;
-      }
-
-      if (!code && !name) {
-        setStatus("No se pudo determinar la moneda del perfil", true);
-        return;
-      }
-
-      const codeReadonly = getEl("deckCurrencyCodeReadonly");
-      const nameReadonly = getEl("deckCurrencyNameReadonly");
-
-      if (codeReadonly) {
-        codeReadonly.textContent = code;
-      }
-
-      if (nameReadonly) {
-        nameReadonly.textContent = name;
-      }
-
-      hideEl("currencyStep");
-      showEl("currencyBlock");
-      showEl("createDeckBtn");
-
-      state.step = "ready";
-      setStatus("Listo para guardar");
-      getEl("createDeckBtn")?.focus();
 
       setTimeout(() => {
         animateFounderAcesToUser();
@@ -621,9 +542,7 @@
 
         const data = await response.json();
 
-        if (!response.ok || !data.ok || !data.user) {
-          return;
-        }
+        if (!response.ok || !data.ok || !data.user) return;
 
         const country = String(data.user.country || "").trim().toUpperCase();
         const currency = COUNTRY_TO_CURRENCY[country];
@@ -636,11 +555,9 @@
         if (currency) {
           codeInput.value = currency.code;
           nameInput.value = currency.name;
-          state.currencyLoaded = true;
         } else {
           codeInput.value = "";
           nameInput.value = "";
-          state.currencyLoaded = false;
         }
       } catch (error) {
         console.error("No se pudo cargar la moneda por defecto:", error);
@@ -654,9 +571,9 @@
       const currencyNameInput = getEl("deckCurrencyName");
 
       const name = String(nameReadonly?.textContent || "").trim();
-      const image = (imageInput?.value || "").trim();
-      const currencyCode = (currencyCodeInput?.value || "").trim().toUpperCase();
-      const currencyName = (currencyNameInput?.value || "").trim();
+      const image = String(imageInput?.value || "").trim();
+      const currencyCode = String(currencyCodeInput?.value || "").trim().toUpperCase();
+      const currencyName = String(currencyNameInput?.value || "").trim();
       const token = getToken();
 
       if (!token) {
@@ -713,6 +630,29 @@
       }
     }
 
+    function loadCurrentUserIntoLienzo() {
+      const user =
+        window.__currentUser ||
+        JSON.parse(localStorage.getItem("cooptrackUser") || "null");
+
+      if (!user) return;
+
+      const photoEl = document.getElementById("userPhoto");
+      const nameEl = document.getElementById("userName");
+
+      if (photoEl) {
+        photoEl.src = user.profile_photo_url || "/assets/icons/singeta120.gif";
+      }
+
+      if (nameEl) {
+        nameEl.textContent =
+          user.nickname ||
+          user.full_name ||
+          user.name ||
+          `Usuario ${user.id}`;
+      }
+    }
+
     function bindEvents() {
       getEl("createDeckBtn")?.addEventListener("click", createDeck);
       getEl("cancelBtn")?.addEventListener("click", goBack);
@@ -753,6 +693,24 @@
         }
       });
 
+      getEl("deckCurrencyCode")?.addEventListener("change", (event) => {
+        const code = String(event.target.value || "").toUpperCase();
+
+        const currencyMap = {
+          UYU: "Peso uruguayo",
+          ARS: "Peso argentino",
+          CLP: "Peso chileno",
+          BRL: "Real brasileño",
+          USD: "Dólar estadounidense",
+          EUR: "Euro"
+        };
+
+        const nameInput = getEl("deckCurrencyName");
+        if (nameInput) {
+          nameInput.value = currencyMap[code] || "";
+        }
+      });
+
       getEl("deckPhotoPreview")?.addEventListener("error", () => {
         setPhotoPreview("");
       });
@@ -761,39 +719,9 @@
     window.addEventListener("DOMContentLoaded", async () => {
       await loadDefaultCurrencyFromProfile();
       bindEvents();
-      loadCurrentUserIntoLienzo(); // 👈 AGREGAR ESTA LÍNEA
+      loadCurrentUserIntoLienzo();
       getEl("deckName")?.focus();
     });
-
-    function loadCurrentUserIntoLienzo() {
-      const user =
-        window.__currentUser ||
-        JSON.parse(localStorage.getItem("cooptrackUser") || "null");
-
-      if (!user) return;
-
-      const photoEl = document.getElementById("userPhoto");
-      const nameEl = document.getElementById("userName");
-
-      if (photoEl) {
-        photoEl.src =
-          user.profile_photo_url || "/assets/icons/singeta120.gif";
-      }
-
-      if (nameEl) {
-        nameEl.textContent =
-          user.nickname ||
-          user.full_name ||
-          user.name ||
-          `Usuario ${user.id}`;
-      }
-    }
-    const animationState = {
-      founderAcesDelivered: false
-    };
-
-
   </script>
 </body>
-
 </html>
