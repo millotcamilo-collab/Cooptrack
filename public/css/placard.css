@@ -5,8 +5,9 @@
   align-items: flex-start;
   gap: 14px;
   padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid #d8d8d8;
+  background: var(--lienzo-veil-bg);
+  border: 1px solid var(--lienzo-veil-border);
+  color: #f5f5f5;
   border-radius: 14px;
   box-sizing: border-box;
 }
@@ -19,8 +20,8 @@
 }
 
 .placard__photo {
-  width: 58px;
-  height: 58px;
+  width: 66px;
+  height: 66px;
   object-fit: cover;
   border-radius: 10px;
   display: block;
@@ -43,31 +44,33 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 /* CARTA */
 .placard__rank {
   flex: 0 0 auto;
-  font-size: 24px;
+  font-size: 2rem;
   font-weight: 700;
-  color: #d32f2f; /* rojo */
   line-height: 1;
+  color: #7d0000;
 }
 
 .placard__suit {
   flex: 0 0 auto;
-  width: 20px;
-  height: 20px;
+  height: 22px;
+  width: auto;
+  display: block;
   object-fit: contain;
 }
 
 /* NOMBRE */
 .placard__name {
   flex: 0 1 auto;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 1.1rem;
+  font-weight: 500;
   color: #111;
+  line-height: 1.2;
   white-space: nowrap;
 }
 
@@ -81,13 +84,14 @@
 }
 
 .placard__currency-code {
-  font-size: 14px;
+  font-size: 1rem;
   font-weight: 600;
+  color: #111;
   text-transform: uppercase;
 }
 
 .placard__currency-name {
-  font-size: 14px;
+  font-size: 1rem;
   font-weight: 400;
   color: #333;
 }

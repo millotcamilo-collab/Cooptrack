@@ -30,21 +30,18 @@
 
     return `
       <div class="placard__currency">
-        ${
-          iconSrc
-            ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__suit" />`
-            : ""
-        }
-        ${
-          currencyCode
-            ? `<span class="placard__currency-code">${escapeHtml(currencyCode)}</span>`
-            : ""
-        }
-        ${
-          currencyName
-            ? `<span class="placard__currency-name">${escapeHtml(currencyName)}</span>`
-            : ""
-        }
+        ${iconSrc
+        ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__suit" />`
+        : ""
+      }
+        ${currencyCode
+        ? `<span class="placard__currency-code">${escapeHtml(currencyCode)}</span>`
+        : ""
+      }
+        ${currencyName
+        ? `<span class="placard__currency-name">${escapeHtml(currencyName)}</span>`
+        : ""
+      }
       </div>
     `;
   }
@@ -58,7 +55,8 @@
     if (!container) return;
 
     const photoUrl =
-      String(config?.photoUrl || "").trim() || "/assets/icons/sinPicture.gif";
+      String(config?.deckPhotoUrl || config?.photoUrl || "").trim() ||
+      "/assets/icons/sinPicture.gif";
 
     const rank = String(config?.rank || "").trim() || "A";
     const suit = normalizeSuit(config?.suit || "HEART");
@@ -88,19 +86,17 @@
           <div class="placard__titleline">
             <span class="placard__rank">${escapeHtml(rank)}</span>
 
-            ${
-              suitIcon
-                ? `<img src="${escapeHtml(suitIcon)}" alt="" class="placard__suit" />`
-                : ""
-            }
+            ${suitIcon
+        ? `<img src="${escapeHtml(suitIcon)}" alt="" class="placard__suit" />`
+        : ""
+      }
 
             <span class="placard__name">${escapeHtml(title)}</span>
 
-            ${
-              showCurrency
-                ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
-                : ""
-            }
+            ${showCurrency
+        ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
+        : ""
+      }
           </div>
         </div>
 
