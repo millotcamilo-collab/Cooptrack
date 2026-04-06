@@ -352,6 +352,18 @@
       top: 0;
       z-index: 4;
     }
+
+    #placard-container {
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      margin: 20px 20px 0 20px;
+    }
+
+    #placard-container.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 
@@ -659,6 +671,9 @@
       hideEl("saveAllBtn");
 
       const placardEl = document.getElementById("placard-container");
+      if (placardEl) {
+        placardEl.classList.remove("is-visible");
+      }
 
       renderPlacard("placard-container", {
         photoUrl: document.getElementById("userPhoto")?.src,
@@ -670,10 +685,10 @@
         showCurrency: true
       });
 
-      // 👇 trigger animación (clave usar RAF)
-      requestAnimationFrame(() => {
+      if (placardEl) {
+        void placardEl.offsetWidth; // fuerza reflow
         placardEl.classList.add("is-visible");
-      });
+      }
 
       start();
     }
