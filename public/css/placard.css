@@ -22,7 +22,7 @@
 .placard__photo {
   width: 66px;
   height: 66px;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 10px;
   display: block;
   background: transparent;
@@ -142,6 +142,19 @@
   height: 100%;
   width: auto;
   display: block;
+}
+
+.placard__photo-button {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 10px;
 }
 
 /* RESPONSIVE */
