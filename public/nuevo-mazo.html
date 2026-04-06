@@ -306,8 +306,8 @@
     <!-- COLOMBES -->
     <div class="panel" id="colombes-panel">
       <div class="header">
-        <img src="/assets/icons/singeta120.gif" width="40" alt="Usuario">
-        <span>Usuario</span>
+        <img id="userPhoto" src="/assets/icons/singeta120.gif" width="40" alt="Usuario">
+        <span id="userNickname">Usuario</span>
       </div>
 
       <div class="content colombes-content">
@@ -511,6 +511,37 @@
       }
     }
 
+    async function loadUserHeader() {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return;
+
+      try {
+        const response = await fetch("https://cooptrack-backend.onrender.com/me", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (!data.ok || !data.user) return;
+
+        const photoEl = document.getElementById("userPhoto");
+        const nameEl = document.getElementById("userNickname");
+
+        if (photoEl && data.user.profile_photo_url) {
+          photoEl.src = data.user.profile_photo_url;
+        }
+
+        if (nameEl && data.user.nickname) {
+          nameEl.textContent = data.user.nickname;
+        }
+
+      } catch (err) {
+        console.error("Error cargando usuario:", err);
+      }
+    }
+
     function validateStepOne() {
       const deckName = String(document.getElementById("deckName")?.value || "").trim();
       const currencyCode = String(document.getElementById("deckCurrencyCode")?.value || "").trim();
@@ -547,11 +578,20 @@
 
       panel.classList.remove("server-next--readonly");
       panel.classList.add("server-next--editable");
+    }
 
-      const checkboxes = panel.querySelectorAll(".server-next__checkbox");
-      checkboxes.forEach((checkbox) => {
-        checkbox.disabled = false;
-        checkbox.removeAttribute("disabled");
+    function bindServerNextClicks() {
+      const panel = document.getElementById("serverNextPanel");
+      if (!panel) return;
+
+      const items = panel.querySelectorAll(".server-next__item");
+
+      items.forEach((item) => {
+        item.addEventListener("click", () => {
+          if (!panel.classList.contains("server-next--editable")) return;
+
+          item.classList.toggle("is-checked");
+        });
       });
     }
 
@@ -618,6 +658,9 @@
       hideEl("createDeckBtn");
 
       await loadDefaultCurrencyFromProfile();
+      await loadUserHeader(); 
+
+      bindServerNextClicks();
 
       document.getElementById("saveAllBtn")?.addEventListener("click", handleSaveStepOne);
       document.getElementById("createDeckBtn")?.addEventListener("click", start);
