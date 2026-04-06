@@ -240,6 +240,22 @@
       flex-direction: column;
       gap: 10px;
     }
+
+    .server-next__item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .server-next--readonly .server-next__checkbox {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .server-next--editable .server-next__checkbox {
+      pointer-events: auto;
+      opacity: 1;
+    }
   </style>
 </head>
 
@@ -484,6 +500,19 @@
       showEl("createDeckBtn");
     }
 
+    function enableServerNextPanel() {
+      const panel = document.getElementById("serverNextPanel");
+      if (!panel) return;
+
+      panel.classList.remove("server-next--readonly");
+      panel.classList.add("server-next--editable");
+
+      const checkboxes = panel.querySelectorAll(".server-next__checkbox");
+      checkboxes.forEach((checkbox) => {
+        checkbox.disabled = false;
+      });
+    }
+
     function handleSaveStepOne() {
       const ok = validateStepOne();
       if (!ok) return;
@@ -532,9 +561,11 @@
 
         pack.className = "pack jokers-only";
         pack.innerHTML = `
-          <img src="/assets/icons/joker_blue.gif" class="joker-blue" alt="Joker azul">
-          <img src="/assets/icons/Joker.gif" class="joker-red" alt="Joker rojo">
-        `;
+    <img src="/assets/icons/joker_blue.gif" class="joker-blue" alt="Joker azul">
+    <img src="/assets/icons/Joker.gif" class="joker-red" alt="Joker rojo">
+  `;
+
+        enableServerNextPanel();
 
         done = true;
       }, { once: true });
