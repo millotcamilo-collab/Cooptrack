@@ -335,6 +335,15 @@
       EUR: "Euro"
     };
 
+    const COUNTRY_TO_CURRENCY = {
+      UY: { code: "UYU", name: "Peso uruguayo" },
+      AR: { code: "ARS", name: "Peso argentino" },
+      CL: { code: "CLP", name: "Peso chileno" },
+      BR: { code: "BRL", name: "Real brasileño" },
+      US: { code: "USD", name: "Dólar estadounidense" },
+      ES: { code: "EUR", name: "Euro" }
+    };
+
     function syncCurrencyNameFromCode() {
       const codeEl = document.getElementById("deckCurrencyCode");
       const nameEl = document.getElementById("deckCurrencyName");
@@ -345,6 +354,40 @@
       const defaultName = DEFAULT_CURRENCY_NAMES[code] || "";
 
       nameEl.value = defaultName;
+    }
+
+    // 👇 PEGAR ACÁ
+    async function loadDefaultCurrencyFromProfile() {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return;
+
+      try {
+        const response = await fetch("https://cooptrack-backend.onrender.com/me", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (!data.ok || !data.user) return;
+
+        const country = String(data.user.country || "").toUpperCase();
+        const currency = COUNTRY_TO_CURRENCY[country];
+
+        const codeEl = document.getElementById("deckCurrencyCode");
+        const nameEl = document.getElementById("deckCurrencyName");
+
+        if (!codeEl || !nameEl) return;
+
+        if (currency) {
+          codeEl.value = currency.code;
+          nameEl.value = currency.name;
+        }
+
+      } catch (err) {
+        console.error("Error cargando moneda:", err);
+      }
     }
 
     function validateStepOne() {
@@ -429,9 +472,11 @@
       }, { once: true });
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       showEl("saveAllBtn");
       hideEl("createDeckBtn");
+
+      await loadDefaultCurrencyFromProfile();
 
       document.getElementById("saveAllBtn")?.addEventListener("click", handleSaveStepOne);
       document.getElementById("createDeckBtn")?.addEventListener("click", start);
