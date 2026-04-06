@@ -145,6 +145,28 @@
       min-width: 0;
     }
 
+    .nuevo-mazo-inline-save {
+      background: transparent;
+      border: none;
+      padding: 2px;
+      margin-left: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    .nuevo-mazo-inline-save img {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+
+    .nuevo-mazo-inline-save:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
     @media (max-width: 900px) {
       .nuevo-mazo-bar {
         flex-direction: column;
@@ -467,7 +489,7 @@
         readonly.textContent = name;
       }
 
-      hideEl("deckName");
+      hideEl("titleStep");
       showEl("deckNameReadonly");
       showEl("imageStep");
 
