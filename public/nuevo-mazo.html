@@ -218,49 +218,29 @@
       height: 88px;
     }
 
-    /* Manojo compuesto: ases arriba, jokers debajo, como una sola unidad */
+    /* Manojo compuesto simple: ases arriba, jokers debajo */
     .nuevo-mazo-server-pack-vertical {
-      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
       width: 150px;
-      height: 190px;
     }
 
-    /* Stack de ases: es el que vuela */
+    /* El stack de ases queda normal y es el que vuela */
     .nuevo-mazo-server-pack-vertical__aces {
-      position: absolute;
-      top: 0;
-      left: 0;
+      position: relative;
       width: 130px;
       height: 120px;
       z-index: 2;
     }
 
-    /* Stack de jokers: queda quieto debajo */
+    /* Jokers debajo, acercados al stack de ases */
     .nuevo-mazo-jokers-stack {
-      position: absolute;
-      top: 92px;
-      left: 10px;
-      width: 86px;
-      height: 86px;
-      z-index: 1;
-    }
-
-    .nuevo-mazo-jokers-stack__card {
-      position: absolute;
-      width: auto;
-      height: 74px;
-      display: block;
-    }
-
-    .nuevo-mazo-jokers-stack__card--top {
-      top: 0;
-      left: 0;
-      z-index: 2;
-    }
-
-    .nuevo-mazo-jokers-stack__card--bottom {
-      top: 6px;
-      left: 8px;
+      position: relative;
+      width: 92px;
+      height: 82px;
+      margin-top: -18px;
+      margin-left: 8px;
       z-index: 1;
     }
 
