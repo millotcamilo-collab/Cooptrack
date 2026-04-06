@@ -157,6 +157,10 @@
       border-radius: 6px;
     }
 
+    .is-hidden {
+      display: none !important;
+    }
+
     .nuevo-mazo-inline-save img {
       width: 20px;
       height: 20px;
@@ -206,7 +210,7 @@
               <div id="titleStep" class="nuevo-mazo-inline-step">
                 <input id="deckName" class="nuevo-mazo-bar__title-input" type="text" placeholder="Título del mazo"
                   autocomplete="off" />
-                
+
               </div>
 
               <div id="deckNameReadonly" class="nuevo-mazo-bar__title-readonly is-hidden"></div>
@@ -215,15 +219,22 @@
               <div id="imageStep" class="nuevo-mazo-inline-step is-hidden">
                 <input id="deckImage" class="nuevo-mazo-inline-input" type="text" placeholder="URL de imagen"
                   autocomplete="off" />
-                
+
               </div>
 
               <!-- PASO 3: MONEDA -->
               <div id="currencyStep" class="nuevo-mazo-inline-step is-hidden">
                 <img src="/assets/icons/dia40.gif" alt="♦" class="nuevo-mazo-bar__diamond" />
 
-                <input id="deckCurrencyCode" class="nuevo-mazo-inline-input nuevo-mazo-inline-input--code" type="text"
-                  maxlength="3" placeholder="UYU" autocomplete="off" />
+                <select id="deckCurrencyCode" class="nuevo-mazo-inline-input nuevo-mazo-inline-input--code">
+                  <option value="">---</option>
+                  <option value="UYU">UYU</option>
+                  <option value="ARS">ARS</option>
+                  <option value="CLP">CLP</option>
+                  <option value="BRL">BRL</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                </select>
 
                 <input id="deckCurrencyName" class="nuevo-mazo-inline-input nuevo-mazo-inline-input--name" type="text"
                   placeholder="Peso uruguayo" autocomplete="off" />

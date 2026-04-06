@@ -545,6 +545,15 @@ body {
   flex: 1;
 }
 
+.nuevo-mazo-inline-input--code {
+  width: 56px;
+  min-width: 56px;
+  max-width: 56px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+
 @media (max-width: 900px) {
   .lienzo-grid {
     grid-template-columns: 1fr;
