@@ -553,6 +553,11 @@ body {
   text-align: center;
 }
 
+/* Alinear cartas a la izquierda en ambos paneles */
+.lienzo-grid__left .lienzo-panel__content,
+.lienzo-grid__right .lienzo-panel__content {
+  justify-content: flex-start;
+}
 
 @media (max-width: 900px) {
   .lienzo-grid {
