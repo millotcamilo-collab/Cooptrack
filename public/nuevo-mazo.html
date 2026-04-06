@@ -230,17 +230,36 @@
     .nuevo-mazo-server-pack-vertical__aces {
       position: relative;
       width: 130px;
-      height: 120px;
+      height: 125px;
       z-index: 2;
     }
 
     /* Jokers debajo, acercados al stack de ases */
     .nuevo-mazo-jokers-stack {
       position: relative;
-      width: 92px;
-      height: 82px;
-      margin-top: -18px;
-      margin-left: 8px;
+      width: 130px;
+      height: 125px;
+      margin-top: -42px;
+      margin-left: 0;
+      z-index: 1;
+    }
+
+    /* IMPORTANTE: estas reglas hoy te faltan */
+    .nuevo-mazo-jokers-stack__card {
+      position: absolute;
+      top: 5px;
+      width: auto;
+      height: 120px;
+      display: block;
+    }
+
+    .nuevo-mazo-jokers-stack__card--top {
+      left: 0;
+      z-index: 2;
+    }
+
+    .nuevo-mazo-jokers-stack__card--bottom {
+      left: 18px;
       z-index: 1;
     }
 
