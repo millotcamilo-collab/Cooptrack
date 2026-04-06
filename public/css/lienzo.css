@@ -65,10 +65,8 @@ body {
 
 .lienzo-card-wrap {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 280px;
-  margin-bottom: 14px;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 .lienzo-card-image {
@@ -303,11 +301,9 @@ body {
 }
 
 .lienzo-source-cards {
-  position: relative;
-  min-height: 280px;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 .nuevo-mazo-target-actions {
@@ -503,8 +499,9 @@ body {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;   /* 👈 CLAVE: sube las cartas */
+  justify-content: flex-start; /* 👈 alineación horizontal */
+  padding-top: 10px; /* opcional, ajusta fine tuning */
 }
 
 .lienzo-panel__actions {
