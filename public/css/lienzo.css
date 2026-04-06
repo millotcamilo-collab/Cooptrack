@@ -81,8 +81,9 @@ body {
 #founder-target-zone {
   min-height: 140px;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
 }
 
 .lienzo-card-text {
@@ -495,6 +496,7 @@ body {
   padding-top: 8px;
 }
 
+
 /* 4) Actions: abajo y a la derecha */
 .lienzo-panel__actions {
   flex: 0 0 var(--lienzo-panel-actions-height);
@@ -506,6 +508,7 @@ body {
 }
 
 /* 5) La carta sola de Amsterdam */
+
 .lienzo-card-wrap {
   flex: 1 1 auto;
   min-height: 0;
@@ -514,9 +517,11 @@ body {
   align-items: flex-start;
   justify-content: flex-start;
   width: 100%;
+  padding-top: 0;
 }
 
 /* 6) El manojo de Colombes */
+
 .lienzo-source-cards {
   flex: 1 1 auto;
   min-height: 0;
@@ -525,8 +530,8 @@ body {
   align-items: flex-start;
   justify-content: flex-start;
   width: 100%;
+  padding-top: 0;
 }
-
 
 /* 5) Ajuste para cartas/zonas centrales ya existentes */
 .lienzo-card-wrap,
