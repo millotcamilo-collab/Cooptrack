@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -173,6 +174,50 @@
       display: none !important;
     }
 
+    .nuevo-mazo-server-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 18px;
+      width: 100%;
+    }
+
+    .nuevo-mazo-server-jokers {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .nuevo-mazo-server-joker {
+      width: auto;
+      height: 88px;
+      display: block;
+    }
+
+    .nuevo-mazo-amsterdam-final {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      width: 100%;
+    }
+
+    .nuevo-mazo-amsterdam-final__left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .nuevo-mazo-amsterdam-final__right {
+      flex: 0 0 auto;
+    }
+
+    .nuevo-mazo-amsterdam-final .nuevo-mazo-server-joker {
+      height: 88px;
+    }
+
     @media (max-width: 900px) {
       .nuevo-mazo-bar {
         flex-direction: column;
@@ -196,12 +241,8 @@
         <div class="nuevo-mazo-bar">
           <div class="nuevo-mazo-bar__left">
             <div class="nuevo-mazo-bar__photo-wrap">
-              <img
-                id="deckPhotoPreview"
-                src="/assets/icons/sinPicture.gif"
-                alt="Foto del mazo"
-                class="nuevo-mazo-bar__photo"
-              />
+              <img id="deckPhotoPreview" src="/assets/icons/sinPicture.gif" alt="Foto del mazo"
+                class="nuevo-mazo-bar__photo" />
             </div>
           </div>
 
@@ -211,25 +252,15 @@
               <img src="/assets/icons/cor40.gif" alt="♥" class="nuevo-mazo-bar__heart" />
 
               <div id="titleStep" class="nuevo-mazo-inline-step">
-                <input
-                  id="deckName"
-                  class="nuevo-mazo-bar__title-input"
-                  type="text"
-                  placeholder="Título del mazo"
-                  autocomplete="off"
-                />
+                <input id="deckName" class="nuevo-mazo-bar__title-input" type="text" placeholder="Título del mazo"
+                  autocomplete="off" />
               </div>
 
               <div id="deckNameReadonly" class="nuevo-mazo-bar__title-readonly is-hidden"></div>
 
               <div id="imageStep" class="nuevo-mazo-inline-step">
-                <input
-                  id="deckImage"
-                  class="nuevo-mazo-inline-input"
-                  type="text"
-                  placeholder="URL de imagen"
-                  autocomplete="off"
-                />
+                <input id="deckImage" class="nuevo-mazo-inline-input" type="text" placeholder="URL de imagen"
+                  autocomplete="off" />
               </div>
 
               <div id="currencyStep" class="nuevo-mazo-inline-step">
@@ -245,22 +276,12 @@
                   <option value="EUR">EUR</option>
                 </select>
 
-                <input
-                  id="deckCurrencyName"
-                  class="nuevo-mazo-inline-input nuevo-mazo-inline-input--name"
-                  type="text"
-                  placeholder="Peso uruguayo"
-                  autocomplete="off"
-                />
+                <input id="deckCurrencyName" class="nuevo-mazo-inline-input nuevo-mazo-inline-input--name" type="text"
+                  placeholder="Peso uruguayo" autocomplete="off" />
               </div>
 
-              <button
-                id="saveAllBtn"
-                type="button"
-                class="nuevo-mazo-inline-save"
-                title="Confirmar datos"
-                aria-label="Confirmar datos"
-              >
+              <button id="saveAllBtn" type="button" class="nuevo-mazo-inline-save" title="Confirmar datos"
+                aria-label="Confirmar datos">
                 <img src="/assets/icons/salvar40.gif" alt="Guardar datos" />
               </button>
 
@@ -297,13 +318,8 @@
                     <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda" />
                   </button>
 
-                  <button
-                    id="createDeckBtn"
-                    class="icon-btn is-hidden"
-                    type="button"
-                    title="Guardar mazo"
-                    aria-label="Guardar mazo"
-                  >
+                  <button id="createDeckBtn" class="icon-btn is-hidden" type="button" title="Guardar mazo"
+                    aria-label="Guardar mazo">
                     <img src="/assets/icons/salvar40.gif" alt="Guardar" />
                   </button>
 
@@ -326,10 +342,17 @@
 
               <div class="lienzo-panel__content">
                 <div class="lienzo-source-cards">
-                  <div id="server-aces-stack" class="lienzo-source-stack">
-                    <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:0px;" />
-                    <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
-                    <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:36px;" />
+                  <div class="nuevo-mazo-server-row">
+                    <div class="nuevo-mazo-server-jokers" id="server-fixed-jokers">
+                      <img src="/assets/icons/joker_blue.gif" class="nuevo-mazo-server-joker" />
+                      <img src="/assets/icons/Joker.gif" class="nuevo-mazo-server-joker" />
+                    </div>
+
+                    <div id="server-aces-stack" class="lienzo-source-stack">
+                      <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:0px;" />
+                      <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
+                      <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:36px;" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -446,6 +469,13 @@
 
     function renderServerNextActionsPanel() {
       return `
+    <div class="nuevo-mazo-amsterdam-final">
+      <div class="nuevo-mazo-amsterdam-final__left">
+        <img src="/assets/icons/joker_blue.gif" class="nuevo-mazo-server-joker" />
+        <img src="/assets/icons/Joker.gif" class="nuevo-mazo-server-joker" />
+      </div>
+
+      <div class="nuevo-mazo-amsterdam-final__right">
         <div class="lienzo-server-next">
           <div class="lienzo-server-next__item">
             <img src="/assets/icons/Sello40.gif" class="lienzo-server-next__icon" />
@@ -465,7 +495,9 @@
             <span class="lienzo-server-next__check">✓</span>
           </div>
         </div>
-      `;
+      </div>
+    </div>
+  `;
     }
 
     function renderFounderFourAcesStack() {
@@ -473,21 +505,20 @@
       const targetZone = document.getElementById("founder-target-zone");
 
       if (sourcePanel) {
-        sourcePanel.innerHTML = renderServerNextActionsPanel();
+        sourcePanel.innerHTML = `
+      <div class="lienzo-source-stack lienzo-source-stack--four">
+        <img src="/assets/icons/Acorazon.gif" class="lienzo-source-stack__card" style="left:0px; z-index:0;" />
+        <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
+        <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:36px;" />
+        <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:54px;" />
+      </div>
+    `;
       }
 
       if (!targetZone) return;
 
-      targetZone.innerHTML = `
-        <div class="lienzo-source-stack lienzo-source-stack--four">
-          <img src="/assets/icons/Acorazon.gif" class="lienzo-source-stack__card" style="left:0px; z-index:0;" />
-          <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
-          <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:36px;" />
-          <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:54px;" />
-        </div>
-      `;
+      targetZone.innerHTML = renderServerNextActionsPanel();
     }
-
     function commitAllStep() {
       const name = String(getEl("deckName")?.value || "").trim();
       const image = String(getEl("deckImage")?.value || "").trim();
@@ -724,4 +755,5 @@
     });
   </script>
 </body>
+
 </html>
