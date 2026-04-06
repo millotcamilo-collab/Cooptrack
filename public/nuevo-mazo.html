@@ -206,10 +206,7 @@
               <div id="titleStep" class="nuevo-mazo-inline-step">
                 <input id="deckName" class="nuevo-mazo-bar__title-input" type="text" placeholder="Título del mazo"
                   autocomplete="off" />
-                <button id="saveTitleBtn" type="button" class="nuevo-mazo-inline-save" title="Confirmar título"
-                  aria-label="Confirmar título">
-                  <img src="/assets/icons/salvar40.gif" alt="Guardar título" />
-                </button>
+                
               </div>
 
               <div id="deckNameReadonly" class="nuevo-mazo-bar__title-readonly is-hidden"></div>
@@ -218,10 +215,7 @@
               <div id="imageStep" class="nuevo-mazo-inline-step is-hidden">
                 <input id="deckImage" class="nuevo-mazo-inline-input" type="text" placeholder="URL de imagen"
                   autocomplete="off" />
-                <button id="saveImageBtn" type="button" class="nuevo-mazo-inline-save" title="Confirmar imagen"
-                  aria-label="Confirmar imagen">
-                  <img src="/assets/icons/salvar40.gif" alt="Guardar imagen" />
-                </button>
+                
               </div>
 
               <!-- PASO 3: MONEDA -->
@@ -473,7 +467,54 @@
       const safeSrc = String(src || "").trim();
       photo.src = safeSrc || "/assets/icons/sinPicture.gif";
     }
+    function commitAllStep() {
+      const name = String(getEl("deckName")?.value || "").trim();
+      const image = String(getEl("deckImage")?.value || "").trim();
+      const code = String(getEl("deckCurrencyCode")?.value || "").trim().toUpperCase();
+      const currencyName = String(getEl("deckCurrencyName")?.value || "").trim();
 
+      // VALIDACIONES
+      if (!name) {
+        setStatus("El título es obligatorio", true);
+        return;
+      }
+
+      if (code && code.length !== 3) {
+        setStatus("El código de moneda debe tener 3 caracteres", true);
+        return;
+      }
+
+      // PASAR A MODO LECTURA
+
+      // Título
+      getEl("deckNameReadonly").textContent = name;
+      hideEl("titleStep");
+      showEl("deckNameReadonly");
+
+      // Imagen
+      setPhotoPreview(image);
+      hideEl("imageStep");
+
+      // Moneda
+      getEl("deckCurrencyCodeReadonly").textContent = code;
+      getEl("deckCurrencyNameReadonly").textContent = currencyName;
+
+      hideEl("currencyStep");
+      showEl("currencyBlock");
+
+      // ocultar botón salvar arriba
+      hideEl("saveAllBtn");
+
+      // mostrar botón crear abajo
+      showEl("createDeckBtn");
+
+      setStatus("Listo para guardar");
+
+      // animación
+      setTimeout(() => {
+        animateFounderAcesToUser();
+      }, 150);
+    }
     function commitTitleStep() {
       const nameInput = getEl("deckName");
       const readonly = getEl("deckNameReadonly");
@@ -671,9 +712,7 @@
         }
       });
 
-      getEl("saveTitleBtn")?.addEventListener("click", commitTitleStep);
-      getEl("saveImageBtn")?.addEventListener("click", commitImageStep);
-      getEl("saveCurrencyBtn")?.addEventListener("click", commitCurrencyStep);
+      getEl("saveAllBtn")?.addEventListener("click", commitAllStep);
 
       getEl("deckName")?.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
