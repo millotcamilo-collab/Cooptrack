@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -231,13 +232,8 @@
               <span class="colombes-editor__rank">A</span>
               <img src="/assets/icons/cor40.gif" class="colombes-editor__suit" alt="♥">
 
-              <input
-                id="deckName"
-                class="colombes-editor__input colombes-editor__input--title"
-                type="text"
-                placeholder="Título del mazo"
-                autocomplete="off"
-              >
+              <input id="deckName" class="colombes-editor__input colombes-editor__input--title" type="text"
+                placeholder="Título del mazo" autocomplete="off">
             </div>
 
             <div class="colombes-editor__line colombes-editor__line--bottom">
@@ -253,13 +249,8 @@
                 <option value="EUR">EUR</option>
               </select>
 
-              <input
-                id="deckCurrencyName"
-                class="colombes-editor__input colombes-editor__input--currency"
-                type="text"
-                placeholder="Peso uruguayo"
-                autocomplete="off"
-              >
+              <input id="deckCurrencyName" class="colombes-editor__input colombes-editor__input--currency" type="text"
+                placeholder="Peso uruguayo" autocomplete="off">
             </div>
 
             <div id="statusMsg" class="colombes-editor__status"></div>
@@ -335,10 +326,31 @@
       el.style.color = isError ? "#ffb3b3" : "#f5f5f5";
     }
 
+    const DEFAULT_CURRENCY_NAMES = {
+      UYU: "Peso uruguayo",
+      ARS: "Peso argentino",
+      CLP: "Peso chileno",
+      BRL: "Real brasileño",
+      USD: "Dólar estadounidense",
+      EUR: "Euro"
+    };
+
+    function syncCurrencyNameFromCode() {
+      const codeEl = document.getElementById("deckCurrencyCode");
+      const nameEl = document.getElementById("deckCurrencyName");
+
+      if (!codeEl || !nameEl) return;
+
+      const code = String(codeEl.value || "").trim().toUpperCase();
+      const defaultName = DEFAULT_CURRENCY_NAMES[code] || "";
+
+      nameEl.value = defaultName;
+    }
+
     function validateStepOne() {
       const deckName = String(document.getElementById("deckName")?.value || "").trim();
       const currencyCode = String(document.getElementById("deckCurrencyCode")?.value || "").trim();
-      const currencyName = String(document.getElementById("deckCurrencyName")?.value || "").trim();
+      const currencyNameEl = document.getElementById("deckCurrencyName");
 
       if (!deckName) {
         setStatus("Falta el título del mazo", true);
@@ -352,10 +364,8 @@
         return false;
       }
 
-      if (!currencyName) {
-        setStatus("Falta el nombre de la moneda", true);
-        document.getElementById("deckCurrencyName")?.focus();
-        return false;
+      if (currencyNameEl && !String(currencyNameEl.value || "").trim()) {
+        currencyNameEl.value = DEFAULT_CURRENCY_NAMES[currencyCode] || "";
       }
 
       setStatus("Datos listos. Ahora podés aprobar.");
@@ -425,7 +435,9 @@
 
       document.getElementById("saveAllBtn")?.addEventListener("click", handleSaveStepOne);
       document.getElementById("createDeckBtn")?.addEventListener("click", start);
+      document.getElementById("deckCurrencyCode")?.addEventListener("change", syncCurrencyNameFromCode);
     });
   </script>
 </body>
+
 </html>
