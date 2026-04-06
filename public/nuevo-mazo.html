@@ -218,6 +218,37 @@
       height: 88px;
     }
 
+    .nuevo-mazo-server-pack {
+      position: relative;
+      display: inline-block;
+      width: 210px;
+      height: 190px;
+    }
+
+    .nuevo-mazo-server-pack__jokers {
+      position: absolute;
+      left: 0;
+      top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 1;
+    }
+
+    .nuevo-mazo-server-joker {
+      width: auto;
+      height: 82px;
+      display: block;
+    }
+
+    .nuevo-mazo-server-pack #server-aces-stack {
+      position: absolute;
+      left: 42px;
+      /* esto los arrima a los jokers */
+      top: 6px;
+      z-index: 2;
+    }
+
     @media (max-width: 900px) {
       .nuevo-mazo-bar {
         flex-direction: column;
@@ -342,8 +373,8 @@
 
               <div class="lienzo-panel__content">
                 <div class="lienzo-source-cards">
-                  <div class="nuevo-mazo-server-row">
-                    <div class="nuevo-mazo-server-jokers" id="server-fixed-jokers">
+                  <div class="nuevo-mazo-server-pack">
+                    <div class="nuevo-mazo-server-pack__jokers" id="server-fixed-jokers">
                       <img src="/assets/icons/joker_blue.gif" class="nuevo-mazo-server-joker" />
                       <img src="/assets/icons/Joker.gif" class="nuevo-mazo-server-joker" />
                     </div>
