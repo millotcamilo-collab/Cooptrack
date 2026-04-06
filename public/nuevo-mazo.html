@@ -45,7 +45,15 @@
       display: flex;
       align-items: flex-start;
       justify-content: flex-start;
-      padding-top: 10px;
+      padding-top: 18px;
+    }
+
+    .colombes-editor__card-wrap,
+    .amsterdam-pack-wrap {
+      min-height: 120px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
     }
 
     /* CARTA */
@@ -125,7 +133,7 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 18px;
+      gap: 14px;
       width: 100%;
     }
 
@@ -138,13 +146,25 @@
     .colombes-editor__form {
       width: 100%;
       max-width: 560px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .colombes-editor__line {
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+    }
+
+    .colombes-editor__line--top {
+      justify-content: flex-start;
+    }
+
+    .colombes-editor__line--bottom {
+      justify-content: flex-start;
+      padding-left: 32px;
     }
 
     .colombes-editor__rank {
@@ -240,13 +260,15 @@
           </div>
 
           <div class="colombes-editor__form">
-            <div class="colombes-editor__line">
+            <div class="colombes-editor__line colombes-editor__line--top">
               <span class="colombes-editor__rank">A</span>
               <img src="/assets/icons/cor40.gif" class="colombes-editor__suit" alt="♥">
 
               <input id="deckName" class="colombes-editor__input colombes-editor__input--title" type="text"
                 placeholder="Título del mazo" autocomplete="off">
+            </div>
 
+            <div class="colombes-editor__line colombes-editor__line--bottom">
               <img src="/assets/icons/dia40.gif" class="colombes-editor__suit" alt="♦">
 
               <select id="deckCurrencyCode" class="colombes-editor__input colombes-editor__input--code">
@@ -281,12 +303,14 @@
       </div>
 
       <div class="content">
-        <div id="pack" class="pack">
-          <img src="/assets/icons/joker_blue.gif" class="joker-blue">
-          <img src="/assets/icons/Joker.gif" class="joker-red">
-          <img src="/assets/icons/Apike.gif" class="spade">
-          <img src="/assets/icons/Adiamante.gif" class="diamond">
-          <img src="/assets/icons/Atrebol.gif" class="club">
+        <div class="amsterdam-pack-wrap">
+          <div id="pack" class="pack">
+            <img src="/assets/icons/joker_blue.gif" class="joker-blue">
+            <img src="/assets/icons/Joker.gif" class="joker-red">
+            <img src="/assets/icons/Apike.gif" class="spade">
+            <img src="/assets/icons/Adiamante.gif" class="diamond">
+            <img src="/assets/icons/Atrebol.gif" class="club">
+          </div>
         </div>
       </div>
     </div>
