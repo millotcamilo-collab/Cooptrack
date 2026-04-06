@@ -296,10 +296,18 @@
       top: 0px;
       width: 6px;
       height: 10px;
-      border: solid #00e676;
+      border: solid #1d1d1d;
       border-width: 0 2px 2px 0;
       transform: rotate(45deg);
       opacity: 0;
+    }
+
+    .server-next__item.is-checked .server-next__fake-checkbox {
+      background: #ffffff;
+    }
+
+    .server-next__fake-checkbox::after {
+      border-color: #1d1d1d;
     }
 
     /* estado marcado */
@@ -667,28 +675,28 @@
     }
 
     function handleSaveStepOne() {
-  const ok = validateStepOne();
-  if (!ok) return;
+      const ok = validateStepOne();
+      if (!ok) return;
 
-  const form = document.getElementById("colombesForm");
-  if (form) form.classList.add("is-hidden");
+      const form = document.getElementById("colombesForm");
+      if (form) form.classList.add("is-hidden");
 
-  hideEl("saveAllBtn");
+      hideEl("saveAllBtn");
 
-  const placardEl = document.getElementById("placard-container");
-  if (placardEl) {
-    placardEl.classList.remove("is-visible");
-  }
+      const placardEl = document.getElementById("placard-container");
+      if (placardEl) {
+        placardEl.classList.remove("is-visible");
+      }
 
-  renderDeckPlacard();
+      renderDeckPlacard();
 
-  if (placardEl) {
-    void placardEl.offsetWidth;
-    placardEl.classList.add("is-visible");
-  }
+      if (placardEl) {
+        void placardEl.offsetWidth;
+        placardEl.classList.add("is-visible");
+      }
 
-  start();
-}
+      start();
+    }
 
     function renderDeckPlacard() {
       renderPlacard("placard-container", {
