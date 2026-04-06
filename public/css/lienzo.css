@@ -535,6 +535,15 @@ body {
   background: #fff;
   color: #111;
 }
+.lienzo-server-next__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lienzo-server-next__label {
+  flex: 1;
+}
 
 @media (max-width: 900px) {
   .lienzo-grid {

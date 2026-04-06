@@ -390,38 +390,28 @@
     function renderServerNextActionsPanel() {
       return `
     <div class="lienzo-server-next">
-      <div class="lienzo-server-next__title">Se habilitará</div>
 
       <div class="lienzo-server-next__item">
-        <img
-          src="/assets/icons/Sello40.gif"
-          alt="Aprobar"
-          class="lienzo-server-next__icon"
-        />
+        <img src="/assets/icons/Sello40.gif" class="lienzo-server-next__icon" />
         <span class="lienzo-server-next__label">Aprobar J</span>
+        <span class="lienzo-server-next__check">✓</span>
       </div>
 
       <div class="lienzo-server-next__item">
-        <img
-          src="/assets/icons/buzon60.gif"
-          alt="Enviar"
-          class="lienzo-server-next__icon"
-        />
+        <img src="/assets/icons/buzon60.gif" class="lienzo-server-next__icon" />
         <span class="lienzo-server-next__label">Enviar Q</span>
+        <span class="lienzo-server-next__check">✓</span>
       </div>
 
       <div class="lienzo-server-next__item">
-        <img
-          src="/assets/icons/pistola60.gif"
-          alt="Despedir"
-          class="lienzo-server-next__icon"
-        />
+        <img src="/assets/icons/pistola60.gif" class="lienzo-server-next__icon" />
         <span class="lienzo-server-next__label">Despedir Q</span>
+        <span class="lienzo-server-next__check">✓</span>
       </div>
+
     </div>
   `;
     }
-
     function renderFounderFourAcesStack() {
       const sourcePanel = document.querySelector(".lienzo-grid__left .lienzo-source-cards");
       const targetZone = document.getElementById("founder-target-zone");
