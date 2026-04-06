@@ -208,6 +208,25 @@
       font-size: 14px;
       color: #f5f5f5;
     }
+
+    .amsterdam-stage {
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+      width: 100%;
+    }
+
+    .amsterdam-stage__left {
+      flex: 0 0 auto;
+    }
+
+    .amsterdam-stage__right {
+      flex: 0 0 auto;
+    }
+
+    .amsterdam-stage__right {
+      margin-top: 4px;
+    }
   </style>
 </head>
 
@@ -287,14 +306,46 @@
       </div>
 
       <div class="content">
-        <div class="amsterdam-pack-wrap">
-          <div id="pack" class="pack">
-            <img src="/assets/icons/joker_blue.gif" class="joker-blue" alt="Joker azul">
-            <img src="/assets/icons/Joker.gif" class="joker-red" alt="Joker rojo">
-            <img src="/assets/icons/Apike.gif" class="spade" alt="As de picas">
-            <img src="/assets/icons/Adiamante.gif" class="diamond" alt="As de diamantes">
-            <img src="/assets/icons/Atrebol.gif" class="club" alt="As de trébol">
+        <div class="amsterdam-stage">
+
+          <!-- IZQUIERDA: mazo -->
+          <div class="amsterdam-stage__left">
+            <div class="amsterdam-pack-wrap">
+              <div id="pack" class="pack">
+                <img src="/assets/icons/joker_blue.gif" class="joker-blue">
+                <img src="/assets/icons/Joker.gif" class="joker-red">
+                <img src="/assets/icons/Apike.gif" class="spade">
+                <img src="/assets/icons/Adiamante.gif" class="diamond">
+                <img src="/assets/icons/Atrebol.gif" class="club">
+              </div>
+            </div>
           </div>
+
+          <!-- DERECHA: checklist -->
+          <div class="amsterdam-stage__right">
+            <div id="serverNextPanel" class="server-next server-next--readonly">
+
+              <label class="server-next__item">
+                <input type="checkbox" class="server-next__checkbox" disabled>
+                <img src="/assets/icons/Sello40.gif" class="server-next__icon">
+                <span class="server-next__label">Aprobar</span>
+              </label>
+
+              <label class="server-next__item">
+                <input type="checkbox" class="server-next__checkbox" disabled>
+                <img src="/assets/icons/buzon60.gif" class="server-next__icon">
+                <span class="server-next__label">Enviar</span>
+              </label>
+
+              <label class="server-next__item">
+                <input type="checkbox" class="server-next__checkbox" disabled>
+                <img src="/assets/icons/pistola60.gif" class="server-next__icon">
+                <span class="server-next__label">Despedir</span>
+              </label>
+
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -429,7 +480,7 @@
       if (form) form.classList.add("is-hidden");
 
       goToApprovalStep();
-    } 
+    }
 
     function start() {
       if (done) return;
