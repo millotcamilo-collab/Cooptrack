@@ -433,13 +433,13 @@
       if (!targetZone) return;
 
       targetZone.innerHTML = `
-    <div class="lienzo-source-stack lienzo-source-stack--four">
-      <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:0px;" />
-      <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:18px;" />
-      <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:36px;" />
-      <img src="/assets/icons/Acorazon.gif" class="lienzo-source-stack__card" style="left:54px; z-index:0;" />
-    </div>
-  `;
+  <div class="lienzo-source-stack lienzo-source-stack--four">
+    <img src="/assets/icons/Acorazon.gif" class="lienzo-source-stack__card" style="left:0px; z-index:0;" />
+    <img src="/assets/icons/Adiamante.gif" class="lienzo-source-stack__card" style="left:18px;" />
+    <img src="/assets/icons/Apike.gif" class="lienzo-source-stack__card" style="left:36px;" />
+    <img src="/assets/icons/Atrebol.gif" class="lienzo-source-stack__card" style="left:54px;" />
+  </div>
+`;
     }
 
     function setStatus(message, isError = false) {
