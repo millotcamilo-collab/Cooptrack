@@ -69,7 +69,7 @@
   flex: 0 1 auto;
   font-size: 1.1rem;
   font-weight: 500;
-  color: #111;
+  color: #ffffff;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -86,14 +86,14 @@
 .placard__currency-code {
   font-size: 1rem;
   font-weight: 600;
-  color: #111;
+  color: #ffffff;
   text-transform: uppercase;
 }
 
 .placard__currency-name {
   font-size: 1rem;
   font-weight: 400;
-  color: #333;
+  color: #e4e4e4;
 }
 
 /* DERECHA (acciones futuras si querés) */
