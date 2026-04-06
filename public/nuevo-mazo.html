@@ -1,167 +1,338 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nuevo Mazo</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuevo Mazo</title>
 
-<style>
-body {
-  margin: 0;
-  font-family: sans-serif;
-  background: radial-gradient(circle, #145c44, #0f3d2e);
-  color: white;
-}
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: radial-gradient(circle, #145c44, #0f3d2e);
+      color: white;
+    }
 
-/* GRID */
-.lienzo-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  padding: 20px;
-}
+    /* GRID */
+    .lienzo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
 
-/* PANEL */
-.panel {
-  background: rgba(0,0,0,0.25);
-  border-radius: 12px;
-  padding: 16px;
-  height: 420px;
-  display: flex;
-  flex-direction: column;
-}
+    /* PANEL */
+    .panel {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 12px;
+      padding: 16px;
+      height: 420px;
+      display: flex;
+      flex-direction: column;
+    }
 
-/* HEADER */
-.header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+    /* HEADER */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-/* CONTENIDO */
-.content {
-  flex: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding-top: 10px;
-}
+    /* CONTENIDO */
+    .content {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding-top: 10px;
+    }
 
-/* CARTA */
-.card {
-  height: 120px;
-}
+    /* CARTA */
+    .card {
+      height: 120px;
+    }
 
-/* MANOJO */
-.pack {
-  position: relative;
-  width: 170px;
-  height: 170px;
-}
+    /* MANOJO */
+    .pack {
+      position: relative;
+      width: 170px;
+      height: 170px;
+    }
 
-.pack img {
-  position: absolute;
-  height: 120px;
-}
+    .pack img {
+      position: absolute;
+      height: 120px;
+    }
 
-/* ORDEN */
-.joker-blue { left: 0; bottom: 0; z-index: 1; }
-.joker-red { left: 14px; bottom: 10px; z-index: 2; }
-.spade { left: 28px; bottom: 20px; z-index: 3; }
-.diamond { left: 42px; bottom: 30px; z-index: 4; }
-.club { left: 56px; bottom: 40px; z-index: 5; }
+    /* ORDEN */
+    .joker-blue {
+      left: 0;
+      bottom: 0;
+      z-index: 1;
+    }
 
-/* FINAL (solo jokers) */
-.pack.jokers-only .joker-blue { left: 0; bottom: 0; }
-.pack.jokers-only .joker-red { left: 16px; bottom: 10px; }
+    .joker-red {
+      left: 14px;
+      bottom: 0;
+      z-index: 2;
+    }
 
-/* BOTON */
-button {
-  margin: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
-}
-</style>
+    .spade {
+      left: 28px;
+      bottom: 0;
+      z-index: 3;
+    }
+
+    .diamond {
+      left: 42px;
+      bottom: 0;
+      z-index: 4;
+    }
+
+    .club {
+      left: 56px;
+      bottom: 0;
+      z-index: 5;
+    }
+
+    /* FINAL (solo jokers) */
+    .pack.jokers-only .joker-blue {
+      left: 0;
+      bottom: 0;
+    }
+
+    .pack.jokers-only .joker-red {
+      left: 16px;
+      bottom: 10px;
+    }
+
+    /* BOTON */
+    button {
+      margin: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .colombes-content {
+      width: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+
+    .colombes-editor {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 18px;
+      width: 100%;
+    }
+
+    .colombes-editor__card-wrap {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+
+    .colombes-editor__form {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .colombes-editor__line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .colombes-editor__rank {
+      font-size: 25px;
+      font-weight: 700;
+      color: #d32f2f;
+      line-height: 1;
+    }
+
+    .colombes-editor__suit {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .colombes-editor__input {
+      border: 1px solid #bdbdbd;
+      border-radius: 6px;
+      background: #fff;
+      color: #111;
+      padding: 6px 8px;
+      font-size: 14px;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .colombes-editor__input--title {
+      min-width: 220px;
+      width: 220px;
+      font-weight: 600;
+    }
+
+    .colombes-editor__input--code {
+      width: 70px;
+      min-width: 70px;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .colombes-editor__input--currency {
+      min-width: 170px;
+      width: 170px;
+    }
+
+    .colombes-editor__save {
+      background: transparent;
+      border: none;
+      padding: 2px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    .colombes-editor__save img {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+
+    .colombes-editor__save:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .colombes-editor__status {
+      min-height: 20px;
+      margin-top: 8px;
+      font-size: 14px;
+      color: #f5f5f5;
+    }
+  </style>
 </head>
 
 <body>
 
-<button onclick="start()">Crear mazo</button>
+  <button onclick="start()">Crear mazo</button>
 
-<div class="lienzo-grid">
+  <div class="lienzo-grid">
 
-  <!-- COLOMBES -->
-  <div class="panel">
-    <div class="header">
-      <img src="/assets/icons/singeta120.gif" width="40">
-      <span>Usuario</span>
-    </div>
+    <!-- COLOMBES -->
+    <div class="panel">
+      <div class="header">
+        <img src="/assets/icons/singeta120.gif" width="40">
+        <span>Usuario</span>
+      </div>
 
-    <div class="content" id="colombes">
-      <img src="/assets/icons/Acorazon.gif" class="card">
-    </div>
-  </div>
+      <div class="content colombes-content">
+        <div class="colombes-editor">
+          <div class="colombes-editor__card-wrap">
+            <img src="/assets/icons/Acorazon.gif" class="card" alt="As de corazón">
+          </div>
 
-  <!-- AMSTERDAM -->
-  <div class="panel">
-    <div class="header">
-      <img src="/assets/icons/Compila60.gif" width="40">
-      <span>Cooptrack server</span>
-    </div>
+          <div class="colombes-editor__form">
+            <div class="colombes-editor__line">
+              <span class="colombes-editor__rank">A</span>
+              <img src="/assets/icons/cor40.gif" class="colombes-editor__suit" alt="♥">
 
-    <div class="content">
-      <div id="pack" class="pack">
-        <img src="/assets/icons/joker_blue.gif" class="joker-blue">
-        <img src="/assets/icons/Joker.gif" class="joker-red">
-        <img src="/assets/icons/Apike.gif" class="spade">
-        <img src="/assets/icons/Adiamante.gif" class="diamond">
-        <img src="/assets/icons/Atrebol.gif" class="club">
+              <input id="deckName" class="colombes-editor__input colombes-editor__input--title" type="text"
+                placeholder="Título del mazo" autocomplete="off">
+
+              <img src="/assets/icons/dia40.gif" class="colombes-editor__suit" alt="♦">
+
+              <select id="deckCurrencyCode" class="colombes-editor__input colombes-editor__input--code">
+                <option value="">---</option>
+                <option value="UYU">UYU</option>
+                <option value="ARS">ARS</option>
+                <option value="CLP">CLP</option>
+                <option value="BRL">BRL</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+              </select>
+
+              <input id="deckCurrencyName" class="colombes-editor__input colombes-editor__input--currency" type="text"
+                placeholder="Peso uruguayo" autocomplete="off">
+
+              <button id="saveAllBtn" type="button" class="colombes-editor__save" aria-label="Guardar">
+                <img src="/assets/icons/salvar40.gif" alt="Guardar">
+              </button>
+            </div>
+
+            <div id="statusMsg" class="colombes-editor__status"></div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- AMSTERDAM -->
+    <div class="panel">
+      <div class="header">
+        <img src="/assets/icons/Compila60.gif" width="40">
+        <span>Cooptrack server</span>
+      </div>
+
+      <div class="content">
+        <div id="pack" class="pack">
+          <img src="/assets/icons/joker_blue.gif" class="joker-blue">
+          <img src="/assets/icons/Joker.gif" class="joker-red">
+          <img src="/assets/icons/Apike.gif" class="spade">
+          <img src="/assets/icons/Adiamante.gif" class="diamond">
+          <img src="/assets/icons/Atrebol.gif" class="club">
+        </div>
+      </div>
+    </div>
+
   </div>
 
-</div>
+  <script>
 
-<script>
+    let done = false;
 
-let done = false;
+    function start() {
+      if (done) return;
 
-function start() {
-  if (done) return;
+      const pack = document.getElementById("pack");
+      const colombes = document.getElementById("colombes");
 
-  const pack = document.getElementById("pack");
-  const colombes = document.getElementById("colombes");
+      const rectStart = pack.getBoundingClientRect();
+      const rectEnd = colombes.getBoundingClientRect();
 
-  const rectStart = pack.getBoundingClientRect();
-  const rectEnd = colombes.getBoundingClientRect();
+      const ghost = document.createElement("div");
+      ghost.className = "pack";
+      ghost.style.position = "fixed";
+      ghost.style.left = rectStart.left + 28 + "px";
+      ghost.style.top = rectStart.top + "px";
+      ghost.style.zIndex = 9999;
+      ghost.style.transition = "all 0.6s ease";
 
-  const ghost = document.createElement("div");
-  ghost.className = "pack";
-  ghost.style.position = "fixed";
-  ghost.style.left = rectStart.left + 28 + "px";
-  ghost.style.top = rectStart.top + "px";
-  ghost.style.zIndex = 9999;
-  ghost.style.transition = "all 0.6s ease";
-
-  ghost.innerHTML = `
+      ghost.innerHTML = `
     <img src="/assets/icons/Apike.gif" class="spade">
     <img src="/assets/icons/Adiamante.gif" class="diamond">
     <img src="/assets/icons/Atrebol.gif" class="club">
   `;
 
-  document.body.appendChild(ghost);
+      document.body.appendChild(ghost);
 
-  requestAnimationFrame(() => {
-    ghost.style.left = rectEnd.left + "px";
-    ghost.style.top = rectEnd.top + "px";
-  });
+      requestAnimationFrame(() => {
+        ghost.style.left = rectEnd.left + "px";
+        ghost.style.top = rectEnd.top + "px";
+      });
 
-  ghost.addEventListener("transitionend", () => {
+      ghost.addEventListener("transitionend", () => {
 
-    ghost.remove();
+        ghost.remove();
 
-    /* COLOMBES FINAL */
-    colombes.innerHTML = `
+        /* COLOMBES FINAL */
+        colombes.innerHTML = `
       <div class="pack">
         <img src="/assets/icons/Acorazon.gif" style="left:0px; z-index:1;">
         <img src="/assets/icons/Apike.gif" style="left:18px; z-index:2;">
@@ -170,19 +341,20 @@ function start() {
       </div>
     `;
 
-    /* AMSTERDAM FINAL */
-    pack.className = "pack jokers-only";
-    pack.innerHTML = `
+        /* AMSTERDAM FINAL */
+        pack.className = "pack jokers-only";
+        pack.innerHTML = `
       <img src="/assets/icons/joker_blue.gif" class="joker-blue">
       <img src="/assets/icons/Joker.gif" class="joker-red">
     `;
 
-    done = true;
+        done = true;
 
-  }, { once: true });
-}
+      }, { once: true });
+    }
 
-</script>
+  </script>
 
 </body>
+
 </html>
