@@ -306,8 +306,10 @@
     <!-- COLOMBES -->
     <div class="panel" id="colombes-panel">
       <div class="header">
-        <img id="userPhoto" src="/assets/icons/singeta120.gif" width="40" alt="Usuario">
-        <span id="userNickname">Usuario</span>
+        <div class="lienzo-target-header">
+          <img id="userPhoto" class="lienzo-target-header__photo" src="/assets/icons/singeta120.gif" alt="Usuario">
+          <span id="userNickname" class="lienzo-target-header__name">Usuario</span>
+        </div>
       </div>
 
       <div class="content colombes-content">
@@ -606,6 +608,16 @@
       goToApprovalStep();
     }
 
+    function checkAllServerNextItems() {
+      const panel = document.getElementById("serverNextPanel");
+      if (!panel) return;
+
+      const items = panel.querySelectorAll(".server-next__item");
+      items.forEach((item) => {
+        item.classList.add("is-checked");
+      });
+    }
+
     function start() {
       if (done) return;
 
@@ -648,6 +660,7 @@
   `;
 
         enableServerNextPanel();
+        checkAllServerNextItems();
 
         done = true;
       }, { once: true });
@@ -658,7 +671,7 @@
       hideEl("createDeckBtn");
 
       await loadDefaultCurrencyFromProfile();
-      await loadUserHeader(); 
+      await loadUserHeader();
 
       bindServerNextClicks();
 
