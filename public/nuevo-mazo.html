@@ -227,7 +227,7 @@
             <img src="/assets/icons/Acorazon.gif" class="card" alt="As de corazón">
           </div>
 
-          <div class="colombes-editor__form">
+          <div id="colombesForm" class="colombes-editor__form">
             <div class="colombes-editor__line colombes-editor__line--top">
               <span class="colombes-editor__rank">A</span>
               <img src="/assets/icons/cor40.gif" class="colombes-editor__suit" alt="♥">
@@ -424,8 +424,12 @@
       const ok = validateStepOne();
       if (!ok) return;
 
+      // ocultar formulario
+      const form = document.getElementById("colombesForm");
+      if (form) form.classList.add("is-hidden");
+
       goToApprovalStep();
-    }
+    } F
 
     function start() {
       if (done) return;
