@@ -30,21 +30,18 @@
 
     return `
       <div class="placard__currency">
-        ${
-          iconSrc
-            ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__suit" />`
-            : ""
-        }
-        ${
-          currencyCode
-            ? `<span class="placard__currency-code">${escapeHtml(currencyCode)}</span>`
-            : ""
-        }
-        ${
-          currencyName
-            ? `<span class="placard__currency-name">${escapeHtml(currencyName)}</span>`
-            : ""
-        }
+        ${iconSrc
+        ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__suit" />`
+        : ""
+      }
+        ${currencyCode
+        ? `<span class="placard__currency-code">${escapeHtml(currencyCode)}</span>`
+        : ""
+      }
+        ${currencyName
+        ? `<span class="placard__currency-name">${escapeHtml(currencyName)}</span>`
+        : ""
+      }
       </div>
     `;
   }
@@ -155,19 +152,17 @@
           <div class="placard__titleline">
             <span class="placard__rank">${escapeHtml(rank)}</span>
 
-            ${
-              suitIcon
-                ? `<img src="${escapeHtml(suitIcon)}" alt="" class="placard__suit" />`
-                : ""
-            }
+            ${suitIcon
+        ? `<img src="${escapeHtml(suitIcon)}" alt="" class="placard__suit" />`
+        : ""
+      }
 
             <span class="placard__name">${escapeHtml(title)}</span>
 
-            ${
-              showCurrency
-                ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
-                : ""
-            }
+            ${showCurrency
+        ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
+        : ""
+      }
           </div>
 
           ${photoEditorHtml}

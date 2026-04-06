@@ -498,6 +498,8 @@
 
   <script>
     let done = false;
+    let deckPhotoUrl = "";
+    let isEditingPlacardPhoto = false;
 
     function showEl(id) {
       const el = document.getElementById(id);
@@ -665,35 +667,73 @@
     }
 
     function handleSaveStepOne() {
-      const ok = validateStepOne();
-      if (!ok) return;
+  const ok = validateStepOne();
+  if (!ok) return;
 
-      const form = document.getElementById("colombesForm");
-      if (form) form.classList.add("is-hidden");
+  const form = document.getElementById("colombesForm");
+  if (form) form.classList.add("is-hidden");
 
-      hideEl("saveAllBtn");
+  hideEl("saveAllBtn");
 
-      const placardEl = document.getElementById("placard-container");
-      if (placardEl) {
-        placardEl.classList.remove("is-visible");
-      }
+  const placardEl = document.getElementById("placard-container");
+  if (placardEl) {
+    placardEl.classList.remove("is-visible");
+  }
 
+  renderDeckPlacard();
+
+  if (placardEl) {
+    void placardEl.offsetWidth;
+    placardEl.classList.add("is-visible");
+  }
+
+  start();
+}
+
+    function renderDeckPlacard() {
       renderPlacard("placard-container", {
-        photoUrl: document.getElementById("userPhoto")?.src,
+        deckPhotoUrl: deckPhotoUrl,
         rank: "A",
         suit: "HEART",
         title: document.getElementById("deckName")?.value,
         currencyCode: document.getElementById("deckCurrencyCode")?.value,
         currencyName: document.getElementById("deckCurrencyName")?.value,
-        showCurrency: true
+        showCurrency: true,
+        canEditPhoto: true,
+        isEditingPhoto: isEditingPlacardPhoto,
+        draftPhotoUrl: deckPhotoUrl
       });
 
-      if (placardEl) {
-        void placardEl.offsetWidth; // fuerza reflow
-        placardEl.classList.add("is-visible");
+      bindPlacardPhotoControls();
+    }
+
+    function bindPlacardPhotoControls() {
+      const photoBtn = document.getElementById("placardPhotoBtn");
+      const saveBtn = document.getElementById("placardPhotoSaveBtn");
+      const cancelBtn = document.getElementById("placardPhotoCancelBtn");
+      const input = document.getElementById("placardPhotoUrlInput");
+
+      if (photoBtn) {
+        photoBtn.addEventListener("click", () => {
+          isEditingPlacardPhoto = true;
+          renderDeckPlacard();
+        });
       }
 
-      start();
+      if (saveBtn) {
+        saveBtn.addEventListener("click", () => {
+          deckPhotoUrl = String(input?.value || "").trim();
+          isEditingPlacardPhoto = false;
+          renderDeckPlacard();
+        });
+      }
+
+      if (cancelBtn) {
+        cancelBtn.addEventListener("click", () => {
+          isEditingPlacardPhoto = false;
+          renderDeckPlacard();
+        });
+      }
     }
 
     function checkAllServerNextItems() {
