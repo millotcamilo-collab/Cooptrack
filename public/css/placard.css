@@ -25,8 +25,8 @@
   object-fit: cover;
   border-radius: 10px;
   display: block;
-  background: #f3f3f3;
-  border: 1px solid #d8d8d8;
+  background: transparent;
+  border: none;
 }
 
 /* CENTRO */
@@ -123,6 +123,25 @@
 #placard-container.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.placard__photo-action {
+  height: 25px;
+  width: auto;
+  padding: 2px 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.placard__photo-action img {
+  height: 100%;
+  width: auto;
+  display: block;
 }
 
 /* RESPONSIVE */
