@@ -72,9 +72,9 @@ body {
 }
 
 .lienzo-card-image {
-  width: 180px;
+  width: auto;
   max-width: 100%;
-  height: auto;
+  height: 120;
   display: block;
   transition: transform 0.2s ease;
 }
@@ -82,7 +82,7 @@ body {
 .lienzo-source-stack--four {
   width: 260px;
   height: 300px;
-  margin: 0 auto;
+  margin: 0;
 }
 
 #founder-target-zone {
@@ -368,8 +368,8 @@ body {
 .lienzo-source-stack__card {
   position: absolute;
   top: 24px;
-  width: 180px;
-  height: auto;
+  width: auto;
+  height: 120px;
   z-index: 1;
 }
 
