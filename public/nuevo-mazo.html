@@ -309,6 +309,43 @@
       border-color: #fff;
       cursor: pointer;
     }
+
+    .colombes-final-stack {
+      position: relative;
+      width: 190px;
+      height: 140px;
+    }
+
+    .colombes-final-stack img {
+      position: absolute;
+      height: 120px;
+      width: auto;
+      display: block;
+    }
+
+    .colombes-final-stack__heart {
+      left: 0;
+      top: 18px;
+      z-index: 1;
+    }
+
+    .colombes-final-stack__spade {
+      left: 18px;
+      top: 0;
+      z-index: 2;
+    }
+
+    .colombes-final-stack__diamond {
+      left: 36px;
+      top: 0;
+      z-index: 3;
+    }
+
+    .colombes-final-stack__club {
+      left: 54px;
+      top: 0;
+      z-index: 4;
+    }
   </style>
 </head>
 
@@ -327,7 +364,7 @@
 
       <div class="content colombes-content">
         <div class="colombes-editor">
-          <div class="colombes-editor__card-wrap">
+          <div id="colombesCardZone" class="colombes-editor__card-wrap">
             <img src="/assets/icons/Acorazon.gif" class="card" alt="As de corazón">
           </div>
 
@@ -635,42 +672,54 @@
       if (done) return;
 
       const pack = document.getElementById("pack");
-      const colombesPanel = document.getElementById("colombes-panel");
+      const colombesCardZone = document.getElementById("colombesCardZone");
 
-      if (!pack || !colombesPanel) return;
+      if (!pack || !colombesCardZone) return;
 
-      const rectStart = pack.getBoundingClientRect();
-      const rectEnd = colombesPanel.getBoundingClientRect();
+      const packRect = pack.getBoundingClientRect();
+      const targetRect = colombesCardZone.getBoundingClientRect();
 
       const ghost = document.createElement("div");
       ghost.className = "pack";
       ghost.style.position = "fixed";
-      ghost.style.left = rectStart.left + 28 + "px";
-      ghost.style.top = rectStart.top + "px";
+      ghost.style.left = (packRect.left + 28) + "px";
+      ghost.style.top = packRect.top + "px";
+      ghost.style.width = "120px";
+      ghost.style.height = "120px";
       ghost.style.zIndex = "9999";
+      ghost.style.pointerEvents = "none";
       ghost.style.transition = "all 0.6s ease";
 
       ghost.innerHTML = `
-        <img src="/assets/icons/Apike.gif" class="spade" alt="As de picas">
-        <img src="/assets/icons/Adiamante.gif" class="diamond" alt="As de diamantes">
-        <img src="/assets/icons/Atrebol.gif" class="club" alt="As de trébol">
-      `;
+    <img src="/assets/icons/Apike.gif" class="spade" alt="As de picas">
+    <img src="/assets/icons/Adiamante.gif" class="diamond" alt="As de diamantes">
+    <img src="/assets/icons/Atrebol.gif" class="club" alt="As de trébol">
+  `;
 
       document.body.appendChild(ghost);
 
       requestAnimationFrame(() => {
-        ghost.style.left = rectEnd.left + "px";
-        ghost.style.top = rectEnd.top + "px";
+        ghost.style.left = (targetRect.left + 18) + "px";
+        ghost.style.top = targetRect.top + "px";
       });
 
       ghost.addEventListener("transitionend", () => {
         ghost.remove();
 
+        colombesCardZone.innerHTML = `
+      <div class="colombes-final-stack">
+        <img src="/assets/icons/Acorazon.gif" class="colombes-final-stack__heart" alt="As de corazón">
+        <img src="/assets/icons/Apike.gif" class="colombes-final-stack__spade" alt="As de picas">
+        <img src="/assets/icons/Adiamante.gif" class="colombes-final-stack__diamond" alt="As de diamantes">
+        <img src="/assets/icons/Atrebol.gif" class="colombes-final-stack__club" alt="As de trébol">
+      </div>
+    `;
+
         pack.className = "pack jokers-only";
         pack.innerHTML = `
-    <img src="/assets/icons/joker_blue.gif" class="joker-blue" alt="Joker azul">
-    <img src="/assets/icons/Joker.gif" class="joker-red" alt="Joker rojo">
-  `;
+      <img src="/assets/icons/joker_blue.gif" class="joker-blue" alt="Joker azul">
+      <img src="/assets/icons/Joker.gif" class="joker-red" alt="Joker rojo">
+    `;
 
         enableServerNextPanel();
         checkAllServerNextItems();
