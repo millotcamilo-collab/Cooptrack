@@ -256,6 +256,47 @@
       pointer-events: auto;
       opacity: 1;
     }
+
+    .server-next__fake-checkbox {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #bbb;
+      border-radius: 3px;
+      background: transparent;
+      display: inline-block;
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    /* tilde (oculta por defecto) */
+    .server-next__fake-checkbox::after {
+      content: "";
+      position: absolute;
+      left: 2px;
+      top: 0px;
+      width: 6px;
+      height: 10px;
+      border: solid #00e676;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+      opacity: 0;
+    }
+
+    /* estado marcado */
+    .server-next__item.is-checked .server-next__fake-checkbox::after {
+      opacity: 1;
+    }
+
+    /* modo readonly */
+    .server-next--readonly .server-next__fake-checkbox {
+      opacity: 0.5;
+    }
+
+    /* modo editable */
+    .server-next--editable .server-next__fake-checkbox {
+      border-color: #fff;
+      cursor: pointer;
+    }
   </style>
 </head>
 
@@ -355,21 +396,21 @@
             <div id="serverNextPanel" class="server-next server-next--readonly">
 
               <label class="server-next__item">
-                <input type="checkbox" class="server-next__checkbox" disabled>
+                <span class="server-next__fake-checkbox"></span>
                 <img src="/assets/icons/Sello40.gif" class="server-next__icon">
-                <span class="server-next__label">Aprobar</span>
+                <span class="server-next__label">Aprobar J ♠ ♥ ♦ ♣</span>
               </label>
 
               <label class="server-next__item">
-                <input type="checkbox" class="server-next__checkbox" disabled>
+                <span class="server-next__fake-checkbox"></span>
                 <img src="/assets/icons/buzon60.gif" class="server-next__icon">
-                <span class="server-next__label">Enviar</span>
+                <span class="server-next__label">Enviar Q ♠</span>
               </label>
 
               <label class="server-next__item">
-                <input type="checkbox" class="server-next__checkbox" disabled>
+                <span class="server-next__fake-checkbox"></span>
                 <img src="/assets/icons/pistola60.gif" class="server-next__icon">
-                <span class="server-next__label">Despedir</span>
+                <span class="server-next__label">Despedir Q ♠</span>
               </label>
 
             </div>
@@ -510,6 +551,7 @@
       const checkboxes = panel.querySelectorAll(".server-next__checkbox");
       checkboxes.forEach((checkbox) => {
         checkbox.disabled = false;
+        checkbox.removeAttribute("disabled");
       });
     }
 
