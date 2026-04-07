@@ -315,6 +315,23 @@
     };
   }
 
+  function renderLienzoActions() {
+    const saveIcon = window.ICONS?.actions?.save || "/assets/icons/salvar40.gif";
+    const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
+
+    return `
+    <div class="lienzo-panel__actions">
+      <button id="lienzo-save-btn" class="icon-btn" title="Salvar">
+        <img src="${saveIcon}" alt="Salvar" />
+      </button>
+
+      <button id="lienzo-exit-btn" class="icon-btn" title="Exit">
+        <img src="${exitIcon}" alt="Exit" />
+      </button>
+    </div>
+  `;
+  }
+
   function renderSourcePlayerPanel(play) {
     const user = resolveSourceUser(play);
     const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
@@ -327,25 +344,27 @@
     const scene = buildSourceCardsScene(play);
 
     return `
-      <section class="lienzo-panel lienzo-panel--source">
-        <div class="lienzo-source-header">
-          <img
-            class="lienzo-source-header__photo"
-            src="${escapeHtml(userPhoto)}"
-            alt="${escapeHtml(userName)}"
-          />
-          <div class="lienzo-source-header__name">
-            ${escapeHtml(userName)}
-          </div>
+    <section class="lienzo-panel lienzo-panel--source">
+      <div class="lienzo-source-header">
+        <img
+          class="lienzo-source-header__photo"
+          src="${escapeHtml(userPhoto)}"
+          alt="${escapeHtml(userName)}"
+        />
+        <div class="lienzo-source-header__name">
+          ${escapeHtml(userName)}
         </div>
+      </div>
 
-        <div class="lienzo-source-cards">
-          <div class="lienzo-source-stack">
-            ${scene.backgroundCards.map(renderBackgroundCard).join("")}
-          </div>
+      <div class="lienzo-source-cards">
+        <div class="lienzo-source-stack">
+          ${scene.backgroundCards.map(renderBackgroundCard).join("")}
         </div>
-      </section>
-    `;
+      </div>
+
+      ${renderLienzoActions()}
+    </section>
+  `;
   }
 
   function renderTargetPlayerPanel(play) {
