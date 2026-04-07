@@ -168,7 +168,7 @@
   }
 
   function showTableroView() {
-    hideElement("autoridades-container");
+    hideElement("administradores-container");
     showElement("tablero-container");
     showElement("playform-container");
     showAddJButton();
@@ -177,7 +177,7 @@
 
   function showAutoridadesView(mode) {
     hideElement("tablero-container");
-    showElement("autoridades-container");
+    showElement("administradores-container");
     hideElement("playform-container");
     hideAddJButton();
     showBackToTableroButton();
