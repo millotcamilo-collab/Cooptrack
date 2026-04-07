@@ -6,6 +6,11 @@
   box-sizing: border-box;
 }
 
+#mazobar-container {
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
 .mazobar .page-container {
   max-width: 1180px;
   margin: 0 auto;

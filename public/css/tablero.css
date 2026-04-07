@@ -1,5 +1,6 @@
 .tablero {
   width: 100%;
+  --layout-padding: 20px;
 }
 
 .tablero-row {
@@ -8,11 +9,13 @@
   gap: 12px;
   align-items: start;
   border: 1px dotted #777;
-  padding: 10px 12px;
+  padding: 20px;
+  margin: 0 var(--layout-padding);
   background: #fffdf8;
   border-radius: 8px;
   box-sizing: border-box;
 }
+
 .tablero-row__amount-line {
   display: flex;
   align-items: center;
@@ -32,6 +35,7 @@
   background: #fff;
   box-sizing: border-box;
 }
+
 .tablero-row__fields {
   display: flex;
   flex-wrap: wrap;
@@ -57,6 +61,7 @@
   background: #fff;
   box-sizing: border-box;
 }
+
 .tablero-row--child {
   margin-left: 36px;
   border-left: 3px solid #d8d8d8;
