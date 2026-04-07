@@ -450,22 +450,24 @@
             </div>
 
             <div class="colombes-editor__line colombes-editor__line--bottom">
-              <!-- espacio para alinear con la A -->
-              <span></span>
+              <span aria-hidden="true"></span>
+
               <img src="/assets/icons/dia40.gif" class="colombes-editor__suit" alt="♦">
 
-              <select id="deckCurrencyCode" class="colombes-editor__input colombes-editor__input--code">
-                <option value="">---</option>
-                <option value="UYU">UYU</option>
-                <option value="ARS">ARS</option>
-                <option value="CLP">CLP</option>
-                <option value="BRL">BRL</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-              </select>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <select id="deckCurrencyCode" class="colombes-editor__input colombes-editor__input--code">
+                  <option value="">---</option>
+                  <option value="UYU">UYU</option>
+                  <option value="ARS">ARS</option>
+                  <option value="CLP">CLP</option>
+                  <option value="BRL">BRL</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                </select>
 
-              <input id="deckCurrencyName" class="colombes-editor__input colombes-editor__input--currency" type="text"
-                placeholder="Peso uruguayo" autocomplete="off">
+                <input id="deckCurrencyName" class="colombes-editor__input colombes-editor__input--currency" type="text"
+                  placeholder="Peso uruguayo" autocomplete="off">
+              </div>
             </div>
 
             <div id="statusMsg" class="colombes-editor__status"></div>
