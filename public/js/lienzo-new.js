@@ -335,14 +335,8 @@
       <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
         <!-- acá aterriza la carta -->
       </div>
-
-      <div class="lienzo-target-actions">
-        ${renderActionButtons()}
-      </div>
     </section>
   `;
-
-    bindActionButtons();
   }
 
   function renderActionButtons() {
@@ -617,23 +611,23 @@
       window.__lienzoAnimationState?.sourceCardDelivered === true;
 
     return `
-    <section class="lienzo-panel lienzo-panel--source">
-      <div class="lienzo-source-header">
-        <img
-          class="lienzo-source-header__photo"
-          src="${escapeHtml(userPhoto)}"
-          alt="${escapeHtml(userName)}"
-        />
-        <div class="lienzo-source-header__name">
-          ${escapeHtml(userName)}
-        </div>
+  <section class="lienzo-panel lienzo-panel--source">
+    <div class="lienzo-source-header">
+      <img
+        class="lienzo-source-header__photo"
+        src="${escapeHtml(userPhoto)}"
+        alt="${escapeHtml(userName)}"
+      />
+      <div class="lienzo-source-header__name">
+        ${escapeHtml(userName)}
       </div>
+    </div>
 
-      <div class="lienzo-source-cards">
-        <div class="lienzo-source-stack">
-          ${scene.backgroundCards.map(renderBackgroundCard).join("")}
+    <div class="lienzo-source-cards">
+      <div class="lienzo-source-stack">
+        ${scene.backgroundCards.map(renderBackgroundCard).join("")}
 
-          ${delivered
+        ${delivered
         ? ""
         : `
             <div class="lienzo-source-active">
@@ -651,10 +645,20 @@
             </div>
           `
       }
-        </div>
       </div>
-    </section>
-  `;
+    </div>
+
+    ${delivered
+        ? `
+      <div class="lienzo-panel__actions">
+        ${renderActionButtons()}
+      </div>
+    `
+        : ""
+      }
+  </section>
+`;
+
   }
 
   function renderDraftCardPanel(draft) {
