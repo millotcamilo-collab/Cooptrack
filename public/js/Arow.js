@@ -32,10 +32,11 @@
 
   function getOwnerPhoto(play) {
     return (
+      play?.targetProfilePhotoUrl ||
       play?.target_user_profile_photo_url ||
       play?.target_profile_photo_url ||
-      play?.created_by_profile_photo_url ||
       play?.createdByProfilePhotoUrl ||
+      play?.created_by_profile_photo_url ||
       "/assets/icons/singeta120.gif"
     );
   }

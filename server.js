@@ -847,24 +847,26 @@ async function getMazoStateHandler(req, res) {
 
     const result = await pool.query(
       `SELECT
-         p.*,
-         creator.nickname AS created_by_nickname,
-         target.nickname AS target_user_nickname,
-         EXISTS (
-           SELECT 1
-           FROM play_recurrences pr
-           WHERE pr.play_id = p.id
-         ) AS has_recurrence
-       FROM plays p
-       INNER JOIN deck_members dm
-         ON dm.deck_id = p.deck_id
-       LEFT JOIN users creator
-         ON creator.id = p.created_by_user_id
-       LEFT JOIN users target
-         ON target.id = p.target_user_id
-       WHERE p.deck_id = $1
-         AND dm.user_id = $2
-       ORDER BY p.id ASC`,
+     p.*,
+     creator.nickname AS created_by_nickname,
+     creator.profile_photo_url AS created_by_profile_photo_url,
+     target.nickname AS target_user_nickname,
+     target.profile_photo_url AS target_user_profile_photo_url,
+     EXISTS (
+       SELECT 1
+       FROM play_recurrences pr
+       WHERE pr.play_id = p.id
+     ) AS has_recurrence
+   FROM plays p
+   INNER JOIN deck_members dm
+     ON dm.deck_id = p.deck_id
+   LEFT JOIN users creator
+     ON creator.id = p.created_by_user_id
+   LEFT JOIN users target
+     ON target.id = p.target_user_id
+   WHERE p.deck_id = $1
+     AND dm.user_id = $2
+   ORDER BY p.id ASC`,
       [mazoId, userId]
     );
 
