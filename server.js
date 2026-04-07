@@ -1132,164 +1132,50 @@ app.post('/plays', requireAuth, async (req, res) => {
     client.release();
   }
 });
-app.patch('/plays/:id', requireAuth, async (req, res) => {
+
+app.patch('/decks/:id', requireAuth, async (req, res) => {
   const client = await pool.connect();
 
   try {
-    console.log("PATCH /plays/:id req.body =", req.body);
+    const deckId = Number(req.params.id);
+    const { deck_image_url } = req.body || {};
 
-    const playId = Number(req.params.id);
-    const {
-      text,
-      spadeMode,
-      startDate,
-      endDate,
-      location,
-      amount,
-      play_status,
-      card_suit
-    } = req.body || {};
-
-    if (!playId) {
+    if (!deckId) {
       return res.status(400).json({
         ok: false,
-        error: 'playId inválido'
+        error: 'deckId inválido'
       });
     }
-
-    const existingResult = await client.query(
-      `
-      SELECT *
-      FROM plays
-      WHERE id = $1
-      LIMIT 1
-      `,
-      [playId]
-    );
-
-    if (!existingResult.rows.length) {
-      return res.status(404).json({
-        ok: false,
-        error: 'Jugada no encontrada'
-      });
-    }
-
-    const current = existingResult.rows[0];
-
-    // -----------------------------
-    // NORMALIZACIÓN DE CAMPOS
-    // -----------------------------
-
-    const nextPlayText =
-      text !== undefined
-        ? (String(text || '').trim() || null)
-        : current.play_text;
-
-    const nextSpadeMode =
-      spadeMode !== undefined
-        ? (String(spadeMode || '').trim().toUpperCase() || null)
-        : current.spade_mode;
-
-    const nextStartDate =
-      startDate !== undefined ? (startDate || null) : current.start_date;
-
-    const nextEndDate =
-      endDate !== undefined ? (endDate || null) : current.end_date;
-
-    const nextLocation =
-      location !== undefined
-        ? (String(location || '').trim() || null)
-        : current.location;
-
-    const nextAmount =
-      amount !== undefined
-        ? (
-          String(amount).trim() === ''
-            ? null
-            : Number(amount)
-        )
-        : current.amount;
-
-    if (amount !== undefined && nextAmount !== null && Number.isNaN(nextAmount)) {
-      return res.status(400).json({
-        ok: false,
-        error: 'amount inválido'
-      });
-    }
-
-    const nextPlayStatus =
-      play_status !== undefined
-        ? (String(play_status || '').trim().toUpperCase() || null)
-        : current.play_status;
-
-    const nextCardSuit =
-      card_suit !== undefined
-        ? (String(card_suit || '').trim().toUpperCase() || null)
-        : current.card_suit;
-
-    // -----------------------------
-    // RECONSTRUCCIÓN DE play_code
-    // -----------------------------
-
-    let nextPlayCode = current.play_code;
-
-    if (card_suit !== undefined && current.play_code) {
-      const parts = String(current.play_code).split('§');
-
-      // asegurar 9 segmentos
-      while (parts.length < 9) parts.push('');
-
-      if (parts.length === 9) {
-        parts[4] = nextCardSuit; // posición del palo
-        nextPlayCode = parts.join('§');
-      }
-    }
-
-    // -----------------------------
-    // UPDATE
-    // -----------------------------
 
     const result = await client.query(
       `
-      UPDATE plays
+      UPDATE decks
       SET
-        play_text = $1,
-        spade_mode = $2,
-        start_date = $3,
-        end_date = $4,
-        location = $5,
-        amount = $6,
-        play_status = $7,
-        card_suit = $8,
-        play_code = $9,
+        deck_image_url = $1,
         updated_at = NOW()
-      WHERE id = $10
+      WHERE id = $2
       RETURNING *
       `,
-      [
-        nextPlayText,
-        nextSpadeMode,
-        nextStartDate,
-        nextEndDate,
-        nextLocation,
-        nextAmount,
-        nextPlayStatus,
-        nextCardSuit,
-        nextPlayCode,
-        playId
-      ]
+      [deck_image_url || null, deckId]
     );
+
+    if (!result.rows.length) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Mazo no encontrado'
+      });
+    }
 
     return res.json({
       ok: true,
-      play: result.rows[0]
+      deck: result.rows[0]
     });
 
   } catch (error) {
-    console.error('Error actualizando play:', error);
+    console.error('Error actualizando deck:', error);
     return res.status(500).json({
       ok: false,
-      error: 'No se pudo actualizar la jugada'
+      error: 'No se pudo actualizar el mazo'
     });
   } finally {
     client.release();

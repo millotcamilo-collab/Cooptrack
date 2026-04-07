@@ -646,44 +646,43 @@
     document.getElementById("mazobarPhotoSaveBtn")?.addEventListener("click", async () => {
       const input = document.getElementById("mazobarPhotoUrlInput");
       const nextUrl = String(input?.value || "").trim();
+
       const token = localStorage.getItem("cooptrackToken");
 
       if (!token) {
-        alert("Falta sesión activa");
+        alert("No estás logueado");
         return;
       }
 
       try {
-        const response = await fetch(`https://cooptrack-backend.onrender.com/decks/${deck.id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            deck_image_url: nextUrl
-          })
-        });
+        const response = await fetch(
+          `https://cooptrack-backend.onrender.com/decks/${deck.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              deck_image_url: nextUrl
+            })
+          }
+        );
 
         const data = await response.json();
 
-        if (!response.ok || !data.ok) {
-          alert(data?.error || "No se pudo guardar la foto del mazo");
+        if (!data.ok) {
+          alert("Error al guardar foto");
           return;
         }
 
-        mazobarDraftPhotoUrl = "";
         mazobarPhotoEditorOpen = false;
 
-        const updatedDeck = {
-          ...deck,
-          deck_image_url: data.deck?.deck_image_url ?? nextUrl
-        };
+        renderMazobar(data.deck, plays, currentUserId);
 
-        renderMazobar(updatedDeck, plays, currentUserId);
       } catch (error) {
-        console.error("Error guardando foto del mazo:", error);
-        alert("Error de red al guardar la foto del mazo");
+        console.error(error);
+        alert("Error de red");
       }
     });
 
