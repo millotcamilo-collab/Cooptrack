@@ -288,6 +288,8 @@
 
       renderAssignedTargetPanel(user);
 
+      bindActionButtons();
+
       setTimeout(() => {
         mountCardInTarget(source);
       }, 50);
