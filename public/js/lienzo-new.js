@@ -125,21 +125,18 @@
 
   function getCurrentUserCorporateCards() {
     const state = getCurrentState();
-    console.log("state.corporateCards =", state?.corporateCards);
+    const plays = Array.isArray(state?.plays) ? state.plays : [];
 
     const currentUser = getCurrentUser();
     const userId = Number(currentUser?.id || 0);
 
     if (!userId) return [];
 
-    const cards = Array.isArray(state?.corporateCards)
-      ? state.corporateCards
-      : [];
+    const cards = deriveOwnedCorporateCards(plays, userId);
 
-    return cards
-      .filter((card) => Number(card?.owner_user_id || card?.user_id || 0) === userId)
-      .sort(compareCorporateCards);
+    return cards.sort(compareCorporateCards);
   }
+
   function compareCorporateCards(a, b) {
     const order = {
       A_HEART: 1,
@@ -342,6 +339,30 @@
   function getAllPlays() {
     const state = getCurrentState();
     return Array.isArray(state.plays) ? state.plays : [];
+  }
+
+  function deriveOwnedCorporateCards(plays, currentUserId) {
+    if (!Array.isArray(plays) || !currentUserId) return [];
+
+    return plays
+      .filter((p) => {
+        const rank = String(p.card_rank || p.rank || "").toUpperCase();
+        const suit = String(p.card_suit || p.suit || "").toUpperCase();
+
+        if (rank !== "A") return false;
+
+        // 👇 propiedad por "nombre en el libro"
+        const ownerId =
+          Number(p.target_user_id || 0) ||
+          Number(p.created_by_user_id || 0);
+
+        return ownerId === Number(currentUserId);
+      })
+      .map((p) => ({
+        card_rank: p.card_rank || p.rank,
+        card_suit: p.card_suit || p.suit,
+        id: p.id
+      }));
   }
 
   function getCurrentDeck() {
