@@ -436,3 +436,36 @@
     #serverNextPanel .server-next__icon {
       height: 28px !important;
     }
+
+    .joker-toggle-btn {
+      position: relative;
+      width: 95px;
+      height: 140px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: block;
+    }
+
+    .joker-toggle-btn img {
+      position: absolute;
+      height: 120px;
+      width: auto;
+      display: block;
+      transition: transform 0.18s ease;
+    }
+
+    .joker-red--bottom,
+    .joker-blue--bottom {
+      left: 0;
+      top: 16px;
+      z-index: 1;
+    }
+
+    .joker-red--top,
+    .joker-blue--top {
+      left: 18px;
+      top: 0;
+      z-index: 2;
+    }
