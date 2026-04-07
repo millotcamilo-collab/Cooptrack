@@ -4,6 +4,7 @@
   background: #1b0c0c;
   border-bottom: 1px solid #d8d8d8;
   box-sizing: border-box;
+  border-radius: 10px;
 }
 
 #mazobar-container {
@@ -135,7 +136,7 @@
 .mazobar__title-name {
   font-size: 1.1rem;
   font-weight: 500;
-  color: #111;
+  color: #ffffff;
   line-height: 1.2;
 }
 
@@ -180,6 +181,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  transition: transform 0.15s ease;
 }
 
 .mazobar__cmd-btn:hover {
@@ -203,15 +205,9 @@
   box-sizing: border-box;
 }
 
-.mazobar__cmd-btn--exit {
-  background: #fff;
-  font-weight: 500;
-  padding-left: 14px;
-  padding-right: 14px;
-}
-
 .mazobar__cmd-btn--suit {
-  width: 46px;
+  height: 24px;
+  width: auto;
   padding: 4px;
 }
 
