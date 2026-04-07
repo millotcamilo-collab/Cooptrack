@@ -14,6 +14,12 @@
     }
   }
 
+  function getRank(play) {
+    return String(
+      play?.rank || play?.card_rank || ""
+    ).toUpperCase();
+  }
+
   function getOwnerNickname(play) {
     return (
       play?.targetNickname ||
@@ -38,10 +44,10 @@
     const helpers = context.helpers || {};
     const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
 
-    const playId = play?.id;
+    const playId = play?.id || 0;
     const rowId = `tablero-row-${playId}`;
 
-    const rank = "A";
+    const rank = getRank(play) || "A";
     const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
     const label = `${rank}${getSuitSymbol(suit)}`;
 
@@ -50,33 +56,21 @@
 
     return `
       <article class="tablero-row tablero-row--arow" id="${rowId}">
-        
-        <div class="tablero-row__left">
-          <div class="tablero-row__card">
-            ${escapeHtml(label)}
-          </div>
+        <div
+          class="tablero-row__meta"
+          style="display:flex; align-items:center; gap:10px;"
+        >
+          <span class="tablero-row__title">${escapeHtml(label)}</span>
+
+          <img
+            src="${ownerPhoto}"
+            alt="${ownerNickname}"
+            style="width:32px; height:32px; border-radius:50%; object-fit:cover;"
+            onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
+          />
+
+          <span class="tablero-row__owner">${ownerNickname}</span>
         </div>
-
-        <div class="tablero-row__center">
-          <div class="tablero-row__title">
-            ${escapeHtml(label)}
-          </div>
-
-          <div class="tablero-row__meta" style="display:flex; align-items:center; gap:8px;">
-            <img
-              src="${ownerPhoto}"
-              alt="${ownerNickname}"
-              style="width:32px; height:32px; border-radius:50%; object-fit:cover;"
-              onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
-            />
-            <span>${ownerNickname}</span>
-          </div>
-        </div>
-
-        <div class="tablero-row__right">
-          <!-- vacío por ahora -->
-        </div>
-
       </article>
     `;
   }

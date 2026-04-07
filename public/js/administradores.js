@@ -161,8 +161,7 @@
     const rank = normalizeRank(play?.rank);
     const suit = normalizeSuit(play?.suit);
 
-    if (rank === "A") return "Arow";
-    if (rank === "K") return "Krow";
+    if (rank === "A" || rank === "K") return "Arow";
     if (rank === "JOKER" && suit === "BLUE") return "Jokerazul";
 
     return null;
