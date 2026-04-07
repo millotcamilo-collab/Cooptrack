@@ -151,8 +151,8 @@
       typeof context.dispatch === "function"
         ? context.dispatch
         : function (eventName, detail) {
-            document.dispatchEvent(new CustomEvent(eventName, { detail }));
-          };
+          document.dispatchEvent(new CustomEvent(eventName, { detail }));
+        };
 
     const ICONS = window.ICONS || {};
     const ACTIONS = ICONS.actions || {};
@@ -297,7 +297,7 @@
       row.dataset.bound = "true";
       const hasInitialAppointmentData =
         !!startDateValue || !!endDateValue || !!locationValue;
-        row.dataset.mode = hasInitialAppointmentData ? "read" : "edit";
+      row.dataset.mode = hasInitialAppointmentData ? "read" : "edit";
 
       const textView = row.querySelector('[data-role="text-view"]');
       const textInput = row.querySelector('[data-role="text-input"]');
@@ -711,19 +711,22 @@
         renderMode();
       });
 
-btnAddQspade?.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.stopPropagation();
+      btnAddQspade?.addEventListener("click", () => {
+        const deckId =
+          context?.state?.deck?.id ||
+          context?.state?.mazo?.id ||
+          window.__currentDeck?.id ||
+          null;
 
-  const params = new URLSearchParams({
-    deckId: String(play?.deck_id || ""),
-    parentPlayId: String(playId || ""),
-    childRank: "Q",
-    childSuit: "SPADE"
-  });
+        if (!deckId || !playId) {
+          alert("No se pudo abrir el lienzo");
+          return;
+        }
 
-  window.location.href = `/lienzo.html?${params.toString()}`;
-});
+        window.location.href =
+          `/lienzo-new.html?deckId=${deckId}&parentPlayId=${playId}&childRank=Q&childSuit=SPADE`;
+      });
+
       btnRoutine?.addEventListener("click", async () => {
         await loadRecurrenceIfNeeded();
 
@@ -808,14 +811,14 @@ btnAddQspade?.addEventListener("click", (event) => {
           <div class="tablero-row__field-inline">
             <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
             <span>${escapeHtml(
-              getAppointmentReadLabel(
-              startDateValue,
-              endDateValue,
-              recurrenceTypeValue,
-              recurrenceWeekdaysValue,
-              recurrenceMonthsValue
-            )
-          )}</span>
+      getAppointmentReadLabel(
+        startDateValue,
+        endDateValue,
+        recurrenceTypeValue,
+        recurrenceWeekdaysValue,
+        recurrenceMonthsValue
+      )
+    )}</span>
           
           </div>
 
@@ -981,8 +984,8 @@ btnAddQspade?.addEventListener("click", (event) => {
       typeof context.dispatch === "function"
         ? context.dispatch
         : function (eventName, detail) {
-            document.dispatchEvent(new CustomEvent(eventName, { detail }));
-          };
+          document.dispatchEvent(new CustomEvent(eventName, { detail }));
+        };
 
     const ICONS = window.ICONS || {};
     const ACTIONS = (ICONS && ICONS.actions) || {};

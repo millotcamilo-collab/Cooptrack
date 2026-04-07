@@ -155,8 +155,8 @@
       typeof context.dispatch === "function"
         ? context.dispatch
         : function (eventName, detail) {
-            document.dispatchEvent(new CustomEvent(eventName, { detail }));
-          };
+          document.dispatchEvent(new CustomEvent(eventName, { detail }));
+        };
 
     const ICONS = window.ICONS || {};
     const ACTIONS = ICONS.actions || {};
@@ -290,7 +290,7 @@
       if (!row || row.dataset.bound === "true") return;
 
       row.dataset.bound = "true";
-     const hasInitialDeadlineData = !!endDateValue;
+      const hasInitialDeadlineData = !!endDateValue;
       row.dataset.mode = hasInitialDeadlineData ? "read" : "edit";
 
       const textView = row.querySelector('[data-role="text-view"]');
@@ -639,19 +639,21 @@
         renderMode();
       });
 
-btnAddQspade?.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.stopPropagation();
+      btnAddQspade?.addEventListener("click", () => {
+        const deckId =
+          context?.state?.deck?.id ||
+          context?.state?.mazo?.id ||
+          window.__currentDeck?.id ||
+          null;
 
-  const params = new URLSearchParams({
-    deckId: String(play?.deck_id || ""),
-    parentPlayId: String(playId || ""),
-    childRank: "Q",
-    childSuit: "SPADE"
-  });
+        if (!deckId || !playId) {
+          alert("No se pudo abrir el lienzo");
+          return;
+        }
 
-  window.location.href = `/lienzo.html?${params.toString()}`;
-});
+        window.location.href =
+          `/lienzo-new.html?deckId=${deckId}&parentPlayId=${playId}&childRank=Q&childSuit=SPADE`;
+      });
 
       btnRoutine?.addEventListener("click", async () => {
         await loadRecurrenceIfNeeded();
@@ -731,13 +733,13 @@ btnAddQspade?.addEventListener("click", (event) => {
           <div class="tablero-row__field-inline">
             <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
             <span>${escapeHtml(
-              getDeadlineReadLabel(
-                play?.end_date,
-                recurrenceTypeValue,
-                recurrenceWeekdaysValue,
-                recurrenceMonthsValue
-              )
-            )}</span>
+      getDeadlineReadLabel(
+        play?.end_date,
+        recurrenceTypeValue,
+        recurrenceWeekdaysValue,
+        recurrenceMonthsValue
+      )
+    )}</span>
           </div>
         </div>
 
