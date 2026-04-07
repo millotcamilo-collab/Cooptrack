@@ -17,7 +17,7 @@
   <script src="/js/topbar.js"></script>
 
   <style>
-    
+
   </style>
 </head>
 
@@ -217,6 +217,23 @@
     }
 
     // 👇 PEGAR ACÁ
+    function updateServerNextLabels() {
+      const labels = document.querySelectorAll("#serverNextPanel .server-next__label");
+
+      if (!labels.length) return;
+
+      if (isBlueOnTop) {
+        labels[0].textContent = "Aprobar J ♥ ♠ ♦ ♣";
+        labels[1].textContent = "Enviar A, K, Q";
+        labels[2].textContent = "Despedir A, K, Q";
+        labels[3].textContent = "Publicar A♥ J♥ ♠ ♣";
+      } else {
+        labels[0].textContent = "Aprobar J ♥ ♠ ♦ ♣";
+        labels[1].textContent = "Enviar Q ♠";
+        labels[2].textContent = "Despedir Q ♠";
+        labels[3].textContent = "Publicar A♥ J♥";
+      }
+    }
     function renderFinalJokers() {
       const pack = document.getElementById("pack");
       if (!pack) return;
@@ -247,6 +264,7 @@
       document.getElementById("jokerToggleBtn")?.addEventListener("click", () => {
         isBlueOnTop = !isBlueOnTop;
         renderFinalJokers();
+        updateServerNextLabels();
       });
     }
 
