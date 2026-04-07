@@ -450,6 +450,8 @@
             </div>
 
             <div class="colombes-editor__line colombes-editor__line--bottom">
+              <!-- espacio para alinear con la A -->
+              <span></span>
               <img src="/assets/icons/dia40.gif" class="colombes-editor__suit" alt="♦">
 
               <select id="deckCurrencyCode" class="colombes-editor__input colombes-editor__input--code">
@@ -550,6 +552,7 @@
     let done = false;
     let deckPhotoUrl = "";
     let isEditingPlacardPhoto = false;
+    let isBlueOnTop = false;
 
     function showEl(id) {
       const el = document.getElementById(id);
