@@ -314,15 +314,92 @@
         "/assets/icons/singeta120.gif"
     };
   }
+  function bindLienzoActions(play) {
+    const sendBtn = document.getElementById("lienzo-send-btn");
+    const exitBtn = document.getElementById("lienzo-exit-btn");
+
+    if (sendBtn) {
+      sendBtn.addEventListener("click", () => {
+        handleSendPlay(play);
+      });
+    }
+
+    if (exitBtn) {
+      exitBtn.addEventListener("click", handleExitLienzo);
+    }
+  }
+
+  async function handleSendPlay(play) {
+    try {
+      const playId = Number(play?.id || 0);
+      const token = localStorage.getItem("cooptrackToken");
+
+      if (!playId) {
+        alert("playId inválido");
+        return;
+      }
+
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      const response = await fetch(`/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_status: "SENT"
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("Error enviando jugada:", data);
+        alert(data?.error || "No se pudo enviar la jugada");
+        return;
+      }
+
+      alert("Invitación enviada");
+
+      const deckId =
+        Number(play?.deck_id || 0) ||
+        Number(getCurrentDeck()?.id || 0);
+
+      if (deckId) {
+        window.location.href = `/mazo.html?id=${deckId}`;
+        return;
+      }
+
+      window.history.back();
+    } catch (error) {
+      console.error("Error en handleSendPlay", error);
+      alert("No se pudo enviar la jugada");
+    }
+  }
+
+  function handleExitLienzo() {
+    const deckId = Number(getCurrentDeck()?.id || 0);
+
+    if (deckId) {
+      window.location.href = `/mazo.html?id=${deckId}`;
+      return;
+    }
+
+    window.history.back();
+  }
 
   function renderLienzoActions() {
-    const saveIcon = window.ICONS?.actions?.save || "/assets/icons/salvar40.gif";
+    const sendIcon = window.ICONS?.actions?.save || "/assets/icons/buzon60.gif";
     const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
 
     return `
     <div class="lienzo-panel__actions">
-      <button id="lienzo-save-btn" class="icon-btn" title="Salvar">
-        <img src="${saveIcon}" alt="Salvar" />
+      <button id="lienzo-send-btn" class="icon-btn" title="Send">
+        <img src="${sendIcon}" alt="Send" />
       </button>
 
       <button id="lienzo-exit-btn" class="icon-btn" title="Exit">
@@ -425,6 +502,7 @@
     `;
 
     mountPlacardFromDataset();
+    bindLienzoActions(play);
   }
 
   function openLienzoByPlayId(playId) {
