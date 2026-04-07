@@ -159,11 +159,20 @@
     hideElement("btnAddJ");
   }
 
+  function showBackToTableroButton() {
+    showElement("btnBackToTablero");
+  }
+
+  function hideBackToTableroButton() {
+    hideElement("btnBackToTablero");
+  }
+
   function showTableroView() {
     hideElement("autoridades-container");
     showElement("tablero-container");
     showElement("playform-container");
     showAddJButton();
+    hideBackToTableroButton();
   }
 
   function showAutoridadesView(mode) {
@@ -171,6 +180,7 @@
     showElement("autoridades-container");
     hideElement("playform-container");
     hideAddJButton();
+    showBackToTableroButton();
     closePlayformIfOpen();
 
     document.dispatchEvent(
@@ -179,6 +189,7 @@
       })
     );
   }
+
   function hasPendingOrActiveBlueJoker(plays) {
     const now = Date.now();
     const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6;
@@ -391,6 +402,21 @@
       />
     </button>
 
+<button
+  id="btnBackToTablero"
+  type="button"
+  class="mazobar__cmd-btn mazobar__cmd-btn--primary"
+  title="Volver al tablero"
+  aria-label="Volver al tablero"
+  style="display:none;"
+>
+  <img
+    src="/assets/icons/maquina80.gif"
+    alt="Tablero"
+    class="mazobar__cmd-icon"
+  />
+</button>
+
    <button
       id="btnFilterA"
       type="button"
@@ -507,6 +533,10 @@
     document.getElementById("btnAddJ")?.addEventListener("click", () => {
       showTableroView();
       document.dispatchEvent(new CustomEvent("mazobar:addJ"));
+    });
+
+    document.getElementById("btnBackToTablero")?.addEventListener("click", () => {
+      showTableroView();
     });
 
     document.getElementById("btnFilterA")?.addEventListener("click", () => {
