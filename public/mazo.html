@@ -151,12 +151,7 @@
       });
     }
 
-    async function initMazoPage() {
-      const params = new URLSearchParams(window.location.search);
-      const deckId = params.get("id");
-
-      clearDeckView();
-
+    async function loadMazoPage(deckId) {
       if (!deckId) {
         console.warn("Mazo sin id");
         return;
@@ -200,6 +195,27 @@
         bindLienzoDropZone(deck.id);
       }
     }
+
+    async function initMazoPage() {
+      const params = new URLSearchParams(window.location.search);
+      const deckId = params.get("id");
+
+      clearDeckView();
+      await loadMazoPage(deckId);
+    }
+
+    document.addEventListener("plays:changed", async (event) => {
+      const deckId =
+        event?.detail?.deckId ||
+        new URLSearchParams(window.location.search).get("id");
+
+      if (!deckId) {
+        console.warn("plays:changed sin deckId");
+        return;
+      }
+
+      await loadMazoPage(deckId);
+    });
 
     initMazoPage();
   </script>
