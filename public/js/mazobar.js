@@ -391,25 +391,20 @@
       />
     </button>
 
-    <button
+   <button
       id="btnFilterA"
       type="button"
       class="mazobar__cmd-btn"
-      title="Ver As"
-      aria-label="Ver As"
-    >
-      A
+      title="Administradores"
+      aria-label="Administradores"
+      >
+      <img
+      src="/assets/icons/team80.gif"
+      alt="Administradores"
+      class="mazobar__cmd-icon"
+      />
     </button>
 
-    <button
-      id="btnFilterK"
-      type="button"
-      class="mazobar__cmd-btn"
-      title="Ver Reyes"
-      aria-label="Ver Reyes"
-    >
-      K
-    </button>
 
     ${suitButtons}
     ${alertButtons}
