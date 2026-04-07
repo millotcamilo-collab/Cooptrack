@@ -16,6 +16,10 @@ const {
   handleReadersOnPlayCreate,
 } = require('./services/play-readers');
 
+const {
+  setPlayReaders,
+} = require('./services/readers');
+
 app.use(cors({
   origin: 'https://cooptrack.com',
 }));
@@ -671,12 +675,14 @@ async function createMazoHandler(req, res) {
         recipients: '',
       });
 
-      await insertInstitutionalPlay(client, {
+      const created = await insertInstitutionalPlay(client, {
         mazoId: mazo.id,
         createdByUserId: userId,
         playCode,
         playStatus: seed.status,
       });
+
+      await setPlayReaders(client, created.row.id, [userId]);
     }
 
     // 2. Ases (propiedad)
@@ -692,32 +698,65 @@ async function createMazoHandler(req, res) {
         recipients: `U:${userId}`,
       });
 
-      await insertInstitutionalPlay(client, {
+      const created = await insertInstitutionalPlay(client, {
         mazoId: mazo.id,
         createdByUserId: userId,
         playCode,
         playStatus: seed.status,
       });
+
+      await setPlayReaders(client, created.row.id, [userId]);
     }
 
-    await client.query('COMMIT');
-
-    return res.json({
-      ok: true,
-      mazo,
-      seededPlaysCount: seedPlays.length,
+    await insertInstitutionalPlay(client, {
+      mazoId: mazo.id,
+      createdByUserId: userId,
+      playCode,
+      playStatus: seed.status,
     });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error en crear mazo', error);
-
-    return res.status(500).json({
-      ok: false,
-      error: 'Error al crear mazo',
-    });
-  } finally {
-    client.release();
   }
+
+    // 3. Joker azul inicial (pendiente para administradores)
+  {
+    const jokerPlayCode = buildPlayCode({
+      mazoId: mazo.id,
+      userId,
+      rank: 'JOKER',
+      suit: 'BLUE',
+      action: 'request_joker_blue',
+      authorized: `U:${userId}`,
+      flow: 'admin',
+      recipients: '',
+    });
+
+    const createdJoker = await insertInstitutionalPlay(client, {
+      mazoId: mazo.id,
+      createdByUserId: userId,
+      playCode: jokerPlayCode,
+      playStatus: 'PENDING',
+    });
+
+    await setPlayReaders(client, createdJoker.row.id, [userId]);
+  }
+
+  await client.query('COMMIT');
+
+  return res.json({
+    ok: true,
+    mazo,
+    seededPlaysCount: seedPlays.length,
+  });
+} catch (error) {
+  await client.query('ROLLBACK');
+  console.error('Error en crear mazo', error);
+
+  return res.status(500).json({
+    ok: false,
+    error: 'Error al crear mazo',
+  });
+} finally {
+  client.release();
+}
 }
 
 async function listMazosHandler(req, res) {
@@ -885,7 +924,7 @@ async function getMazoStateHandler(req, res) {
       plays,
       corporateCards,
     });
-    
+
   } catch (error) {
     console.error('Error en GET state del mazo', error);
     return res.status(500).json({
