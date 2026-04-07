@@ -1189,6 +1189,8 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     console.log("PATCH /plays/:id req.body =", req.body);
 
     const playId = Number(req.params.id);
+    const userId = req.auth.userId;
+
     const {
       text,
       spadeMode,
@@ -1226,6 +1228,27 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
 
     const current = existingResult.rows[0];
 
+    const mazo = await getMazoByIdForUser(client, current.deck_id, userId);
+
+    if (!mazo) {
+      return res.status(403).json({
+        ok: false,
+        error: 'Sin acceso a esta jugada'
+      });
+    }
+
+    if (play_status === 'SENT') {
+      const rank = String(current.card_rank || '').toUpperCase();
+      const suit = String(current.card_suit || '').toUpperCase();
+
+      if (!(rank === 'Q' && suit === 'SPADE')) {
+        return res.status(400).json({
+          ok: false,
+          error: 'Solo una Q♠ puede enviarse como invitación'
+        });
+      }
+    }
+
     const nextText =
       text !== undefined ? String(text || '').trim() : current.play_text;
 
@@ -1246,7 +1269,9 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       endDate !== undefined ? endDate || null : current.end_date;
 
     const nextLocation =
-      location !== undefined ? String(location || '').trim() || null : current.location;
+      location !== undefined
+        ? String(location || '').trim() || null
+        : current.location;
 
     const nextAmount =
       amount !== undefined && amount !== null && amount !== ''
@@ -1256,7 +1281,9 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
           : current.amount;
 
     const nextSpadeMode =
-      spadeMode !== undefined ? String(spadeMode || '').trim() || null : current.spade_mode;
+      spadeMode !== undefined
+        ? String(spadeMode || '').trim() || null
+        : current.spade_mode;
 
     const result = await client.query(
       `
