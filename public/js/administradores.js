@@ -123,10 +123,10 @@
       createdByNickname:
         play?.created_by_nickname ||
         play?.created_by_user_nickname ||
-        "—",
-      createdByProfilePhotoUrl:
-        play?.created_by_profile_photo_url ||
-        play?.created_by_user_profile_photo_url ||
+        null,
+      targetNickname:
+        play?.target_user_nickname ||
+        play?.target_nickname ||
         null,
       targetNickname:
         play?.target_user_nickname ||
