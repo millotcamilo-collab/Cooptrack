@@ -153,19 +153,14 @@
     }
 
     .colombes-editor__line {
-      display: flex;
+      display: grid;
+      grid-template-columns: 24px 24px auto;
       align-items: center;
       gap: 8px;
-      flex-wrap: nowrap;
     }
 
     .colombes-editor__line--top {
       justify-content: flex-start;
-    }
-
-    .colombes-editor__line--bottom {
-      justify-content: flex-start;
-      padding-left: 32px;
     }
 
     .colombes-editor__rank {
@@ -374,6 +369,53 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    .joker-toggle-btn {
+      position: relative;
+      width: 90px;
+      height: 130px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: block;
+    }
+
+    .joker-toggle-btn img {
+      position: absolute;
+      height: 120px;
+      width: auto;
+      display: block;
+      transition: transform 0.18s ease;
+    }
+
+    .joker-toggle-btn:hover img {
+      transform: scale(1.02);
+    }
+
+    .joker-blue--bottom {
+      left: 0;
+      bottom: 0;
+      z-index: 1;
+    }
+
+    .joker-red--top {
+      left: 16px;
+      bottom: 10px;
+      z-index: 2;
+    }
+
+    .joker-red--bottom {
+      left: 0;
+      bottom: 0;
+      z-index: 1;
+    }
+
+    .joker-blue--top {
+      left: 16px;
+      bottom: 10px;
+      z-index: 2;
+    }
   </style>
 </head>
 
@@ -562,6 +604,40 @@
     }
 
     // 👇 PEGAR ACÁ
+    function renderFinalJokers() {
+      const pack = document.getElementById("pack");
+      if (!pack) return;
+
+      pack.className = "pack jokers-only";
+
+      pack.innerHTML = `
+    <button
+      id="jokerToggleBtn"
+      type="button"
+      class="joker-toggle-btn"
+      aria-label="Cambiar orden de jokers"
+      title="Cambiar orden de jokers"
+    >
+      ${isBlueOnTop
+          ? `
+            <img src="/assets/icons/Joker.gif" class="joker-red joker-red--bottom" alt="Joker rojo">
+            <img src="/assets/icons/joker_blue.gif" class="joker-blue joker-blue--top" alt="Joker azul">
+          `
+          : `
+            <img src="/assets/icons/joker_blue.gif" class="joker-blue joker-blue--bottom" alt="Joker azul">
+            <img src="/assets/icons/Joker.gif" class="joker-red joker-red--top" alt="Joker rojo">
+          `
+        }
+    </button>
+  `;
+
+      document.getElementById("jokerToggleBtn")?.addEventListener("click", () => {
+        isBlueOnTop = !isBlueOnTop;
+        renderFinalJokers();
+      });
+    }
+
+
     async function loadDefaultCurrencyFromProfile() {
       const token = localStorage.getItem("cooptrackToken");
       if (!token) return;
@@ -853,11 +929,7 @@
       </div>
     `;
 
-        pack.className = "pack jokers-only";
-        pack.innerHTML = `
-      <img src="/assets/icons/joker_blue.gif" class="joker-blue" alt="Joker azul">
-      <img src="/assets/icons/Joker.gif" class="joker-red" alt="Joker rojo">
-    `;
+        renderFinalJokers();
 
         enableServerNextPanel();
         checkAllServerNextItems();
