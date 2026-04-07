@@ -197,14 +197,11 @@
     return plays.some((p) => {
       const rank = String(p.rank || "").toUpperCase();
       const suit = String(p.suit || "").toUpperCase();
-      const status = String(p.status || "").toUpperCase();
       const authorId = Number(p.parsed?.userId || 0);
 
       return (
         rank === "A" &&
         suit === "HEART" &&
-        status !== "CANCELLED" &&
-        status !== "BLOCKED" &&
         authorId === Number(currentUserId || 0)
       );
     });
