@@ -697,6 +697,58 @@
 
       start();
     }
+    async function handleCreateDeck() {
+      const token = localStorage.getItem("cooptrackToken");
+
+      if (!token) {
+        setStatus("Falta sesión activa", true);
+        return;
+      }
+
+      const name = String(document.getElementById("deckName")?.value || "").trim();
+      const currencySymbol = String(document.getElementById("deckCurrencyCode")?.value || "").trim().toUpperCase();
+      const currencyName = String(document.getElementById("deckCurrencyName")?.value || "").trim();
+
+      if (!name) {
+        setStatus("Falta el título del mazo", true);
+        return;
+      }
+
+      if (!currencySymbol) {
+        setStatus("Falta el símbolo de moneda", true);
+        return;
+      }
+
+      try {
+        setStatus("Guardando mazo...");
+
+        const response = await fetch("https://cooptrack-backend.onrender.com/decks", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name,
+            deck_image_url: deckPhotoUrl || null,
+            currency_symbol: currencySymbol,
+            currency_name: currencyName || null
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok || !data.mazo?.id) {
+          setStatus(data?.error || "No se pudo crear el mazo", true);
+          return;
+        }
+
+        window.location.href = `/mazo.html?id=${data.mazo.id}`;
+      } catch (error) {
+        console.error("Error creando mazo:", error);
+        setStatus("Error de red al crear el mazo", true);
+      }
+    }
 
     function renderDeckPlacard() {
       renderPlacard("placard-container", {
@@ -825,7 +877,7 @@
       bindServerNextClicks();
 
       document.getElementById("saveAllBtn")?.addEventListener("click", handleSaveStepOne);
-      document.getElementById("createDeckBtn")?.addEventListener("click", start);
+      document.getElementById("createDeckBtn")?.addEventListener("click", handleCreateDeck);
       document.getElementById("deckCurrencyCode")?.addEventListener("change", syncCurrencyNameFromCode);
     });
   </script>

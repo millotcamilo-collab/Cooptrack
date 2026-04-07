@@ -708,13 +708,6 @@ async function createMazoHandler(req, res) {
       await setPlayReaders(client, created.row.id, [userId]);
     }
 
-    await insertInstitutionalPlay(client, {
-      mazoId: mazo.id,
-      createdByUserId: userId,
-      playCode,
-      playStatus: seed.status,
-    });
-  }
 
     // 3. Joker azul inicial (pendiente para administradores)
   {
