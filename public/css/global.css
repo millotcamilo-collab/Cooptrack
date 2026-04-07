@@ -126,7 +126,9 @@ body {
 .icon-btn {
   background: transparent;
   border: none;
-  padding: 6px;
+  padding: 0; /* quitamos el padding */
+  width: 36px;
+  height: 36px;
   cursor: pointer;
   border-radius: 8px;
 
@@ -147,4 +149,15 @@ body {
   height: 24px;
   width: auto;
   display: block;
+}
+
+.icon-btn img {
+  height: 24px;
+  width: auto;
+  display: block;
+  transition: transform 0.15s ease;
+}
+
+.icon-btn:hover img {
+  transform: scale(1.15);
 }
