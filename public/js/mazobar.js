@@ -1,4 +1,7 @@
 (function () {
+  let mazobarPhotoEditorOpen = false;
+  let mazobarDraftPhotoUrl = "";
+
   function parsePlayCode(code) {
     const parts = String(code || "").split("§");
 
@@ -188,6 +191,23 @@
         detail: { mode }
       })
     );
+  }
+
+  function userCanEditDeckPhoto(plays, currentUserId) {
+    return plays.some((p) => {
+      const rank = String(p.rank || "").toUpperCase();
+      const suit = String(p.suit || "").toUpperCase();
+      const status = String(p.status || "").toUpperCase();
+      const authorId = Number(p.parsed?.userId || 0);
+
+      return (
+        rank === "A" &&
+        suit === "HEART" &&
+        status !== "CANCELLED" &&
+        status !== "BLOCKED" &&
+        authorId === Number(currentUserId || 0)
+      );
+    });
   }
 
   function hasPendingOrActiveBlueJoker(plays) {
@@ -462,6 +482,82 @@
     </div>
   `;
   }
+  function buildDeckPhotoHTML(deck, plays, currentUserId) {
+    const avatarSrc = getDeckAvatarSrc(deck);
+    const canEditPhoto = userCanEditDeckPhoto(plays, currentUserId);
+
+    if (canEditPhoto) {
+      return `
+      <div class="mazobar__userbox">
+        <button
+          type="button"
+          class="mazobar__photo-button"
+          id="mazobarPhotoBtn"
+          title="Editar foto del mazo"
+          aria-label="Editar foto del mazo"
+        >
+          <img
+            src="${avatarSrc}"
+            alt="Foto del mazo"
+            class="mazobar__avatar"
+            onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
+          />
+        </button>
+      </div>
+    `;
+    }
+
+    return `
+    <div class="mazobar__userbox">
+      <img
+        src="${avatarSrc}"
+        alt="Foto del mazo"
+        class="mazobar__avatar"
+        onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
+      />
+    </div>
+  `;
+  }
+  function buildDeckPhotoEditorHTML(deck, plays, currentUserId) {
+    const canEditPhoto = userCanEditDeckPhoto(plays, currentUserId);
+
+    if (!canEditPhoto || !mazobarPhotoEditorOpen) {
+      return "";
+    }
+
+    return `
+    <div class="mazobar__photo-editor" id="mazobarPhotoEditor">
+      <input
+        id="mazobarPhotoUrlInput"
+        class="mazobar__photo-input"
+        type="text"
+        placeholder="URL picture"
+        value="${String(mazobarDraftPhotoUrl || deck?.deck_image_url || "").replace(/"/g, "&quot;")}"
+        autocomplete="off"
+      />
+
+      <button
+        id="mazobarPhotoSaveBtn"
+        class="mazobar__photo-action"
+        type="button"
+        title="Guardar"
+        aria-label="Guardar"
+      >
+        <img src="/assets/icons/salvar40.gif" alt="Guardar" />
+      </button>
+
+      <button
+        id="mazobarPhotoCancelBtn"
+        class="mazobar__photo-action"
+        type="button"
+        title="Salir"
+        aria-label="Salir"
+      >
+        <img src="/assets/icons/exit80.gif" alt="Salir" />
+      </button>
+    </div>
+  `;
+  }
 
   function buildMazobarHTML(deck, plays, currentUserId) {
     const normalizedPlays = Array.isArray(plays)
@@ -480,20 +576,13 @@
           <div class="mazobar__shell">
             <div class="mazobar__row mazobar__row--top">
 
-              <div class="mazobar__top-left">
-                <div class="mazobar__topcards">
-                  ${buildTopCardsHTML(enabledCards)}
-                </div>
+<div class="mazobar__top-left">
+  <div class="mazobar__topcards">
+    ${buildTopCardsHTML(enabledCards)}
+  </div>
 
-                <div class="mazobar__userbox">
-                  <img
-                    src="${avatarSrc}"
-                    alt="Foto del mazo"
-                    class="mazobar__avatar"
-                    onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
-                  />
-                </div>
-              </div>
+  ${buildDeckPhotoHTML(deck, normalizedPlays, currentUserId)}
+</div>
 
               <div class="mazobar__top-center">
                 <div class="mazobar__titleline">
@@ -511,11 +600,13 @@
                   />
                   <span class="mazobar__balance-currency">${currencyCode}</span>
                   <span class="mazobar__balance-value">${balance}</span>
+
                 </div>
 
                 <div class="mazobar__commands">
                   ${buildCommandButtonsHTML(normalizedPlays)}
                 </div>
+                ${buildDeckPhotoEditorHTML(deck, normalizedPlays, currentUserId)}
               </div>
 
               <div class="mazobar__top-right">
@@ -529,7 +620,7 @@
     `;
   }
 
-  function bindMazobarEvents() {
+  function bindMazobarEvents(deck, plays, currentUserId) {
     document.getElementById("btnAddJ")?.addEventListener("click", () => {
       showTableroView();
       document.dispatchEvent(new CustomEvent("mazobar:addJ"));
@@ -541,6 +632,33 @@
 
     document.getElementById("btnFilterA")?.addEventListener("click", () => {
       showAutoridadesView("AK");
+    });
+
+    document.getElementById("mazobarPhotoBtn")?.addEventListener("click", () => {
+      mazobarPhotoEditorOpen = true;
+      mazobarDraftPhotoUrl = String(deck?.deck_image_url || "").trim();
+      renderMazobar(deck, plays, currentUserId);
+    });
+
+    document.getElementById("mazobarPhotoCancelBtn")?.addEventListener("click", () => {
+      mazobarPhotoEditorOpen = false;
+      mazobarDraftPhotoUrl = "";
+      renderMazobar(deck, plays, currentUserId);
+    });
+
+    document.getElementById("mazobarPhotoSaveBtn")?.addEventListener("click", () => {
+      const input = document.getElementById("mazobarPhotoUrlInput");
+      const nextUrl = String(input?.value || "").trim();
+
+      mazobarDraftPhotoUrl = nextUrl;
+
+      const nextDeck = {
+        ...deck,
+        deck_image_url: nextUrl
+      };
+
+      mazobarPhotoEditorOpen = false;
+      renderMazobar(nextDeck, plays, currentUserId);
     });
 
     document.querySelectorAll(".mazobar__joker").forEach((jokerEl) => {
@@ -629,7 +747,7 @@
     if (!container) return;
 
     container.innerHTML = buildMazobarHTML(deck, plays, currentUserId);
-    bindMazobarEvents();
+    bindMazobarEvents(deck, plays, currentUserId);
   }
 
   window.renderMazobar = renderMazobar;
