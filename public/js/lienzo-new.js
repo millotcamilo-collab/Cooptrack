@@ -351,11 +351,11 @@
 
     return `
     <div class="lienzo-actions">
-      <button id="lienzo-save-btn" class="lienzo-btn" title="Salvar">
+      <button id="lienzo-save-btn" class="icon-btn" title="Salvar">
         <img src="${saveIcon}" alt="Salvar" />
       </button>
 
-      <button id="lienzo-exit-btn" class="lienzo-btn" title="Exit">
+      <button id="lienzo-exit-btn" class="icon-btn" title="Exit">
         <img src="${exitIcon}" alt="Exit" />
       </button>
     </div>
