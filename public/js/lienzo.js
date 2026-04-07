@@ -342,20 +342,6 @@
         <div class="lienzo-source-cards">
           <div class="lienzo-source-stack">
             ${scene.backgroundCards.map(renderBackgroundCard).join("")}
-
-            <div class="lienzo-source-active">
-              <img
-                id="lienzo-source-card"
-                class="lienzo-card-image"
-                src="${escapeHtml(
-                  getCardImageSrc(
-                    scene.activeCard.card_rank,
-                    scene.activeCard.card_suit
-                  )
-                )}"
-                alt=""
-              />
-            </div>
           </div>
         </div>
       </section>
