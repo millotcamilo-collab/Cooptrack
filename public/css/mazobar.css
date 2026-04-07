@@ -1,7 +1,7 @@
 .mazobar {
   width: 100%;
   padding: 14px 0 10px;
-  background: #1b0c0c;
+  background: #939b84;
   border-bottom: 1px solid #d8d8d8;
   box-sizing: border-box;
   border-radius: 10px;
@@ -136,7 +136,7 @@
 .mazobar__title-name {
   font-size: 1.1rem;
   font-weight: 500;
-  color: #ffffff;
+  color: #000000;
   line-height: 1.2;
 }
 
