@@ -2,7 +2,7 @@
   let administradoresDeck = null;
   let administradoresState = {};
   let administradoresPlays = [];
-  let activeAdministradoresMode = "A";
+  let activeAdministradoresMode = "AK";
 
   function getContainer() {
     return (
@@ -136,7 +136,7 @@
     return action === "init_ace" || action === "puedejugar";
   }
 
-  function belongsToAdministradores(play, mode = "A") {
+  function belongsToAdministradores(play, mode = "AK") {
     const rank = normalizeRank(play?.rank);
     const suit = normalizeSuit(play?.suit);
 
@@ -146,18 +146,12 @@
       return true;
     }
 
-    if (isStructuralPlay(play)) {
-      return false;
+    if (rank === "A") {
+      return true;
     }
 
-    if (mode === "A") {
-      return rank === "A" && suit !== "HEART";
-    }
-
-    if (mode === "AK") {
-      if (rank === "A" && suit !== "HEART") return true;
-      if (rank === "K") return true;
-      return false;
+    if (rank === "K") {
+      return mode === "AK";
     }
 
     return false;
@@ -295,7 +289,7 @@
     }
   }
 
-  function renderAdministradoresView(mode = "A") {
+  function renderAdministradoresView(mode = "AK") {
     const container = getContainer();
 
     if (!container) {
@@ -305,7 +299,7 @@
 
     try {
       activeAdministradoresMode =
-        String(mode || "").toUpperCase() === "AK" ? "AK" : "A";
+        String(mode || "").toUpperCase() === "A" ? "A" : "AK";
 
       const normalized = Array.isArray(administradoresPlays)
         ? administradoresPlays.map(normalizePlay)
@@ -347,10 +341,10 @@
         .join("");
 
       container.innerHTML = `
-        <section class="administradores-view administradores-view--mode-${escapeHtml(activeAdministradoresMode)}">
-          ${rowsHtml}
-        </section>
-      `;
+      <section class="administradores-view administradores-view--mode-${escapeHtml(activeAdministradoresMode)}">
+        ${rowsHtml}
+      </section>
+    `;
     } catch (error) {
       console.error("Error en renderAdministradoresView", error);
       container.innerHTML = renderErrorState(error?.message);
