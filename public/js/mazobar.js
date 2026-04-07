@@ -510,10 +510,6 @@
     });
 
     document.getElementById("btnFilterA")?.addEventListener("click", () => {
-      showAutoridadesView("A");
-    });
-
-    document.getElementById("btnFilterK")?.addEventListener("click", () => {
       showAutoridadesView("AK");
     });
 
