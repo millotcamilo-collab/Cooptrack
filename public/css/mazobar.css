@@ -1,7 +1,7 @@
 .mazobar {
   width: 100%;
   padding: 14px 0 10px;
-  background: #f5f5f5;
+  background: #1b0c0c;
   border-bottom: 1px solid #d8d8d8;
   box-sizing: border-box;
 }
@@ -167,7 +167,7 @@
 
 .mazobar__cmd-btn {
   appearance: none;
-  border: 1px solid #bdb39f;
+  border: none;
   border-radius: 4px;
   background: #fff;
   color: #111;
