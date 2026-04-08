@@ -560,7 +560,6 @@
         return;
       }
 
-      // 👇 ESTA LÍNEA FALTABA
       const jokerType = isBlueOnTop ? "BLUE" : "RED";
 
       try {
@@ -581,101 +580,115 @@
           })
         });
 
-        function renderDeckPlacard() {
-          renderPlacard("placard-container", {
-            deckPhotoUrl: deckPhotoUrl,
-            rank: "A",
-            suit: "HEART",
-            title: document.getElementById("deckName")?.value,
-            currencyCode: document.getElementById("deckCurrencyCode")?.value,
-            currencyName: document.getElementById("deckCurrencyName")?.value,
-            showCurrency: true,
-            canEditPhoto: true,
-            isEditingPhoto: isEditingPlacardPhoto,
-            draftPhotoUrl: deckPhotoUrl
-          });
+        const data = await response.json();
 
-          bindPlacardPhotoControls();
+        if (!response.ok || !data.ok || !data.mazo?.id) {
+          setStatus(data?.error || "No se pudo crear el mazo", true);
+          return;
         }
 
-        function bindPlacardPhotoControls() {
-          const photoBtn = document.getElementById("placardPhotoBtn");
-          const saveBtn = document.getElementById("placardPhotoSaveBtn");
-          const cancelBtn = document.getElementById("placardPhotoCancelBtn");
-          const input = document.getElementById("placardPhotoUrlInput");
+        window.location.href = `/mazo.html?id=${data.mazo.id}`;
+      } catch (error) {
+        console.error("Error creando mazo:", error);
+        setStatus("Error de red al crear el mazo", true);
+      }
+    }
+    
+    function renderDeckPlacard() {
+      renderPlacard("placard-container", {
+        deckPhotoUrl: deckPhotoUrl,
+        rank: "A",
+        suit: "HEART",
+        title: document.getElementById("deckName")?.value,
+        currencyCode: document.getElementById("deckCurrencyCode")?.value,
+        currencyName: document.getElementById("deckCurrencyName")?.value,
+        showCurrency: true,
+        canEditPhoto: true,
+        isEditingPhoto: isEditingPlacardPhoto,
+        draftPhotoUrl: deckPhotoUrl
+      });
 
-          if (photoBtn) {
-            photoBtn.addEventListener("click", () => {
-              isEditingPlacardPhoto = true;
-              renderDeckPlacard();
-            });
-          }
+      bindPlacardPhotoControls();
+    }
 
-          if (saveBtn) {
-            saveBtn.addEventListener("click", () => {
-              deckPhotoUrl = String(input?.value || "").trim();
-              isEditingPlacardPhoto = false;
-              renderDeckPlacard();
-            });
-          }
+    function bindPlacardPhotoControls() {
+      const photoBtn = document.getElementById("placardPhotoBtn");
+      const saveBtn = document.getElementById("placardPhotoSaveBtn");
+      const cancelBtn = document.getElementById("placardPhotoCancelBtn");
+      const input = document.getElementById("placardPhotoUrlInput");
 
-          if (cancelBtn) {
-            cancelBtn.addEventListener("click", () => {
-              isEditingPlacardPhoto = false;
-              renderDeckPlacard();
-            });
-          }
-        }
+      if (photoBtn) {
+        photoBtn.addEventListener("click", () => {
+          isEditingPlacardPhoto = true;
+          renderDeckPlacard();
+        });
+      }
 
-        function checkAllServerNextItems() {
-          const panel = document.getElementById("serverNextPanel");
-          if (!panel) return;
+      if (saveBtn) {
+        saveBtn.addEventListener("click", () => {
+          deckPhotoUrl = String(input?.value || "").trim();
+          isEditingPlacardPhoto = false;
+          renderDeckPlacard();
+        });
+      }
 
-          const items = panel.querySelectorAll(".server-next__item");
-          items.forEach((item) => {
-            item.classList.add("is-checked");
-          });
-        }
+      if (cancelBtn) {
+        cancelBtn.addEventListener("click", () => {
+          isEditingPlacardPhoto = false;
+          renderDeckPlacard();
+        });
+      }
+    }
 
-        function start() {
-          if (done) return;
+    function checkAllServerNextItems() {
+      const panel = document.getElementById("serverNextPanel");
+      if (!panel) return;
 
-          const pack = document.getElementById("pack");
-          const colombesCardZone = document.getElementById("colombesCardZone");
+      const items = panel.querySelectorAll(".server-next__item");
+      items.forEach((item) => {
+        item.classList.add("is-checked");
+      });
+    }
 
-          if (!pack || !colombesCardZone) return;
+    function start() {
+      if (done) return;
 
-          const packRect = pack.getBoundingClientRect();
-          const targetRect = colombesCardZone.getBoundingClientRect();
+      const pack = document.getElementById("pack");
+      const colombesCardZone = document.getElementById("colombesCardZone");
 
-          const ghost = document.createElement("div");
-          ghost.className = "pack";
-          ghost.style.position = "fixed";
-          ghost.style.left = (packRect.left + 28) + "px";
-          ghost.style.top = packRect.top + "px";
-          ghost.style.width = "120px";
-          ghost.style.height = "120px";
-          ghost.style.zIndex = "9999";
-          ghost.style.pointerEvents = "none";
-          ghost.style.transition = "all 0.6s ease";
+      if (!pack || !colombesCardZone) return;
 
-          ghost.innerHTML = `
+      const packRect = pack.getBoundingClientRect();
+      const targetRect = colombesCardZone.getBoundingClientRect();
+
+      const ghost = document.createElement("div");
+      ghost.className = "pack";
+      ghost.style.position = "fixed";
+      ghost.style.left = (packRect.left + 28) + "px";
+      ghost.style.top = packRect.top + "px";
+      ghost.style.width = "120px";
+      ghost.style.height = "120px";
+      ghost.style.zIndex = "9999";
+      ghost.style.pointerEvents = "none";
+      ghost.style.transition = "all 0.6s ease";
+
+      ghost.innerHTML = `
     <img src="/assets/icons/Apike.gif" class="spade" alt="As de picas">
     <img src="/assets/icons/Adiamante.gif" class="diamond" alt="As de diamantes">
     <img src="/assets/icons/Atrebol.gif" class="club" alt="As de trébol">
   `;
 
-          document.body.appendChild(ghost);
+      document.body.appendChild(ghost);
 
-          requestAnimationFrame(() => {
-            ghost.style.left = (targetRect.left + 18) + "px";
-            ghost.style.top = targetRect.top + "px";
-          });
+      requestAnimationFrame(() => {
+        ghost.style.left = (targetRect.left + 18) + "px";
+        ghost.style.top = targetRect.top + "px";
+      });
 
-          ghost.addEventListener("transitionend", () => {
-            ghost.remove();
+      ghost.addEventListener("transitionend", () => {
+        ghost.remove();
 
-            colombesCardZone.innerHTML = `
+        colombesCardZone.innerHTML = `
       <div class="colombes-final-stack">
         <img src="/assets/icons/Acorazon.gif" class="colombes-final-stack__heart" alt="As de corazón">
         <img src="/assets/icons/Apike.gif" class="colombes-final-stack__spade" alt="As de picas">
@@ -684,43 +697,43 @@
       </div>
     `;
 
-            renderFinalJokers();
+        renderFinalJokers();
 
-            enableServerNextPanel();
-            checkAllServerNextItems();
-            showEl("createDeckBtn");
+        enableServerNextPanel();
+        checkAllServerNextItems();
+        showEl("createDeckBtn");
 
-            done = true;
-          }, { once: true });
-        }
+        done = true;
+      }, { once: true });
+    }
 
-        document.addEventListener("DOMContentLoaded", async () => {
-          const mode = getPageMode();
+    document.addEventListener("DOMContentLoaded", async () => {
+      const mode = getPageMode();
 
-          if (mode === "jokerblue") {
-            isBlueOnTop = true;
-          }
+      if (mode === "jokerblue") {
+        isBlueOnTop = true;
+      }
 
-          applyPageMode();
+      applyPageMode();
 
-          if (mode === "jokerblue") {
-            renderJokerBlueCardInColombes();
-            renderFinalJokers();
-            updateServerNextLabels();
-            enableServerNextPanel();
-            checkAllServerNextItems();
-          }
+      if (mode === "jokerblue") {
+        renderJokerBlueCardInColombes();
+        renderFinalJokers();
+        updateServerNextLabels();
+        enableServerNextPanel();
+        checkAllServerNextItems();
+      }
 
-          await loadDefaultCurrencyFromProfile();
-          await loadUserHeader();
+      await loadDefaultCurrencyFromProfile();
+      await loadUserHeader();
 
-          bindServerNextClicks();
+      bindServerNextClicks();
 
-          document.getElementById("sendJokerBlueBtn")?.addEventListener("click", handleSendJokerBlue);
-          document.getElementById("saveAllBtn")?.addEventListener("click", handleSaveStepOne);
-          document.getElementById("createDeckBtn")?.addEventListener("click", handleCreateDeck);
-          document.getElementById("deckCurrencyCode")?.addEventListener("change", syncCurrencyNameFromCode);
-        });
+      document.getElementById("sendJokerBlueBtn")?.addEventListener("click", handleSendJokerBlue);
+      document.getElementById("saveAllBtn")?.addEventListener("click", handleSaveStepOne);
+      document.getElementById("createDeckBtn")?.addEventListener("click", handleCreateDeck);
+      document.getElementById("deckCurrencyCode")?.addEventListener("change", syncCurrencyNameFromCode);
+    });
 
   </script>
 </body>
