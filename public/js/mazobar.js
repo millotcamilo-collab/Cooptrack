@@ -511,6 +511,7 @@
   }
 
   function buildDeckPhotoHTML(deck, plays, currentUserId) {
+    const avatarSrc = getDeckAvatarSrc(deck);
     const canEditPhoto = userCanEditDeckPhoto(plays, currentUserId);
 
     if (canEditPhoto) {
@@ -545,6 +546,7 @@
     </div>
   `;
   }
+  
   function buildDeckPhotoEditorHTML(deck, plays, currentUserId) {
     const canEditPhoto = userCanEditDeckPhoto(plays, currentUserId);
 
