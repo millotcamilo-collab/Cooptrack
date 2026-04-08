@@ -794,18 +794,89 @@ async function listMazosHandler(req, res) {
     const userId = req.auth.userId;
 
     const result = await pool.query(
-      `SELECT d.*
-       FROM decks d
-       INNER JOIN deck_members dm
-         ON dm.deck_id = d.id
-       WHERE dm.user_id = $1
-       ORDER BY d.id DESC`,
+      `
+      SELECT d.*
+      FROM decks d
+      INNER JOIN deck_members dm
+        ON dm.deck_id = d.id
+      WHERE dm.user_id = $1
+      ORDER BY d.id DESC
+      `,
       [userId]
+    );
+
+    const mazosBase = result.rows;
+
+    const mazos = await Promise.all(
+      mazosBase.map(async (deck) => {
+        const playsResult = await pool.query(
+          `
+          SELECT
+            p.id,
+            p.created_by_user_id,
+            p.target_user_id,
+            p.card_rank,
+            p.card_suit,
+            p.play_status,
+            p.play_code,
+            p.created_at,
+            p.updated_at
+          FROM plays p
+          WHERE p.deck_id = $1
+          ORDER BY p.id ASC
+          `,
+          [deck.id]
+        );
+
+        const plays = playsResult.rows;
+
+        // -------------------------
+        // JOKER DEL MAZO
+        // -------------------------
+        const hasActiveBlueJoker = plays.some((play) => {
+          const rank = String(play.card_rank || '').toUpperCase();
+          const suit = String(play.card_suit || '').toUpperCase();
+          const status = String(play.play_status || '').toUpperCase();
+
+          return rank === 'JOKER' && suit === 'BLUE' && status === 'ACTIVE';
+        });
+
+        const joker_type = hasActiveBlueJoker ? 'BLUE' : 'RED';
+
+        // -------------------------
+        // CARTAS CORPORATIVAS DEL USUARIO
+        // -------------------------
+        const current_user_cards = plays
+          .filter((play) => {
+            const rank = String(play.card_rank || '').toUpperCase();
+            const suit = String(play.card_suit || '').toUpperCase();
+            const status = String(play.play_status || '').toUpperCase();
+
+            if (status === 'BLOCKED') return false;
+            if (!(rank === 'A' || rank === 'K')) return false;
+            if (!['HEART', 'SPADE', 'DIAMOND', 'CLUB'].includes(suit)) return false;
+
+            const ownerUserId = Number(play.target_user_id || play.created_by_user_id || 0);
+
+            return ownerUserId === Number(userId);
+          })
+          .map((play) => {
+            const rank = String(play.card_rank || '').toUpperCase();
+            const suit = String(play.card_suit || '').toUpperCase();
+            return `${rank}_${suit}`;
+          });
+
+        return {
+          ...deck,
+          joker_type,
+          current_user_cards,
+        };
+      })
     );
 
     return res.json({
       ok: true,
-      mazos: result.rows,
+      mazos,
     });
   } catch (error) {
     console.error('Error en listar mazos', error);
