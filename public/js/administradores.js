@@ -154,10 +154,6 @@
       return true;
     }
 
-    if (rank === "K") {
-      return mode === "AK";
-    }
-
     return false;
   }
 
