@@ -716,6 +716,60 @@ async function createMazoHandler(req, res) {
       await setPlayReaders(client, created.row.id, [userId]);
     }
 
+    // 2. Joker del mazo
+    const jokerAction =
+      normalizedJokerType === 'BLUE'
+        ? 'init_joker_blue'
+        : 'request_joker_blue';
+
+    const jokerStatus =
+      normalizedJokerType === 'BLUE'
+        ? 'ACTIVE'
+        : 'PENDING';
+
+    const jokerPlayCode = buildPlayCode({
+      mazoId: mazo.id,
+      userId,
+      rank: 'JOKER',
+      suit: 'BLUE',
+      action: jokerAction,
+      authorized: `U:${userId}`,
+      flow: 'admin',
+      recipients: '',
+    });
+
+    const createdJoker = await insertInstitutionalPlay(client, {
+      mazoId: mazo.id,
+      createdByUserId: userId,
+      playCode: jokerPlayCode,
+      playStatus: jokerStatus,
+    });
+
+    await setPlayReaders(client, createdJoker.row.id, [userId]);
+
+    // 3. Ases (propiedad)
+    for (const seed of seedPlays.filter((s) => s.rank === 'A')) {
+      const playCode = buildPlayCode({
+        mazoId: mazo.id,
+        userId,
+        rank: seed.rank,
+        suit: seed.suit,
+        action: seed.action,
+        authorized: `U:${userId}`,
+        flow: 'foundation',
+        recipients: `U:${userId}`,
+      });
+
+      const created = await insertInstitutionalPlay(client, {
+        mazoId: mazo.id,
+        createdByUserId: userId,
+        playCode,
+        playStatus: seed.status,
+      });
+
+      await setPlayReaders(client, created.row.id, [userId]);
+    }
+
     // 2. Ases (propiedad)
     for (const seed of seedPlays.filter((s) => s.rank === 'A')) {
       const playCode = buildPlayCode({
