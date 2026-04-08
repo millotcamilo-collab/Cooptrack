@@ -45,15 +45,15 @@
 
 .deck-row__joker-wrap {
   position: absolute;
-  top: -4px;
-  left: 0;
+  top: -6px;
+  left: 4px;
   z-index: 3;
   pointer-events: none;
 }
 
 .deck-row__joker {
   width: auto;
-  height: 34px;
+  height: 60px;
   display: block;
 }
 
