@@ -288,6 +288,86 @@
     }
   }
 
+  function bindAdministradoresDropZone(deckId) {
+    const dropZone = getContainer();
+
+    if (!dropZone) {
+      console.warn("No existe autoridades-container / administradores-container");
+      return;
+    }
+
+    if (dropZone.dataset.dropBound === "true") {
+      return;
+    }
+
+    dropZone.dataset.dropBound = "true";
+
+    dropZone.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      let payload = null;
+
+      try {
+        payload = JSON.parse(
+          event.dataTransfer.getData("application/json") || "{}"
+        );
+      } catch (error) {
+        return;
+      }
+
+      const mode = String(payload?.mode || "").toLowerCase();
+
+      if (mode !== "new") {
+        return;
+      }
+
+      event.preventDefault();
+      dropZone.classList.add("is-drag-over");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("is-drag-over");
+    });
+
+    dropZone.addEventListener("drop", (event) => {
+      let payload = null;
+
+      try {
+        payload = JSON.parse(
+          event.dataTransfer.getData("application/json") || "{}"
+        );
+      } catch (error) {
+        console.warn("Error leyendo drag data", error);
+        return;
+      }
+
+      const mode = String(payload?.mode || "").toLowerCase();
+
+      if (mode !== "new") {
+        return;
+      }
+
+      event.preventDefault();
+      dropZone.classList.remove("is-drag-over");
+
+      const sourcePlayId = Number(payload?.sourcePlayId || 0);
+      const childRank = String(payload?.childRank || "").toUpperCase();
+      const childSuit = String(payload?.childSuit || "").toUpperCase();
+
+      if (!deckId || !sourcePlayId || !childRank || !childSuit) {
+        console.warn("Drop new incompleto", {
+          deckId,
+          sourcePlayId,
+          childRank,
+          childSuit
+        });
+        return;
+      }
+
+      window.location.href =
+        `/lienzo-new.html?deckId=${deckId}&parentPlayId=${sourcePlayId}&childRank=${childRank}&childSuit=${childSuit}`;
+    });
+  }
+
   function renderAdministradoresView(mode = "AK") {
     const container = getContainer();
 
@@ -381,6 +461,7 @@
 
   window.renderAdministradores = renderAdministradores;
   window.renderAutoridades = renderAdministradores;
+  window.bindAdministradoresDropZone = bindAdministradoresDropZone;
 
   window.showAdministradoresView = function (mode = "A") {
     showAdministradoresContainer();

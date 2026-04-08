@@ -1,6 +1,7 @@
 (function () {
   let mazobarPhotoEditorOpen = false;
   let mazobarDraftPhotoUrl = "";
+  let mazobarCurrentView = "tablero"; // "tablero" | "administradores"
 
   function parsePlayCode(code) {
     const parts = String(code || "").split("§");
@@ -171,14 +172,19 @@
   }
 
   function showTableroView() {
+    mazobarCurrentView = "tablero";
+
     hideElement("administradores-container");
     showElement("tablero-container");
     showElement("playform-container");
+
     showAddJButton();
     hideBackToTableroButton();
   }
 
   function showAutoridadesView(mode) {
+    mazobarCurrentView = "administradores";
+
     hideElement("tablero-container");
     showElement("administradores-container");
     hideElement("playform-container");
@@ -575,7 +581,10 @@
 
 <div class="mazobar__top-left">
   <div class="mazobar__topcards">
-    ${buildTopCardsHTML(enabledCards)}
+  ${mazobarCurrentView === "administradores"
+        ? buildTopCardsHTML(enabledCards)
+        : ""
+      }
   </div>
 
   ${buildDeckPhotoHTML(deck, normalizedPlays, currentUserId)}
