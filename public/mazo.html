@@ -209,7 +209,40 @@
         return rank === "A" || rank === "K";
       });
 
-      if (hasCorporateAccess) {
+      const plays = Array.isArray(state?.plays) ? state.plays : [];
+      const currentUserId = Number(state?.userId || 0);
+
+      const hasCorporateAccess = plays.some((play) => {
+        const playCode = String(play?.play_code || "");
+        const parts = playCode.split("§");
+
+        const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
+        const status = String(play?.play_status || "").toUpperCase();
+        const ownerUserId = Number(parts[1] || 0);
+
+        if (status !== "ACTIVE") return false;
+        if (ownerUserId !== currentUserId) return false;
+
+        return rank === "A" || rank === "K";
+      });
+
+      const hasVisibleGamePlays = plays.some((play) => {
+        const playCode = String(play?.play_code || "");
+        const parts = playCode.split("§");
+
+        const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
+        const status = String(play?.play_status || "").toUpperCase();
+        const action = String(parts[5] || "").toLowerCase();
+
+        if (status !== "ACTIVE") return false;
+
+        // excluye líneas estructurales del libro
+        if (action === "init_ace" || action === "puedejugar") return false;
+
+        return rank === "J" || rank === "Q";
+      });
+
+      if (hasCorporateAccess && !hasVisibleGamePlays) {
         const tablero = document.getElementById("tablero-container");
         const playform = document.getElementById("playform-container");
 
