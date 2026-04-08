@@ -191,23 +191,13 @@
         renderTablero(deck, state.plays || [], state);
       }
 
-      const plays = Array.isArray(state?.plays) ? state.plays : [];
-      const currentUserId = Number(state?.userId || 0);
+      const tableroEl = document.getElementById("tablero-container");
+      const playformEl = document.getElementById("playform-container");
+      const administradoresEl = document.getElementById("administradores-container");
 
-      const hasCorporateAccess = plays.some((play) => {
-        const rank = String(play?.card_rank || play?.parsed?.rank || "").toUpperCase();
-        const suit = String(play?.card_suit || play?.parsed?.suit || "").toUpperCase();
-        const status = String(play?.play_status || play?.status || "").toUpperCase();
-
-        const playCode = String(play?.play_code || "");
-        const parts = playCode.split("§");
-        const ownerUserId = Number(parts[1] || 0);
-
-        if (status !== "ACTIVE") return false;
-        if (ownerUserId !== currentUserId) return false;
-
-        return rank === "A" || rank === "K";
-      });
+      if (tableroEl) tableroEl.style.display = "";
+      if (playformEl) playformEl.style.display = "";
+      if (administradoresEl) administradoresEl.style.display = "none";
 
       const plays = Array.isArray(state?.plays) ? state.plays : [];
       const currentUserId = Number(state?.userId || 0);
@@ -235,19 +225,14 @@
         const action = String(parts[5] || "").toLowerCase();
 
         if (status !== "ACTIVE") return false;
-
-        // excluye líneas estructurales del libro
         if (action === "init_ace" || action === "puedejugar") return false;
 
         return rank === "J" || rank === "Q";
       });
 
       if (hasCorporateAccess && !hasVisibleGamePlays) {
-        const tablero = document.getElementById("tablero-container");
-        const playform = document.getElementById("playform-container");
-
-        if (tablero) tablero.style.display = "none";
-        if (playform) playform.style.display = "";
+        if (tableroEl) tableroEl.style.display = "none";
+        if (playformEl) playformEl.style.display = "";
 
         document.dispatchEvent(new CustomEvent("mazobar:addJ"));
       }
