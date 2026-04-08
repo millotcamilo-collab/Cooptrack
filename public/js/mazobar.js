@@ -180,6 +180,7 @@
 
     showAddJButton();
     hideBackToTableroButton();
+    renderMazobar(window.__currentDeck, window.__currentState.plays, window.__currentState.userId);
   }
 
   function showAutoridadesView(mode) {
@@ -197,6 +198,7 @@
         detail: { mode }
       })
     );
+    renderMazobar(window.__currentDeck, window.__currentState.plays, window.__currentState.userId);
   }
 
   function userCanEditDeckPhoto(plays, currentUserId) {
