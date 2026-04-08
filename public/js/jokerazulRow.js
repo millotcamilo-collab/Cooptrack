@@ -9,6 +9,18 @@
 
     const creator = escapeHtml(play?.created_by_nickname || "—");
     const status = String(play?.play_status || "").toUpperCase();
+    const action = String(play?.action || play?.parsed?.action || "").toLowerCase();
+
+    const isBlueCurrent =
+      status === "ACTIVE" || action === "init_joker_blue";
+
+    const jokerSrc = isBlueCurrent
+      ? "/assets/icons/joker_blue.gif"
+      : "/assets/icons/Joker.gif";
+
+    const jokerAlt = isBlueCurrent
+      ? "Joker azul"
+      : "Joker rojo";
 
     const text = "Registro";
 
@@ -46,8 +58,8 @@
       <article class="tablero-row tablero-row--jokerazul" id="${rowId}">
         <div class="tablero-row__left">
           <img
-            src="/assets/icons/joker_blue.gif"
-            alt="Joker azul"
+            src="${jokerSrc}"
+            alt="${jokerAlt}"
             style="height:40px;"
           />
         </div>

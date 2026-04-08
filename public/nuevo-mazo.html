@@ -593,7 +593,7 @@
         setStatus("Error de red al crear el mazo", true);
       }
     }
-    
+
     function renderDeckPlacard() {
       renderPlacard("placard-container", {
         deckPhotoUrl: deckPhotoUrl,
@@ -717,6 +717,13 @@
       applyPageMode();
 
       if (mode === "jokerblue") {
+        renderDeckPlacard();
+
+        const placardEl = document.getElementById("placard-container");
+        if (placardEl) {
+          placardEl.classList.add("is-visible");
+        }
+
         renderJokerBlueCardInColombes();
         renderFinalJokers();
         updateServerNextLabels();
