@@ -89,6 +89,11 @@
                 <img src="/assets/icons/Sello40.gif" alt="Aprobar">
               </button>
 
+              <button id="sendJokerBlueBtn" class="icon-btn is-hidden" type="button" title="Solicitar Joker azul"
+                aria-label="Solicitar Joker azul">
+                <img src="/assets/icons/buzon60.gif" alt="Solicitar Joker azul">
+              </button>
+
               <button id="cancelBtn" class="icon-btn" type="button" title="Salir" aria-label="Salir">
                 <img src="/assets/icons/exit80.gif" alt="Salir">
               </button>
@@ -164,6 +169,34 @@
     let isEditingPlacardPhoto = false;
     let isBlueOnTop = false;
 
+    function getPageMode() {
+      const params = new URLSearchParams(window.location.search);
+      return String(params.get("mode") || "create").trim().toLowerCase();
+    }
+
+    function getDeckIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return Number(params.get("deckId") || params.get("id") || 0);
+    }
+
+    function applyPageMode() {
+      const mode = getPageMode();
+
+      if (mode === "jokerblue") {
+        hideEl("colombesForm");
+        hideEl("saveAllBtn");
+        hideEl("createDeckBtn");
+        showEl("sendJokerBlueBtn");
+        setStatus("Solicitud Joker azul lista para enviar.");
+        return;
+      }
+
+      showEl("colombesForm");
+      showEl("saveAllBtn");
+      hideEl("createDeckBtn");
+      hideEl("sendJokerBlueBtn");
+    }
+
     function showEl(id) {
       const el = document.getElementById(id);
       if (el) {
@@ -175,6 +208,97 @@
       const el = document.getElementById(id);
       if (el) {
         el.classList.add("is-hidden");
+      }
+    }
+
+    const API_BASE_URL = "https://cooptrack-backend.onrender.com";
+    const ADMIN_USER_ID = 1;
+
+    function getToken() {
+      return localStorage.getItem("cooptrackToken") || "";
+    }
+
+    function decodeJwtPayload(token) {
+      try {
+        const base64 = token.split(".")[1];
+        if (!base64) return null;
+        return JSON.parse(atob(base64));
+      } catch (error) {
+        console.error("No se pudo decodificar el token", error);
+        return null;
+      }
+    }
+
+    function buildJokerBluePlayCode(deckId, userId, nowIso) {
+      return [
+        deckId,
+        userId,
+        nowIso,
+        "JOKER",
+        "BLUE",
+        "request_blue_joker",
+        `U:${userId}`,
+        "manual",
+        `U:${ADMIN_USER_ID}`
+      ].join("§");
+    }
+
+    async function handleSendJokerBlue() {
+      const token = getToken();
+
+      if (!token) {
+        setStatus("Falta sesión activa", true);
+        return;
+      }
+
+      const deckId = getDeckIdFromUrl();
+      if (!deckId) {
+        setStatus("Falta deckId para solicitar Joker azul", true);
+        return;
+      }
+
+      const payload = decodeJwtPayload(token);
+      const userId = Number(payload?.userId || 0);
+
+      if (!userId) {
+        setStatus("No se pudo identificar al solicitante", true);
+        return;
+      }
+
+      try {
+        setStatus("Enviando solicitud de Joker azul...");
+
+        const now = new Date().toISOString();
+        const playCode = buildJokerBluePlayCode(deckId, userId, now);
+
+        const response = await fetch(`${API_BASE_URL}/plays`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            deck_id: deckId,
+            parent_play_id: null,
+            target_user_id: ADMIN_USER_ID,
+            play_code: playCode,
+            play_status: "PENDING",
+            text: "Solicitud de Joker azul"
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data?.ok) {
+          setStatus(data?.error || "No se pudo enviar la solicitud", true);
+          return;
+        }
+
+        setStatus("Solicitud de Joker azul enviada.");
+        window.location.href = `/mazo.html?id=${deckId}`;
+      } catch (error) {
+        console.error("Error solicitando Joker azul:", error);
+        setStatus("Error de red al solicitar Joker azul", true);
       }
     }
 
@@ -571,14 +695,24 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-      showEl("saveAllBtn");
-      hideEl("createDeckBtn");
+      if (getPageMode() === "jokerblue") {
+        isBlueOnTop = true;
+      }
+      applyPageMode();
+
+      if (getPageMode() === "jokerblue") {
+        renderFinalJokers();
+        updateServerNextLabels();
+        enableServerNextPanel();
+        checkAllServerNextItems();
+      }
 
       await loadDefaultCurrencyFromProfile();
       await loadUserHeader();
 
       bindServerNextClicks();
 
+      document.getElementById("sendJokerBlueBtn")?.addEventListener("click", handleSendJokerBlue);
       document.getElementById("saveAllBtn")?.addEventListener("click", handleSaveStepOne);
       document.getElementById("createDeckBtn")?.addEventListener("click", handleCreateDeck);
       document.getElementById("deckCurrencyCode")?.addEventListener("change", syncCurrencyNameFromCode);
