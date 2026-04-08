@@ -84,3 +84,93 @@
 #tablero-container.is-drag-over {
   background: var(--lienzo-bg);
 }
+
+//administradores 
+.tablero-row--ak .tablero-row__left {
+  display: flex;
+  justify-content: center;
+}
+
+.tablero-row--ak .admin-row__mini-card {
+  width: 56px;
+  min-height: 76px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 10px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-sizing: border-box;
+}
+
+.tablero-row--ak .admin-row__rank {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tablero-row--ak .admin-row__suit {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.tablero-row--ak .tablero-row__center {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tablero-row--ak .tablero-row__right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tablero-row--ak .admin-row__owner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tablero-row--ak .admin-row__owner-photo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.tablero-row--ak .admin-row__owner-name {
+  font-size: 14px;
+}
+
+//Joker en administracion
+.tablero-row--joker .tablero-row__left {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.tablero-row--joker .admin-row__joker-card {
+  height: 120px;
+  width: auto;
+  display: block;
+}
+
+.tablero-row--joker .tablero-row__center {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tablero-row--joker .tablero-row__right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.tablero-row--joker .admin-row__joker-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+}

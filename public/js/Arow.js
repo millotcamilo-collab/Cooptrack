@@ -41,6 +41,21 @@
     );
   }
 
+  function getSuitName(suit) {
+    switch (String(suit || "").toUpperCase()) {
+      case "HEART":
+        return "Corazón";
+      case "SPADE":
+        return "Pica";
+      case "DIAMOND":
+        return "Diamante";
+      case "CLUB":
+        return "Trébol";
+      default:
+        return "Sin palo";
+    }
+  }
+
   function renderArow(play, context = {}) {
     const helpers = context.helpers || {};
     const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
@@ -50,27 +65,37 @@
 
     const rank = getRank(play) || "A";
     const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
-    const label = `${rank}${getSuitSymbol(suit)}`;
+    const suitSymbol = getSuitSymbol(suit);
+    const label = `${rank}${suitSymbol}`;
 
     const ownerNickname = escapeHtml(getOwnerNickname(play));
     const ownerPhoto = escapeHtml(getOwnerPhoto(play));
+    const suitName = escapeHtml(getSuitName(suit));
 
     return `
-      <article class="tablero-row tablero-row--arow" id="${rowId}">
-        <div
-          class="tablero-row__meta"
-          style="display:flex; align-items:center; gap:10px;"
-        >
-          <span class="tablero-row__title">${escapeHtml(label)}</span>
+      <article class="tablero-row tablero-row--ak" id="${rowId}">
+        <div class="tablero-row__left">
+          <div class="admin-row__mini-card" title="${escapeHtml(label)}">
+            <span class="admin-row__rank">${escapeHtml(rank)}</span>
+            <span class="admin-row__suit">${escapeHtml(suitSymbol)}</span>
+          </div>
+        </div>
 
-          <img
-            src="${ownerPhoto}"
-            alt="${ownerNickname}"
-            style="width:32px; height:32px; border-radius:50%; object-fit:cover;"
-            onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
-          />
+        <div class="tablero-row__center">
+          <div class="tablero-row__title">${escapeHtml(label)}</div>
+          <div class="tablero-row__text">${suitName}</div>
+        </div>
 
-          <span class="tablero-row__owner">${ownerNickname}</span>
+        <div class="tablero-row__right">
+          <div class="admin-row__owner">
+            <img
+              src="${ownerPhoto}"
+              alt="${ownerNickname}"
+              class="admin-row__owner-photo"
+              onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
+            />
+            <span class="admin-row__owner-name">${ownerNickname}</span>
+          </div>
         </div>
       </article>
     `;

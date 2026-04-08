@@ -7,9 +7,16 @@
     const deckId = Number(play?.deck_id || 0);
     const rowId = `tablero-row-${playId}`;
 
-    const creator = escapeHtml(play?.created_by_nickname || "—");
+    const creator = escapeHtml(
+      play?.created_by_nickname ||
+      play?.createdByNickname ||
+      "—"
+    );
+
     const status = String(play?.play_status || "").toUpperCase();
-    const action = String(play?.action || play?.parsed?.action || "").toLowerCase();
+    const action = String(
+      play?.action || play?.parsed?.action || ""
+    ).toLowerCase();
 
     const isBlueCurrent =
       status === "ACTIVE" || action === "init_joker_blue";
@@ -22,7 +29,11 @@
       ? "Joker azul"
       : "Joker rojo";
 
-    const text = "Registro";
+    const title = isBlueCurrent
+      ? "Joker azul"
+      : "Joker";
+
+    const subtitle = "Registro";
 
     setTimeout(() => {
       const row = document.getElementById(rowId);
@@ -55,28 +66,27 @@
     }, 0);
 
     return `
-      <article class="tablero-row tablero-row--jokerazul" id="${rowId}">
+      <article class="tablero-row tablero-row--joker" id="${rowId}">
         <div class="tablero-row__left">
           <img
             src="${jokerSrc}"
             alt="${jokerAlt}"
-            style="height:40px;"
+            class="admin-row__joker-card"
           />
         </div>
 
         <div class="tablero-row__center">
-          <div class="tablero-row__title">
-            ${text}
-          </div>
+          <div class="tablero-row__title">${escapeHtml(title)}</div>
+          <div class="tablero-row__text">${escapeHtml(subtitle)}</div>
 
           <div class="tablero-row__meta">
             <span>${creator}</span>
-            <span>${escapeHtml(status)}</span>
+            <span>${escapeHtml(status || "—")}</span>
           </div>
         </div>
 
         <div class="tablero-row__right">
-          <!-- vacío por ahora -->
+          <span class="admin-row__joker-link">Abrir</span>
         </div>
       </article>
     `;
