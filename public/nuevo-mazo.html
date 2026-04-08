@@ -204,6 +204,15 @@
       }
     }
 
+    function renderJokerBlueCardInColombes() {
+      const zone = document.getElementById("colombesCardZone");
+      if (!zone) return;
+
+      zone.innerHTML = `
+    <img src="/assets/icons/joker_blue.gif" class="card" alt="Joker azul">
+  `;
+    }
+
     function hideEl(id) {
       const el = document.getElementById(id);
       if (el) {
@@ -695,12 +704,16 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-      if (getPageMode() === "jokerblue") {
+      const mode = getPageMode();
+
+      if (mode === "jokerblue") {
         isBlueOnTop = true;
       }
+
       applyPageMode();
 
-      if (getPageMode() === "jokerblue") {
+      if (mode === "jokerblue") {
+        renderJokerBlueCardInColombes();
         renderFinalJokers();
         updateServerNextLabels();
         enableServerNextPanel();
@@ -717,6 +730,7 @@
       document.getElementById("createDeckBtn")?.addEventListener("click", handleCreateDeck);
       document.getElementById("deckCurrencyCode")?.addEventListener("change", syncCurrencyNameFromCode);
     });
+
   </script>
 </body>
 
