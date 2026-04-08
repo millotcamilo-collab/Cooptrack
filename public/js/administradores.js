@@ -340,7 +340,7 @@
         .join("");
 
       container.innerHTML = `
-      <section class="administradores-view administradores-view--mode-${escapeHtml(activeAdministradoresMode)}">
+      <section class="tablero administradores-view administradores-view--mode-${escapeHtml(activeAdministradoresMode)}">
         ${rowsHtml}
       </section>
     `;
