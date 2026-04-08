@@ -123,15 +123,6 @@
     });
   }
 
-  function hasBlueJoker(plays) {
-    return plays.some((p) => {
-      const rank = String(p.rank || "").toUpperCase();
-      const suit = String(p.suit || "").toUpperCase();
-      const status = String(p.status || "").toUpperCase();
-
-      return status === "ACTIVE" && rank === "JOKER" && suit === "BLUE";
-    });
-  }
 
   function getCurrentJokerPlay(plays) {
     const jokerPlays = plays.filter((p) => {
@@ -197,22 +188,6 @@
     }
   }
 
-  function showAddJButton() {
-    showElement("btnAddJ");
-  }
-
-  function hideAddJButton() {
-    hideElement("btnAddJ");
-  }
-
-  function showBackToTableroButton() {
-    showElement("btnBackToTablero");
-  }
-
-  function hideBackToTableroButton() {
-    hideElement("btnBackToTablero");
-  }
-
   function showTableroView() {
     mazobarCurrentView = "tablero";
 
@@ -220,9 +195,11 @@
     showElement("tablero-container");
     showElement("playform-container");
 
-    showAddJButton();
-    hideBackToTableroButton();
-    renderMazobar(window.__currentDeck, window.__currentState.plays, window.__currentState.userId);
+    renderMazobar(
+      window.__currentDeck || null,
+      window.__currentState?.plays || [],
+      window.__currentState?.userId || null
+    );
   }
 
   function showAutoridadesView(mode) {
@@ -231,8 +208,7 @@
     hideElement("tablero-container");
     showElement("administradores-container");
     hideElement("playform-container");
-    hideAddJButton();
-    showBackToTableroButton();
+
     closePlayformIfOpen();
 
     document.dispatchEvent(
@@ -240,7 +216,12 @@
         detail: { mode }
       })
     );
-    renderMazobar(window.__currentDeck, window.__currentState.plays, window.__currentState.userId);
+
+    renderMazobar(
+      window.__currentDeck || null,
+      window.__currentState?.plays || [],
+      window.__currentState?.userId || null
+    );
   }
 
   function userCanEditDeckPhoto(plays, currentUserId) {
@@ -254,46 +235,6 @@
         suit === "HEART" &&
         authorId === Number(currentUserId || 0)
       );
-    });
-  }
-
-  function hasPendingOrActiveBlueJoker(plays) {
-    const now = Date.now();
-    const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6;
-
-    return plays.some((p) => {
-      const rank = String(p.rank || "").toUpperCase();
-      const suit = String(p.suit || "").toUpperCase();
-      const status = String(p.status || "").toUpperCase();
-
-      if (rank !== "JOKER" || suit !== "BLUE") {
-        return false;
-      }
-
-      if (status === "PENDING") {
-        return true;
-      }
-
-      if (status === "ACTIVE") {
-        const createdAt = p.parsed?.date || p.created_at || p.updated_at;
-        if (!createdAt) return true;
-
-        const createdTime = new Date(createdAt).getTime();
-        if (Number.isNaN(createdTime)) return true;
-
-        return (now - createdTime) <= SIX_MONTHS_MS;
-      }
-
-      return false;
-    });
-  }
-  function hasRedJoker(plays) {
-    return plays.some((p) => {
-      const rank = String(p.rank || "").toUpperCase();
-      const suit = String(p.suit || "").toUpperCase();
-      const status = String(p.status || "").toUpperCase();
-
-      return status === "ACTIVE" && rank === "JOKER" && suit === "RED";
     });
   }
 
@@ -421,11 +362,28 @@
   }
 
   function buildCommandButtonsHTML(plays) {
-    const suitButtons = getVisibleCommandSuits().map((suit) => {
-      const imgSrc = getSuitButtonImageSrc(suit);
-      const symbol = getSuitSymbol(suit);
+    // -------------------------
+    // BOTONES DE PALOS
+    // -------------------------
+    const suitButtons = getVisibleCommandSuits()
+      .map((suit) => {
+        const imgSrc = getSuitButtonImageSrc(suit);
+        const symbol = getSuitSymbol(suit);
 
-      if (imgSrc) {
+        if (imgSrc) {
+          return `
+          <button
+            type="button"
+            class="mazobar__cmd-btn mazobar__cmd-btn--suit"
+            data-command-suit="${suit}"
+            title="${symbol}"
+            aria-label="${symbol}"
+          >
+            <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
+          </button>
+        `;
+        }
+
         return `
         <button
           type="button"
@@ -434,33 +392,34 @@
           title="${symbol}"
           aria-label="${symbol}"
         >
-          <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
+          ${symbol}
         </button>
       `;
-      }
+      })
+      .join("");
 
-      return `
-      <button
-        type="button"
-        class="mazobar__cmd-btn mazobar__cmd-btn--suit"
-        data-command-suit="${suit}"
-        title="${symbol}"
-        aria-label="${symbol}"
-      >
-        ${symbol}
-      </button>
-    `;
-    }).join("");
-
+    // -------------------------
+    // ALERTAS
+    // -------------------------
     const alertButtons = buildAlertButtonsHTML(plays);
 
+    // -------------------------
+    // VISIBILIDAD SEGÚN VISTA
+    // -------------------------
+    const isAdminView = mazobarCurrentView === "administradores";
+
+    // -------------------------
+    // RETURN FINAL
+    // -------------------------
     return `
+    <!-- NUEVA J -->
     <button
       id="btnAddJ"
       type="button"
       class="mazobar__cmd-btn mazobar__cmd-btn--primary"
       title="Nueva jugada"
       aria-label="Nueva jugada"
+      style="${isAdminView ? "display:none;" : ""}"
     >
       <img
         src="/assets/icons/maquina80.gif"
@@ -469,35 +428,36 @@
       />
     </button>
 
-<button
-  id="btnBackToTablero"
-  type="button"
-  class="mazobar__cmd-btn mazobar__cmd-btn--primary"
-  title="Volver al tablero"
-  aria-label="Volver al tablero"
-  style="display:none;"
->
-  <img
-    src="/assets/icons/maquina80.gif"
-    alt="Tablero"
-    class="mazobar__cmd-icon"
-  />
-</button>
+    <!-- VOLVER A TABLERO -->
+    <button
+      id="btnBackToTablero"
+      type="button"
+      class="mazobar__cmd-btn mazobar__cmd-btn--primary"
+      title="Volver al tablero"
+      aria-label="Volver al tablero"
+      style="${isAdminView ? "" : "display:none;"}"
+    >
+      <img
+        src="/assets/icons/maquina80.gif"
+        alt="Tablero"
+        class="mazobar__cmd-icon"
+      />
+    </button>
 
-   <button
+    <!-- ADMIN -->
+    <button
       id="btnFilterA"
       type="button"
       class="mazobar__cmd-btn"
       title="Administradores"
       aria-label="Administradores"
-      >
+    >
       <img
-      src="/assets/icons/team80.gif"
-      alt="Administradores"
-      class="mazobar__cmd-icon"
+        src="/assets/icons/team80.gif"
+        alt="Administradores"
+        class="mazobar__cmd-icon"
       />
     </button>
-
 
     ${suitButtons}
     ${alertButtons}
@@ -551,7 +511,6 @@
   }
 
   function buildDeckPhotoHTML(deck, plays, currentUserId) {
-    const avatarSrc = getDeckAvatarSrc(deck);
     const canEditPhoto = userCanEditDeckPhoto(plays, currentUserId);
 
     if (canEditPhoto) {
