@@ -741,34 +741,42 @@ async function createMazoHandler(req, res) {
 
 
     // 3. Joker azul -rojo
-    if (normalizedJokerType !== 'BLUE') {
-      const jokerPlayCode = buildPlayCode({
-        mazoId: mazo.id,
-        userId,
-        rank: 'JOKER',
-        suit: 'BLUE',
-        action: 'request_joker_blue',
-        authorized: `U:${userId}`,
-        flow: 'admin',
-        recipients: '',
-      });
+    const jokerAction =
+      normalizedJokerType === 'BLUE'
+        ? 'init_joker_blue'
+        : 'request_joker_blue';
 
-      const createdJoker = await insertInstitutionalPlay(client, {
-        mazoId: mazo.id,
-        createdByUserId: userId,
-        playCode: jokerPlayCode,
-        playStatus: 'PENDING',
-      });
+    const jokerStatus =
+      normalizedJokerType === 'BLUE'
+        ? 'ACTIVE'
+        : 'PENDING';
 
-      await setPlayReaders(client, createdJoker.row.id, [userId]);
-    }
+    const jokerPlayCode = buildPlayCode({
+      mazoId: mazo.id,
+      userId,
+      rank: 'JOKER',
+      suit: 'BLUE',
+      action: jokerAction,
+      authorized: `U:${userId}`,
+      flow: 'admin',
+      recipients: '',
+    });
+
+    const createdJoker = await insertInstitutionalPlay(client, {
+      mazoId: mazo.id,
+      createdByUserId: userId,
+      playCode: jokerPlayCode,
+      playStatus: jokerStatus,
+    });
+
+    await setPlayReaders(client, createdJoker.row.id, [userId]);
+
     await client.query('COMMIT');
 
     return res.json({
       ok: true,
       mazo,
-      seededPlaysCount:
-        seedPlays.length + (normalizedJokerType !== 'BLUE' ? 1 : 0),
+      seededPlaysCount: seedPlays.length + 1
     });
   } catch (error) {
     await client.query('ROLLBACK');
