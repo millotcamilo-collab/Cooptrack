@@ -132,6 +132,48 @@
       return status === "ACTIVE" && rank === "JOKER" && suit === "BLUE";
     });
   }
+
+  function getCurrentJokerPlay(plays) {
+    const jokerPlays = plays.filter((p) => {
+      const rank = String(p.rank || "").toUpperCase();
+      const suit = String(p.suit || "").toUpperCase();
+      const status = String(p.status || "").toUpperCase();
+
+      if (rank !== "JOKER") return false;
+      if (status !== "ACTIVE") return false;
+
+      return suit === "BLUE" || suit === "RED";
+    });
+
+    if (!jokerPlays.length) {
+      return null;
+    }
+
+    jokerPlays.sort((a, b) => {
+      const aDate = new Date(a.parsed?.date || a.created_at || a.updated_at || 0).getTime();
+      const bDate = new Date(b.parsed?.date || b.created_at || b.updated_at || 0).getTime();
+      return bDate - aDate;
+    });
+
+    return jokerPlays[0];
+  }
+
+  function userOwnsHeartAce(plays, currentUserId) {
+    return plays.some((p) => {
+      const rank = String(p.rank || "").toUpperCase();
+      const suit = String(p.suit || "").toUpperCase();
+      const status = String(p.status || "").toUpperCase();
+      const authorId = Number(p.parsed?.userId || 0);
+
+      return (
+        rank === "A" &&
+        suit === "HEART" &&
+        status === "ACTIVE" &&
+        authorId === Number(currentUserId || 0)
+      );
+    });
+  }
+
   function showElement(id) {
     const el = document.getElementById(id);
     if (el) el.style.display = "";
@@ -461,32 +503,53 @@
     ${alertButtons}
   `;
   }
-  function buildJokersHTML(plays) {
-    const redActive = hasRedJoker(plays);
-    const blueActive = hasBlueJoker(plays);
-    const blueLocked = hasPendingOrActiveBlueJoker(plays);
+
+  function buildJokersHTML(plays, currentUserId, deckId) {
+    const currentJoker = getCurrentJokerPlay(plays);
+    const canOpenJoker = userOwnsHeartAce(plays, currentUserId);
+
+    const jokerSuit = String(currentJoker?.suit || "RED").toUpperCase();
+
+    const jokerSrc =
+      jokerSuit === "BLUE"
+        ? "/assets/icons/joker_blue.gif"
+        : "/assets/icons/Joker120.gif";
+
+    const jokerAlt =
+      jokerSuit === "BLUE"
+        ? "Joker azul"
+        : "Joker rojo";
+
+    if (canOpenJoker) {
+      return `
+      <button
+        type="button"
+        id="mazobarJokerBtn"
+        class="mazobar__joker-button"
+        data-deck-id="${Number(deckId || 0)}"
+        title="${jokerAlt}"
+        aria-label="${jokerAlt}"
+      >
+        <img
+          src="${jokerSrc}"
+          alt="${jokerAlt}"
+          class="mazobar__joker is-active"
+        />
+      </button>
+    `;
+    }
 
     return `
-    <div class="mazobar__jokers">
+    <div class="mazobar__joker-static" aria-label="${jokerAlt}">
       <img
-        src="/assets/icons/Joker120.gif"
-        alt="Joker rojo"
-        title="Joker rojo"
-        class="mazobar__joker ${redActive ? "is-active" : "is-inactive"}"
+        src="${jokerSrc}"
+        alt="${jokerAlt}"
+        class="mazobar__joker is-active"
       />
-      <img
-        src="/assets/icons/joker_blue.gif"
-        alt="Joker azul"
-        title="${blueLocked ? "Ya existe un Joker azul pendiente o vigente" : "Joker azul"}"
-        class="mazobar__joker ${blueActive ? "is-active" : "is-inactive"} ${blueLocked ? "is-locked" : ""}"
-        draggable="${blueLocked ? "false" : "true"}"
-        data-rank="JOKER"
-        data-suit="BLUE"
-        data-locked="${blueLocked ? "true" : "false"}"
-    />
     </div>
   `;
   }
+
   function buildDeckPhotoHTML(deck, plays, currentUserId) {
     const avatarSrc = getDeckAvatarSrc(deck);
     const canEditPhoto = userCanEditDeckPhoto(plays, currentUserId);
@@ -618,7 +681,7 @@
               </div>
 
               <div class="mazobar__top-right">
-                ${buildJokersHTML(normalizedPlays)}
+                ${buildJokersHTML(normalizedPlays, currentUserId, deck?.id)}
               </div>
 
             </div>
@@ -697,37 +760,6 @@
       }
     });
 
-    document.querySelectorAll(".mazobar__joker").forEach((jokerEl) => {
-      jokerEl.addEventListener("dragstart", (event) => {
-        const isLocked = String(jokerEl.dataset.locked || "").toLowerCase() === "true";
-
-        if (isLocked) {
-          event.preventDefault();
-          return;
-        }
-
-        const rank = String(jokerEl.dataset.rank || "").toUpperCase();
-        const suit = String(jokerEl.dataset.suit || "").toUpperCase();
-
-        if (rank !== "JOKER" || suit !== "BLUE") {
-          return;
-        }
-
-        const payload = {
-          mode: "joker-blue",
-          rank: "JOKER",
-          suit: "BLUE"
-        };
-
-        event.dataTransfer.setData(
-          "application/json",
-          JSON.stringify(payload)
-        );
-
-        event.dataTransfer.setData("text/plain", "JOKER|BLUE");
-        event.dataTransfer.effectAllowed = "copy";
-      });
-    });
     document.querySelectorAll(".mazobar__topcard-image, .mazobar__topcard-fallback")
       .forEach((cardEl) => {
         cardEl.addEventListener("dragstart", (event) => {
@@ -775,6 +807,15 @@
           detail: { type: alertType }
         }));
       });
+    });
+
+    document.getElementById("mazobarJokerBtn")?.addEventListener("click", () => {
+      if (!deck?.id) {
+        console.warn("mazobarJokerBtn: falta deck.id");
+        return;
+      }
+
+      window.location.href = `/nuevo-mazo.html?mode=jokerblue&deckId=${deck.id}`;
     });
   }
 

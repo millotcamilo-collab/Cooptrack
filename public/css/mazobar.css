@@ -197,7 +197,7 @@
   font-family: "Courier New", Courier, monospace;
   font-weight: 700;
   font-size: 1.1rem;
-   padding: 7px 12px;
+  padding: 7px 12px;
   min-height: 36px;
   display: inline-flex;
   align-items: center;
@@ -248,12 +248,14 @@
   opacity: 1;
   filter: none;
 }
+
 .mazobar__cmd-btn--alert {
   background: #fff;
   font-weight: 500;
   padding-left: 14px;
   padding-right: 14px;
 }
+
 .mazobar__joker.is-locked {
   opacity: 0.45;
   cursor: not-allowed;
@@ -298,6 +300,20 @@
   align-items: center;
   gap: 6px;
   margin-top: 6px;
+}
+
+.mazobar__joker-button,
+.mazobar__joker-static {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.mazobar__joker-button {
+  cursor: pointer;
 }
 
 /* Responsive */
