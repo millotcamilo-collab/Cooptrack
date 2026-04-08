@@ -48,13 +48,20 @@ function clearDecksView() {
 }
 
 function buildDeckRowViewModel(deck) {
+  const photoUrl =
+    (typeof deck.deck_image_url === "string" && deck.deck_image_url.trim()) ||
+    (typeof deck.photo_url === "string" && deck.photo_url.trim()) ||
+    (typeof deck.image_url === "string" && deck.image_url.trim()) ||
+    "/assets/icons/sinPicture.gif";
+
   return {
     id: deck.id,
     name: deck.name || "Mazo sin nombre",
-    joker: String(deck.joker_type || "RED").toLowerCase(),
-    jokerImageUrl: deck.joker_image_url || null,
-    currentUserCards: [],
-    summaryCards: [],
+    photoUrl,
+    joker: String(deck.joker_type || "RED").toUpperCase(),
+    currentUserCards: Array.isArray(deck.current_user_cards)
+      ? deck.current_user_cards
+      : [],
     originalDeck: deck
   };
 }
@@ -81,9 +88,12 @@ async function renderDecksView() {
     return;
   }
 
-const deckRowsHTML = decks
-  .map((deck) => renderDeckRow(deck))
-  .join("");
+  const deckRowsHTML = decks
+    .map((deck) => {
+      const viewModel = buildDeckRowViewModel(deck);
+      return renderDeckRow(viewModel);
+    })
+    .join("");
 
   container.innerHTML = `
     <section class="decks-view">
