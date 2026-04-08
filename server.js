@@ -595,9 +595,15 @@ async function createMazoHandler(req, res) {
     deck_image_url,
     currency_symbol,
     currency_name,
+    joker_type,
   } = req.body;
 
   const userId = req.auth.userId;
+
+  const normalizedJokerType =
+    String(joker_type || 'RED').trim().toUpperCase() === 'BLUE'
+      ? 'BLUE'
+      : 'RED';
 
   if (!name || !name.trim()) {
     return res.status(400).json({
@@ -648,13 +654,38 @@ async function createMazoHandler(req, res) {
     const seedPlays = [
       { rank: 'K', suit: 'HEART', action: 'puedeJugar', status: 'ACTIVE' },
       { rank: 'K', suit: 'SPADE', action: 'puedeJugar', status: 'ACTIVE' },
-      { rank: 'K', suit: 'DIAMOND', action: 'puedeJugar', status: 'BLOCKED' },
-      { rank: 'K', suit: 'CLUB', action: 'puedeJugar', status: 'BLOCKED' },
+      {
+        rank: 'K',
+        suit: 'DIAMOND',
+        action: 'puedeJugar',
+        status: normalizedJokerType === 'BLUE' ? 'ACTIVE' : 'BLOCKED',
+      },
+      {
+        rank: 'K',
+        suit: 'CLUB',
+        action: 'puedeJugar',
+        status: normalizedJokerType === 'BLUE' ? 'ACTIVE' : 'BLOCKED',
+      },
 
-      { rank: 'Q', suit: 'HEART', action: 'puedeJugar', status: 'BLOCKED' },
+      {
+        rank: 'Q',
+        suit: 'HEART',
+        action: 'puedeJugar',
+        status: normalizedJokerType === 'BLUE' ? 'ACTIVE' : 'BLOCKED',
+      },
       { rank: 'Q', suit: 'SPADE', action: 'puedeJugar', status: 'ACTIVE' },
-      { rank: 'Q', suit: 'DIAMOND', action: 'puedeJugar', status: 'BLOCKED' },
-      { rank: 'Q', suit: 'CLUB', action: 'puedeJugar', status: 'BLOCKED' },
+      {
+        rank: 'Q',
+        suit: 'DIAMOND',
+        action: 'puedeJugar',
+        status: normalizedJokerType === 'BLUE' ? 'ACTIVE' : 'BLOCKED',
+      },
+      {
+        rank: 'Q',
+        suit: 'CLUB',
+        action: 'puedeJugar',
+        status: normalizedJokerType === 'BLUE' ? 'ACTIVE' : 'BLOCKED',
+      },
 
       { rank: 'A', suit: 'HEART', action: 'init_ace', status: 'BLOCKED' },
       { rank: 'A', suit: 'SPADE', action: 'init_ace', status: 'BLOCKED' },
@@ -709,8 +740,8 @@ async function createMazoHandler(req, res) {
     }
 
 
-    // 3. Joker azul inicial (pendiente para administradores)
-    {
+    // 3. Joker azul -rojo
+    if (normalizedJokerType !== 'BLUE') {
       const jokerPlayCode = buildPlayCode({
         mazoId: mazo.id,
         userId,
@@ -731,13 +762,13 @@ async function createMazoHandler(req, res) {
 
       await setPlayReaders(client, createdJoker.row.id, [userId]);
     }
-
     await client.query('COMMIT');
 
     return res.json({
       ok: true,
       mazo,
-      seededPlaysCount: seedPlays.length + 1,
+      seededPlaysCount:
+        seedPlays.length + (normalizedJokerType !== 'BLUE' ? 1 : 0),
     });
   } catch (error) {
     await client.query('ROLLBACK');
