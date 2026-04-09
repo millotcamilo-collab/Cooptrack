@@ -7,314 +7,58 @@
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
   }
-  
-function resolveClubAceHolderUserId(plays) {
-  const aceClubPlays = plays
-    .filter((p) => {
-      const rank = String(p?.rank || p?.card_rank || "").toUpperCase();
-      const suit = String(p?.suit || p?.card_suit || "").toUpperCase();
-      const status = String(p?.play_status || "").toUpperCase();
 
-      return rank === "A" && suit === "CLUB" && status !== "CANCELLED";
-    })
-    .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
+  function renderQpike(play, context = {}) {
+    const helpers = context.helpers || {};
+    const escape = helpers.escapeHtml || escapeHtml;
 
-  if (!aceClubPlays.length) return null;
+    const targetPhoto =
+      play.target_user_profile_photo_url ||
+      play.target_user_photo_url ||
+      "/assets/icons/singeta120.gif";
 
-  const latest = aceClubPlays[0];
+    const targetName =
+      play.target_user_nickname ||
+      play.target_nickname ||
+      `Usuario ${play.target_user_id || "—"}`;
 
-  if (latest?.target_user_id) return Number(latest.target_user_id);
-  if (latest?.created_by_user_id) return Number(latest.created_by_user_id);
+    const status = String(play.play_status || "").toUpperCase();
 
-  return null;
-}
-  
-  function getOrCreateQpicaContainer(parentPlayId) {
-    const containerId = `qpica-panel-container-${parentPlayId}`;
-    let container = document.getElementById(containerId);
+    let statusLabel = "Pendiente";
+    if (status === "SENT") statusLabel = "Enviada";
+    if (status === "APPROVED") statusLabel = "Aceptada";
+    if (status === "REJECTED") statusLabel = "Rechazada";
+    if (status === "CANCELLED") statusLabel = "Cancelada";
 
-    if (container) return container;
-
-    container = document.createElement("div");
-    container.id = containerId;
-    container.className = "qpica-panel-container";
-
-    const parentRow = document.getElementById(`tablero-row-${parentPlayId}`);
-
-    if (parentRow && parentRow.parentNode) {
-      parentRow.insertAdjacentElement("afterend", container);
-    } else {
-      const tablero = document.getElementById("tablero-container");
-      if (tablero) {
-        tablero.appendChild(container);
-      } else {
-        document.body.appendChild(container);
-      }
-    }
-
-    return container;
-  }
-
-  function buildCardHtml() {
     return `
-      <div class="qpica-panel__left">
-        <img
-          class="qpica-panel__card-image"
-          src="/assets/icons/Qpike.gif"
-          alt="Q de picas"
-        />
-      </div>
-    `;
-  }
+      <article class="tablero-row tablero-row--qpike" id="tablero-row-${play.id}">
+        <div class="tablero-row__left">
+          <div class="tablero-row__card">Q♠</div>
+        </div>
 
-  function buildPickerHtml(parentPlayId) {
-  const ICONS = window.ICONS || {};
-  const ACTIONS = ICONS.actions || {};
-
-  const saveIcon = ACTIONS.save || "";
-  const sendIcon = ACTIONS.send || "";
-  const cancelIcon = ACTIONS.exit || ACTIONS.cancel || "";
-
-  return `
-    <div class="qpica-panel__right">
-      <div class="qpica-panel__picker-title">Seleccionar invitado</div>
-      <div id="qpica-users-picker-${parentPlayId}"></div>
-
-      <div class="qpica-panel__selected" id="qpica-selected-${parentPlayId}">
-        Nadie seleccionado
-      </div>
-
-      <div class="qpica-panel__actions">
-  <button
-    type="button"
-    id="qpica-save-${parentPlayId}"
-    title="Guardar"
-    style="display:none;"
-  >
-    ${saveIcon ? `<img src="${saveIcon}" alt="Guardar" />` : "Save"}
-  </button>
-
-  <button
-    type="button"
-    id="qpica-send-${parentPlayId}"
-    title="Enviar"
-    style="display:none;"
-  >
-    ${sendIcon ? `<img src="${sendIcon}" alt="Enviar" />` : "Send"}
-  </button>
-
-  <button
-    type="button"
-    id="qpica-cancel-${parentPlayId}"
-    title="Cancelar"
-  >
-    ${cancelIcon ? `<img src="${cancelIcon}" alt="Cancelar" />` : "Cancelar"}
-  </button>
-</div>
-    </div>
-  `;
-}
-  function renderQpicaPanel(parentPlayId) {
-    const container = getOrCreateQpicaContainer(parentPlayId);
-
-    const state = window.__currentState || {};
-    const allPlays = Array.isArray(state.plays) ? state.plays : [];
-    const currentUserId = Number(state.userId || 0);
-
-    const clubAceHolderUserId = resolveClubAceHolderUserId(allPlays);
-
-    const userCanSend =
-      clubAceHolderUserId !== null &&
-      currentUserId !== 0 &&
-      clubAceHolderUserId === currentUserId;
-    
-    container.innerHTML = `
-      <section class="qpica-panel" data-parent-play-id="${escapeHtml(parentPlayId)}">
-        ${buildCardHtml()}
-        ${buildPickerHtml(parentPlayId)}
-      </section>
-    `;
-
-    const pickerId = `qpica-users-picker-${parentPlayId}`;
-    const selectedBox = document.getElementById(`qpica-selected-${parentPlayId}`);
-    const btnSave = document.getElementById(`qpica-save-${parentPlayId}`);
-    const btnSend = document.getElementById(`qpica-send-${parentPlayId}`);
-    const btnCancel = document.getElementById(`qpica-cancel-${parentPlayId}`);
-
-    let selectedUser = null;
-
-    if (typeof window.renderUsersPicker === "function") {
-      window.renderUsersPicker(pickerId, {
-        onSelect(user) {
-  selectedUser = user || null;
-
-  window.__qpicaDraft = {
-    parentPlayId,
-    selectedUser
-  };
-
-  if (selectedBox) {
-    selectedBox.textContent = selectedUser
-      ? `Seleccionado: ${selectedUser.nickname || selectedUser.full_name || selectedUser.name || `Usuario ${selectedUser.id}`}`
-      : "Nadie seleccionado";
-  }
-
-  if (selectedUser) {
-    if (btnSave) btnSave.style.display = "inline-flex";
-
-    if (btnSend) {
-      btnSend.style.display = userCanSend ? "inline-flex" : "none";
-    }
-  }
-}
-      });
-    } else {
-      const picker = document.getElementById(pickerId);
-      if (picker) {
-        picker.innerHTML = `
-          <div class="qpica-panel__error">
-            No se pudo cargar users.js
+        <div class="tablero-row__center qpike-row__center">
+          <img
+            class="qpike-row__photo"
+            src="${escape(targetPhoto)}"
+            alt="${escape(targetName)}"
+          />
+          <div class="qpike-row__content">
+            <div class="qpike-row__nickname">${escape(targetName)}</div>
+            <div class="qpike-row__meta">${escape(statusLabel)}</div>
           </div>
-        `;
-      }
-    }
+        </div>
 
-    btnSave?.addEventListener("click", () => {
-      if (!selectedUser) {
-        alert("Primero seleccioná un usuario.");
-        return;
-      }
-
-      window.__qpicaDraft = {
-        parentPlayId,
-        selectedUser
-      };
-
-      console.log("Q♠ draft salvado:", window.__qpicaDraft);
-      alert("Selección salvada.");
-    });
-
-    btnSend?.addEventListener("click", () => {
-      if (!selectedUser) {
-        alert("Primero seleccioná un usuario.");
-        return;
-      }
-
-      document.dispatchEvent(new CustomEvent("plays:add-qspade-requested", {
-        detail: {
-          parentPlayId,
-          targetUserId: selectedUser.id
-        }
-      }));
-    });
-
-    btnCancel?.addEventListener("click", () => {
-      clearQpicaPanel(parentPlayId);
-    });
+        <div class="tablero-row__right qpike-row__right">
+          <img
+            class="qpike-row__status-icon"
+            src="/assets/icons/Qpike.gif"
+            alt="Q de picas"
+            title="Q de picas"
+          />
+        </div>
+      </article>
+    `;
   }
 
-  function clearQpicaPanel(parentPlayId) {
-    const container = document.getElementById(`qpica-panel-container-${parentPlayId}`);
-    if (container) {
-      container.remove();
-    }
-
-    if (
-      window.__qpicaDraft &&
-      Number(window.__qpicaDraft.parentPlayId) === Number(parentPlayId)
-    ) {
-      window.__qpicaDraft = null;
-    }
-  }
-  
-function isQpikeRecipient(play, state) {
-  const currentUserId = Number(state?.userId || 0);
-  const targetUserId = Number(play?.target_user_id || 0);
-
-  return currentUserId !== 0 && targetUserId !== 0 && currentUserId === targetUserId;
-}
-  
-function renderQpike(play, context = {}) {
-  const helpers = context.helpers || {};
-  const state = context.state || {};
-  const escape = helpers.escapeHtml || ((v) => String(v ?? ""));
-
-  const targetPhoto = play.target_user_photo_url || "/assets/icons/singeta120.gif";
-  const targetName =
-    play.target_user_nickname ||
-    play.target_nickname ||
-    `Usuario ${play.target_user_id || "—"}`;
-
-  const statusIcon = "/assets/icons/Dorso70.gif";
-  const showDecisionButtons = isQpikeRecipient(play, state);
-
-  return `
-    <article class="tablero-row tablero-row--qpike" id="tablero-row-${play.id}">
-      <div class="tablero-row__left">
-        <div class="tablero-row__card">Q♠</div>
-      </div>
-
-      <div class="tablero-row__center qpike-row__center">
-        <img
-          class="qpike-row__photo"
-          src="${escape(targetPhoto)}"
-          alt="${escape(targetName)}"
-        />
-        <span class="qpike-row__nickname">${escape(targetName)}</span>
-      </div>
-
-      <div class="tablero-row__right qpike-row__right">
-        ${
-          showDecisionButtons
-            ? `
-              <button
-                type="button"
-                class="qpike-row__action-btn"
-                data-action="approve-qpike"
-                data-play-id="${play.id}"
-                title="Approve"
-              >
-                Approve
-              </button>
-
-              <button
-                type="button"
-                class="qpike-row__action-btn"
-                data-action="reject-qpike"
-                data-play-id="${play.id}"
-                title="Reject"
-              >
-                Reject
-              </button>
-            `
-            : `
-              <img
-                class="qpike-row__status-icon"
-                src="${escape(statusIcon)}"
-                alt="Pendiente"
-                title="Pendiente"
-              />
-            `
-        }
-      </div>
-    </article>
-  `;
-}
-  document.addEventListener("qpica:open", (event) => {
-    const parentPlayId = Number(event.detail?.parentPlayId || 0);
-    if (!parentPlayId) return;
-
-    renderQpicaPanel(parentPlayId);
-  });
-
-  document.addEventListener("qpica:close", (event) => {
-    const parentPlayId = Number(event.detail?.parentPlayId || 0);
-    if (!parentPlayId) return;
-
-    clearQpicaPanel(parentPlayId);
-  });
-
-  window.renderQpicaPanel = renderQpicaPanel;
-  window.clearQpicaPanel = clearQpicaPanel;
   window.renderQpike = renderQpike;
 })();
