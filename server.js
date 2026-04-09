@@ -233,6 +233,71 @@ app.get('/health', async (req, res) => {
 //
 // Te los dejo abajo sin tocar semántica.
 // =====================================================
+app.get('/users', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+         id,
+         nickname,
+         email,
+         phone,
+         profile_photo_url,
+         user_type,
+         created_at
+       FROM users
+       ORDER BY id DESC`
+    );
+
+    return res.json({
+      ok: true,
+      users: result.rows,
+    });
+  } catch (error) {
+    console.error('Error en GET /users', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'Error cargando usuarios',
+    });
+  }
+});
+
+app.delete('/users/:id', async (req, res) => {
+  const userId = Number(req.params.id);
+
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(400).json({
+      ok: false,
+      error: 'userId inválido',
+    });
+  }
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM users
+       WHERE id = $1
+       RETURNING id, nickname`,
+      [userId]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Usuario no encontrado',
+      });
+    }
+
+    return res.json({
+      ok: true,
+      user: result.rows[0],
+    });
+  } catch (error) {
+    console.error('Error en DELETE /users/:id', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'No se pudo borrar el usuario',
+    });
+  }
+});
 
 app.post('/login', async (req, res) => {
   try {
