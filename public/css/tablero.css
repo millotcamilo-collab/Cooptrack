@@ -5,7 +5,6 @@
 
 .tablero-row {
   display: grid;
-  grid-template-columns: auto;
   gap: 12px;
   align-items: start;
   border: 1px dotted #777;
@@ -85,12 +84,15 @@
 }
 
 /* administradores A / K */
+.tablero-row--ak {
+  grid-template-columns: auto 1fr;
+}
 
 .tablero-row--ak .tablero-row__left {
   display: flex;
   align-items: center;
-  width: fit-content;
   gap: 10px;
+  width: fit-content;
 }
 
 .tablero-row--ak .admin-row__mini-card {
@@ -158,16 +160,14 @@
 }
 
 /* joker en administracion */
+.tablero-row--joker {
+  grid-template-columns: 64px 1fr 140px;
+}
+
 .tablero-row--joker .tablero-row__left {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-}
-
-.tablero-row--joker .admin-row__joker-card {
-  height: 70px;
-  width: auto;
-  display: block;
 }
 
 .tablero-row--joker .tablero-row__center {
@@ -182,10 +182,10 @@
   align-items: center;
 }
 
-.tablero-row--joker .admin-row__joker-link {
-  font-size: 14px;
-  font-weight: 600;
-  color: #444;
+.tablero-row--joker .admin-row__joker-card {
+  height: 70px;
+  width: auto;
+  display: block;
 }
 
 .tablero-row--joker .admin-row__joker-link {
