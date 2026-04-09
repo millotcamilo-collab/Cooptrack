@@ -47,22 +47,21 @@
 .deck-row__joker-wrap {
   position: absolute;
   top: -8px;
-  left: 16px; /* 🔥 mismo offset que la segunda carta */
+  left: 50%;
+  transform: translateX(-30px); /* mitad aprox del ancho visual del stack */
   z-index: 5;
-  pointer-events: none;
 }
 
 .deck-row__joker {
   width: auto;
-  height: 60px;
+  height: 78px;
   display: block;
 }
 
 .deck-row__cards {
   position: relative;
   height: 78px;
-  min-width: 88px;
-  margin-top: 10px;
+  width: 88px; /* en vez de min-width */
 }
 
 .deck-row__cards--empty {
