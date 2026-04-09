@@ -89,7 +89,7 @@
     return `
       <article class="tablero-row tablero-row--ak" id="${rowId}">
         <div class="tablero-row__left">
-          <div class="admin-row__mini-card" title="${escapeHtml(label)}">
+          <div class="admin-row__mini-card" title="${escapeHtml(miniLabel)}">
             <span class="admin-row__rank">${escapeHtml(rank)}</span>
             <span class="admin-row__suit admin-row__suit--${suit.toLowerCase()}">${escapeHtml(suitSymbol)}</span>
           </div>
