@@ -43,11 +43,12 @@
   min-height: 88px;
 }
 
+
 .deck-row__joker-wrap {
   position: absolute;
-  top: -6px;
-  left: 4px;
-  z-index: 3;
+  top: -8px;
+  left: 16px; /* 🔥 mismo offset que la segunda carta */
+  z-index: 5;
   pointer-events: none;
 }
 
