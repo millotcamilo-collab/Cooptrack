@@ -95,6 +95,10 @@
           </div>
         </div>
 
+        <div class="tablero-row__center">
+          <div class="tablero-row__title">${centerTitle}</div>
+        </div>
+
         <div class="tablero-row__right">
           <div class="admin-row__owner">
             <img

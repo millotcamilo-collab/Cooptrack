@@ -92,17 +92,16 @@
 }
 
 .tablero-row--ak .admin-row__mini-card {
-  width: 56px;
-  min-height: 76px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  border-radius: 10px;
-  background: #fff;
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* 🔥 clave */
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  box-sizing: border-box;
+  gap: 2px;
+}
+
+.tablero-row--ak .admin-row__suit--heart,
+.tablero-row--ak .admin-row__suit--diamond {
+  color: #c0392b;
 }
 
 .tablero-row--ak .admin-row__rank {
