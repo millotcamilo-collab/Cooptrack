@@ -82,7 +82,6 @@
         </div>
 
         <div class="tablero-row__center">
-          <div class="tablero-row__title">${escapeHtml(label)}</div>
           <div class="tablero-row__text">${suitName}</div>
         </div>
 
