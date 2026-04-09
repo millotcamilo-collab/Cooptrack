@@ -174,7 +174,7 @@
   font-weight: 600;
   color: #444;
 }
-
+//nuevo
 .admin-row__mini-card {
   display: flex;
   align-items: center;
@@ -195,4 +195,14 @@
 
 .admin-row__suit {
   font-size: 18px;
+}
+
+.admin-row__suit--heart,
+.admin-row__suit--diamond {
+  color: #c0392b; /* rojo elegante */
+}
+
+.admin-row__suit--spade,
+.admin-row__suit--club {
+  color: #111;
 }
