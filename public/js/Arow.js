@@ -67,6 +67,44 @@
     }
   }
 
+  function resolveDeckId(play, context) {
+    return Number(
+      play?.deck_id ||
+      context?.deck?.id ||
+      context?.state?.deck?.id ||
+      context?.state?.mazo?.id ||
+      0
+    );
+  }
+
+  function buildNavigationUrl(play, context) {
+    const playId = Number(play?.id || 0);
+    const deckId = resolveDeckId(play, context);
+
+    if (!playId || !deckId) {
+      return "";
+    }
+
+    const rank = getRank(play);
+    const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
+
+    // Paso 1:
+    // Para los As arrancamos siempre por lienzo-new
+    // usando esta carta como madre.
+    if (rank === "A") {
+      return (
+        `/lienzo-new.html` +
+        `?deckId=${deckId}` +
+        `&parentPlayId=${playId}` +
+        `&childRank=A` +
+        `&childSuit=${encodeURIComponent(suit)}`
+      );
+    }
+
+    // Fallback para K y otros casos actuales
+    return `/lienzo.html?deckId=${deckId}&playId=${playId}`;
+  }
+
   function renderArow(play, context = {}) {
     const helpers = context.helpers || {};
     const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
@@ -95,12 +133,20 @@
       row.style.cursor = "pointer";
       row.setAttribute("role", "button");
       row.setAttribute("tabindex", "0");
+      row.setAttribute("aria-label", centerTitle);
 
       function openLienzo() {
-        const playId = play?.id;
-        if (!playId) return;
+        const url = buildNavigationUrl(play, context);
 
-        window.location.href = `/lienzo.html?playId=${playId}`;
+        if (!url) {
+          console.warn("No se pudo construir la navegación de Arow", {
+            play,
+            context
+          });
+          return;
+        }
+
+        window.location.href = url;
       }
 
       row.addEventListener("click", openLienzo);
@@ -115,22 +161,22 @@
 
     return `
       <article class="tablero-row tablero-row--ak" id="${rowId}">
-       <div class="tablero-row__left">
-        <div class="admin-row__mini-card" title="${escapeHtml(miniLabel)}">
-          <span class="admin-row__rank admin-row__rank--${suit.toLowerCase()}">
-           ${escapeHtml(rank)}
-          </span>
-          <span class="admin-row__suit admin-row__suit--${suit.toLowerCase()}">
-            ${escapeHtml(suitSymbol)}
-          </span>
-        </div>
+        <div class="tablero-row__left">
+          <div class="admin-row__mini-card" title="${escapeHtml(miniLabel)}">
+            <span class="admin-row__rank admin-row__rank--${suit.toLowerCase()}">
+              ${escapeHtml(rank)}
+            </span>
+            <span class="admin-row__suit admin-row__suit--${suit.toLowerCase()}">
+              ${escapeHtml(suitSymbol)}
+            </span>
+          </div>
 
-        <div class="admin-row__owner">
+          <div class="admin-row__owner">
             <img
-            src="${ownerPhoto}"
-            alt="${ownerNickname}"
-            class="admin-row__owner-photo"
-            onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
+              src="${ownerPhoto}"
+              alt="${ownerNickname}"
+              class="admin-row__owner-photo"
+              onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
             />
             <span class="admin-row__owner-name">${ownerNickname}</span>
           </div>
