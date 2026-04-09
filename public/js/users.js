@@ -176,11 +176,7 @@ function renderUsersPicker(containerId, options = {}) {
     state.conflictUsers = [];
     rerender();
 
-    if (typeof options.onEdi    if (typeof options.onAnimateSelect === "function") {
-      options.onAnimateSelect(resolvedUser);
-    } else if (typeof options.onSelect === "function") {
-      options.onSelect(resolvedUser);
-    } t === "function") {
+    if (typeof options.onEdit === "function") {
       options.onEdit();
     }
   }
