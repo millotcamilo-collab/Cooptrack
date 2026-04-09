@@ -393,13 +393,13 @@
   }
 
   function renderLienzoActions() {
-    const sendIcon = window.ICONS?.actions?.save || "/assets/icons/buzon60.gif";
+    const sendIcon = "/assets/icons/buzon60.gif";
     const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
 
     return `
     <div class="lienzo-panel__actions">
-      <button id="lienzo-send-btn" class="icon-btn" title="Send">
-        <img src="${sendIcon}" alt="Send" />
+      <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
+        <img src="${sendIcon}" alt="Enviar" />
       </button>
 
       <button id="lienzo-exit-btn" class="icon-btn" title="Exit">
