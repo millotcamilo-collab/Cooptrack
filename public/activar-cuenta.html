@@ -181,8 +181,14 @@
             });
 
             const pendingData = await pendingRes.json();
+            console.log("pendingData =", pendingData);
 
-            if (pendingRes.ok && pendingData.ok && Array.isArray(pendingData.plays) && pendingData.plays.length > 0) {
+            if (
+              pendingRes.ok &&
+              pendingData.ok &&
+              Array.isArray(pendingData.plays) &&
+              pendingData.plays.length > 0
+            ) {
               const play = pendingData.plays[0];
 
               setTimeout(() => {
@@ -194,10 +200,13 @@
               }, 1000);
             }
           } catch (error) {
+            console.error("Error cargando pendientes:", error);
+
             setTimeout(() => {
               window.location.href = "/";
             }, 1000);
           }
+
         } else {
           msg.className = "message error";
           msg.textContent = data.error || "Error al activar cuenta";
