@@ -439,12 +439,11 @@
             </div>
 
             <div class="user-actions">
-              <button
-                class="delete-btn"
+              <button class="delete-btn"
                 type="button"
-                onclick="deleteUser(${user.id}, ${JSON.stringify(user.nickname)})"
-              >
-                Borrar
+                onclick="deleteUser(${user.id})"
+                >
+                 Borrar
               </button>
             </div>
           </div>
@@ -460,8 +459,8 @@
       }
     }
 
-    async function deleteUser(id, nickname) {
-      const confirmed = confirm(`¿Seguro que querés borrar el usuario "${nickname}" (ID ${id})?`);
+    async function deleteUser(id) {
+      const confirmed = confirm(`¿Seguro que querés borrar el usuario ID ${id}?`);
 
       if (!confirmed) {
         return;
