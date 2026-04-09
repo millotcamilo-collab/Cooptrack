@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -234,31 +235,17 @@
     }
   </style>
 </head>
+
 <body>
   <div id="topbar-container"></div>
 
   <main class="profile-page">
     <section class="profile-card">
       <div class="profile-header">
-        <img
-          id="userCategoryIcon"
-          class="user-category-icon"
-          src="/assets/icons/guest80.gif"
-          alt="Tipo de usuario"
-        />
+        <img id="userCategoryIcon" class="user-category-icon" src="/assets/icons/guest80.gif" alt="Tipo de usuario" />
 
-        <button
-          type="button"
-          id="profileAvatarButton"
-          class="profile-avatar-button"
-          title="Editar foto de perfil"
-        >
-          <img
-            id="profileAvatar"
-            class="profile-avatar"
-            src="/assets/icons/singeta120.gif"
-            alt="Foto de perfil"
-          />
+        <button type="button" id="profileAvatarButton" class="profile-avatar-button" title="Editar foto de perfil">
+          <img id="profileAvatar" class="profile-avatar" src="/assets/icons/singeta120.gif" alt="Foto de perfil" />
         </button>
 
         <div class="profile-title">
@@ -269,29 +256,15 @@
 
       <div id="profileAvatarEditor" class="profile-avatar-editor">
         <div class="profile-avatar-editor__input-wrap">
-          <input
-            id="input-profile_photo_url"
-            type="text"
-            placeholder="URL de foto de perfil"
-          />
+          <input id="input-profile_photo_url" type="text" placeholder="URL de foto de perfil" />
         </div>
 
         <div class="profile-field__buttons">
-          <button
-            type="button"
-            class="icon-btn"
-            id="saveProfilePhotoBtn"
-            title="Guardar"
-          >
+          <button type="button" class="icon-btn" id="saveProfilePhotoBtn" title="Guardar">
             <img id="saveIcon-profile_photo_url" alt="Guardar" />
           </button>
 
-          <button
-            type="button"
-            class="icon-btn"
-            id="exitProfilePhotoBtn"
-            title="Salir"
-          >
+          <button type="button" class="icon-btn" id="exitProfilePhotoBtn" title="Salir">
             <img id="exitIcon-profile_photo_url" alt="Salir" />
           </button>
         </div>
@@ -301,38 +274,20 @@
         <div class="profile-field" data-field="nickname">
           <div class="profile-field__view">
             <div id="view-nickname" class="profile-field__value">-</div>
-            <img
-              id="editIcon-nickname"
-              class="profile-field__edit-icon"
-              alt="Editar"
-            />
+            <img id="editIcon-nickname" class="profile-field__edit-icon" alt="Editar" />
           </div>
 
           <div class="profile-field__edit">
             <div class="profile-field__input-wrap">
-              <input
-                id="input-nickname"
-                type="text"
-                autocomplete="nickname"
-              />
+              <input id="input-nickname" type="text" autocomplete="nickname" />
             </div>
 
             <div class="profile-field__buttons">
-              <button
-                type="button"
-                class="icon-btn js-save-field"
-                data-field="nickname"
-                title="Guardar"
-              >
+              <button type="button" class="icon-btn js-save-field" data-field="nickname" title="Guardar">
                 <img id="saveIcon-nickname" alt="Guardar" />
               </button>
 
-              <button
-                type="button"
-                class="icon-btn js-cancel-field"
-                data-field="nickname"
-                title="Salir"
-              >
+              <button type="button" class="icon-btn js-cancel-field" data-field="nickname" title="Salir">
                 <img id="exitIcon-nickname" alt="Salir" />
               </button>
             </div>
@@ -342,38 +297,20 @@
         <div class="profile-field" data-field="email">
           <div class="profile-field__view">
             <div id="view-email" class="profile-field__value">Email</div>
-            <img
-              id="editIcon-email"
-              class="profile-field__edit-icon"
-              alt="Editar"
-            />
+            <img id="editIcon-email" class="profile-field__edit-icon" alt="Editar" />
           </div>
 
           <div class="profile-field__edit">
             <div class="profile-field__input-wrap">
-              <input
-                id="input-email"
-                type="email"
-                autocomplete="email"
-              />
+              <input id="input-email" type="email" autocomplete="email" />
             </div>
 
             <div class="profile-field__buttons">
-              <button
-                type="button"
-                class="icon-btn js-save-field"
-                data-field="email"
-                title="Guardar"
-              >
+              <button type="button" class="icon-btn js-save-field" data-field="email" title="Guardar">
                 <img id="saveIcon-email" alt="Guardar" />
               </button>
 
-              <button
-                type="button"
-                class="icon-btn js-cancel-field"
-                data-field="email"
-                title="Salir"
-              >
+              <button type="button" class="icon-btn js-cancel-field" data-field="email" title="Salir">
                 <img id="exitIcon-email" alt="Salir" />
               </button>
             </div>
@@ -383,38 +320,20 @@
         <div class="profile-field" data-field="phone">
           <div class="profile-field__view">
             <div id="view-phone" class="profile-field__value">Teléfono</div>
-            <img
-              id="editIcon-phone"
-              class="profile-field__edit-icon"
-              alt="Editar"
-            />
+            <img id="editIcon-phone" class="profile-field__edit-icon" alt="Editar" />
           </div>
 
           <div class="profile-field__edit">
             <div class="profile-field__input-wrap">
-              <input
-                id="input-phone"
-                type="text"
-                autocomplete="tel"
-              />
+              <input id="input-phone" type="text" autocomplete="tel" />
             </div>
 
             <div class="profile-field__buttons">
-              <button
-                type="button"
-                class="icon-btn js-save-field"
-                data-field="phone"
-                title="Guardar"
-              >
+              <button type="button" class="icon-btn js-save-field" data-field="phone" title="Guardar">
                 <img id="saveIcon-phone" alt="Guardar" />
               </button>
 
-              <button
-                type="button"
-                class="icon-btn js-cancel-field"
-                data-field="phone"
-                title="Salir"
-              >
+              <button type="button" class="icon-btn js-cancel-field" data-field="phone" title="Salir">
                 <img id="exitIcon-phone" alt="Salir" />
               </button>
             </div>
@@ -428,38 +347,20 @@
               <span id="view-birth_date">-</span>
             </div>
 
-            <img
-              id="editIcon-birth_date"
-              class="profile-field__edit-icon"
-              alt="Editar"
-            />
+            <img id="editIcon-birth_date" class="profile-field__edit-icon" alt="Editar" />
           </div>
 
           <div class="profile-field__edit">
             <div class="profile-field__input-wrap">
-              <input
-                id="input-birth_date"
-                type="date"
-                autocomplete="bday"
-              />
+              <input id="input-birth_date" type="date" autocomplete="bday" />
             </div>
 
             <div class="profile-field__buttons">
-              <button
-                type="button"
-                class="icon-btn js-save-field"
-                data-field="birth_date"
-                title="Guardar"
-              >
+              <button type="button" class="icon-btn js-save-field" data-field="birth_date" title="Guardar">
                 <img id="saveIcon-birth_date" alt="Guardar" />
               </button>
 
-              <button
-                type="button"
-                class="icon-btn js-cancel-field"
-                data-field="birth_date"
-                title="Salir"
-              >
+              <button type="button" class="icon-btn js-cancel-field" data-field="birth_date" title="Salir">
                 <img id="exitIcon-birth_date" alt="Salir" />
               </button>
             </div>
@@ -473,11 +374,7 @@
               <span id="view-country">-</span>
             </div>
 
-            <img
-              id="editIcon-country"
-              class="profile-field__edit-icon"
-              alt="Editar"
-            />
+            <img id="editIcon-country" class="profile-field__edit-icon" alt="Editar" />
           </div>
 
           <div class="profile-field__edit">
@@ -494,21 +391,11 @@
             </div>
 
             <div class="profile-field__buttons">
-              <button
-                type="button"
-                class="icon-btn js-save-field"
-                data-field="country"
-                title="Guardar"
-              >
+              <button type="button" class="icon-btn js-save-field" data-field="country" title="Guardar">
                 <img id="saveIcon-country" alt="Guardar" />
               </button>
 
-              <button
-                type="button"
-                class="icon-btn js-cancel-field"
-                data-field="country"
-                title="Salir"
-              >
+              <button type="button" class="icon-btn js-cancel-field" data-field="country" title="Salir">
                 <img id="exitIcon-country" alt="Salir" />
               </button>
             </div>
@@ -889,6 +776,14 @@
       }
     }
 
+    function getStoredUser() {
+      try {
+        return JSON.parse(localStorage.getItem("cooptrackUser") || "null");
+      } catch (error) {
+        return null;
+      }
+    }
+
     async function loadProfile() {
       try {
         setStatus("Cargando perfil...");
@@ -905,10 +800,20 @@
         }
 
         renderProfile(data.user);
+        localStorage.setItem("cooptrackUser", JSON.stringify(data.user));
         closeAllEditors();
         setStatus("");
       } catch (error) {
         console.error("Error cargando perfil:", error);
+
+        const storedUser = getStoredUser();
+
+        if (storedUser) {
+          renderProfile(storedUser);
+          setStatus("Perfil cargado desde datos locales");
+          return;
+        }
+
         setStatus("Error al cargar el perfil", true);
       }
     }
@@ -1009,4 +914,5 @@
     loadProfile();
   </script>
 </body>
+
 </html>
