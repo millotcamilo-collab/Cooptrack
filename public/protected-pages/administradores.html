@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Administración | CoopTrack</title>
- <link rel="stylesheet" href="/css/topbar.css">
+  <link rel="stylesheet" href="/css/topbar.css">
   <style>
     * {
       box-sizing: border-box;
@@ -38,7 +39,8 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
     }
 
-    h1, h2 {
+    h1,
+    h2 {
       margin-top: 0;
       margin-bottom: 18px;
     }
@@ -190,10 +192,12 @@
       color: #6b7280;
       background: #fafafa;
     }
-.right-column {
-  display: grid;
-  gap: 24px;
-}
+
+    .right-column {
+      display: grid;
+      gap: 24px;
+    }
+
     @media (max-width: 900px) {
       .layout {
         grid-template-columns: 1fr;
@@ -216,6 +220,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div id="topbar-container"></div>
@@ -223,156 +228,121 @@
   <main class="page">
     <div class="layout">
 
-  <!-- IZQUIERDA -->
-  <section class="card">
-    <h1>Crear cuenta</h1>
-    <p class="subtitle">
-      Registrá nuevos usuarios de prueba para CoopTrack.
-    </p>
+      <!-- IZQUIERDA -->
+      <section class="card">
+        <div class="users-header">
+          <h2>Solicitudes Joker azul</h2>
+          <button id="reloadJokerBlueBtn" class="reload-btn" type="button">Recargar</button>
+        </div>
 
-    <form id="registerForm">
-      <div class="field">
-        <label for="nickname">Nickname</label>
-        <input id="nickname" required>
+        <div id="jokerBlueRequestsContainer" class="user-list"></div>
+      </section>
+
+      <!-- DERECHA -->
+      <div class="right-column">
+
+        <!-- USUARIOS -->
+        <section class="card">
+          <div class="users-header">
+            <h2>Usuarios registrados</h2>
+            <button id="reloadUsersBtn" class="reload-btn" type="button">Recargar</button>
+          </div>
+
+          <div id="usersContainer" class="user-list"></div>
+        </section>
+
       </div>
 
-      <div class="field">
-        <label for="email">Email (opcional)</label>
-        <input id="email" type="email">
-      </div>
-
-      <div class="field">
-        <label for="phone">Teléfono (opcional)</label>
-        <input id="phone">
-      </div>
-
-      <div class="field">
-        <label for="password">Password</label>
-        <input id="password" type="password" required>
-      </div>
-
-      <button class="primary-btn" type="submit">Crear cuenta</button>
-      <div id="msg" class="message"></div>
-    </form>
-  </section>
-
-  <!-- DERECHA -->
-  <div class="right-column">
-
-    <!-- USUARIOS -->
-    <section class="card">
-      <div class="users-header">
-        <h2>Usuarios registrados</h2>
-        <button id="reloadUsersBtn" class="reload-btn" type="button">Recargar</button>
-      </div>
-
-      <div id="usersContainer" class="user-list"></div>
-    </section>
-
-    <!-- JOKER AZUL -->
-    <section class="card">
-      <div class="users-header">
-        <h2>Solicitudes Joker azul</h2>
-        <button id="reloadJokerBlueBtn" class="reload-btn" type="button">Recargar</button>
-      </div>
-
-      <div id="jokerBlueRequestsContainer" class="user-list"></div>
-    </section>
-
-  </div>
-
-</div>
-</main>
+    </div>
+  </main>
 
   <script src="/js/topbar.js"></script>
 
   <script>
-    const form = document.getElementById("registerForm");
-    const msg = document.getElementById("msg");
     const usersContainer = document.getElementById("usersContainer");
     const reloadUsersBtn = document.getElementById("reloadUsersBtn");
     const jokerBlueRequestsContainer = document.getElementById("jokerBlueRequestsContainer");
     const reloadJokerBlueBtn = document.getElementById("reloadJokerBlueBtn");
 
-async function approveJokerBlueRequest(playId) {
-  try {
-    const token = localStorage.getItem("cooptrackToken");
+    async function approveJokerBlueRequest(playId) {
+      try {
+        const token = localStorage.getItem("cooptrackToken");
 
-    if (!token) {
-      alert("No hay sesión iniciada.");
-      return;
+        if (!token) {
+          alert("No hay sesión iniciada.");
+          return;
+        }
+
+        const res = await fetch(`https://cooptrack-backend.onrender.com/plays/${playId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            play_status: "APPROVED"
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          console.error("Error aprobando Joker azul:", data);
+          alert(data.error || "No se pudo aprobar la solicitud.");
+          return;
+        }
+
+        await loadJokerBlueRequests();
+        alert("Solicitud aprobada.");
+      } catch (error) {
+        console.error("Error aprobando Joker azul:", error);
+        alert("Error de conexión al aprobar la solicitud.");
+      }
     }
 
-    const res = await fetch(`https://cooptrack-backend.onrender.com/plays/${playId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        play_status: "APPROVED"
-      })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || !data.ok) {
-      console.error("Error aprobando Joker azul:", data);
-      alert(data.error || "No se pudo aprobar la solicitud.");
-      return;
-    }
-
-    await loadJokerBlueRequests();
-    alert("Solicitud aprobada.");
-  } catch (error) {
-    console.error("Error aprobando Joker azul:", error);
-    alert("Error de conexión al aprobar la solicitud.");
-  }
-}
-    
     async function loadJokerBlueRequests() {
-  jokerBlueRequestsContainer.innerHTML = `
+      jokerBlueRequestsContainer.innerHTML = `
     <div class="empty-state">
       Cargando solicitudes Joker azul...
     </div>
   `;
 
-  try {
-    const token = localStorage.getItem("cooptrackToken");
+      try {
+        const token = localStorage.getItem("cooptrackToken");
 
-    if (!token) {
-      jokerBlueRequestsContainer.innerHTML = `
+        if (!token) {
+          jokerBlueRequestsContainer.innerHTML = `
         <div class="empty-state">
           No hay sesión iniciada.
         </div>
       `;
-      return;
-    }
+          return;
+        }
 
-    const res = await fetch("https://cooptrack-backend.onrender.com/admin/joker-blue-requests", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+        const res = await fetch("https://cooptrack-backend.onrender.com/admin/joker-blue-requests", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
 
-    const data = await res.json();
+        const data = await res.json();
 
-    if (!data.ok || !Array.isArray(data.requests) || data.requests.length === 0) {
-      jokerBlueRequestsContainer.innerHTML = `
+        if (!data.ok || !Array.isArray(data.requests) || data.requests.length === 0) {
+          jokerBlueRequestsContainer.innerHTML = `
         <div class="empty-state">
           No hay solicitudes pendientes de Joker azul.
         </div>
       `;
-      return;
-    }
+          return;
+        }
 
-    jokerBlueRequestsContainer.innerHTML = data.requests.map(req => {
-      const photo = req.creator_profile_photo_url && req.creator_profile_photo_url.trim() !== ""
-        ? req.creator_profile_photo_url
-        : "/assets/icons/singeta120.gif";
+        jokerBlueRequestsContainer.innerHTML = data.requests.map(req => {
+          const photo = req.creator_profile_photo_url && req.creator_profile_photo_url.trim() !== ""
+            ? req.creator_profile_photo_url
+            : "/assets/icons/singeta120.gif";
 
-      return `
+          return `
         <div class="user-item">
           <div class="user-info" style="display:flex; gap:14px; align-items:center;">
             <img
@@ -404,17 +374,17 @@ async function approveJokerBlueRequest(playId) {
           </div>
         </div>
       `;
-    }).join("");
-  } catch (error) {
-    console.error("Error cargando solicitudes Joker azul:", error);
+        }).join("");
+      } catch (error) {
+        console.error("Error cargando solicitudes Joker azul:", error);
 
-    jokerBlueRequestsContainer.innerHTML = `
+        jokerBlueRequestsContainer.innerHTML = `
       <div class="empty-state">
         Error cargando solicitudes Joker azul.
       </div>
     `;
-  }
-}
+      }
+    }
     function escapeHtml(text) {
       return String(text || "")
         .replaceAll("&", "&amp;")
@@ -515,50 +485,6 @@ async function approveJokerBlueRequest(playId) {
       }
     }
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      msg.className = "message";
-      msg.textContent = "";
-
-      const nickname = document.getElementById("nickname").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const password = document.getElementById("password").value;
-
-      try {
-        const res = await fetch("/users", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            nickname,
-            email,
-            phone,
-            password
-          })
-        });
-
-        const data = await res.json();
-
-        if (data.ok) {
-          msg.className = "message success";
-          msg.textContent = "Usuario creado correctamente.";
-
-          form.reset();
-          loadUsers();
-        } else {
-          msg.className = "message error";
-          msg.textContent = data.error || "Error al crear usuario.";
-        }
-      } catch (error) {
-        console.error("Error creando usuario:", error);
-        msg.className = "message error";
-        msg.textContent = "Error de conexión con el servidor.";
-      }
-    });
-
     reloadUsersBtn.addEventListener("click", loadUsers);
 
     loadUsers();
@@ -568,4 +494,5 @@ async function approveJokerBlueRequest(playId) {
   </script>
 
 </body>
+
 </html>
