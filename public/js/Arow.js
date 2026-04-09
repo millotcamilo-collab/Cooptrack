@@ -77,6 +77,75 @@
     );
   }
 
+  function getCurrentViewerId(context) {
+    return Number(
+      context?.state?.userId ||
+      context?.state?.currentUser?.id ||
+      window.__currentUser?.id ||
+      0
+    );
+  }
+
+  function getAceOwnerUserId(play) {
+    return Number(
+      play?.target_user_id ||
+      play?.targetUserId ||
+      play?.created_by_user_id ||
+      play?.createdByUserId ||
+      0
+    );
+  }
+
+  function getHeartAceOwnerUserId(context) {
+    const plays = Array.isArray(context?.state?.plays) ? context.state.plays : [];
+
+    const heartAce = plays.find((p) => {
+      const rank = String(p?.card_rank || p?.rank || "").toUpperCase();
+      const suit = String(p?.card_suit || p?.suit || "").toUpperCase();
+
+      return rank === "A" && suit === "HEART";
+    });
+
+    if (!heartAce) return 0;
+
+    return Number(
+      heartAce?.target_user_id ||
+      heartAce?.targetUserId ||
+      heartAce?.created_by_user_id ||
+      heartAce?.createdByUserId ||
+      0
+    );
+  }
+
+  function viewerOwnsHeartAce(context) {
+    const viewerId = getCurrentViewerId(context);
+    const heartAceOwnerId = getHeartAceOwnerUserId(context);
+
+    return !!viewerId && !!heartAceOwnerId && viewerId === heartAceOwnerId;
+  }
+
+  function resolveAceAction(play, context) {
+    const viewerId = getCurrentViewerId(context);
+    const ownerId = getAceOwnerUserId(play);
+    const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
+
+    if (!viewerId || !ownerId) return null;
+
+    // Si soy el dueño actual de esta A, por ahora la acción base es transferir
+    if (viewerId === ownerId) {
+      return "transfer";
+    }
+
+    // Si no soy el dueño de esta A, pero sí soy el dueño del A♥,
+    // entonces tengo autoridad para despedir,
+    // salvo sobre el propio A♥.
+    if (suit !== "HEART" && viewerOwnsHeartAce(context)) {
+      return "dismiss";
+    }
+
+    return null;
+  }
+
   function buildNavigationUrl(play, context) {
     const playId = Number(play?.id || 0);
     const deckId = resolveDeckId(play, context);
@@ -88,20 +157,32 @@
     const rank = getRank(play);
     const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
 
-    // Paso 1:
-    // Para los As arrancamos siempre por lienzo-new
-    // usando esta carta como madre.
     if (rank === "A") {
-      return (
-        `/lienzo-new.html` +
-        `?deckId=${deckId}` +
-        `&parentPlayId=${playId}` +
-        `&childRank=A` +
-        `&childSuit=${encodeURIComponent(suit)}`
-      );
+      const action = resolveAceAction(play, context);
+
+      if (action === "transfer") {
+        return (
+          `/lienzo-new.html` +
+          `?deckId=${deckId}` +
+          `&parentPlayId=${playId}` +
+          `&childRank=A` +
+          `&childSuit=${encodeURIComponent(suit)}` +
+          `&action=transfer`
+        );
+      }
+
+      if (action === "dismiss") {
+        return (
+          `/lienzo.html` +
+          `?deckId=${deckId}` +
+          `&playId=${playId}` +
+          `&action=dismiss`
+        );
+      }
+
+      return "";
     }
 
-    // Fallback para K y otros casos actuales
     return `/lienzo.html?deckId=${deckId}&playId=${playId}`;
   }
 
