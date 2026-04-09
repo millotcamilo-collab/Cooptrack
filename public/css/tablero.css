@@ -200,3 +200,46 @@
   font-weight: 600;
   color: #444;
 }
+
+/* HEADER */
+.qpike-row__center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.qpike-row__photo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #d1d5db;
+}
+
+.qpike-row__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.qpike-row__nickname {
+  font-weight: 700;
+}
+
+.qpike-row__meta {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.qpike-row__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.qpike-row__status-icon {
+  width: 44px;
+  height: auto;
+}
+
