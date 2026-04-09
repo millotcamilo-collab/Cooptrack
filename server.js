@@ -854,26 +854,25 @@ async function listMazosHandler(req, res) {
             const rank = String(play.card_rank || parts[3] || "").toUpperCase();
             const suit = String(play.card_suit || parts[4] || "").toUpperCase();
             const status = String(play.play_status || "").toUpperCase();
-            const action = String(parts[5] || "").toLowerCase();
-            const ownerUserId = Number(parts[1] || 0);
+            const flow = String(parts[7] || "").toLowerCase();
 
             if (status === "BLOCKED") return false;
-
-            // solo cartas corporativas
             if (!(rank === "A" || rank === "K")) return false;
-
             if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
 
-            // excluir libro base
-            if (
-              action === "create_deck" ||
-              action === "init_ace" ||
-              action === "puedejugar"
-            ) {
-              return false;
+            // A = propiedad fundacional del usuario
+            if (rank === "A") {
+              const ownerUserId = Number(play.target_user_id || play.created_by_user_id || 0);
+              return flow === "foundation" && ownerUserId === Number(userId);
             }
 
-            return ownerUserId === Number(userId);
+            // K = cartas corporativas disponibles para el usuario en ese mazo
+            if (rank === "K") {
+              const ownerUserId = Number(parts[1] || 0);
+              return ownerUserId === Number(userId);
+            }
+
+            return false;
           })
           .map((play) => {
             const rank = String(play.card_rank || "").toUpperCase();
