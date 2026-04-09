@@ -150,7 +150,7 @@
       return true;
     }
 
-    if (rank === "A") {
+    if (rank === "A" || rank === "K") {
       return true;
     }
 

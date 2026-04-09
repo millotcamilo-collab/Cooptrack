@@ -174,3 +174,25 @@
   font-weight: 600;
   color: #444;
 }
+
+.admin-row__mini-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-row__card {
+  display: flex;
+  align-items: center;
+  gap: 2px; /* espacio entre A y ♥ */
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.admin-row__rank {
+  color: #111;
+}
+
+.admin-row__suit {
+  font-size: 18px;
+}

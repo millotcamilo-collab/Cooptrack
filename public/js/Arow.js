@@ -90,8 +90,12 @@
       <article class="tablero-row tablero-row--ak" id="${rowId}">
         <div class="tablero-row__left">
           <div class="admin-row__mini-card" title="${escapeHtml(centerTitle)}">
+            <span class="admin-row__card">
             <span class="admin-row__rank">${escapeHtml(rank)}</span>
-            <span class="admin-row__suit">${escapeHtml(suitSymbol)}</span>
+              <span class="admin-row__suit admin-row__suit--${suit.toLowerCase()}">
+                ${escapeHtml(suitSymbol)}
+              </span>
+            </span>
           </div>
         </div>
 
