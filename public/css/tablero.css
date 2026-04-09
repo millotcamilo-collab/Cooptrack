@@ -76,7 +76,6 @@
   margin-left: 84px;
 }
 
-
 #tablero-container {
   transition: background 0.2s ease;
 }
@@ -85,34 +84,44 @@
   background: var(--lienzo-bg);
 }
 
-//administradores 
+/* administradores A / K */
 .tablero-row--ak .tablero-row__left {
   display: flex;
   justify-content: center;
 }
 
 .tablero-row--ak .admin-row__mini-card {
+  width: 56px;
+  min-height: 76px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 10px;
+  background: #fff;
   display: flex;
-  flex-direction: row; /* 🔥 clave */
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 2px;
-}
-
-.tablero-row--ak .admin-row__suit--heart,
-.tablero-row--ak .admin-row__suit--diamond {
-  color: #c0392b;
+  box-sizing: border-box;
 }
 
 .tablero-row--ak .admin-row__rank {
   font-size: 24px;
   font-weight: 700;
   line-height: 1;
+  color: #111;
 }
 
 .tablero-row--ak .admin-row__suit {
   font-size: 20px;
   line-height: 1;
+  color: #111;
+}
+
+.tablero-row--ak .admin-row__rank--heart,
+.tablero-row--ak .admin-row__rank--diamond,
+.tablero-row--ak .admin-row__suit--heart,
+.tablero-row--ak .admin-row__suit--diamond {
+  color: #c0392b;
 }
 
 .tablero-row--ak .tablero-row__center {
@@ -143,7 +152,7 @@
   font-size: 14px;
 }
 
-//Joker en administracion
+/* joker en administracion */
 .tablero-row--joker .tablero-row__left {
   display: flex;
   justify-content: center;
@@ -151,7 +160,7 @@
 }
 
 .tablero-row--joker .admin-row__joker-card {
-  height: 120px;
+  height: 70px;
   width: auto;
   display: block;
 }
@@ -173,35 +182,9 @@
   font-weight: 600;
   color: #444;
 }
-//nuevo
-.admin-row__mini-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.admin-row__card {
-  display: flex;
-  align-items: center;
-  gap: 2px; /* espacio entre A y ♥ */
-  font-weight: 700;
-  font-size: 18px;
-}
-
-.admin-row__rank {
-  color: #111;
-}
-
-.admin-row__suit {
-  font-size: 18px;
-}
-
-.admin-row__suit--heart,
-.admin-row__suit--diamond {
-  color: #c0392b; /* rojo elegante */
-}
-
-.admin-row__suit--spade,
-.admin-row__suit--club {
-  color: #111;
+.tablero-row--joker .admin-row__joker-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
 }
