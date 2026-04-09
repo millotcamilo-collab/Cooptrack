@@ -316,25 +316,16 @@ app.post('/users/activate', async (req, res) => {
   try {
     const rawEmail = String(req.body.email || '').trim();
     const rawPhone = String(req.body.phone || '').trim();
-    const rawActivationCode = String(req.body.activationCode || '').trim();
     const rawPassword = String(req.body.password || '');
     const rawPasswordConfirm = String(req.body.passwordConfirm || '');
 
     const email = normalizeEmail(rawEmail);
     const phone = normalizePhone(rawPhone);
-    const activationCode = rawActivationCode.toUpperCase();
 
     if (!email && !phone) {
       return res.status(400).json({
         ok: false,
         error: 'Ingresá email o teléfono',
-      });
-    }
-
-    if (!activationCode) {
-      return res.status(400).json({
-        ok: false,
-        error: 'El código de activación es obligatorio',
       });
     }
 
@@ -395,26 +386,6 @@ app.post('/users/activate', async (req, res) => {
       return res.status(400).json({
         ok: false,
         error: 'La cuenta ya está activa',
-      });
-    }
-
-    if (!user.activation_code || String(user.activation_code).toUpperCase() !== activationCode) {
-      await client.query('ROLLBACK');
-      transactionStarted = false;
-
-      return res.status(400).json({
-        ok: false,
-        error: 'Código de activación inválido',
-      });
-    }
-
-    if (user.activation_expires_at && new Date(user.activation_expires_at) < new Date()) {
-      await client.query('ROLLBACK');
-      transactionStarted = false;
-
-      return res.status(400).json({
-        ok: false,
-        error: 'El código de activación venció',
       });
     }
 
