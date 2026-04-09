@@ -85,7 +85,7 @@
     <div class="card">
       <h1>Activar cuenta</h1>
       <p class="subtitle">
-        Ingresá tu email o teléfono, el código de invitación y elegí tu contraseña.
+        Ingresá tu email o teléfono, y elegí tu contraseña.
       </p>
 
       <form id="activateForm">
@@ -93,11 +93,6 @@
         <div class="field">
           <label>Email o teléfono</label>
           <input id="login" required>
-        </div>
-
-        <div class="field">
-          <label>Código de activación</label>
-          <input id="activationCode" required>
         </div>
 
         <div class="field">
@@ -130,7 +125,6 @@
       msg.textContent = "";
 
       const login = document.getElementById("login").value.trim();
-      const activationCode = document.getElementById("activationCode").value.trim();
       const password = document.getElementById("password").value;
       const passwordConfirm = document.getElementById("passwordConfirm").value;
 
@@ -143,7 +137,6 @@
           body: JSON.stringify({
             email: login.includes("@") ? login : "",
             phone: !login.includes("@") ? login : "",
-            activationCode,
             password,
             passwordConfirm
           })
