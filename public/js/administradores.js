@@ -143,20 +143,23 @@
   function belongsToAdministradores(play, mode = "AK") {
     const rank = normalizeRank(play?.rank);
     const suit = normalizeSuit(play?.suit);
+    const action = safeTrim(play?.action).toLowerCase();
+    const flow = safeTrim(play?.flow).toLowerCase();
 
     if (!rank) return false;
 
+    // Joker azul del mazo
     if (rank === "JOKER" && suit === "BLUE") {
       return true;
     }
 
-    if (rank === "A" || rank === "K") {
+    // Solo jugadas de propiedad / libro desde línea 10 en adelante
+    if (rank === "A" && action === "init_ace" && flow === "foundation") {
       return true;
     }
 
     return false;
   }
-
   function getComponentName(play) {
     const rank = normalizeRank(play?.rank);
     const suit = normalizeSuit(play?.suit);

@@ -5,7 +5,7 @@
 
 .tablero-row {
   display: grid;
-  grid-template-columns: auto 1fr 140px;
+  grid-template-columns: auto;
   gap: 12px;
   align-items: start;
   border: 1px dotted #777;
@@ -85,9 +85,12 @@
 }
 
 /* administradores A / K */
+
 .tablero-row--ak .tablero-row__left {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  gap: 10px;
 }
 
 .tablero-row--ak .admin-row__mini-card {
