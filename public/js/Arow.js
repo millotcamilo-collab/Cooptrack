@@ -86,6 +86,33 @@
 
     const centerTitle = escapeHtml(`${rankName} de ${suitName}`);
 
+    setTimeout(() => {
+      const row = document.getElementById(rowId);
+      if (!row || row.dataset.bound === "true") return;
+
+      row.dataset.bound = "true";
+
+      row.style.cursor = "pointer";
+      row.setAttribute("role", "button");
+      row.setAttribute("tabindex", "0");
+
+      function openLienzo() {
+        const playId = play?.id;
+        if (!playId) return;
+
+        window.location.href = `/lienzo.html?playId=${playId}`;
+      }
+
+      row.addEventListener("click", openLienzo);
+
+      row.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openLienzo();
+        }
+      });
+    }, 0);
+
     return `
       <article class="tablero-row tablero-row--ak" id="${rowId}">
        <div class="tablero-row__left">

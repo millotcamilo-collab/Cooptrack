@@ -86,6 +86,13 @@
 /* administradores A / K */
 .tablero-row--ak {
   grid-template-columns: auto 1fr;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tablero-row--ak:hover {
+  background: #f7f3eb;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
 .tablero-row--ak .tablero-row__left {
