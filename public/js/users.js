@@ -100,44 +100,44 @@ function renderUsersPicker(containerId, options = {}) {
   }
 
   const state = {
-  deckId: options.deckId || null,
-  allUsers: [],
-  filteredUsers: [],
-  selectedUser: options.selectedUser || null,
-  searchValue: "",
-  loaded: false,
-  loading: false,
-  error: "",
+    deckId: options.deckId || null,
+    allUsers: [],
+    filteredUsers: [],
+    selectedUser: options.selectedUser || null,
+    searchValue: "",
+    loaded: false,
+    loading: false,
+    error: "",
 
-  isCreatingUser: false,
-  createUserLoading: false,
-  createUserError: "",
-  createUserMessage: "",
-  conflictUsers: [],
+    isCreatingUser: false,
+    createUserLoading: false,
+    createUserError: "",
+    createUserMessage: "",
+    conflictUsers: [],
 
-  newUserNickname: "",
-  newUserEmail: "",
-  newUserPhone: "",
-};
+    newUserNickname: "",
+    newUserEmail: "",
+    newUserPhone: "",
+  };
 
   async function ensureUsersLoaded() {
-  if (state.loaded || state.loading) return;
+    if (state.loaded || state.loading) return;
 
-  state.loading = true;
-  state.error = "";
+    state.loading = true;
+    state.error = "";
 
-  try {
-    state.allUsers = await fetchUsers();
-    state.filteredUsers = [];
-    state.loaded = true;
-  } catch (error) {
-    console.error(error);
-    state.error = error.message || "Error cargando usuarios";
-    state.loaded = true;
-  } finally {
-    state.loading = false;
+    try {
+      state.allUsers = await fetchUsers();
+      state.filteredUsers = [];
+      state.loaded = true;
+    } catch (error) {
+      console.error(error);
+      state.error = error.message || "Error cargando usuarios";
+      state.loaded = true;
+    } finally {
+      state.loading = false;
+    }
   }
-}
 
   function filterUsers(searchText) {
     const trimmed = String(searchText || "").trim();
@@ -167,19 +167,23 @@ function renderUsersPicker(containerId, options = {}) {
     }
   }
 
-function handleEditSelected() {
-  state.selectedUser = null;
-  state.isCreatingUser = false;
-  state.createUserLoading = false;
-  state.createUserError = "";
-  state.createUserMessage = "";
-  state.conflictUsers = [];
-  rerender();
+  function handleEditSelected() {
+    state.selectedUser = null;
+    state.isCreatingUser = false;
+    state.createUserLoading = false;
+    state.createUserError = "";
+    state.createUserMessage = "";
+    state.conflictUsers = [];
+    rerender();
 
-  if (typeof options.onEdit === "function") {
-    options.onEdit();
+    if (typeof options.onEdi    if (typeof options.onAnimateSelect === "function") {
+      options.onAnimateSelect(resolvedUser);
+    } else if (typeof options.onSelect === "function") {
+      options.onSelect(resolvedUser);
+    } t === "function") {
+      options.onEdit();
+    }
   }
-}
 
   function handleExit() {
     if (typeof options.onExit === "function") {
@@ -190,126 +194,128 @@ function handleEditSelected() {
     container.innerHTML = "";
   }
 
-function handleCreateUser() {
-  state.isCreatingUser = true;
-  state.createUserError = "";
-  state.createUserMessage = "";
-  state.conflictUsers = [];
-  state.newUserNickname = state.searchValue || "";
-  state.newUserEmail = "";
-  state.newUserPhone = "";
-  rerender();
-}
+  function handleCreateUser() {
+    state.isCreatingUser = true;
+    state.createUserError = "";
+    state.createUserMessage = "";
+    state.conflictUsers = [];
+    state.newUserNickname = state.searchValue || "";
+    state.newUserEmail = "";
+    state.newUserPhone = "";
+    rerender();
+  }
 
   function handleCancelCreateUser() {
-  state.isCreatingUser = false;
-  state.createUserLoading = false;
-  state.createUserError = "";
-  state.createUserMessage = "";
-  state.conflictUsers = [];
-  state.newUserNickname = "";
-  state.newUserEmail = "";
-  state.newUserPhone = "";
-  rerender();
-}
-
-async function handleSaveNewUser() {
-  const nickname = String(state.newUserNickname || "").trim();
-  const email = normalizeEmailValue(state.newUserEmail);
-  const phone = normalizePhoneValue(state.newUserPhone);
-
-  state.createUserError = "";
-  state.createUserMessage = "";
-  state.conflictUsers = [];
-
-  if (!nickname) {
-    state.createUserError = "El nickname es obligatorio.";
-    rerender();
-    return;
-  }
-
-  if (!email && !phone) {
-    state.createUserError = "Ingresá email o teléfono.";
-    rerender();
-    return;
-  }
-
-  state.createUserLoading = true;
-  rerender();
-
-  try {
-    const data = await resolveUser({
-      nickname,
-      email: email || null,
-      phone: phone || null,
-    });
-
-    const resolvedUser = data.user || null;
-
-    if (!resolvedUser) {
-      throw new Error("El servidor no devolvió usuario.");
-    }
-
-    const alreadyExists = state.allUsers.some(
-      (user) => String(user.id) === String(resolvedUser.id)
-    );
-
-    if (!alreadyExists) {
-      state.allUsers.push(resolvedUser);
-    }
-
-    state.selectedUser = resolvedUser;
     state.isCreatingUser = false;
     state.createUserLoading = false;
     state.createUserError = "";
-    state.createUserMessage = data.message || "";
+    state.createUserMessage = "";
+    state.conflictUsers = [];
+    state.newUserNickname = "";
+    state.newUserEmail = "";
+    state.newUserPhone = "";
+    rerender();
+  }
+
+  async function handleSaveNewUser() {
+    const nickname = String(state.newUserNickname || "").trim();
+    const email = normalizeEmailValue(state.newUserEmail);
+    const phone = normalizePhoneValue(state.newUserPhone);
+
+    state.createUserError = "";
+    state.createUserMessage = "";
+    state.conflictUsers = [];
+
+    if (!nickname) {
+      state.createUserError = "El nickname es obligatorio.";
+      rerender();
+      return;
+    }
+
+    if (!email && !phone) {
+      state.createUserError = "Ingresá email o teléfono.";
+      rerender();
+      return;
+    }
+
+    state.createUserLoading = true;
+    rerender();
+
+    try {
+      const data = await resolveUser({
+        nickname,
+        email: email || null,
+        phone: phone || null,
+      });
+
+      const resolvedUser = data.user || null;
+
+      if (!resolvedUser) {
+        throw new Error("El servidor no devolvió usuario.");
+      }
+
+      const alreadyExists = state.allUsers.some(
+        (user) => String(user.id) === String(resolvedUser.id)
+      );
+
+      if (!alreadyExists) {
+        state.allUsers.push(resolvedUser);
+      }
+
+      state.selectedUser = resolvedUser;
+      state.isCreatingUser = false;
+      state.createUserLoading = false;
+      state.createUserError = "";
+      state.createUserMessage = data.message || "";
+      state.conflictUsers = [];
+
+      rerender();
+
+      if (typeof options.onAnimateSelect === "function") {
+        options.onAnimateSelect(resolvedUser);
+      } else if (typeof options.onSelect === "function") {
+        options.onSelect(resolvedUser);
+      }
+    } catch (error) {
+      console.error(error);
+
+      state.createUserLoading = false;
+      state.createUserError = error.message || "Error creando usuario";
+      state.conflictUsers = Array.isArray(error.payload?.existingUsers)
+        ? error.payload.existingUsers
+        : [];
+
+      rerender();
+    }
+  }
+
+  function handleConflictSelect(userId) {
+    const selected =
+      state.conflictUsers.find((u) => String(u.id) === String(userId)) ||
+      state.allUsers.find((u) => String(u.id) === String(userId));
+
+    if (!selected) return;
+
+    const alreadyExists = state.allUsers.some(
+      (user) => String(user.id) === String(selected.id)
+    );
+
+    if (!alreadyExists) {
+      state.allUsers.push(selected);
+    }
+
+    state.selectedUser = selected;
+    state.isCreatingUser = false;
+    state.createUserError = "";
+    state.createUserMessage = "";
     state.conflictUsers = [];
 
     rerender();
 
     if (typeof options.onSelect === "function") {
-      options.onSelect(resolvedUser);
+      options.onSelect(selected);
     }
-  } catch (error) {
-    console.error(error);
-
-    state.createUserLoading = false;
-    state.createUserError = error.message || "Error creando usuario";
-    state.conflictUsers = Array.isArray(error.payload?.existingUsers)
-      ? error.payload.existingUsers
-      : [];
-
-    rerender();
   }
-}
-
-function handleConflictSelect(userId) {
-  const selected =
-    state.conflictUsers.find((u) => String(u.id) === String(userId)) ||
-    state.allUsers.find((u) => String(u.id) === String(userId));
-
-  if (!selected) return;
-
-  const alreadyExists = state.allUsers.some(
-    (user) => String(user.id) === String(selected.id)
-  );
-
-  if (!alreadyExists) {
-    state.allUsers.push(selected);
-  }
-
-  state.selectedUser = selected;
-  state.isCreatingUser = false;
-  state.createUserError = "";
-  state.createUserMessage = "";
-  state.conflictUsers = [];
-
-  rerender();
-
-  if (typeof options.onSelect === "function") {
-    options.onSelect(selected);
-  }
-}
   async function handleSearchClick() {
     await ensureUsersLoaded();
     filterUsers(state.searchValue);
@@ -321,106 +327,106 @@ function handleConflictSelect(userId) {
   }
 
   function bindEvents() {
-  const input = container.querySelector("[data-users-search-input]");
-  const searchBtn = container.querySelector("[data-users-search-btn]");
-  const sealBtn = container.querySelector("[data-users-seal-btn]");
-  const exitBtn = container.querySelector("[data-users-exit-btn]");
-  const editBtn = container.querySelector("[data-users-edit-btn]");
-  const rowSelectButtons = container.querySelectorAll("[data-users-row-select-id]");
-  const rowAnimateButtons = container.querySelectorAll("[data-users-row-animate-id]");
-    
-  const createFields = container.querySelectorAll("[data-users-create-field]");
-  const saveNewBtn = container.querySelector("[data-users-save-new]");
-  const cancelNewBtn = container.querySelector("[data-users-cancel-new]");
-  const conflictButtons = container.querySelectorAll("[data-users-conflict-id]");
+    const input = container.querySelector("[data-users-search-input]");
+    const searchBtn = container.querySelector("[data-users-search-btn]");
+    const sealBtn = container.querySelector("[data-users-seal-btn]");
+    const exitBtn = container.querySelector("[data-users-exit-btn]");
+    const editBtn = container.querySelector("[data-users-edit-btn]");
+    const rowSelectButtons = container.querySelectorAll("[data-users-row-select-id]");
+    const rowAnimateButtons = container.querySelectorAll("[data-users-row-animate-id]");
 
-  if (input) {
-    input.addEventListener("input", (event) => {
-      state.searchValue = event.target.value || "";
-    });
+    const createFields = container.querySelectorAll("[data-users-create-field]");
+    const saveNewBtn = container.querySelector("[data-users-save-new]");
+    const cancelNewBtn = container.querySelector("[data-users-cancel-new]");
+    const conflictButtons = container.querySelectorAll("[data-users-conflict-id]");
 
-    input.addEventListener("keydown", async (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        await handleSearchClick();
-      }
-    });
-  }
+    if (input) {
+      input.addEventListener("input", (event) => {
+        state.searchValue = event.target.value || "";
+      });
 
-  if (searchBtn) {
-    searchBtn.addEventListener("click", handleSearchClick);
-  }
-
-  if (sealBtn) {
-    sealBtn.addEventListener("click", handleCreateUser);
-  }
-
-  if (exitBtn) {
-    exitBtn.addEventListener("click", handleExit);
-  }
-
-  if (editBtn) {
-    editBtn.addEventListener("click", handleEditSelected);
-  }
-
-  // 🚫 DESACTIVADO: click sobre toda la fila
-rowSelectButtons.forEach((btn) => {
-  btn.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    // no hacemos nada → dejamos solo la claqueta activa
-  });
-});
-
-rowAnimateButtons.forEach((btn) => {
-  btn.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const userId = btn.getAttribute("data-users-row-animate-id");
-
-    const selected =
-      state.filteredUsers.find((u) => String(u.id) === String(userId)) ||
-      state.allUsers.find((u) => String(u.id) === String(userId));
-
-    if (!selected) return;
-
-    state.selectedUser = selected;
-
-    if (typeof options.onAnimateSelect === "function") {
-      options.onAnimateSelect(selected);
+      input.addEventListener("keydown", async (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          await handleSearchClick();
+        }
+      });
     }
-  });
-});
-  createFields.forEach((field) => {
-    field.addEventListener("input", (event) => {
-      const fieldName = event.target.getAttribute("data-users-create-field");
-      const value = event.target.value || "";
 
-      if (fieldName === "nickname") state.newUserNickname = value;
-      if (fieldName === "email") state.newUserEmail = value;
-      if (fieldName === "phone") state.newUserPhone = value;
+    if (searchBtn) {
+      searchBtn.addEventListener("click", handleSearchClick);
+    }
+
+    if (sealBtn) {
+      sealBtn.addEventListener("click", handleCreateUser);
+    }
+
+    if (exitBtn) {
+      exitBtn.addEventListener("click", handleExit);
+    }
+
+    if (editBtn) {
+      editBtn.addEventListener("click", handleEditSelected);
+    }
+
+    // 🚫 DESACTIVADO: click sobre toda la fila
+    rowSelectButtons.forEach((btn) => {
+      btn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        // no hacemos nada → dejamos solo la claqueta activa
+      });
     });
-  });
 
-  if (saveNewBtn) {
-    saveNewBtn.addEventListener("click", handleSaveNewUser);
+    rowAnimateButtons.forEach((btn) => {
+      btn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const userId = btn.getAttribute("data-users-row-animate-id");
+
+        const selected =
+          state.filteredUsers.find((u) => String(u.id) === String(userId)) ||
+          state.allUsers.find((u) => String(u.id) === String(userId));
+
+        if (!selected) return;
+
+        state.selectedUser = selected;
+
+        if (typeof options.onAnimateSelect === "function") {
+          options.onAnimateSelect(selected);
+        }
+      });
+    });
+    createFields.forEach((field) => {
+      field.addEventListener("input", (event) => {
+        const fieldName = event.target.getAttribute("data-users-create-field");
+        const value = event.target.value || "";
+
+        if (fieldName === "nickname") state.newUserNickname = value;
+        if (fieldName === "email") state.newUserEmail = value;
+        if (fieldName === "phone") state.newUserPhone = value;
+      });
+    });
+
+    if (saveNewBtn) {
+      saveNewBtn.addEventListener("click", handleSaveNewUser);
+    }
+
+    if (cancelNewBtn) {
+      cancelNewBtn.addEventListener("click", handleCancelCreateUser);
+    }
+
+    conflictButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        handleConflictSelect(btn.getAttribute("data-users-conflict-id"));
+      });
+    });
   }
 
-  if (cancelNewBtn) {
-    cancelNewBtn.addEventListener("click", handleCancelCreateUser);
-  }
-
-  conflictButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      handleConflictSelect(btn.getAttribute("data-users-conflict-id"));
-    });
-  });
-}
-
-function renderCreateUserState() {
-  const conflictHtml = state.conflictUsers.length
-    ? `
+  function renderCreateUserState() {
+    const conflictHtml = state.conflictUsers.length
+      ? `
       <div class="users-picker__conflicts">
         <div class="users-picker__conflicts-title">
           Ya existe un usuario con ese email o teléfono. Elegilo para continuar:
@@ -448,9 +454,9 @@ function renderCreateUserState() {
         </div>
       </div>
     `
-    : "";
+      : "";
 
-  return `
+    return `
     <div class="users-picker__top">
       <img
         class="users-picker__people-icon"
@@ -509,10 +515,10 @@ function renderCreateUserState() {
       </div>
     </div>
   `;
-}
-  
+  }
+
   function renderSearchState() {
-  return `
+    return `
     <div class="users-picker__top">
       <img
         class="users-picker__people-icon"
@@ -550,7 +556,7 @@ function renderCreateUserState() {
       </div>
     </div>
   `;
-}
+  }
 
   function renderResultsState() {
     let resultsHtml = "";
@@ -602,9 +608,9 @@ function renderCreateUserState() {
     </button>
   </div>
 `).join("");
-}
+    }
 
-   return `
+    return `
   ${state.isCreatingUser ? renderCreateUserState() : renderSearchState()}
   ${state.isCreatingUser ? "" : `
     <div class="users-picker__results">
@@ -615,9 +621,9 @@ function renderCreateUserState() {
   }
 
   function renderSelectedState() {
-  const user = state.selectedUser;
+    const user = state.selectedUser;
 
-  return `
+    return `
     <div class="users-picker__top">
       <img
         class="users-picker__people-icon"
@@ -641,18 +647,18 @@ function renderCreateUserState() {
       </div>
     </div>
   `;
-}
+  }
 
   function rerender() {
-  const html = `
+    const html = `
     <section class="users-picker">
       ${state.selectedUser ? renderSelectedState() : renderResultsState()}
     </section>
   `;
 
-  container.innerHTML = html;
-  bindEvents();
-}
+    container.innerHTML = html;
+    bindEvents();
+  }
 
   rerender();
 
