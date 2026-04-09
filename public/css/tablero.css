@@ -5,7 +5,7 @@
 
 .tablero-row {
   display: grid;
-  grid-template-columns: 64px 1fr 140px;
+  grid-template-columns: auto 1fr 140px;
   gap: 12px;
   align-items: start;
   border: 1px dotted #777;
@@ -91,17 +91,19 @@
 }
 
 .tablero-row--ak .admin-row__mini-card {
-  width: 56px;
-  min-height: 76px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  border-radius: 10px;
-  background: #fff;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* 🔥 más natural */
   gap: 2px;
-  box-sizing: border-box;
+
+  width: auto;
+  min-height: auto;
+
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
 }
 
 .tablero-row--ak .admin-row__rank {

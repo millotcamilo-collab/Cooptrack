@@ -88,22 +88,22 @@
 
     return `
       <article class="tablero-row tablero-row--ak" id="${rowId}">
-        <div class="tablero-row__left">
-          <div class="admin-row__mini-card" title="${escapeHtml(miniLabel)}">
-            <span class="admin-row__rank admin-row__rank--${suit.toLowerCase()}">
-              ${escapeHtml(rank)}
-            </span>
-            <span class="admin-row__suit admin-row__suit--${suit.toLowerCase()}">${escapeHtml(suitSymbol)}</span>
-          </div>
+       <div class="tablero-row__left">
+        <div class="admin-row__mini-card" title="${escapeHtml(miniLabel)}">
+          <span class="admin-row__rank admin-row__rank--${suit.toLowerCase()}">
+           ${escapeHtml(rank)}
+          </span>
+          <span class="admin-row__suit admin-row__suit--${suit.toLowerCase()}">
+            ${escapeHtml(suitSymbol)}
+          </span>
         </div>
 
-        <div class="tablero-row__right">
-          <div class="admin-row__owner">
+        <div class="admin-row__owner">
             <img
-              src="${ownerPhoto}"
-              alt="${ownerNickname}"
-              class="admin-row__owner-photo"
-              onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
+            src="${ownerPhoto}"
+            alt="${ownerNickname}"
+            class="admin-row__owner-photo"
+            onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
             />
             <span class="admin-row__owner-name">${ownerNickname}</span>
           </div>
