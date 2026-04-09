@@ -128,22 +128,39 @@
     const viewerId = getCurrentViewerId(context);
     const ownerId = getAceOwnerUserId(play);
     const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
+    const hasBlueJoker = deckHasActiveBlueJoker(context);
 
     if (!viewerId || !ownerId) return null;
 
-    // Si soy el dueño actual de esta A, por ahora la acción base es transferir
+    // Sin Joker azul, las A no se transfieren
+    if (!hasBlueJoker) {
+      return "view";
+    }
+
+    // Si soy el dueño actual de esta A, puedo transferir
     if (viewerId === ownerId) {
       return "transfer";
     }
 
-    // Si no soy el dueño de esta A, pero sí soy el dueño del A♥,
-    // entonces tengo autoridad para despedir,
-    // salvo sobre el propio A♥.
+    // Si no soy el dueño de esta A, pero sí del A♥,
+    // tengo autoridad para despedir, salvo sobre el A♥.
     if (suit !== "HEART" && viewerOwnsHeartAce(context)) {
       return "dismiss";
     }
 
-    return null;
+    return "view";
+  }
+
+  function deckHasActiveBlueJoker(context) {
+    const plays = Array.isArray(context?.state?.plays) ? context.state.plays : [];
+
+    return plays.some((p) => {
+      const rank = String(p?.card_rank || p?.rank || "").toUpperCase();
+      const suit = String(p?.card_suit || p?.suit || "").toUpperCase();
+      const status = String(p?.play_status || "").toUpperCase();
+
+      return rank === "JOKER" && suit === "BLUE" && status === "ACTIVE";
+    });
   }
 
   function buildNavigationUrl(play, context) {
@@ -180,7 +197,12 @@
         );
       }
 
-      return "";
+      return (
+        `/lienzo.html` +
+        `?deckId=${deckId}` +
+        `&playId=${playId}` +
+        `&action=view`
+      );
     }
 
     return `/lienzo.html?deckId=${deckId}&playId=${playId}`;
