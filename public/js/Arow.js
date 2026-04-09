@@ -56,6 +56,17 @@
     }
   }
 
+  function getRankName(rank) {
+    switch (String(rank || "").toUpperCase()) {
+      case "A":
+        return "As";
+      case "K":
+        return "Rey";
+      default:
+        return "";
+    }
+  }
+
   function renderArow(play, context = {}) {
     const helpers = context.helpers || {};
     const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
@@ -63,26 +74,29 @@
     const playId = play?.id || 0;
     const rowId = `tablero-row-${playId}`;
 
-    const rank = getRank(play) || "A";
+    const rank = getRank(play);
     const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
     const suitSymbol = getSuitSymbol(suit);
-    const label = `${rank}${suitSymbol}`;
+    const miniLabel = `${rank}${suitSymbol}`;
 
     const ownerNickname = escapeHtml(getOwnerNickname(play));
     const ownerPhoto = escapeHtml(getOwnerPhoto(play));
-    const suitName = escapeHtml(getSuitName(suit));
+    const suitName = getSuitName(suit);
+    const rankName = getRankName(rank);
+
+    const centerTitle = escapeHtml(`${rankName} de ${suitName}`);
 
     return `
       <article class="tablero-row tablero-row--ak" id="${rowId}">
         <div class="tablero-row__left">
-          <div class="admin-row__mini-card" title="${escapeHtml(label)}">
+          <div class="admin-row__mini-card" title="${escapeHtml(centerTitle)}">
             <span class="admin-row__rank">${escapeHtml(rank)}</span>
             <span class="admin-row__suit">${escapeHtml(suitSymbol)}</span>
           </div>
         </div>
 
         <div class="tablero-row__center">
-          <div class="tablero-row__text">${suitName}</div>
+          <div class="tablero-row__title">${centerTitle}</div>
         </div>
 
         <div class="tablero-row__right">
