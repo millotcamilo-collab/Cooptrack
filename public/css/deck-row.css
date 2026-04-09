@@ -45,11 +45,9 @@
 
 
 .deck-row__joker-wrap {
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  transform: translateX(-30px); /* mitad aprox del ancho visual del stack */
-  z-index: 5;
+  margin-left: auto; /* 🔥 empuja el joker al extremo derecho */
+  display: flex;
+  align-items: center;
 }
 
 .deck-row__joker {

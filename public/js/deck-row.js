@@ -103,15 +103,6 @@ function renderDeckRow(deck) {
   return `
     <article class="deck-row" data-deck-id="${deckId}">
       <div class="deck-row__left">
-        <div class="deck-row__joker-wrap">
-          <img
-            src="${jokerSrc}"
-            class="deck-row__joker"
-            alt="${jokerAlt}"
-            title="${jokerAlt}"
-          />
-        </div>
-
         ${renderCardsStack(currentUserCards)}
       </div>
 
@@ -127,6 +118,14 @@ function renderDeckRow(deck) {
       <div class="deck-row__right">
         <div class="deck-row__name">
           ${deckName}
+        </div>
+         <div class="deck-row__joker-wrap">
+          <img
+            src="${jokerSrc}"
+            class="deck-row__joker"
+            alt="${jokerAlt}"
+            title="${jokerAlt}"
+          />
         </div>
       </div>
     </article>
