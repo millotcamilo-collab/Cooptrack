@@ -205,41 +205,32 @@
 .qpike-row__center {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-wrap: nowrap;       /* 🔥 clave: evita que baje de línea */
 }
 
 .qpike-row__photo {
-  width: 42px;
-  height: 42px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid #d1d5db;
+  flex-shrink: 0;          /* 🔥 evita que se achique */
 }
 
 .qpike-row__content {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;       /* 🔥 todo en línea */
 }
 
 .qpike-row__nickname {
-  font-weight: 700;
+  font-weight: 600;
+  white-space: nowrap;     /* 🔥 evita salto de línea */
 }
 
 .qpike-row__meta {
   font-size: 13px;
-  opacity: 0.8;
+  opacity: 0.7;
+  white-space: nowrap;     /* 🔥 evita salto */
 }
-
-.qpike-row__right {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.qpike-row__status-icon {
-  width: 44px;
-  height: auto;
-}
-
