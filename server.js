@@ -846,6 +846,10 @@ async function listMazosHandler(req, res) {
         // -------------------------
         // CARTAS CORPORATIVAS DEL USUARIO
         // -------------------------
+        // -------------------------
+        // CARTAS QUE PERTENECEN AL USUARIO
+        // (propiedad, no habilitación)
+        // -------------------------
         const current_user_cards = plays
           .filter((play) => {
             const playCode = String(play.play_code || "");
@@ -853,26 +857,16 @@ async function listMazosHandler(req, res) {
 
             const rank = String(play.card_rank || parts[3] || "").toUpperCase();
             const suit = String(play.card_suit || parts[4] || "").toUpperCase();
-            const status = String(play.play_status || "").toUpperCase();
             const flow = String(parts[7] || "").toLowerCase();
 
-            if (status === "BLOCKED") return false;
-            if (!(rank === "A" || rank === "K")) return false;
+            if (rank !== "A") return false;
             if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
 
-            // A = propiedad fundacional del usuario
-            if (rank === "A") {
-              const ownerUserId = Number(play.target_user_id || play.created_by_user_id || 0);
-              return flow === "foundation" && ownerUserId === Number(userId);
-            }
+            const ownerUserId = Number(
+              play.target_user_id || play.created_by_user_id || 0
+            );
 
-            // K = cartas corporativas disponibles para el usuario en ese mazo
-            if (rank === "K") {
-              const ownerUserId = Number(parts[1] || 0);
-              return ownerUserId === Number(userId);
-            }
-
-            return false;
+            return flow === "foundation" && ownerUserId === Number(userId);
           })
           .map((play) => {
             const rank = String(play.card_rank || "").toUpperCase();
