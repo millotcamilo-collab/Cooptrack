@@ -565,7 +565,7 @@ body {
   padding: 12px 14px;
   border: 1px solid #d8d8d8;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.75);
+  background: none;
 }
 
 .jcontent-card__row {
