@@ -314,13 +314,83 @@
         "/assets/icons/singeta120.gif"
     };
   }
+
+  function isCurrentUserSource(play) {
+    const currentUser = getCurrentUser();
+    const currentUserId = Number(currentUser?.id || 0);
+    const sourceUserId = Number(play?.created_by_user_id || 0);
+
+    return currentUserId && sourceUserId && currentUserId === sourceUserId;
+  }
+
+  function isCurrentUserTarget(play) {
+    const currentUser = getCurrentUser();
+    const currentUserId = Number(currentUser?.id || 0);
+    const targetUserId = Number(play?.target_user_id || 0);
+
+    return currentUserId && targetUserId && currentUserId === targetUserId;
+  }
+
+  function renderSourceActions() {
+    const sendIcon = "/assets/icons/buzon60.gif";
+    const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
+
+    return `
+    <div class="lienzo-panel__actions">
+      <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
+        <img src="${sendIcon}" alt="Enviar" />
+      </button>
+
+      <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
+        <img src="${exitIcon}" alt="Salir" />
+      </button>
+    </div>
+  `;
+  }
+
+  function renderTargetActions() {
+    const acceptIcon = "/assets/icons/Sello40.gif";
+    const rejectIcon = "/assets/icons/stepback40.gif";
+    const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
+
+    return `
+    <div class="lienzo-panel__actions">
+      <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
+        <img src="${acceptIcon}" alt="Aceptar" />
+      </button>
+
+      <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
+        <img src="${rejectIcon}" alt="Rechazar" />
+      </button>
+
+      <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
+        <img src="${exitIcon}" alt="Salir" />
+      </button>
+    </div>
+  `;
+  }
+
   function bindLienzoActions(play) {
     const sendBtn = document.getElementById("lienzo-send-btn");
+    const acceptBtn = document.getElementById("lienzo-accept-btn");
+    const rejectBtn = document.getElementById("lienzo-reject-btn");
     const exitBtn = document.getElementById("lienzo-exit-btn");
 
     if (sendBtn) {
       sendBtn.addEventListener("click", () => {
         handleSendPlay(play);
+      });
+    }
+
+    if (acceptBtn) {
+      acceptBtn.addEventListener("click", () => {
+        alert("Aceptar: pendiente de programar");
+      });
+    }
+
+    if (rejectBtn) {
+      rejectBtn.addEventListener("click", () => {
+        alert("Rechazar: pendiente de programar");
       });
     }
 
@@ -392,22 +462,42 @@
     window.history.back();
   }
 
-  function renderLienzoActions() {
-    const sendIcon = "/assets/icons/buzon60.gif";
-    const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
+  function renderSourcePlayerPanel(play) {
+    const user = resolveSourceUser(play);
+    const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+    const userName =
+      user?.nickname ||
+      user?.full_name ||
+      user?.name ||
+      "Anfitrión";
+
+    const scene = buildSourceCardsScene(play);
+    const showActionsHere = isCurrentUserSource(play);
 
     return `
-    <div class="lienzo-panel__actions">
-      <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
-        <img src="${sendIcon}" alt="Enviar" />
-      </button>
+    <section class="lienzo-panel lienzo-panel--source">
+      <div class="lienzo-source-header">
+        <img
+          class="lienzo-source-header__photo"
+          src="${escapeHtml(userPhoto)}"
+          alt="${escapeHtml(userName)}"
+        />
+        <div class="lienzo-source-header__name">
+          ${escapeHtml(userName)}
+        </div>
+      </div>
 
-      <button id="lienzo-exit-btn" class="icon-btn" title="Exit">
-        <img src="${exitIcon}" alt="Exit" />
-      </button>
-    </div>
+      <div class="lienzo-source-cards">
+        <div class="lienzo-source-stack">
+          ${scene.backgroundCards.map(renderBackgroundCard).join("")}
+        </div>
+      </div>
+
+      ${showActionsHere ? renderSourceActions() : ""}
+    </section>
   `;
   }
+
 
   function isCurrentUserSource(play) {
     const currentUser = getCurrentUser();
@@ -496,7 +586,7 @@
           />
         </div>
 
-        ${showActionsHere ? renderLienzoActions() : ""}
+        ${showActionsHere ? renderTargetActions() : ""}
       </section>
     `;
   }
