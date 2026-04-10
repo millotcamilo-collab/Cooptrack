@@ -234,3 +234,8 @@
   opacity: 0.7;
   white-space: nowrap;     /* 🔥 evita salto */
 }
+
+.tablero-row--qpike {
+  grid-template-columns: 64px minmax(0, 1fr) 64px;
+  align-items: center;
+}
