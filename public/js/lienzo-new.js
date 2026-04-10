@@ -612,57 +612,63 @@
     const delivered =
       window.__lienzoAnimationState?.sourceCardDelivered === true;
 
+    const parentPlay = draft?.parentPlay || null;
+    const jContentHtml =
+      typeof window.renderJcontent === "function"
+        ? window.renderJcontent(parentPlay)
+        : "";
+
     return `
-  <section class="lienzo-panel lienzo-panel--source">
-    <div class="lienzo-source-header">
-      <img
-        class="lienzo-source-header__photo"
-        src="${escapeHtml(userPhoto)}"
-        alt="${escapeHtml(userName)}"
-      />
-      <div class="lienzo-source-header__name">
-        ${escapeHtml(userName)}
+    <section class="lienzo-panel lienzo-panel--source">
+      <div class="lienzo-source-header">
+        <img
+          class="lienzo-source-header__photo"
+          src="${escapeHtml(userPhoto)}"
+          alt="${escapeHtml(userName)}"
+        />
+        <div class="lienzo-source-header__name">
+          ${escapeHtml(userName)}
+        </div>
       </div>
-    </div>
 
-    <div class="lienzo-source-cards">
-      <div class="lienzo-source-stack">
-        ${scene.backgroundCards.map(renderBackgroundCard).join("")}
+      <div class="lienzo-source-cards">
+        <div class="lienzo-source-stack">
+          ${scene.backgroundCards.map(renderBackgroundCard).join("")}
 
-        ${delivered
+          ${delivered
         ? ""
         : `
-            <div class="lienzo-source-active">
-              <img
-                id="lienzo-source-card"
-                class="lienzo-card-image"
-                src="${escapeHtml(
+              <div class="lienzo-source-active">
+                <img
+                  id="lienzo-source-card"
+                  class="lienzo-card-image"
+                  src="${escapeHtml(
           getCardImageSrc(
             scene.activeCard.card_rank,
             scene.activeCard.card_suit
           )
         )}"
-                alt=""
-              />
-            </div>
-          `
-      }
+                  alt=""
+                />
+              </div>
+            `}
+        </div>
       </div>
-    </div>
 
-    ${delivered
+      ${jContentHtml}
+
+      ${delivered
         ? `
-      <div class="lienzo-panel__actions">
-        ${renderActionButtons()}
-      </div>
-    `
+          <div class="lienzo-panel__actions">
+            ${renderActionButtons()}
+          </div>
+        `
         : ""
       }
-  </section>
-`;
-
+    </section>
+  `;
   }
-
+  
   function renderDraftCardPanel(draft) {
     const rank = normalizeRank(draft?.card_rank);
     const suit = normalizeSuit(draft?.card_suit);

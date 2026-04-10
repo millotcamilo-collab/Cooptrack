@@ -559,6 +559,35 @@ body {
   justify-content: flex-start;
 }
 
+/* Jcontent */
+.jcontent-card {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #d8d8d8;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.jcontent-card__row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.jcontent-card__row:last-child {
+  margin-bottom: 0;
+}
+
+.jcontent-card__label {
+  min-width: 80px;
+  font-weight: 600;
+}
+
+.jcontent-card__value {
+  flex: 1;
+  min-width: 0;
+}
+
 @media (max-width: 900px) {
   .lienzo-grid {
     grid-template-columns: 1fr;

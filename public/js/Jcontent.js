@@ -30,25 +30,10 @@
   function renderJcontent(play) {
     if (!play) return "";
 
-    const text =
-      play.play_text ||
-      play.text ||
-      "";
-
-    const startDate =
-      play.start_date ||
-      play.startDate ||
-      "";
-
-    const endDate =
-      play.end_date ||
-      play.endDate ||
-      "";
-
-    const location =
-      play.location ||
-      play.place ||
-      "";
+    const text = play.play_text || play.text || "";
+    const startDate = play.start_date || play.startDate || "";
+    const endDate = play.end_date || play.endDate || "";
+    const location = play.location || play.place || "";
 
     return `
       <section class="jcontent-card">
