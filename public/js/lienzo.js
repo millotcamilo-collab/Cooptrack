@@ -474,6 +474,12 @@
     const scene = buildSourceCardsScene(play);
     const showActionsHere = isCurrentUserSource(play);
 
+    const parentPlay = getPlayById(play?.parent_play_id);
+    const jContentHtml =
+      typeof window.renderJcontent === "function"
+        ? window.renderJcontent(parentPlay)
+        : "";
+
     return `
     <section class="lienzo-panel lienzo-panel--source">
       <div class="lienzo-source-header">
@@ -492,6 +498,8 @@
           ${scene.backgroundCards.map(renderBackgroundCard).join("")}
         </div>
       </div>
+
+      ${jContentHtml}
 
       ${showActionsHere ? renderSourceActions() : ""}
     </section>
