@@ -506,59 +506,6 @@
   `;
   }
 
-
-  function isCurrentUserSource(play) {
-    const currentUser = getCurrentUser();
-    const currentUserId = Number(currentUser?.id || 0);
-    const sourceUserId = Number(play?.created_by_user_id || 0);
-
-    return currentUserId && sourceUserId && currentUserId === sourceUserId;
-  }
-
-  function isCurrentUserTarget(play) {
-    const currentUser = getCurrentUser();
-    const currentUserId = Number(currentUser?.id || 0);
-    const targetUserId = Number(play?.target_user_id || 0);
-
-    return currentUserId && targetUserId && currentUserId === targetUserId;
-  }
-
-  function renderSourcePlayerPanel(play) {
-    const user = resolveSourceUser(play);
-    const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-    const userName =
-      user?.nickname ||
-      user?.full_name ||
-      user?.name ||
-      "Anfitrión";
-
-    const scene = buildSourceCardsScene(play);
-    const showActionsHere = isCurrentUserSource(play);
-
-    return `
-    <section class="lienzo-panel lienzo-panel--source">
-      <div class="lienzo-source-header">
-        <img
-          class="lienzo-source-header__photo"
-          src="${escapeHtml(userPhoto)}"
-          alt="${escapeHtml(userName)}"
-        />
-        <div class="lienzo-source-header__name">
-          ${escapeHtml(userName)}
-        </div>
-      </div>
-
-      <div class="lienzo-source-cards">
-        <div class="lienzo-source-stack">
-          ${scene.backgroundCards.map(renderBackgroundCard).join("")}
-        </div>
-      </div>
-
-      ${showActionsHere ? renderLienzoActions() : ""}
-    </section>
-  `;
-  }
-
   function renderTargetPlayerPanel(play) {
     const user = resolveTargetUser(play);
     const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
