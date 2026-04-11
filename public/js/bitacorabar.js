@@ -33,14 +33,29 @@
     return map[suitPart] || null;
   }
 
+  function getBarConfig() {
+    const custom = window.transversalBarConfig || {};
+
+    return {
+      containerId: custom.containerId || "bitacorabar-container",
+      title: custom.title || "Bitácora",
+      iconSrc: custom.iconSrc || "/assets/icons/maquina80.gif",
+      iconAlt: custom.iconAlt || "Bitácora",
+      searchPlaceholder: custom.searchPlaceholder || "Buscar en bitácora",
+      searchInputId: custom.searchInputId || "bitacoraSearchInput",
+      searchBtnId: custom.searchBtnId || "bitacoraSearchBtn",
+      filterEventName: custom.filterEventName || "bitacora:filterSuit",
+      searchEventName: custom.searchEventName || "bitacora:search",
+      filterPrefix: custom.filterPrefix || "bitacora",
+      suits: Array.isArray(custom.suits) && custom.suits.length
+        ? custom.suits
+        : ["HEART", "SPADE", "DIAMOND", "CLUB"],
+      showSuitFilters: custom.showSuitFilters !== false
+    };
+  }
+
   function buildSuitButtonsHTML(config) {
-    const suits = Array.isArray(config?.suits) && config.suits.length
-      ? config.suits
-      : ["HEART", "SPADE", "DIAMOND", "CLUB"];
-
-    const filterPrefix = String(config?.filterPrefix || "transversal");
-
-    return suits.map((suit) => {
+    return config.suits.map((suit) => {
       const imgSrc = getSuitButtonImageSrc(suit);
       const symbol = getSuitSymbol(suit);
 
@@ -49,7 +64,7 @@
           <button
             type="button"
             class="mazobar__cmd-btn mazobar__cmd-btn--suit bitacorabar__filter-btn"
-            data-${filterPrefix}-suit="${suit}"
+            data-${config.filterPrefix}-suit="${suit}"
             title="${symbol}"
             aria-label="${symbol}"
           >
@@ -62,7 +77,7 @@
         <button
           type="button"
           class="mazobar__cmd-btn mazobar__cmd-btn--suit bitacorabar__filter-btn"
-          data-${filterPrefix}-suit="${suit}"
+          data-${config.filterPrefix}-suit="${suit}"
           title="${symbol}"
           aria-label="${symbol}"
         >
@@ -72,15 +87,7 @@
     }).join("");
   }
 
-  function buildTransversalBarHTML(config) {
-    const title = String(config?.title || "Vista transversal");
-    const iconSrc = String(config?.iconSrc || "");
-    const iconAlt = String(config?.iconAlt || title);
-    const searchPlaceholder = String(config?.searchPlaceholder || "Buscar");
-    const searchInputId = String(config?.searchInputId || "transversalSearchInput");
-    const searchBtnId = String(config?.searchBtnId || "transversalSearchBtn");
-    const showSuitFilters = config?.showSuitFilters !== false;
-
+  function buildBitacorabarHTML(config) {
     return `
       <section class="bitacorabar">
         <div class="page-container">
@@ -88,34 +95,34 @@
             <div class="bitacorabar__row">
 
               <div class="bitacorabar__brand">
-                <div class="bitacorabar__machine" aria-label="${iconAlt}">
+                <div class="bitacorabar__machine" aria-label="${config.iconAlt}">
                   <img
-                    src="${iconSrc}"
-                    alt="${iconAlt}"
+                    src="${config.iconSrc}"
+                    alt="${config.iconAlt}"
                     class="bitacorabar__machine-icon"
                   />
                 </div>
 
                 <div class="bitacorabar__title">
-                  ${title}
+                  ${config.title}
                 </div>
               </div>
 
               <div class="mazobar__commands bitacorabar__filters">
-                ${showSuitFilters ? buildSuitButtonsHTML(config) : ""}
+                ${config.showSuitFilters ? buildSuitButtonsHTML(config) : ""}
               </div>
 
               <div class="bitacorabar__search">
                 <input
-                  id="${searchInputId}"
+                  id="${config.searchInputId}"
                   type="text"
                   class="bitacorabar__search-input"
-                  placeholder="${searchPlaceholder}"
+                  placeholder="${config.searchPlaceholder}"
                   autocomplete="off"
                 />
 
                 <button
-                  id="${searchBtnId}"
+                  id="${config.searchBtnId}"
                   type="button"
                   class="mazobar__cmd-btn bitacorabar__search-btn"
                   title="Buscar"
@@ -136,33 +143,27 @@
     `;
   }
 
-  function bindTransversalBarEvents(config) {
-    const filterPrefix = String(config?.filterPrefix || "transversal");
-    const filterEventName = String(config?.filterEventName || "transversal:filterSuit");
-    const searchEventName = String(config?.searchEventName || "transversal:search");
-    const searchInputId = String(config?.searchInputId || "transversalSearchInput");
-    const searchBtnId = String(config?.searchBtnId || "transversalSearchBtn");
-
-    document.querySelectorAll(`[data-${filterPrefix}-suit]`).forEach((button) => {
+  function bindBitacorabarEvents(config) {
+    document.querySelectorAll(`[data-${config.filterPrefix}-suit]`).forEach((button) => {
       button.addEventListener("click", () => {
-        const suit = String(button.dataset[`${filterPrefix}Suit`] || "").toUpperCase();
+        const suit = String(button.dataset[`${config.filterPrefix}Suit`] || "").toUpperCase();
 
         document.dispatchEvent(
-          new CustomEvent(filterEventName, {
+          new CustomEvent(config.filterEventName, {
             detail: { suit }
           })
         );
       });
     });
 
-    const searchInput = document.getElementById(searchInputId);
-    const searchBtn = document.getElementById(searchBtnId);
+    const searchInput = document.getElementById(config.searchInputId);
+    const searchBtn = document.getElementById(config.searchBtnId);
 
     function runSearch() {
       const query = String(searchInput?.value || "").trim();
 
       document.dispatchEvent(
-        new CustomEvent(searchEventName, {
+        new CustomEvent(config.searchEventName, {
           detail: { query }
         })
       );
@@ -178,14 +179,16 @@
     });
   }
 
-  function renderTransversalBar(config = {}) {
-    const containerId = String(config?.containerId || "bitacorabar-container");
-    const container = document.getElementById(containerId);
+  function renderBitacorabar() {
+    const config = getBarConfig();
+    const container = document.getElementById(config.containerId);
     if (!container) return;
 
-    container.innerHTML = buildTransversalBarHTML(config);
-    bindTransversalBarEvents(config);
+    container.innerHTML = buildBitacorabarHTML(config);
+    bindBitacorabarEvents(config);
   }
 
-  window.renderTransversalBar = renderTransversalBar;
+  window.renderBitacorabar = renderBitacorabar;
+
+  document.addEventListener("DOMContentLoaded", renderBitacorabar);
 })();
