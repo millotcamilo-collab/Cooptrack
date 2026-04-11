@@ -402,6 +402,57 @@
   `;
   }
 
+  function buildAdminBadgeHTML() {
+    return `
+    <div
+      class="mazobar__admin-badge"
+      title="Administradores"
+      aria-label="Administradores"
+    >
+      <img
+        src="/assets/icons/team80.gif"
+        alt="Administradores"
+        class="mazobar__admin-badge-icon"
+      />
+    </div>
+  `;
+  }
+
+  function buildAdminSuitButtonsHTML() {
+    const suits = ["HEART", "SPADE", "DIAMOND", "CLUB"];
+
+    return suits.map((suit) => {
+      const imgSrc = getSuitButtonImageSrc(suit);
+      const symbol = getSuitSymbol(suit);
+
+      if (imgSrc) {
+        return `
+        <button
+          type="button"
+          class="mazobar__cmd-btn mazobar__cmd-btn--suit mazobar__cmd-btn--admin-suit"
+          data-admin-suit="${suit}"
+          title="${symbol}"
+          aria-label="${symbol}"
+        >
+          <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
+        </button>
+      `;
+      }
+
+      return `
+      <button
+        type="button"
+        class="mazobar__cmd-btn mazobar__cmd-btn--suit mazobar__cmd-btn--admin-suit"
+        data-admin-suit="${suit}"
+        title="${symbol}"
+        aria-label="${symbol}"
+      >
+        ${symbol}
+      </button>
+    `;
+    }).join("");
+  }
+
   function buildDeckPhotoHTML(deck, plays, currentUserId) {
     const avatarSrc = getDeckAvatarSrc(deck);
     const canEditPhoto = userCanEditDeckPhoto(plays, currentUserId);
@@ -547,8 +598,7 @@
     const isAdminPage = pageType === "administradores";
 
     // -------------------------
-    // BOTONES DE PALOS
-    // solo en mazo.html
+    // BOTONES DE PALOS (mazo)
     // -------------------------
     const suitButtons = isMazoPage
       ? getVisibleCommandSuits()
@@ -558,6 +608,19 @@
 
           if (imgSrc) {
             return `
+              <button
+                type="button"
+                class="mazobar__cmd-btn mazobar__cmd-btn--suit"
+                data-command-suit="${suit}"
+                title="${symbol}"
+                aria-label="${symbol}"
+              >
+                <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
+              </button>
+            `;
+          }
+
+          return `
             <button
               type="button"
               class="mazobar__cmd-btn mazobar__cmd-btn--suit"
@@ -565,39 +628,32 @@
               title="${symbol}"
               aria-label="${symbol}"
             >
-              <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
+              ${symbol}
             </button>
           `;
-          }
-
-          return `
-          <button
-            type="button"
-            class="mazobar__cmd-btn mazobar__cmd-btn--suit"
-            data-command-suit="${suit}"
-            title="${symbol}"
-            aria-label="${symbol}"
-          >
-            ${symbol}
-          </button>
-        `;
         })
         .join("")
       : "";
 
     // -------------------------
-    // ALERTAS
-    // solo en mazo.html
+    // ALERTAS (mazo)
     // -------------------------
     const alertButtons = isMazoPage
       ? buildAlertButtonsHTML(plays)
       : "";
 
     // -------------------------
-    // RETURN FINAL
+    // ADMIN CONTROLS (admin page)
     // -------------------------
+    const adminBadge = isAdminPage
+      ? buildAdminBadgeHTML()
+      : "";
+
+    const adminSuitButtons = isAdminPage
+      ? buildAdminSuitButtonsHTML()
+      : "";
+
     return `
-    <!-- NUEVA J -->
     ${isMazoPage ? `
       <button
         id="btnAddJ"
@@ -614,7 +670,6 @@
       </button>
     ` : ""}
 
-    <!-- VOLVER A TABLERO -->
     ${isAdminPage ? `
       <button
         id="btnBackToTablero"
@@ -631,7 +686,6 @@
       </button>
     ` : ""}
 
-    <!-- ADMINISTRADORES -->
     ${isMazoPage ? `
       <button
         id="btnFilterA"
@@ -648,14 +702,27 @@
       </button>
     ` : ""}
 
+    ${adminBadge}
+    ${adminSuitButtons}
     ${suitButtons}
     ${alertButtons}
   `;
   }
 
 
-
   function bindMazobarEvents(deck, plays, currentUserId) {
+
+    document.querySelectorAll("[data-admin-suit]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const suit = String(button.dataset.adminSuit || "").toUpperCase();
+
+        document.dispatchEvent(
+          new CustomEvent("mazobar:filterSuit", {
+            detail: { suit }
+          })
+        );
+      });
+    });
 
     const btnAddJ = document.getElementById("btnAddJ");
     if (btnAddJ) {

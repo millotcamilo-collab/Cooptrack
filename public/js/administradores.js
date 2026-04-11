@@ -3,6 +3,7 @@
   let administradoresState = {};
   let administradoresPlays = [];
   let activeAdministradoresMode = "AK";
+  let activeAdministradoresSuitFilter = null;
 
   function getContainer() {
     return (
@@ -388,9 +389,20 @@
         : [];
 
       const filtered = sortAdministradoresPlays(
-        normalized.filter((play) =>
-          belongsToAdministradores(play, activeAdministradoresMode)
-        )
+        normalized.filter((play) => {
+          if (!belongsToAdministradores(play, activeAdministradoresMode)) {
+            return false;
+          }
+
+          if (
+            activeAdministradoresSuitFilter &&
+            normalizeSuit(play?.suit) !== activeAdministradoresSuitFilter
+          ) {
+            return false;
+          }
+
+          return true;
+        })
       );
 
       if (!filtered.length) {
@@ -455,6 +467,20 @@
 
     renderAdministradoresView(activeAdministradoresMode);
   }
+
+  document.addEventListener("mazobar:filterSuit", (event) => {
+    const suit = normalizeSuit(event?.detail?.suit);
+
+    if (!suit) {
+      activeAdministradoresSuitFilter = null;
+    } else if (activeAdministradoresSuitFilter === suit) {
+      activeAdministradoresSuitFilter = null;
+    } else {
+      activeAdministradoresSuitFilter = suit;
+    }
+
+    renderAdministradoresView(activeAdministradoresMode);
+  });
 
   document.addEventListener("mazobar:showAutoridades", (event) => {
     const mode = String(event?.detail?.mode || "A").toUpperCase();
