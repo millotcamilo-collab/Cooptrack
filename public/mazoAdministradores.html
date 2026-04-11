@@ -4,43 +4,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mazo - CoopTrack</title>
+  <title>Administradores - CoopTrack</title>
 
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="stylesheet" href="/css/topbar.css" />
   <link rel="stylesheet" href="/css/mazobar.css" />
-  <link rel="stylesheet" href="/css/playform.css" />
   <link rel="stylesheet" href="/css/help.css" />
   <link rel="stylesheet" href="/css/tablero.css" />
-  <link rel="stylesheet" href="/css/Jcorazon.css" />
-  <link rel="stylesheet" href="/css/Jtrebol.css" />
-  <link rel="stylesheet" href="/css/Jpica.css" />
-  <link rel="stylesheet" href="/css/Qpica.css" />
+  <link rel="stylesheet" href="/css/jokerazul.css" />
   <link rel="icon" type="image/png" href="/assets/icons/bigote.png">
 </head>
 
 <body>
   <div id="topbar-container"></div>
   <div id="mazobar-container"></div>
-  <div id="playform-container"></div>
-  <div id="tablero-container"></div>
+  <div id="administradores-container"></div>
 
   <!-- UTILIDADES -->
   <script src="/js/icons.js"></script>
   <script src="/js/help.js"></script>
 
   <!-- COMPONENTES DE FILAS -->
-  <script src="/js/Jcorazon.js"></script>
-  <script src="/js/Jtrebol.js"></script>
-  <script src="/js/Jpica.js"></script>
-  <script src="/js/JpicaBomba.js"></script>
-  <script src="/js/Qpica.js"></script>
+  <script src="/js/Arow.js"></script>
+  <script src="/js/jokerazulRow.js"></script>
 
   <!-- MÓDULOS PRINCIPALES -->
   <script src="/js/topbar.js"></script>
   <script src="/js/mazobar.js"></script>
-  <script src="/js/playform.js"></script>
-  <script src="/js/tablero.js"></script>
+  <script src="/js/administradores.js"></script>
 
   <script>
     window.API_BASE_URL = window.API_BASE_URL || "https://cooptrack-backend.onrender.com";
@@ -135,8 +126,7 @@
     function clearDeckView() {
       const ids = [
         "mazobar-container",
-        "playform-container",
-        "tablero-container"
+        "administradores-container"
       ];
 
       ids.forEach((id) => {
@@ -145,7 +135,7 @@
       });
     }
 
-    async function loadMazoPage(deckId) {
+    async function loadMazoAdministradoresPage(deckId) {
       if (!deckId) {
         console.warn("Mazo sin id");
         return;
@@ -176,85 +166,41 @@
         renderMazobar(deck, state.plays || [], state.userId);
       }
 
-      if (typeof renderPlayform === "function") {
-        renderPlayform(deck, state);
+      if (typeof renderAutoridades === "function") {
+        renderAutoridades(deck, state.plays || [], state);
+      } else if (typeof renderAdministradoresView === "function") {
+        renderAdministradoresView("AK");
       }
 
-      if (typeof renderTablero === "function") {
-        renderTablero(deck, state.plays || [], state);
+      const administradoresEl = document.getElementById("administradores-container");
+      if (administradoresEl) {
+        administradoresEl.style.display = "";
       }
 
-      const tableroEl = document.getElementById("tablero-container");
-      const playformEl = document.getElementById("playform-container");
-
-      if (tableroEl) tableroEl.style.display = "";
-      if (playformEl) playformEl.style.display = "";
-
-      const plays = Array.isArray(state?.plays) ? state.plays : [];
-      const currentUserId = Number(state?.userId || 0);
-
-      const hasCorporateAccess = plays.some((play) => {
-        const playCode = String(play?.play_code || "");
-        const parts = playCode.split("§");
-
-        const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
-        const status = String(play?.play_status || "").toUpperCase();
-        const ownerUserId = Number(parts[1] || 0);
-
-        if (status !== "ACTIVE") return false;
-        if (ownerUserId !== currentUserId) return false;
-
-        return rank === "A" || rank === "K";
-      });
-
-      const hasVisibleGamePlays = plays.some((play) => {
-        const playCode = String(play?.play_code || "");
-        const parts = playCode.split("§");
-
-        const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
-        const status = String(play?.play_status || "").toUpperCase();
-        const action = String(parts[5] || "").toLowerCase();
-
-        if (status !== "ACTIVE") return false;
-        if (action === "init_ace" || action === "puedejugar") return false;
-
-        return rank === "J" || rank === "Q";
-      });
-
-      if (hasCorporateAccess && !hasVisibleGamePlays) {
-        if (tableroEl) tableroEl.style.display = "none";
-        if (playformEl) playformEl.style.display = "";
-
-        document.dispatchEvent(new CustomEvent("mazobar:addJ"));
-      }
-
-      if (typeof bindLienzoDropZone === "function") {
-        bindLienzoDropZone(deck.id);
+      if (typeof bindAdministradoresDropZone === "function") {
+        bindAdministradoresDropZone(deck.id);
       }
     }
 
-    async function initMazoPage() {
+    async function initMazoAdministradoresPage() {
       const params = new URLSearchParams(window.location.search);
       const deckId = params.get("id");
 
       clearDeckView();
-      await loadMazoPage(deckId);
+      await loadMazoAdministradoresPage(deckId);
     }
+
+    document.addEventListener("DOMContentLoaded", initMazoAdministradoresPage);
 
     document.addEventListener("plays:changed", async (event) => {
       const deckId =
         event?.detail?.deckId ||
         new URLSearchParams(window.location.search).get("id");
 
-      if (!deckId) {
-        console.warn("plays:changed sin deckId");
-        return;
-      }
+      if (!deckId) return;
 
-      await loadMazoPage(deckId);
+      await loadMazoAdministradoresPage(deckId);
     });
-
-    initMazoPage();
   </script>
 </body>
 

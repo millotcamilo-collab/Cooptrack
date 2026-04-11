@@ -1,7 +1,6 @@
 (function () {
   let mazobarPhotoEditorOpen = false;
   let mazobarDraftPhotoUrl = "";
-  let mazobarCurrentView = "tablero"; // "tablero" | "administradores"
 
   function parsePlayCode(code) {
     const parts = String(code || "").split("§");
@@ -18,6 +17,21 @@
       recipients: parts[8] || null
     };
   }
+
+  function goToAdministradoresPage() {
+    const deckId = window.__currentDeck?.id;
+    if (!deckId) return;
+
+    window.location.href = `/mazoAdministradores.html?id=${deckId}&adminView=AK`;
+  }
+
+  function goToMazoPage() {
+    const deckId = window.__currentDeck?.id;
+    if (!deckId) return;
+
+    window.location.href = `/mazo.html?id=${deckId}`;
+  }
+
 
   function normalizePlay(play) {
     if (!play) return null;
@@ -189,39 +203,10 @@
   }
 
   function showTableroView() {
-    mazobarCurrentView = "tablero";
+    const deckId = window.__currentDeck?.id;
+    if (!deckId) return;
 
-    hideElement("administradores-container");
-    showElement("tablero-container");
-    showElement("playform-container");
-
-    renderMazobar(
-      window.__currentDeck || null,
-      window.__currentState?.plays || [],
-      window.__currentState?.userId || null
-    );
-  }
-
-  function showAutoridadesView(mode) {
-    mazobarCurrentView = "administradores";
-
-    hideElement("tablero-container");
-    showElement("administradores-container");
-    hideElement("playform-container");
-
-    closePlayformIfOpen();
-
-    document.dispatchEvent(
-      new CustomEvent("mazobar:showAutoridades", {
-        detail: { mode }
-      })
-    );
-
-    renderMazobar(
-      window.__currentDeck || null,
-      window.__currentState?.plays || [],
-      window.__currentState?.userId || null
-    );
+    window.location.href = `/mazo.html?id=${deckId}`;
   }
 
   function userCanEditDeckPhoto(plays, currentUserId) {
@@ -361,107 +346,14 @@
     `).join("");
   }
 
-  function buildCommandButtonsHTML(plays) {
-    // -------------------------
-    // BOTONES DE PALOS
-    // -------------------------
-    const suitButtons = getVisibleCommandSuits()
-      .map((suit) => {
-        const imgSrc = getSuitButtonImageSrc(suit);
-        const symbol = getSuitSymbol(suit);
+  function getCurrentPageType() {
+    const path = String(window.location.pathname || "").toLowerCase();
 
-        if (imgSrc) {
-          return `
-          <button
-            type="button"
-            class="mazobar__cmd-btn mazobar__cmd-btn--suit"
-            data-command-suit="${suit}"
-            title="${symbol}"
-            aria-label="${symbol}"
-          >
-            <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
-          </button>
-        `;
-        }
+    if (path.includes("mazoadministradores.html")) {
+      return "administradores";
+    }
 
-        return `
-        <button
-          type="button"
-          class="mazobar__cmd-btn mazobar__cmd-btn--suit"
-          data-command-suit="${suit}"
-          title="${symbol}"
-          aria-label="${symbol}"
-        >
-          ${symbol}
-        </button>
-      `;
-      })
-      .join("");
-
-    // -------------------------
-    // ALERTAS
-    // -------------------------
-    const alertButtons = buildAlertButtonsHTML(plays);
-
-    // -------------------------
-    // VISIBILIDAD SEGÚN VISTA
-    // -------------------------
-    const isAdminView = mazobarCurrentView === "administradores";
-
-    // -------------------------
-    // RETURN FINAL
-    // -------------------------
-    return `
-    <!-- NUEVA J -->
-    <button
-      id="btnAddJ"
-      type="button"
-      class="mazobar__cmd-btn mazobar__cmd-btn--primary"
-      title="Nueva jugada"
-      aria-label="Nueva jugada"
-      style="${isAdminView ? "display:none;" : ""}"
-    >
-      <img
-        src="/assets/icons/maquina80.gif"
-        alt="J+"
-        class="mazobar__cmd-icon"
-      />
-    </button>
-
-    <!-- VOLVER A TABLERO -->
-    <button
-      id="btnBackToTablero"
-      type="button"
-      class="mazobar__cmd-btn mazobar__cmd-btn--primary"
-      title="Volver al tablero"
-      aria-label="Volver al tablero"
-      style="${isAdminView ? "" : "display:none;"}"
-    >
-      <img
-        src="/assets/icons/maquina80.gif"
-        alt="Tablero"
-        class="mazobar__cmd-icon"
-      />
-    </button>
-
-    <!-- ADMIN -->
-    <button
-      id="btnFilterA"
-      type="button"
-      class="mazobar__cmd-btn"
-      title="Administradores"
-      aria-label="Administradores"
-    >
-      <img
-        src="/assets/icons/team80.gif"
-        alt="Administradores"
-        class="mazobar__cmd-icon"
-      />
-    </button>
-
-    ${suitButtons}
-    ${alertButtons}
-  `;
+    return "mazo";
   }
 
   function buildJokersHTML(plays, currentUserId, deckId) {
@@ -511,7 +403,6 @@
   }
 
   function buildDeckPhotoHTML(deck, plays, currentUserId) {
-    const avatarSrc = getDeckAvatarSrc(deck);
     const canEditPhoto = userCanEditDeckPhoto(plays, currentUserId);
 
     if (canEditPhoto) {
@@ -546,7 +437,7 @@
     </div>
   `;
   }
-  
+
   function buildDeckPhotoEditorHTML(deck, plays, currentUserId) {
     const canEditPhoto = userCanEditDeckPhoto(plays, currentUserId);
 
@@ -594,77 +485,197 @@
       : [];
 
     const enabledCards = getEnabledTopCards(normalizedPlays);
-    const avatarSrc = getDeckAvatarSrc(deck);
     const deckName = deck?.name || "Mazo";
     const currencyCode = getCurrencyCode(deck);
     const balance = getBalanceValue(deck);
+    const isAdminPage = getCurrentPageType() === "administradores";
 
     return `
-      <section class="mazobar">
-        <div class="page-container">
-          <div class="mazobar__shell">
-            <div class="mazobar__row mazobar__row--top">
+    <section class="mazobar">
+      <div class="page-container">
+        <div class="mazobar__shell">
+          <div class="mazobar__row mazobar__row--top">
 
-<div class="mazobar__top-left">
-  <div class="mazobar__topcards">
-  ${mazobarCurrentView === "administradores"
-        ? buildTopCardsHTML(enabledCards)
-        : ""
-      }
-  </div>
-
-  ${buildDeckPhotoHTML(deck, normalizedPlays, currentUserId)}
-</div>
-
-              <div class="mazobar__top-center">
-                <div class="mazobar__titleline">
-                  <span class="mazobar__title-rank">A</span>
-                  <img
-                    src="/assets/icons/cor40.gif"
-                    alt="♥"
-                    class="mazobar__title-suit"
-                  />
-                  <span class="mazobar__title-name">${deckName}</span>
-                  <img
-                    src="/assets/icons/dia40.gif"
-                    alt="♦"
-                    class="mazobar__balance-icon"
-                  />
-                  <span class="mazobar__balance-currency">${currencyCode}</span>
-                  <span class="mazobar__balance-value">${balance}</span>
-
-                </div>
-
-                <div class="mazobar__commands">
-                  ${buildCommandButtonsHTML(normalizedPlays)}
-                </div>
-                ${buildDeckPhotoEditorHTML(deck, normalizedPlays, currentUserId)}
+            <div class="mazobar__top-left">
+              <div class="mazobar__topcards">
+                ${isAdminPage ? buildTopCardsHTML(enabledCards) : ""}
               </div>
 
-              <div class="mazobar__top-right">
-                ${buildJokersHTML(normalizedPlays, currentUserId, deck?.id)}
-              </div>
-
+              ${buildDeckPhotoHTML(deck, normalizedPlays, currentUserId)}
             </div>
+
+            <div class="mazobar__top-center">
+              <div class="mazobar__titleline">
+                <span class="mazobar__title-rank">A</span>
+                <img
+                  src="/assets/icons/cor40.gif"
+                  alt="♥"
+                  class="mazobar__title-suit"
+                />
+                <span class="mazobar__title-name">${deckName}</span>
+                <img
+                  src="/assets/icons/dia40.gif"
+                  alt="♦"
+                  class="mazobar__balance-icon"
+                />
+                <span class="mazobar__balance-currency">${currencyCode}</span>
+                <span class="mazobar__balance-value">${balance}</span>
+              </div>
+
+              <div class="mazobar__commands">
+                ${buildCommandButtonsHTML(normalizedPlays)}
+              </div>
+
+              ${buildDeckPhotoEditorHTML(deck, normalizedPlays, currentUserId)}
+            </div>
+
+            <div class="mazobar__top-right">
+              ${buildJokersHTML(normalizedPlays, currentUserId, deck?.id)}
+            </div>
+
           </div>
         </div>
-      </section>
-    `;
+      </div>
+    </section>
+  `;
   }
 
+  function buildCommandButtonsHTML(plays) {
+    const pageType = getCurrentPageType();
+    const isMazoPage = pageType === "mazo";
+    const isAdminPage = pageType === "administradores";
+
+    // -------------------------
+    // BOTONES DE PALOS
+    // solo en mazo.html
+    // -------------------------
+    const suitButtons = isMazoPage
+      ? getVisibleCommandSuits()
+        .map((suit) => {
+          const imgSrc = getSuitButtonImageSrc(suit);
+          const symbol = getSuitSymbol(suit);
+
+          if (imgSrc) {
+            return `
+            <button
+              type="button"
+              class="mazobar__cmd-btn mazobar__cmd-btn--suit"
+              data-command-suit="${suit}"
+              title="${symbol}"
+              aria-label="${symbol}"
+            >
+              <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
+            </button>
+          `;
+          }
+
+          return `
+          <button
+            type="button"
+            class="mazobar__cmd-btn mazobar__cmd-btn--suit"
+            data-command-suit="${suit}"
+            title="${symbol}"
+            aria-label="${symbol}"
+          >
+            ${symbol}
+          </button>
+        `;
+        })
+        .join("")
+      : "";
+
+    // -------------------------
+    // ALERTAS
+    // solo en mazo.html
+    // -------------------------
+    const alertButtons = isMazoPage
+      ? buildAlertButtonsHTML(plays)
+      : "";
+
+    // -------------------------
+    // RETURN FINAL
+    // -------------------------
+    return `
+    <!-- NUEVA J -->
+    ${isMazoPage ? `
+      <button
+        id="btnAddJ"
+        type="button"
+        class="mazobar__cmd-btn mazobar__cmd-btn--primary"
+        title="Nueva jugada"
+        aria-label="Nueva jugada"
+      >
+        <img
+          src="/assets/icons/maquina80.gif"
+          alt="J+"
+          class="mazobar__cmd-icon"
+        />
+      </button>
+    ` : ""}
+
+    <!-- VOLVER A TABLERO -->
+    ${isAdminPage ? `
+      <button
+        id="btnBackToTablero"
+        type="button"
+        class="mazobar__cmd-btn mazobar__cmd-btn--primary"
+        title="Volver al tablero"
+        aria-label="Volver al tablero"
+      >
+        <img
+          src="/assets/icons/maquina80.gif"
+          alt="Tablero"
+          class="mazobar__cmd-icon"
+        />
+      </button>
+    ` : ""}
+
+    <!-- ADMINISTRADORES -->
+    ${isMazoPage ? `
+      <button
+        id="btnFilterA"
+        type="button"
+        class="mazobar__cmd-btn"
+        title="Administradores"
+        aria-label="Administradores"
+      >
+        <img
+          src="/assets/icons/team80.gif"
+          alt="Administradores"
+          class="mazobar__cmd-icon"
+        />
+      </button>
+    ` : ""}
+
+    ${suitButtons}
+    ${alertButtons}
+  `;
+  }
+
+
+
   function bindMazobarEvents(deck, plays, currentUserId) {
-    document.getElementById("btnAddJ")?.addEventListener("click", () => {
-      showTableroView();
-      document.dispatchEvent(new CustomEvent("mazobar:addJ"));
-    });
 
-    document.getElementById("btnBackToTablero")?.addEventListener("click", () => {
-      showTableroView();
-    });
+    const btnAddJ = document.getElementById("btnAddJ");
+    if (btnAddJ) {
+      btnAddJ.addEventListener("click", () => {
+        document.dispatchEvent(new CustomEvent("mazobar:addJ"));
+      });
+    }
 
-    document.getElementById("btnFilterA")?.addEventListener("click", () => {
-      showAutoridadesView("AK");
-    });
+    const btnBackToTablero = document.getElementById("btnBackToTablero");
+    if (btnBackToTablero) {
+      btnBackToTablero.addEventListener("click", () => {
+        goToMazoPage();
+      });
+    }
+
+    const btnFilterA = document.getElementById("btnFilterA");
+    if (btnFilterA) {
+      btnFilterA.addEventListener("click", () => {
+        goToAdministradoresPage();
+      });
+    }
 
     document.getElementById("mazobarPhotoBtn")?.addEventListener("click", () => {
       mazobarPhotoEditorOpen = true;
