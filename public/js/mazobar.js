@@ -403,6 +403,7 @@
   }
 
   function buildDeckPhotoHTML(deck, plays, currentUserId) {
+    const avatarSrc = getDeckAvatarSrc(deck);
     const canEditPhoto = userCanEditDeckPhoto(plays, currentUserId);
 
     if (canEditPhoto) {
