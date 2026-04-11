@@ -8,22 +8,38 @@
       .replace(/'/g, "&#39;");
   }
 
-  function formatShortDate(value) {
+  function formatShortDateTime(value) {
     if (!value) return "—";
 
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return escapeHtml(value);
+    if (Number.isNaN(date.getTime())) return String(value ?? "");
 
     try {
-      return date.toLocaleString("es-UY", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
+      const parts = new Intl.DateTimeFormat("es-UY", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
         hour: "2-digit",
-        minute: "2-digit"
+        minute: "2-digit",
+      }).formatToParts(date);
+
+      const map = {};
+      parts.forEach((part) => {
+        map[part.type] = part.value;
       });
+
+      const weekday = String(map.weekday || "").replace(".", "");
+      const day = map.day || "";
+      const month = String(map.month || "").replace(".", "");
+      const hour = map.hour || "";
+      const minute = map.minute || "";
+
+      const cap = (txt) =>
+        txt ? txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase() : "";
+
+      return `${cap(weekday)} ${day} ${cap(month)} ${hour}:${minute}`;
     } catch (error) {
-      return escapeHtml(value);
+      return String(value ?? "");
     }
   }
 
@@ -32,7 +48,6 @@
 
     const text = play.play_text || play.text || "";
     const startDate = play.start_date || play.startDate || "";
-    const endDate = play.end_date || play.endDate || "";
     const location = play.location || play.place || "";
 
     return `
@@ -43,13 +58,8 @@
         </div>
 
         <div class="jcontent-card__row">
-          <span class="jcontent-card__label">Inicio</span>
-          <span class="jcontent-card__value">${formatShortDate(startDate)}</span>
-        </div>
-
-        <div class="jcontent-card__row">
-          <span class="jcontent-card__label">Fin</span>
-          <span class="jcontent-card__value">${formatShortDate(endDate)}</span>
+          <span class="jcontent-card__label">Fecha</span>
+          <span class="jcontent-card__value">${formatShortDateTime(startDate)}</span>
         </div>
 
         <div class="jcontent-card__row">
