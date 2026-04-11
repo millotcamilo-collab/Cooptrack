@@ -101,6 +101,32 @@
   display: block;
 }
 
+
+/* =========================
+   BOTONES BITÁCORA (SIN BORDE)
+========================= */
+
+.bitacorabar__filter-btn,
+.bitacorabar__search-btn {
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+/* Opcional: eliminar estilos default de button */
+.bitacorabar__filter-btn,
+.bitacorabar__search-btn {
+  appearance: none;
+}
+
+.bitacorabar__filter-btn .mazobar__cmd-icon {
+  height: 18px;   /* probá 16–20 según gusto */
+  width: auto;
+}
+.bitacorabar__filter-btn {
+  padding: 2px 4px;
+}
+
 @media (max-width: 820px) {
   .bitacorabar__row {
     grid-template-columns: 1fr;
