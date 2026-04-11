@@ -620,6 +620,32 @@ app.put('/me', requireAuth, async (req, res) => {
   }
 });
 
+app.get('/plays/my-jotas', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const result = await pool.query(
+      `
+      SELECT id
+      FROM plays
+      WHERE created_by_user_id = $1
+        AND card_rank = 'J'
+      LIMIT 1
+      `,
+      [userId]
+    );
+
+    return res.json({
+      ok: true,
+      hasJ: result.rows.length > 0
+    });
+
+  } catch (error) {
+    console.error('Error en /plays/my-jotas', error);
+    return res.status(500).json({ ok: false });
+  }
+});
+
 // =====================================================
 // MAZOS
 // =====================================================
