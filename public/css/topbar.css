@@ -48,7 +48,7 @@
 .topbar__right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 7px;
 }
 
 .topbar__icon-btn {
