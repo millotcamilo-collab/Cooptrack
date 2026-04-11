@@ -333,6 +333,22 @@
   }
 }
 
+/* Sombreritos btnA */
+/* BADGE ADMINISTRADORES */
+.mazobar__admin-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 8px;
+}
+
+.mazobar__admin-badge-icon {
+  height: 32px;   /* 👈 probá entre 28 y 36 */
+  width: auto;
+  display: block;
+}
+
+
 @media (max-width: 680px) {
   .mazobar .page-container {
     padding: 0 16px;
@@ -371,3 +387,4 @@
     height: 50px;
   }
 }
+

@@ -28,32 +28,32 @@
     }
   }
 
-async function hasUserJPlays(userId) {
-  try {
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token || !userId) return false;
+  async function hasUserJPlays(userId) {
+    try {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token || !userId) return false;
 
-    const response = await fetch(`${API_BASE_URL}/plays/pending`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+      const response = await fetch(`${API_BASE_URL}/plays/pending`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-    if (!response.ok) return false;
+      if (!response.ok) return false;
 
-    const data = await response.json();
-    const plays = Array.isArray(data?.plays) ? data.plays : [];
+      const data = await response.json();
+      const plays = Array.isArray(data?.plays) ? data.plays : [];
 
-    return plays.some((p) =>
-      Number(p.created_by_user_id) === Number(userId) &&
-      String(p.card_rank || p.rank || "").toUpperCase() === "J"
-    );
-  } catch (error) {
-    console.error("Error verificando J del usuario:", error);
-    return false;
+      return plays.some((p) =>
+        Number(p.created_by_user_id) === Number(userId) &&
+        String(p.card_rank || p.rank || "").toUpperCase() === "J"
+      );
+    } catch (error) {
+      console.error("Error verificando J del usuario:", error);
+      return false;
+    }
   }
-}  
   function logout() {
     localStorage.removeItem("User");
     localStorage.removeItem("Token");
@@ -100,40 +100,40 @@ async function hasUserJPlays(userId) {
   }
 
   async function getLatestIncomingCard() {
-  try {
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) return null;
+    try {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return null;
 
-    const response = await fetch(`${API_BASE_URL}/plays/pending`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+      const response = await fetch(`${API_BASE_URL}/plays/pending`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-    if (!response.ok) return null;
+      if (!response.ok) return null;
 
-    const data = await response.json();
-    const plays = Array.isArray(data?.plays) ? data.plays : [];
+      const data = await response.json();
+      const plays = Array.isArray(data?.plays) ? data.plays : [];
 
-    const incoming = plays.filter((p) => {
-      const rank = String(p.card_rank || p.rank || "").toUpperCase();
-      return rank === "Q" || rank === "K" || rank === "A";
-    });
+      const incoming = plays.filter((p) => {
+        const rank = String(p.card_rank || p.rank || "").toUpperCase();
+        return rank === "Q" || rank === "K" || rank === "A";
+      });
 
-    if (!incoming.length) return null;
+      if (!incoming.length) return null;
 
-    incoming.sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
-    return incoming[0];
-  } catch (error) {
-    console.error("Error leyendo carta recibida:", error);
-    return null;
+      incoming.sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+      return incoming[0];
+    } catch (error) {
+      console.error("Error leyendo carta recibida:", error);
+      return null;
+    }
   }
-}
 
   function isMazosPage() {
     return window.location.pathname.endsWith("/mazos.html") ||
-           window.location.pathname === "/mazos.html";
+      window.location.pathname === "/mazos.html";
   }
 
   function goToCreateDeckPage() {
@@ -143,7 +143,7 @@ async function hasUserJPlays(userId) {
   async function renderTopbar() {
     const user = await getLoggedUser();
     const userHasDecks = await hasDecks();
-   
+
     const onMazosPage = isMazosPage();
     const userHasJPlays = user ? await hasUserJPlays(user.id) : false;
     const latestIncomingCard = await getLatestIncomingCard();
@@ -177,48 +177,45 @@ async function hasUserJPlays(userId) {
                 <img src="/assets/icons/Acorazon.gif" class="topbar__icon-img" />
               </button>
 
-              ${
-                userHasDecks
-                  ? `
+              ${userHasDecks
+          ? `
                     <a
                       href="${onMazosPage ? "/index.html" : "/mazos.html"}"
                       class="topbar__icon-btn"
                       title="Aqui estan los mazos"
                     >
                       <img
-                        src="${
-                          onMazosPage
-                            ? "/assets/icons/portafolioAbierto.png"
-                            : "/assets/icons/portafolios80.gif"
-                        }"
+                        src="${onMazosPage
+            ? "/assets/icons/portafolioAbierto.png"
+            : "/assets/icons/portafolios80.gif"
+          }"
                         class="topbar__icon-img"
                       />
                     </a>
                   `
-                  : ""
-              }
+          : ""
+        }
 
-              ${
-                userHasPendingApprovals
-                  ? `
+              ${userHasPendingApprovals
+          ? `
                     <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
                       <img src="/assets/icons/Dorso70.gif" class="topbar__icon-img" />
                     </button>
                   `
-                  : ""
-              }
-${
-  userHasJPlays
-    ? `
-      <button
+          : ""
+        }
+${userHasJPlays
+          ? `
+     <button
         class="topbar__icon-btn"
+        id="bitacoraBtn"
         title="log de jotas"
       >
-        <img src="/assets/icons/maquina80.gif" class="topbar__icon-img" />
-      </button>
+      <img src="/assets/icons/maquina80.gif" class="topbar__icon-img" />
+    </button>
     `
-    : ""
-}
+          : ""
+        }
               <a
                 href="/almanaque.html"
                 class="topbar__icon-btn"
@@ -242,9 +239,8 @@ ${
               >
                 <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
               </a>
-${
-  user.is_admin
-    ? `
+${user.is_admin
+          ? `
       <a
         href="/protected-pages/administradores.html"
         class="topbar__icon-btn"
@@ -253,8 +249,8 @@ ${
         <img src="/assets/icons/Tools120.gif" class="topbar__icon-img" />
       </a>
     `
-    : ""
-}
+          : ""
+        }
               <button class="topbar__icon-btn" id="logoutBtn">
                 <img src="/assets/icons/exit80.gif" class="topbar__icon-img topbar__icon-img--exit" />
               </button>
@@ -320,15 +316,23 @@ ${
       newDeckBtn.addEventListener("click", goToCreateDeckPage);
     }
 
-   const pendingBtn = document.getElementById("pendingBtn");
-if (pendingBtn && latestIncomingCard) {
-  pendingBtn.addEventListener("click", () => {
-    const deckId = latestIncomingCard.deck_id;
-    const playId = latestIncomingCard.id;
+    const bitacoraBtn = document.getElementById("bitacoraBtn");
 
-    window.location.href = `/lienzo.html?deckId=${deckId}&playId=${playId}`;
-  });
-}
+    if (bitacoraBtn) {
+      bitacoraBtn.addEventListener("click", () => {
+        window.location.href = "/bitacora.html";
+      });
+    }
+    
+    const pendingBtn = document.getElementById("pendingBtn");
+    if (pendingBtn && latestIncomingCard) {
+      pendingBtn.addEventListener("click", () => {
+        const deckId = latestIncomingCard.deck_id;
+        const playId = latestIncomingCard.id;
+
+        window.location.href = `/lienzo.html?deckId=${deckId}&playId=${playId}`;
+      });
+    }
   }
 
   document.addEventListener("DOMContentLoaded", renderTopbar);

@@ -1,0 +1,138 @@
+.bitacorabar {
+  width: 100%;
+  padding: 14px 0 10px;
+  background: #ffffff;
+  border-bottom: 1px solid #d8d8d8;
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+
+#bitacorabar-container {
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.bitacorabar .page-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.bitacorabar__shell {
+  width: 100%;
+}
+
+.bitacorabar__row {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bitacorabar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.bitacorabar__machine {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bitacorabar__machine-icon {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+
+.bitacorabar__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #000;
+  line-height: 1.2;
+}
+
+.bitacorabar__filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bitacorabar__filter-btn.is-active {
+  outline: 1px solid #999;
+  border-radius: 4px;
+}
+
+.bitacorabar__search {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bitacorabar__search-input {
+  height: 34px;
+  min-width: 220px;
+  width: 100%;
+  max-width: 340px;
+  padding: 0 10px;
+  border: 1px solid #bdbdbd;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font: inherit;
+}
+
+.bitacorabar__search-btn {
+  padding: 4px 8px;
+  min-height: 34px;
+}
+
+.bitacorabar__search-icon {
+  height: 22px;
+  width: auto;
+  display: block;
+}
+
+@media (max-width: 820px) {
+  .bitacorabar__row {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .bitacorabar__search {
+    justify-content: flex-start;
+  }
+
+  .bitacorabar__search-input {
+    max-width: none;
+  }
+}
+
+#jotas-container {
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.tablero-row--bitacora {
+  width: 100%;
+  border: 1px dotted #777;
+  background: #fffdf8;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tablero-row--bitacora:hover {
+  opacity: 0.96;
+}
+
+.tablero-row--bitacora .tablero-row__right {
+  min-width: 80px;
+}
