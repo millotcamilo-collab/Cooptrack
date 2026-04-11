@@ -28,32 +28,36 @@
     }
   }
 
-  async function hasUserJPlays(userId) {
-    try {
-      const token = localStorage.getItem("cooptrackToken");
-      if (!token || !userId) return false;
+async function hasUserJPlays(userId) {
+  try {
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token || !userId) return false;
 
-      const response = await fetch(`${API_BASE_URL}/plays/pending`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+    const response = await fetch(`${API_BASE_URL}/plays`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
 
-      if (!response.ok) return false;
+    if (!response.ok) return false;
 
-      const data = await response.json();
-      const plays = Array.isArray(data?.plays) ? data.plays : [];
+    const data = await response.json();
+    const plays = Array.isArray(data?.plays) ? data.plays : [];
 
-      return plays.some((p) =>
-        Number(p.created_by_user_id) === Number(userId) &&
-        String(p.card_rank || p.rank || "").toUpperCase() === "J"
-      );
-    } catch (error) {
-      console.error("Error verificando J del usuario:", error);
-      return false;
-    }
+    return plays.some((p) => {
+      const rank = String(p.card_rank || p.rank || "").toUpperCase();
+      const creatorId = Number(p.created_by_user_id || 0);
+
+      return rank === "J" && creatorId === Number(userId);
+    });
+
+  } catch (error) {
+    console.error("Error verificando J del usuario:", error);
+    return false;
   }
+}
+
   function logout() {
     localStorage.removeItem("User");
     localStorage.removeItem("Token");
@@ -98,6 +102,7 @@
       return false;
     }
   }
+
 
   async function getLatestIncomingCard() {
     try {
@@ -323,7 +328,7 @@ ${user.is_admin
         window.location.href = "/bitacora.html";
       });
     }
-    
+
     const pendingBtn = document.getElementById("pendingBtn");
     if (pendingBtn && latestIncomingCard) {
       pendingBtn.addEventListener("click", () => {
