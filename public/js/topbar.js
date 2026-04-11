@@ -202,17 +202,24 @@
         }
 ${userHasJPlays
           ? `
-     <button
-        class="topbar__icon-btn"
-        id="bitacoraBtn"
-        title="log de jotas"
-      >
+    <button
+      class="topbar__icon-btn"
+      id="archivoBtn"
+      title="archivo"
+    >
+      <img src="/assets/icons/archivo80.gif" class="topbar__icon-img" />
+    </button>
+
+    <button
+      class="topbar__icon-btn"
+      id="bitacoraBtn"
+      title="log de jotas"
+    >
       <img src="/assets/icons/maquina80.gif" class="topbar__icon-img" />
     </button>
     `
           : ""
-        }
-              <a
+        }              <a
                 href="/almanaque.html"
                 class="topbar__icon-btn"
                 title="Aqui esta el calendario aun no te programe"
@@ -313,6 +320,14 @@ ${user.is_admin
     }
 
     const bitacoraBtn = document.getElementById("bitacoraBtn");
+
+    const archivoBtn = document.getElementById("archivoBtn");
+
+    if (archivoBtn) {
+      archivoBtn.addEventListener("click", () => {
+        window.location.href = "/archivo.html";
+      });
+    }
 
     if (bitacoraBtn) {
       bitacoraBtn.addEventListener("click", () => {
