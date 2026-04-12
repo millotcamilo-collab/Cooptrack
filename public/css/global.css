@@ -15,6 +15,15 @@ html {
   box-sizing: inherit;
 }
 
+.ct-block {
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.ct-surface {
+  border-radius: 10px;
+}
+
 .card-rank,
 .card-suit,
 .mazo-card,
