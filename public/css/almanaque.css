@@ -1,7 +1,7 @@
 #almanaque-container {
   width: 100%;
   box-sizing: border-box;
-  padding: 12px 20px 20px;
+  padding: 0 20px;
   background: #000;
   color: #fff;
     border-radius: 10px;
@@ -10,6 +10,15 @@
 .almanaque {
   width: 100%;
   box-sizing: border-box;
+}
+
+
+#jotas-container {
+  padding: 0;
+}
+
+#jotas-container:empty {
+  display: none;
 }
 
 .almanaque__months,
