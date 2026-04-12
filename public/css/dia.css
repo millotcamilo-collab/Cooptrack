@@ -1,0 +1,39 @@
+.dia {
+  display: flex;
+  flex-direction: column;
+  min-height: 140px;
+  border: 1px solid #4b4b20;
+  background: #111;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.dia__header {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-bottom: 1px solid #4b4b20;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.dia__body {
+  flex: 1;
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+
+.dia--current .dia__header {
+  background: #fff;
+  color: #000;
+}
+
+.dia--today .dia__header {
+  background: yellow;
+  color: #000;
+}
+
+.dia--outside-month {
+  opacity: 0.45;
+}
