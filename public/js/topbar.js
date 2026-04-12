@@ -220,14 +220,6 @@ ${userHasJPlays
 
     <button
       class="topbar__icon-btn"
-      id="gestionBtn"
-      title="gestión"
-    >
-      <img src="/assets/icons/sombrero80.gif" class="topbar__icon-img" />
-    </button>
-
-    <button
-      class="topbar__icon-btn"
       id="contabilidadBtn"
       title="contabilidad"
     >
@@ -349,13 +341,6 @@ ${user.is_admin
     if (bitacoraBtn) {
       bitacoraBtn.addEventListener("click", () => {
         window.location.href = "/bitacora.html";
-      });
-    }
-
-    const gestionBtn = document.getElementById("gestionBtn");
-    if (gestionBtn) {
-      gestionBtn.addEventListener("click", () => {
-        window.location.href = "/gestion.html";
       });
     }
 
