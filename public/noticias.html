@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,16 +13,29 @@
   <link rel="stylesheet" href="/css/bitacorabar.css" />
 
 </head>
+
 <body>
   <!-- TOPBAR -->
   <div id="topbar-container"></div>
 
   <!-- BITACORA BAR -->
   <div id="bitacorabar-container"></div>
-
+  <script>
+    window.transversalBarConfig = {
+      containerId: "bitacorabar-container",
+      title: "Noticias",
+      iconSrc: "/assets/icons/Extra120.gif",
+      iconAlt: "Noticias",
+      searchPlaceholder: "Buscar en noticias",
+      filterEventName: "noticias:filterSuit",
+      searchEventName: "noticias:search",
+      filterPrefix: "noticias"
+    };
+  </script>
 
   <script src="/js/topbar.js"></script>
   <script src="/js/bitacorabar.js"></script>
 
 </body>
+
 </html>
