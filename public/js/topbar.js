@@ -173,6 +173,15 @@
                 <img src="/assets/icons/Acorazon.gif" class="topbar__icon-img" />
               </button>
 
+              ${userHasPendingApprovals
+          ? `
+                    <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
+                      <img src="/assets/icons/Dorso70.gif" class="topbar__icon-img" />
+                    </button>
+                  `
+          : ""
+        }
+
               ${userHasDecks
           ? `
                     <a
@@ -192,14 +201,7 @@
           : ""
         }
 
-              ${userHasPendingApprovals
-          ? `
-                    <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
-                      <img src="/assets/icons/Dorso70.gif" class="topbar__icon-img" />
-                    </button>
-                  `
-          : ""
-        }
+
 ${userHasJPlays
   ? `
     <button
