@@ -30,7 +30,7 @@
   display: grid;
     gap: var(--almanaque-gap);
   width: 100%;
-    box-sizing: border-box;
+
 }
 
 .almanaque__months {
