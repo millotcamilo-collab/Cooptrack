@@ -202,6 +202,8 @@
         }
 ${userHasJPlays
           ? `
+    ${userHasJPlays
+            ? `
     <button
       class="topbar__icon-btn"
       id="archivoBtn"
@@ -217,9 +219,26 @@ ${userHasJPlays
     >
       <img src="/assets/icons/maquina80.gif" class="topbar__icon-img" />
     </button>
+
+    <button
+      class="topbar__icon-btn"
+      id="gestionBtn"
+      title="gestión"
+    >
+      <img src="/assets/icons/sombrero60.gif" class="topbar__icon-img" />
+    </button>
+
+    <button
+      class="topbar__icon-btn"
+      id="contabilidadBtn"
+      title="contabilidad"
+    >
+      <img src="/assets/icons/calculadora80.gif" class="topbar__icon-img" />
+    </button>
     `
-          : ""
-        }              <a
+            : ""
+          }
+             <a
                 href="/almanaque.html"
                 class="topbar__icon-btn"
                 title="Aqui esta el calendario aun no te programe"
@@ -243,7 +262,7 @@ ${userHasJPlays
                 <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
               </a>
 ${user.is_admin
-          ? `
+            ? `
       <a
         href="/protected-pages/administradores.html"
         class="topbar__icon-btn"
@@ -252,8 +271,8 @@ ${user.is_admin
         <img src="/assets/icons/Tools120.gif" class="topbar__icon-img" />
       </a>
     `
-          : ""
-        }
+            : ""
+          }
               <button class="topbar__icon-btn" id="logoutBtn">
                 <img src="/assets/icons/exit80.gif" class="topbar__icon-img topbar__icon-img--exit" />
               </button>
@@ -335,6 +354,20 @@ ${user.is_admin
       });
     }
 
+    const gestionBtn = document.getElementById("gestionBtn");
+    if (gestionBtn) {
+      gestionBtn.addEventListener("click", () => {
+        window.location.href = "/gestion.html";
+      });
+    }
+
+    const contabilidadBtn = document.getElementById("contabilidadBtn");
+    if (contabilidadBtn) {
+      contabilidadBtn.addEventListener("click", () => {
+        window.location.href = "/contabilidad.html";
+      });
+    }
+    
     const pendingBtn = document.getElementById("pendingBtn");
     if (pendingBtn && latestIncomingCard) {
       pendingBtn.addEventListener("click", () => {
