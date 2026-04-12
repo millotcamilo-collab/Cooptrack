@@ -28,9 +28,9 @@
     ];
 
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // después esto lo conectamos con navegación real del usuario
-    let currentDate = new Date(today.getFullYear(), today.getMonth(), 12);
+    let currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
     function isSameDay(a, b) {
         return (
@@ -42,8 +42,8 @@
 
     function getMondayOfWeek(date) {
         const copy = new Date(date);
-        const jsDay = copy.getDay(); // domingo=0
-        const normalizedDay = jsDay === 0 ? 6 : jsDay - 1; // lunes=0
+        const jsDay = copy.getDay();
+        const normalizedDay = jsDay === 0 ? 6 : jsDay - 1;
         copy.setDate(copy.getDate() - normalizedDay);
         copy.setHours(0, 0, 0, 0);
         return copy;
@@ -79,10 +79,10 @@
         }
 
         return `
-    <div class="almanaque__weeks">
-      ${weeksHtml.join("")}
-    </div>
-  `;
+            <div class="almanaque__weeks">
+                ${weeksHtml.join("")}
+            </div>
+        `;
     }
 
     function getMonthCellClass(monthIndex) {
@@ -101,8 +101,8 @@
     }
 
     function getDayHeaderClass(dayIndex) {
-        const jsDay = currentDate.getDay(); // domingo=0
-        const normalizedDay = jsDay === 0 ? 6 : jsDay - 1; // lunes=0
+        const jsDay = currentDate.getDay();
+        const normalizedDay = jsDay === 0 ? 6 : jsDay - 1;
 
         if (isSameDay(today, currentDate) && normalizedDay === dayIndex) {
             return "almanaque__cell almanaque__cell--today";
@@ -129,6 +129,8 @@
                 const safeDay = Math.min(currentDay, maxDay);
 
                 currentDate = new Date(year, monthIndex, safeDay);
+                currentDate.setHours(0, 0, 0, 0);
+
                 render();
             });
         });
@@ -137,14 +139,14 @@
     function render() {
         const monthsHtml = MONTHS.map((monthName, index) => {
             return `
-      <button
-        type="button"
-        class="${getMonthCellClass(index)} almanaque__month-btn"
-        data-month="${index}"
-      >
-        ${monthName}
-      </button>
-    `;
+                <button
+                    type="button"
+                    class="${getMonthCellClass(index)} almanaque__month-btn"
+                    data-month="${index}"
+                >
+                    ${monthName}
+                </button>
+            `;
         }).join("");
 
         const daysHtml = DAYS.map((dayName, index) => {
@@ -152,18 +154,18 @@
         }).join("");
 
         container.innerHTML = `
-    <section class="almanaque">
-      <div class="almanaque__months">
-        ${monthsHtml}
-      </div>
+            <section class="almanaque">
+                <div class="almanaque__months">
+                    ${monthsHtml}
+                </div>
 
-      <div class="almanaque__days">
-        ${daysHtml}
-      </div>
+                <div class="almanaque__days">
+                    ${daysHtml}
+                </div>
 
-      ${renderWeeks()}
-    </section>
-  `;
+                ${renderWeeks()}
+            </section>
+        `;
 
         bindMonthButtons();
     }

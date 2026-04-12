@@ -48,7 +48,7 @@
   justify-content: center;
   box-sizing: border-box;
   border: 1px solid #4b4b20;
-  background: #000;
+  background: #none;
   color: #fff;
   font-family: var(--font-text);
   font-size: 10px;
@@ -93,11 +93,10 @@
 
 .almanaque__month-btn {
   appearance: none;
-  border: 1px solid #4b4b20;
-  background: #000;
-  color: #fff;
   font: inherit;
   cursor: pointer;
+  border: none;
+  background: none;
 }
 
 .almanaque__month-btn:hover {
