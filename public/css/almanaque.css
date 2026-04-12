@@ -37,11 +37,20 @@
   border: 1px solid #4b4b20;
   background: #000;
   color: #fff;
-  font-family: Georgia, serif;
-  font-size: 15px;
+  font-family: var(--font-text);
+  font-size: 10px;
   line-height: 1;
   text-align: center;
   padding: 4px 6px;
+}
+
+.almanaque__months .almanaque__cell {
+  font-size: 13px;
+}
+
+.almanaque__days .almanaque__cell {
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .almanaque__cell--today {

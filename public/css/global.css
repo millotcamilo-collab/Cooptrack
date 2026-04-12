@@ -1,7 +1,7 @@
 :root {
   --topbar-height: 72px;
   /* fuente para texto general y para las cartas, respectivamente */
-  --font-text: Georgia, "Times New Roman", serif;
+  --font-text: Garamond, "Times New Roman", serif;
   --font-card: "Times New Roman", Georgia, serif;
 }
 
