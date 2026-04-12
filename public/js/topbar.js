@@ -223,7 +223,7 @@ ${userHasJPlays
       id="gestionBtn"
       title="gestión"
     >
-      <img src="/assets/icons/sombrero60.gif" class="topbar__icon-img" />
+      <img src="/assets/icons/sombrero80.gif" class="topbar__icon-img" />
     </button>
 
     <button
