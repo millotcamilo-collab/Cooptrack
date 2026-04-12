@@ -1,3 +1,7 @@
+:root {
+  --almanaque-gap: 8px;
+}
+
 #almanaque-container {
   width: 100%;
   box-sizing: border-box;
@@ -24,9 +28,9 @@
 .almanaque__months,
 .almanaque__days {
   display: grid;
-  gap: 4px;
+    gap: var(--almanaque-gap);
   width: 100%;
-  margin-bottom: 12px;
+    box-sizing: border-box;
 }
 
 .almanaque__months {
