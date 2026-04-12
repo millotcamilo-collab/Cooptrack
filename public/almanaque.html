@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <title>Bitácora</title>
-      <link rel="icon" type="image/png" href="/assets/icons/bigote.png" />
+  <link rel="icon" type="image/png" href="/assets/icons/bigote.png" />
 
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="stylesheet" href="/css/topbar.css" />
   <link rel="stylesheet" href="/css/bitacorabar.css" />
   <link rel="stylesheet" href="/css/jotas.css" />
+  <link rel="stylesheet" href="/css/almanaque.css" />
 </head>
 
 <body>
@@ -22,21 +24,22 @@
   <!-- LISTADO DE JOTAS -->
   <div id="jotas-container"></div>
 
-      <script>
-        window.transversalBarConfig = {
-            containerId: "bitacorabar-container",
-              title: "Almanaque",
-            iconSrc: "/assets/icons/Schedule80.gif",
-            iconAlt: "Almanaque",
-            searchPlaceholder: "Buscar en almanaque",
-            filterEventName: "almanaque:filterSuit",
-            searchEventName: "almanaque:search",
-            filterPrefix: "almanaque"
-        };
-    </script>
+  <script>
+    window.transversalBarConfig = {
+      containerId: "bitacorabar-container",
+      title: "Almanaque",
+      iconSrc: "/assets/icons/Schedule80.gif",
+      iconAlt: "Almanaque",
+      searchPlaceholder: "Buscar en almanaque",
+      filterEventName: "almanaque:filterSuit",
+      searchEventName: "almanaque:search",
+      filterPrefix: "almanaque"
+    };
+  </script>
   <script src="/js/topbar.js"></script>
   <script src="/js/bitacorabar.js"></script>
-
+  <script src="/js/almanaque.js"></script>
 
 </body>
+
 </html>
