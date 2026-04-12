@@ -90,3 +90,16 @@
   flex-direction: column;
   gap: var(--almanaque-gap);
 }
+
+.almanaque__month-btn {
+  appearance: none;
+  border: 1px solid #4b4b20;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.almanaque__month-btn:hover {
+  opacity: 0.92;
+}

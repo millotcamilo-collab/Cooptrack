@@ -30,7 +30,7 @@
     const today = new Date();
 
     // después esto lo conectamos con navegación real del usuario
-    const currentDate = new Date(today.getFullYear(), today.getMonth(), 12);
+    let currentDate = new Date(today.getFullYear(), today.getMonth(), 12);
 
     function isSameDay(a, b) {
         return (
@@ -115,9 +115,36 @@
         return "almanaque__cell";
     }
 
+    function bindMonthButtons() {
+        const buttons = container.querySelectorAll(".almanaque__month-btn");
+
+        buttons.forEach((button) => {
+            button.addEventListener("click", () => {
+                const monthIndex = Number(button.dataset.month);
+                if (Number.isNaN(monthIndex)) return;
+
+                const year = currentDate.getFullYear();
+                const currentDay = currentDate.getDate();
+                const maxDay = new Date(year, monthIndex + 1, 0).getDate();
+                const safeDay = Math.min(currentDay, maxDay);
+
+                currentDate = new Date(year, monthIndex, safeDay);
+                render();
+            });
+        });
+    }
+
     function render() {
         const monthsHtml = MONTHS.map((monthName, index) => {
-            return `<div class="${getMonthCellClass(index)}">${monthName}</div>`;
+            return `
+      <button
+        type="button"
+        class="${getMonthCellClass(index)} almanaque__month-btn"
+        data-month="${index}"
+      >
+        ${monthName}
+      </button>
+    `;
         }).join("");
 
         const daysHtml = DAYS.map((dayName, index) => {
@@ -137,6 +164,8 @@
       ${renderWeeks()}
     </section>
   `;
+
+        bindMonthButtons();
     }
 
     render();
