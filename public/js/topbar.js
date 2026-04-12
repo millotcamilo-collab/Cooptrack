@@ -201,9 +201,7 @@
           : ""
         }
 ${userHasJPlays
-          ? `
-    ${userHasJPlays
-            ? `
+  ? `
     <button
       class="topbar__icon-btn"
       id="archivoBtn"
@@ -236,8 +234,8 @@ ${userHasJPlays
       <img src="/assets/icons/calculadora80.gif" class="topbar__icon-img" />
     </button>
     `
-            : ""
-          }
+  : ""
+}
              <a
                 href="/almanaque.html"
                 class="topbar__icon-btn"
