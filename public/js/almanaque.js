@@ -220,10 +220,36 @@
         });
     }
 
+    function getFirstChronologicalMatch(plays) {
+        if (!plays.length) return null;
+
+        const sorted = [...plays].sort((a, b) => {
+            const dateA = new Date(a.created_at).getTime();
+            const dateB = new Date(b.created_at).getTime();
+            return dateA - dateB;
+        });
+
+        return sorted[0];
+    }
+
     async function render() {
         const { from, to } = getVisibleRange();
         allPlays = await fetchAlmanaqueData(from, to);
-        const filteredPlays = applyFilters(allPlays);
+        let filteredPlays = applyFilters(allPlays);
+
+        if (activeSearchQuery && filteredPlays.length) {
+            const firstMatch = getFirstChronologicalMatch(filteredPlays);
+
+            if (firstMatch?.created_at) {
+                currentDate = new Date(firstMatch.created_at);
+                currentDate.setHours(0, 0, 0, 0);
+
+                const nextRange = getVisibleRange();
+                allPlays = await fetchAlmanaqueData(nextRange.from, nextRange.to);
+                filteredPlays = applyFilters(allPlays);
+            }
+        }
+
         const jotasByDate = groupByYmd(filteredPlays);
 
         const monthsHtml = MONTHS.map((monthName, index) => {
@@ -260,18 +286,13 @@
     }
 
     document.addEventListener("almanaque:filterSuit", (event) => {
-        const clickedSuit = String(event.detail?.suit || "").toUpperCase();
-        if (!clickedSuit) return;
-
-        if (activeSuitFilters.includes(clickedSuit)) {
-            activeSuitFilters = activeSuitFilters.filter((suit) => suit !== clickedSuit);
-        } else {
-            activeSuitFilters = [...activeSuitFilters, clickedSuit];
-        }
+        activeSuitFilters = Array.isArray(event.detail?.suits)
+            ? event.detail.suits.map((suit) => String(suit).toUpperCase())
+            : [];
 
         render();
     });
-    
+
     document.addEventListener("almanaque:search", (event) => {
         activeSearchQuery = String(event.detail?.query || "").trim();
         render();

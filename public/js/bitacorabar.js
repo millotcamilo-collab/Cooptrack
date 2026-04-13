@@ -146,6 +146,19 @@
   function bindBitacorabarEvents(config) {
     const activeSuits = new Set();
 
+    function runSearch() {
+      const query = String(searchInput?.value || "").trim();
+
+      activeSuits.clear();
+      syncSuitButtonsState();
+
+      document.dispatchEvent(
+        new CustomEvent(config.searchEventName, {
+          detail: { query }
+        })
+      );
+    }
+
     function syncSuitButtonsState() {
       document.querySelectorAll(`[data-${config.filterPrefix}-suit]`).forEach((button) => {
         const suit = String(button.dataset[`${config.filterPrefix}Suit`] || "").toUpperCase();
