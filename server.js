@@ -620,6 +620,63 @@ app.put('/me', requireAuth, async (req, res) => {
   }
 });
 
+app.get('/plays/almanaque', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const { from, to } = req.query;
+
+    if (!from || !to) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Faltan parámetros from/to'
+      });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT
+        p.*,
+        creator.nickname AS created_by_nickname,
+        target.nickname AS target_user_nickname,
+        d.name AS deck_name
+      FROM plays p
+      LEFT JOIN users creator
+        ON creator.id = p.created_by_user_id
+      LEFT JOIN users target
+        ON target.id = p.target_user_id
+      LEFT JOIN decks d
+        ON d.id = p.deck_id
+      WHERE
+        (
+          -- J mías
+          (p.card_rank = 'J' AND p.created_by_user_id = $1)
+
+          OR
+
+          -- Q que recibí
+          (p.card_rank = 'Q' AND p.target_user_id = $1)
+        )
+        AND p.created_at::date BETWEEN $2 AND $3
+      ORDER BY p.created_at ASC, p.id ASC
+      `,
+      [userId, from, to]
+    );
+
+    return res.json({
+      ok: true,
+      plays: result.rows
+    });
+
+  } catch (error) {
+    console.error('Error en GET /plays/almanaque', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'Error obteniendo almanaque'
+    });
+  }
+});
+
 app.get('/plays/bitacora', requireAuth, async (req, res) => {
   try {
     const userId = req.auth.userId;
