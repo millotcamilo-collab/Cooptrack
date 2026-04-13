@@ -35,6 +35,15 @@
     }
   }
 
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   function renderJotasBody(items = []) {
     if (!items.length) {
       return "";
@@ -43,7 +52,19 @@
     return items.map((item) => {
       const symbol = getSuitSymbol(item.card_suit);
       const text = item.text || "";
-      return `<div class="dia__item">${symbol} ${text}</div>`;
+      const deckId = item.deck_id;
+      const href = deckId ? `/mazo.html?id=${encodeURIComponent(deckId)}` : "#";
+      const label = `${symbol} ${text}`;
+
+      return `
+      <a
+        class="dia__item-link"
+        href="${href}"
+        title="${escapeHtml(label)}"
+      >
+        ${escapeHtml(label)}
+      </a>
+    `;
     }).join("");
   }
 

@@ -58,11 +58,11 @@
 
     const jotasByDate = {
         [toYmd(new Date(today.getFullYear(), today.getMonth(), today.getDate()))]: [
-            { card_suit: "HEART", text: "Anotación" },
-            { card_suit: "SPADE", text: "Actividad" }
+            { card_suit: "HEART", text: "Anotación", deck_id: 1 },
+            { card_suit: "SPADE", text: "Actividad", deck_id: 1 }
         ],
         [toYmd(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2))]: [
-            { card_suit: "CLUB", text: "Bien" }
+            { card_suit: "CLUB", text: "Bien", deck_id: 1 }
         ]
     };
 
