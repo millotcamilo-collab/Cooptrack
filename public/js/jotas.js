@@ -43,7 +43,7 @@
       const currentUserId = getCurrentUserIdFromToken();
       if (!currentUserId) return [];
 
-      const response = await fetch(`${API_BASE_URL}/plays`, {
+      const response = await fetch(`${API_BASE_URL}/plays/bitacora`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`

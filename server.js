@@ -620,6 +620,45 @@ app.put('/me', requireAuth, async (req, res) => {
   }
 });
 
+app.get('/plays/bitacora', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const result = await pool.query(
+      `
+      SELECT
+        p.*,
+        creator.nickname AS created_by_nickname,
+        target.nickname AS target_user_nickname,
+        d.name AS deck_name
+      FROM plays p
+      LEFT JOIN users creator
+        ON creator.id = p.created_by_user_id
+      LEFT JOIN users target
+        ON target.id = p.target_user_id
+      LEFT JOIN decks d
+        ON d.id = p.deck_id
+      WHERE p.created_by_user_id = $1
+        AND p.card_rank = 'J'
+        AND p.card_suit IN ('HEART', 'SPADE', 'CLUB')
+      ORDER BY p.created_at DESC, p.id DESC
+      `,
+      [userId]
+    );
+
+    return res.json({
+      ok: true,
+      plays: result.rows,
+    });
+  } catch (error) {
+    console.error('Error en GET /plays/bitacora', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'Error obteniendo bitácora',
+    });
+  }
+});
+
 app.get('/plays/my-jotas', requireAuth, async (req, res) => {
   try {
     const userId = req.auth.userId;
@@ -1580,6 +1619,7 @@ app.delete('/plays/:id', requireAuth, async (req, res) => {
     client.release();
   }
 });
+
 app.get('/plays', requireAuth, async (req, res) => {
   try {
     const mazoId = Number(req.query.mazoId || req.query.deckId);
