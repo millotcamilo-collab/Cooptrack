@@ -49,20 +49,23 @@
       return "";
     }
 
+    const compactMode = items.length > 4;
+
     return items.map((item) => {
       const symbol = getSuitSymbol(item.card_suit);
       const text = item.text || "";
       const deckId = item.deck_id;
       const href = deckId ? `/mazo.html?id=${encodeURIComponent(deckId)}` : "#";
-      const label = `${symbol} ${text}`;
+      const fullLabel = `${symbol} ${text}`;
+      const visibleLabel = compactMode ? symbol : fullLabel;
 
       return `
       <a
-        class="dia__item-link"
+        class="dia__item-link ${compactMode ? "dia__item-link--compact" : ""}"
         href="${href}"
-        title="${escapeHtml(label)}"
+        title="${escapeHtml(fullLabel)}"
       >
-        ${escapeHtml(label)}
+        ${escapeHtml(visibleLabel)}
       </a>
     `;
     }).join("");
