@@ -35,42 +35,49 @@
     }
   }
 
-  function escapeHtml(value) {
-    return String(value || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function renderJotasBody(items = []) {
+  if (!items.length) {
+    return "";
   }
 
-  function renderJotasBody(items = []) {
-    if (!items.length) {
-      return "";
-    }
+  const compactMode = items.length > 4;
 
-    const compactMode = items.length > 4;
+  return items.map((item) => {
+    const suit = item.card_suit;
+    const symbol = getSuitSymbol(suit);
+    const text = item.text || "";
+    const deckName = item.deck_name || "";
+    const deckId = item.deck_id;
+    const href = deckId ? `/mazo.html?id=${encodeURIComponent(deckId)}` : "#";
 
-    return items.map((item) => {
-      const suit = item.card_suit;
-      const symbol = getSuitSymbol(suit);
-      const text = item.text || "";
-      const deckId = item.deck_id;
-      const href = deckId ? `/mazo.html?id=${encodeURIComponent(deckId)}` : "#";
-      const fullLabel = `${symbol} ${text}`;
-      const visibleLabel = compactMode ? symbol : fullLabel;
+    const visibleLabel = compactMode
+      ? symbol
+      : `${symbol} ${text}`;
 
-      return `
+    const tooltipLabel = deckName
+      ? `${text} — ${deckName}`
+      : text;
+
+    return `
       <a
         class="dia__item-link ${compactMode ? "dia__item-link--compact" : ""}"
         href="${href}"
-        title="${escapeHtml(fullLabel)}"
+        title="${escapeHtml(tooltipLabel)}"
       >
         ${escapeHtml(visibleLabel)}
       </a>
     `;
-    }).join("");
-  }
+  }).join("");
+}
 
   function renderSemana({
     mondayDate,
