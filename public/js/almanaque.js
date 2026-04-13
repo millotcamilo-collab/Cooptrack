@@ -27,6 +27,40 @@
         "DOMINGO"
     ];
 
+    function toYmd(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    }
+
+    function groupJotasByDate(jotas) {
+        const map = {};
+
+        jotas.forEach((jota) => {
+            const ymd = jota.ymd || jota.date || jota.start_date;
+            if (!ymd) return;
+
+            if (!map[ymd]) {
+                map[ymd] = [];
+            }
+
+            map[ymd].push(jota);
+        });
+
+        return map;
+    }
+
+    const jotasByDate = {
+        [toYmd(new Date(today.getFullYear(), today.getMonth(), today.getDate()))]: [
+            { card_suit: "HEART", text: "Anotación" },
+            { card_suit: "SPADE", text: "Actividad" }
+        ],
+        [toYmd(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2))]: [
+            { card_suit: "CLUB", text: "Bien" }
+        ]
+    };
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -74,6 +108,7 @@
                     currentDate,
                     today,
                     visibleMonth: month
+                    jotasByDate
                 })
             );
         }

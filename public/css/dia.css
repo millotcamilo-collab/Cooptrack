@@ -37,3 +37,12 @@
 .dia--outside-month {
   opacity: 0.45;
 }
+
+.dia__item {
+  font-size: 12px;
+  line-height: 1.2;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
