@@ -27,6 +27,59 @@
         "Domingo"
     ];
 
+    async function fetchAlmanaqueData(from, to) {
+        const token = localStorage.getItem("cooptrackToken");
+
+        const res = await fetch(
+            `/plays/almanaque?from=${from}&to=${to}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!res.ok) {
+            console.error("Error fetching almanaque", res.status);
+            return [];
+        }
+
+        const data = await res.json();
+        return data.plays || [];
+    }
+
+    function groupByYmd(plays) {
+        const map = {};
+
+        plays.forEach((p) => {
+            const date = new Date(p.created_at);
+            const ymd = toYmd(date);
+
+            if (!map[ymd]) {
+                map[ymd] = [];
+            }
+
+            map[ymd].push(p);
+        });
+
+        return map;
+    }
+
+    function getVisibleRange() {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
+        const firstDay = new Date(year, month, 1);
+        const firstMonday = getMondayOfWeek(firstDay);
+
+        const lastDay = addDays(firstMonday, 6 * 7 - 1); // 6 semanas
+
+        return {
+            from: toYmd(firstMonday),
+            to: toYmd(lastDay)
+        };
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -38,34 +91,6 @@
         const day = String(date.getDate()).padStart(2, "0");
         return `${year}-${month}-${day}`;
     }
-
-    function groupJotasByDate(jotas) {
-        const map = {};
-
-        jotas.forEach((jota) => {
-            const ymd = jota.ymd || jota.date || jota.start_date;
-            if (!ymd) return;
-
-            if (!map[ymd]) {
-                map[ymd] = [];
-            }
-
-            map[ymd].push(jota);
-        });
-
-        return map;
-    }
-
-    const jotasByDate = {
-        [toYmd(new Date(today.getFullYear(), today.getMonth(), today.getDate()))]: [
-            { card_rank: "J", card_suit: "HEART", text: "Anotación", deck_id: 1 },
-            { card_rank: "J", card_suit: "SPADE", text: "Actividad", deck_id: 1 },
-            { card_rank: "Q", card_suit: "SPADE", text: "Invitación", deck_id: 1 }
-        ],
-        [toYmd(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2))]: [
-            { card_rank: "J", card_suit: "CLUB", text: "Bien", deck_id: 1 }
-        ]
-    };
 
     function isSameDay(a, b) {
         return (
@@ -90,7 +115,7 @@
         return copy;
     }
 
-    function renderWeeks() {
+    function renderWeeks(jotasByDate) {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
 
@@ -172,17 +197,22 @@
         });
     }
 
-    function render() {
+    async function render() {
+        const { from, to } = getVisibleRange();
+
+        const plays = await fetchAlmanaqueData(from, to);
+        const jotasByDate = groupByYmd(plays);
+
         const monthsHtml = MONTHS.map((monthName, index) => {
             return `
-                <button
-                    type="button"
-                    class="${getMonthCellClass(index)} almanaque__month-btn"
-                    data-month="${index}"
-                >
-                    ${monthName}
-                </button>
-            `;
+            <button
+                type="button"
+                class="${getMonthCellClass(index)} almanaque__month-btn"
+                data-month="${index}"
+            >
+                ${monthName}
+            </button>
+        `;
         }).join("");
 
         const daysHtml = DAYS.map((dayName, index) => {
@@ -190,18 +220,18 @@
         }).join("");
 
         container.innerHTML = `
-            <section class="almanaque">
-                <div class="almanaque__months">
-                    ${monthsHtml}
-                </div>
+        <section class="almanaque">
+            <div class="almanaque__months">
+                ${monthsHtml}
+            </div>
 
-                <div class="almanaque__days">
-                    ${daysHtml}
-                </div>
+            <div class="almanaque__days">
+                ${daysHtml}
+            </div>
 
-                ${renderWeeks()}
-            </section>
-        `;
+            ${renderWeeks(jotasByDate)}
+        </section>
+    `;
 
         bindMonthButtons();
     }

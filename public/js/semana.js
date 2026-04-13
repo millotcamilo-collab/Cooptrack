@@ -52,13 +52,12 @@
     const compactMode = items.length > 4;
 
     return items.map((item) => {
-      const rank = item.card_rank || "J";
       const suit = item.card_suit;
       const symbol = getSuitSymbol(suit);
       const text = item.text || "";
       const deckId = item.deck_id;
       const href = deckId ? `/mazo.html?id=${encodeURIComponent(deckId)}` : "#";
-      const fullLabel = `${rank}${symbol} ${text}`;
+      const fullLabel = `${symbol} ${text}`;
       const visibleLabel = compactMode ? symbol : fullLabel;
 
       return `
