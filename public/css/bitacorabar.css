@@ -162,3 +162,30 @@
 .tablero-row--bitacora .tablero-row__right {
   min-width: 80px;
 }
+
+.bitacorabar__filter-btn {
+  padding: 2px 4px;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.bitacorabar__filter-btn:hover {
+  transform: scale(1.08);
+  opacity: 0.92;
+}
+
+.bitacorabar__filter-btn.is-active {
+  outline: 1px solid #999;
+  border-radius: 4px;
+  transform: scale(1.12);
+}
+
+.bitacorabar__filter-btn.is-active .mazobar__cmd-icon {
+  transform: scale(1.08);
+}
+
+.bitacorabar__filter-btn .mazobar__cmd-icon {
+  height: 18px;
+  width: auto;
+  transition: transform 0.15s ease;
+}

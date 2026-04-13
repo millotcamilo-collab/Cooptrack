@@ -71,7 +71,9 @@
             const text = String(play.play_text || play.text || "").toLowerCase();
             const deckName = String(play.deck_name || "").toLowerCase();
 
-            const suitOk = !activeSuitFilter || suit === activeSuitFilter;
+            const suitOk =
+                !activeSuitFilters.length ||
+                activeSuitFilters.includes(suit);
 
             const searchOk =
                 !activeSearchQuery ||
@@ -102,7 +104,7 @@
 
     let currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     let allPlays = [];
-    let activeSuitFilter = "";
+    let activeSuitFilters = [];
     let activeSearchQuery = "";
 
 
