@@ -144,13 +144,39 @@
   }
 
   function bindBitacorabarEvents(config) {
+    const activeSuits = new Set();
+
+    function syncSuitButtonsState() {
+      document.querySelectorAll(`[data-${config.filterPrefix}-suit]`).forEach((button) => {
+        const suit = String(button.dataset[`${config.filterPrefix}Suit`] || "").toUpperCase();
+
+        if (activeSuits.has(suit)) {
+          button.classList.add("is-active");
+        } else {
+          button.classList.remove("is-active");
+        }
+      });
+    }
+
     document.querySelectorAll(`[data-${config.filterPrefix}-suit]`).forEach((button) => {
       button.addEventListener("click", () => {
         const suit = String(button.dataset[`${config.filterPrefix}Suit`] || "").toUpperCase();
+        if (!suit) return;
+
+        if (activeSuits.has(suit)) {
+          activeSuits.delete(suit);
+        } else {
+          activeSuits.add(suit);
+        }
+
+        syncSuitButtonsState();
 
         document.dispatchEvent(
           new CustomEvent(config.filterEventName, {
-            detail: { suit }
+            detail: {
+              suit,
+              suits: Array.from(activeSuits)
+            }
           })
         );
       });
@@ -177,6 +203,8 @@
         runSearch();
       }
     });
+
+    syncSuitButtonsState();
   }
 
   function renderBitacorabar() {
