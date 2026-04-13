@@ -65,6 +65,23 @@
         return map;
     }
 
+    function applyFilters(plays) {
+        return plays.filter((play) => {
+            const suit = String(play.card_suit || "").toUpperCase();
+            const text = String(play.play_text || play.text || "").toLowerCase();
+            const deckName = String(play.deck_name || "").toLowerCase();
+
+            const suitOk = !activeSuitFilter || suit === activeSuitFilter;
+
+            const searchOk =
+                !activeSearchQuery ||
+                text.includes(activeSearchQuery.toLowerCase()) ||
+                deckName.includes(activeSearchQuery.toLowerCase());
+
+            return suitOk && searchOk;
+        });
+    }
+
     function getVisibleRange() {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
@@ -84,6 +101,10 @@
     today.setHours(0, 0, 0, 0);
 
     let currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    let allPlays = [];
+    let activeSuitFilter = "";
+    let activeSearchQuery = "";
+
 
     function toYmd(date) {
         const year = date.getFullYear();
@@ -199,9 +220,9 @@
 
     async function render() {
         const { from, to } = getVisibleRange();
-
-        const plays = await fetchAlmanaqueData(from, to);
-        const jotasByDate = groupByYmd(plays);
+        allPlays = await fetchAlmanaqueData(from, to);
+        const filteredPlays = applyFilters(allPlays);
+        const jotasByDate = groupByYmd(filteredPlays);
 
         const monthsHtml = MONTHS.map((monthName, index) => {
             return `
@@ -235,6 +256,17 @@
 
         bindMonthButtons();
     }
+
+    document.addEventListener("almanaque:filterSuit", (event) => {
+        const clickedSuit = String(event.detail?.suit || "").toUpperCase();
+
+        activeSuitFilter = activeSuitFilter === clickedSuit ? "" : clickedSuit;
+        render();
+    });
+    document.addEventListener("almanaque:search", (event) => {
+        activeSearchQuery = String(event.detail?.query || "").trim();
+        render();
+    });
 
     render();
 })();
