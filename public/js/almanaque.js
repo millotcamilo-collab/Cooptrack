@@ -261,10 +261,17 @@
 
     document.addEventListener("almanaque:filterSuit", (event) => {
         const clickedSuit = String(event.detail?.suit || "").toUpperCase();
+        if (!clickedSuit) return;
 
-        activeSuitFilter = activeSuitFilter === clickedSuit ? "" : clickedSuit;
+        if (activeSuitFilters.includes(clickedSuit)) {
+            activeSuitFilters = activeSuitFilters.filter((suit) => suit !== clickedSuit);
+        } else {
+            activeSuitFilters = [...activeSuitFilters, clickedSuit];
+        }
+
         render();
     });
+    
     document.addEventListener("almanaque:search", (event) => {
         activeSearchQuery = String(event.detail?.query || "").trim();
         render();
