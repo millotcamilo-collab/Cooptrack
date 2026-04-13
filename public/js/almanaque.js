@@ -18,14 +18,19 @@
     ];
 
     const DAYS = [
-        "LUNES",
-        "MARTES",
-        "MIÉRCOLES",
-        "JUEVES",
-        "VIERNES",
-        "SÁBADO",
-        "DOMINGO"
+        "Lunes",
+        "Martes",
+        "Miércoles",
+        "Jueves",
+        "Viernes",
+        "Sábado",
+        "Domingo"
     ];
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
     function toYmd(date) {
         const year = date.getFullYear();
@@ -60,11 +65,6 @@
             { card_suit: "CLUB", text: "Bien" }
         ]
     };
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
     function isSameDay(a, b) {
         return (
@@ -107,7 +107,7 @@
                     mondayDate,
                     currentDate,
                     today,
-                    visibleMonth: month
+                    visibleMonth: month,
                     jotasByDate
                 })
             );
