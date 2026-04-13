@@ -35,39 +35,43 @@
     }
   }
 
-function escapeHtml(value) {
-  return String(value || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function renderJotasBody(items = []) {
-  if (!items.length) {
-    return "";
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
-  const compactMode = items.length > 4;
+  function renderJotasBody(items = []) {
+    if (!items.length) {
+      return "";
+    }
 
-  return items.map((item) => {
-    const suit = item.card_suit;
-    const symbol = getSuitSymbol(suit);
-    const text = item.text || "";
-    const deckName = item.deck_name || "";
-    const deckId = item.deck_id;
-    const href = deckId ? `/mazo.html?id=${encodeURIComponent(deckId)}` : "#";
+    const compactMode = items.length > 4;
 
-    const visibleLabel = compactMode
-      ? symbol
-      : `${symbol} ${text}`;
+    return items.map((item) => {
+      const suit = item.card_suit;
+      const symbol = getSuitSymbol(suit);
+      const text =
+        item.text ||
+        item.play_text ||
+        item.description ||
+        "";
+      const deckName = item.deck_name || "";
+      const deckId = item.deck_id;
+      const href = deckId ? `/mazo.html?id=${encodeURIComponent(deckId)}` : "#";
 
-    const tooltipLabel = deckName
-      ? `${text} — ${deckName}`
-      : text;
+      const visibleLabel = compactMode
+        ? symbol
+        : `${symbol} ${text}`;
 
-    return `
+      const tooltipLabel = deckName
+        ? `${deckName} — ${text}`
+        : text;
+
+      return `
       <a
         class="dia__item-link ${compactMode ? "dia__item-link--compact" : ""}"
         href="${href}"
@@ -76,8 +80,8 @@ function renderJotasBody(items = []) {
         ${escapeHtml(visibleLabel)}
       </a>
     `;
-  }).join("");
-}
+    }).join("");
+  }
 
   function renderSemana({
     mondayDate,
