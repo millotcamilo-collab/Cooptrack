@@ -599,6 +599,164 @@
     return window.__currentUser || window.__currentState?.currentUser || null;
   }
 
+  function pad2(value) {
+    return String(value).padStart(2, "0");
+  }
+
+  function parseLocalDateTime(value) {
+    if (!value) return null;
+
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      return value;
+    }
+
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+
+      const onlyDateMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (onlyDateMatch) {
+        const year = Number(onlyDateMatch[1]);
+        const month = Number(onlyDateMatch[2]) - 1;
+        const day = Number(onlyDateMatch[3]);
+        return new Date(year, month, day);
+      }
+
+      const localDateTimeMatch = trimmed.match(
+        /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/
+      );
+      if (localDateTimeMatch) {
+        const year = Number(localDateTimeMatch[1]);
+        const month = Number(localDateTimeMatch[2]) - 1;
+        const day = Number(localDateTimeMatch[3]);
+        const hour = Number(localDateTimeMatch[4]);
+        const minute = Number(localDateTimeMatch[5]);
+        return new Date(year, month, day, hour, minute, 0, 0);
+      }
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return parsed;
+  }
+
+  function getSessionDateFromPlay(play) {
+    if (!play) return null;
+
+    const suit = normalizeSuit(play?.card_suit || play?.suit);
+    const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
+
+    if (suit === "SPADE" && spadeMode === "DEADLINE") {
+      return parseLocalDateTime(play?.end_date || play?.date || play?.created_at);
+    }
+
+    if (suit === "SPADE") {
+      return parseLocalDateTime(
+        play?.start_date ||
+        play?.scheduled_for ||
+        play?.play_date ||
+        play?.date ||
+        play?.created_at
+      );
+    }
+
+    return parseLocalDateTime(
+      play?.scheduled_for ||
+      play?.play_date ||
+      play?.date ||
+      play?.created_at
+    );
+  }
+
+  function formatSessionDayHeader(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+      return "—";
+    }
+
+    const weekdayMap = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+    const monthMap = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+    return `${weekdayMap[date.getDay()]} ${date.getDate()} ${monthMap[date.getMonth()]} ${date.getFullYear()}`;
+  }
+
+  function formatTimeLabel(value) {
+    const date = parseLocalDateTime(value);
+    if (!date) return "";
+
+    return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+  }
+
+  function renderSourceSessionDia(play) {
+    if (!play || typeof window.renderDia !== "function") {
+      return "";
+    }
+
+    const suit = normalizeSuit(play?.card_suit || play?.suit);
+    if (suit !== "SPADE") {
+      return "";
+    }
+
+    const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
+    const sessionDate = getSessionDateFromPlay(play);
+
+    if (!sessionDate) {
+      return "";
+    }
+
+    const clockIcon = "/assets/icons/reloj60.gif";
+    const bellIcon = "/assets/icons/campana60.gif";
+    const bombIcon = "/assets/icons/bombaRedonda60.gif";
+
+    let bodyHtml = "";
+
+    if (spadeMode === "DEADLINE") {
+      const endLabel = formatTimeLabel(play?.end_date);
+
+      bodyHtml = `
+      <div class="lienzo-session-dia__row">
+        <img
+          class="lienzo-session-dia__icon"
+          src="${bombIcon}"
+          alt="Deadline"
+        />
+        <span class="lienzo-session-dia__time">${escapeHtml(endLabel || "—")}</span>
+      </div>
+    `;
+    } else {
+      const startLabel = formatTimeLabel(play?.start_date);
+      const endLabel = formatTimeLabel(play?.end_date);
+
+      bodyHtml = `
+      <div class="lienzo-session-dia__row">
+        <img
+          class="lienzo-session-dia__icon"
+          src="${clockIcon}"
+          alt="Inicio"
+        />
+        <span class="lienzo-session-dia__time">${escapeHtml(startLabel || "—")}</span>
+
+        ${endLabel ? `
+          <img
+            class="lienzo-session-dia__icon"
+            src="${bellIcon}"
+            alt="Fin"
+          />
+          <span class="lienzo-session-dia__time">${escapeHtml(endLabel)}</span>
+        ` : ""}
+      </div>
+    `;
+    }
+
+    return `
+    <div class="lienzo-session-dia-wrap">
+      ${window.renderDia({
+      headerText: formatSessionDayHeader(sessionDate),
+      bodyHtml,
+      extraClass: "lienzo-session-dia"
+    })}
+    </div>
+  `;
+  }
+
   function renderSourcePlayerPanel(draft) {
     const user = getCurrentUser();
     const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
@@ -612,11 +770,8 @@
     const delivered =
       window.__lienzoAnimationState?.sourceCardDelivered === true;
 
-    const parentPlay = draft?.parentPlay || null;
-    const jContentHtml =
-      typeof window.renderJcontent === "function"
-        ? window.renderJcontent(parentPlay)
-        : "";
+    const parentPlay = getPlayById(play?.parent_play_id);
+    const sessionDiaHtml = renderSourceSessionDia(parentPlay);
 
     return `
     <section class="lienzo-panel lienzo-panel--source">
@@ -655,7 +810,7 @@
         </div>
       </div>
 
-      ${jContentHtml}
+      ${sessionDiaHtml}
 
       ${delivered
         ? `
@@ -668,7 +823,7 @@
     </section>
   `;
   }
-  
+
   function renderDraftCardPanel(draft) {
     const rank = normalizeRank(draft?.card_rank);
     const suit = normalizeSuit(draft?.card_suit);
