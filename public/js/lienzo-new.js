@@ -587,14 +587,22 @@
   function renderUsersPanel() {
     return `
     <section class="lienzo-panel lienzo-panel--users">
-      <div class="lienzo-panel__header">
-        <div class="lienzo-panel__subtitle">Seleccioná un destinatario</div>
+      <div class="lienzo-target-header">
+        <img
+          class="lienzo-target-header__photo"
+          src="/assets/icons/singeta120.gif"
+          alt="Destinatario"
+        />
+        <div class="lienzo-target-header__name">
+          Destinatario
+        </div>
       </div>
 
       <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
     </section>
   `;
   }
+
   function getCurrentUser() {
     return window.__currentUser || window.__currentState?.currentUser || null;
   }
