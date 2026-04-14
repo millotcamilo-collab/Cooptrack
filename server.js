@@ -639,7 +639,21 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
         p.*,
         creator.nickname AS created_by_nickname,
         target.nickname AS target_user_nickname,
-        d.name AS deck_name
+        d.name AS deck_name,
+
+        -- fecha calendario calculada
+        CASE
+          WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
+               AND UPPER(COALESCE(p.spade_mode, '')) = 'APPOINTMENT'
+            THEN p.start_date
+
+          WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
+               AND UPPER(COALESCE(p.spade_mode, '')) = 'DEADLINE'
+            THEN p.end_date
+
+          ELSE p.created_at
+        END AS calendar_date
+
       FROM plays p
       LEFT JOIN users creator
         ON creator.id = p.created_by_user_id
@@ -647,6 +661,7 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
         ON target.id = p.target_user_id
       LEFT JOIN decks d
         ON d.id = p.deck_id
+
       WHERE
         (
           -- J mías
@@ -657,8 +672,34 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
           -- Q que recibí
           (p.card_rank = 'Q' AND p.target_user_id = $1)
         )
-        AND p.created_at::date BETWEEN $2 AND $3
-      ORDER BY p.created_at ASC, p.id ASC
+
+        AND (
+          CASE
+            WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
+                 AND UPPER(COALESCE(p.spade_mode, '')) = 'APPOINTMENT'
+              THEN p.start_date::date
+
+            WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
+                 AND UPPER(COALESCE(p.spade_mode, '')) = 'DEADLINE'
+              THEN p.end_date::date
+
+            ELSE p.created_at::date
+          END
+        ) BETWEEN $2 AND $3
+
+      ORDER BY
+        CASE
+          WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
+               AND UPPER(COALESCE(p.spade_mode, '')) = 'APPOINTMENT'
+            THEN p.start_date
+
+          WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
+               AND UPPER(COALESCE(p.spade_mode, '')) = 'DEADLINE'
+            THEN p.end_date
+
+          ELSE p.created_at
+        END ASC,
+        p.id ASC
       `,
       [userId, from, to]
     );
