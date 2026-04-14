@@ -169,6 +169,83 @@ async function expandReadersForApprovedJHeart(client, deckId) {
   return normalizeReaderEntries(activeMemberUserIds);
 }
 
+async function getApprovedJHeartsByDeck(client, deckId) {
+  const result = await client.query(
+    `
+      SELECT id
+      FROM plays
+      WHERE deck_id = $1
+        AND card_rank = 'J'
+        AND card_suit = 'HEART'
+        AND UPPER(COALESCE(play_status, '')) = 'APPROVED'
+      ORDER BY id ASC
+    `,
+    [deckId]
+  );
+
+  return result.rows.map((row) => Number(row.id)).filter(Boolean);
+}
+
+async function getDeckTitleAHeartPlayId(client, deckId) {
+  const result = await client.query(
+    `
+      SELECT id
+      FROM plays
+      WHERE deck_id = $1
+        AND card_rank = 'A'
+        AND card_suit = 'HEART'
+      ORDER BY id ASC
+      LIMIT 1
+    `,
+    [deckId]
+  );
+
+  return result.rows[0] ? Number(result.rows[0].id) : null;
+}
+
+async function computeReadersForQSpade(client, deckId, authorUserId, invitedUserId) {
+  void client;
+  void deckId;
+
+  return normalizeReaderEntries([
+    authorUserId,
+    invitedUserId
+  ]);
+}
+
+async function expandReadersForQSpadeContext(
+  client,
+  {
+    deckId,
+    parentPlayId,
+    invitedUserId
+  } = {}
+) {
+  const invitedReaders = normalizeReaderEntries([invitedUserId]);
+
+  if (!invitedReaders.length) {
+    return;
+  }
+
+  // 1) J♠ madre
+  if (parentPlayId) {
+    await addReadersToPlay(client, parentPlayId, invitedReaders);
+  }
+
+  // 2) A♥ titular del mazo
+  const deckTitleAHeartPlayId = await getDeckTitleAHeartPlayId(client, deckId);
+  if (deckTitleAHeartPlayId) {
+    await addReadersToPlay(client, deckTitleAHeartPlayId, invitedReaders);
+  }
+
+  // 3) J♥ aprobadas del mazo
+  const approvedJHeartIds = await getApprovedJHeartsByDeck(client, deckId);
+
+  for (const playId of approvedJHeartIds) {
+    await addReadersToPlay(client, playId, invitedReaders);
+  }
+}
+
 module.exports = {
   normalizeReaderEntry,
   normalizeReaderEntries,
@@ -181,5 +258,9 @@ module.exports = {
   getActiveDeckMemberUserIds,
   computeReadersForNewJHeart,
   computeReadersForPendingJHeart,
-  expandReadersForApprovedJHeart
+  expandReadersForApprovedJHeart,
+  getApprovedJHeartsByDeck,
+  getDeckTitleAHeartPlayId,
+  computeReadersForQSpade,
+  expandReadersForQSpadeContext
 };

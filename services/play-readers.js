@@ -4,7 +4,9 @@ const {
   addReadersToPlay,
   computeReadersForNewJHeart,
   computeReadersForPendingJHeart,
-  expandReadersForApprovedJHeart
+  expandReadersForApprovedJHeart,
+  computeReadersForQSpade,
+  expandReadersForQSpadeContext
 } = require('./readers');
 
 /**
@@ -16,6 +18,8 @@ async function handleReadersOnPlayCreate(client, play) {
   const {
     id,
     deck_id,
+    parent_play_id,
+    target_user_id,
     created_by_user_id,
     card_rank,
     card_suit
@@ -31,11 +35,33 @@ async function handleReadersOnPlayCreate(client, play) {
     );
 
     await addReadersToPlay(client, id, readers);
+    return;
   }
 
-  // ⚠️ más adelante:
-  // if (card_rank === 'Q' && card_suit === 'SPADE') { ... }
-  // if (card_rank === 'K' && card_suit === 'HEART') { ... }
+  // --- Q♠ ---
+  if (card_rank === 'Q' && card_suit === 'SPADE') {
+    // 1) lectores base de la Q: anfitrión + invitado
+    const qReaders = await computeReadersForQSpade(
+      client,
+      deck_id,
+      created_by_user_id,
+      target_user_id
+    );
+
+    await addReadersToPlay(client, id, qReaders);
+
+    // 2) propagar contexto al invitado:
+    //    - J♠ madre
+    //    - A♥ titular del mazo
+    //    - J♥ aprobadas
+    await expandReadersForQSpadeContext(client, {
+      deckId: deck_id,
+      parentPlayId: parent_play_id,
+      invitedUserId: target_user_id
+    });
+
+    return;
+  }
 }
 
 /**

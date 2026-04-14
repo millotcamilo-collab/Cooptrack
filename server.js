@@ -99,6 +99,40 @@ async function userIsMazoMember(client, mazoId, userId) {
   return result.rows.length > 0;
 }
 
+async function getApprovedJHeartIdsByDeck(client, deckId) {
+  const result = await client.query(
+    `
+      SELECT id
+      FROM plays
+      WHERE deck_id = $1
+        AND card_rank = 'J'
+        AND card_suit = 'HEART'
+        AND UPPER(COALESCE(play_status, '')) = 'APPROVED'
+      ORDER BY id ASC
+    `,
+    [deckId]
+  );
+
+  return result.rows.map((row) => Number(row.id)).filter(Boolean);
+}
+
+async function getDeckTitleAHeartPlayId(client, deckId) {
+  const result = await client.query(
+    `
+      SELECT id
+      FROM plays
+      WHERE deck_id = $1
+        AND card_rank = 'A'
+        AND card_suit = 'HEART'
+      ORDER BY id ASC
+      LIMIT 1
+    `,
+    [deckId]
+  );
+
+  return result.rows[0] ? Number(result.rows[0].id) : null;
+}
+
 function buildPlayCode({
   mazoId,
   userId,
@@ -1552,11 +1586,12 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       });
     }
 
-    if (play_status === 'SENT') {
-      const rank = String(current.card_rank || '').toUpperCase();
-      const suit = String(current.card_suit || '').toUpperCase();
+    const currentRank = String(current.card_rank || '').trim().toUpperCase();
+    const currentSuit = String(current.card_suit || '').trim().toUpperCase();
+    const currentStatus = String(current.play_status || '').trim().toUpperCase();
 
-      if (!(rank === 'Q' && suit === 'SPADE')) {
+    if (play_status === 'SENT') {
+      if (!(currentRank === 'Q' && currentSuit === 'SPADE')) {
         return res.status(400).json({
           ok: false,
           error: 'Solo una Q♠ puede enviarse como invitación'
@@ -1600,7 +1635,9 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         ? String(spadeMode || '').trim() || null
         : current.spade_mode;
 
-    const result = await client.query(
+    await client.query('BEGIN');
+
+    const updateResult = await client.query(
       `
       UPDATE plays
       SET
@@ -1629,11 +1666,69 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       ]
     );
 
+    const updatedPlay = updateResult.rows[0];
+
+    const isSendingQSpadeNow =
+      currentRank === 'Q' &&
+      currentSuit === 'SPADE' &&
+      currentStatus !== 'SENT' &&
+      nextStatus === 'SENT';
+
+    if (isSendingQSpadeNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+      const authorUserId = Number(updatedPlay.created_by_user_id || 0);
+      const parentPlayId = Number(updatedPlay.parent_play_id || 0);
+      const deckId = Number(updatedPlay.deck_id || 0);
+
+      if (!invitedUserId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La Q♠ enviada debe tener target_user_id'
+        });
+      }
+
+      const invitedReader = [`U:${invitedUserId}`];
+      const baseQReaders = [`U:${authorUserId}`, `U:${invitedUserId}`];
+
+      // 1) La propia Q♠ la ven anfitrión + invitado
+      await addReadersToPlay(client, updatedPlay.id, baseQReaders);
+
+      // 2) La J♠ madre la ve el invitado
+      if (parentPlayId) {
+        await addReadersToPlay(client, parentPlayId, invitedReader);
+      }
+
+      // 3) La A♥ titular del mazo la ve el invitado
+      if (deckId) {
+        const deckTitleAHeartPlayId = await getDeckTitleAHeartPlayId(client, deckId);
+
+        if (deckTitleAHeartPlayId) {
+          await addReadersToPlay(client, deckTitleAHeartPlayId, invitedReader);
+        }
+
+        // 4) Las J♥ aprobadas del mazo las ve el invitado
+        const approvedJHeartIds = await getApprovedJHeartIdsByDeck(client, deckId);
+
+        for (const approvedPlayId of approvedJHeartIds) {
+          await addReadersToPlay(client, approvedPlayId, invitedReader);
+        }
+      }
+    }
+
+    await client.query('COMMIT');
+
     return res.json({
       ok: true,
-      play: result.rows[0]
+      play: updatedPlay
     });
   } catch (error) {
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackError) {
+      console.error('Error haciendo ROLLBACK en PATCH /plays/:id', rollbackError);
+    }
+
     console.error('Error en PATCH /plays/:id', error);
     return res.status(500).json({
       ok: false,
