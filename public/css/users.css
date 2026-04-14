@@ -27,7 +27,7 @@
 .users-picker__search-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 15px;
   flex-wrap: nowrap;
 }
 
@@ -57,6 +57,11 @@
   display: block;
   height: 32px;
   width: auto;
+  transition: transform 0.15s ease;
+}
+
+.users-picker__icon-btn:hover img {
+  transform: scale(1.15);
 }
 
 /* RESULTS */
