@@ -51,6 +51,20 @@
 
     for (const value of candidates) {
       if (!value) continue;
+
+      if (typeof value === "string") {
+        const trimmed = value.trim();
+
+        // Caso YYYY-MM-DD: parse local, no UTC
+        const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (match) {
+          const year = Number(match[1]);
+          const month = Number(match[2]) - 1;
+          const day = Number(match[3]);
+          return new Date(year, month, day);
+        }
+      }
+
       const parsed = new Date(value);
       if (!Number.isNaN(parsed.getTime())) {
         return parsed;

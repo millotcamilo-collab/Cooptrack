@@ -48,11 +48,79 @@
         return data.plays || [];
     }
 
+    function parseLocalDate(value) {
+        if (!value) return null;
+
+        if (typeof value === "string") {
+            const trimmed = value.trim();
+
+            // YYYY-MM-DD => parse local
+            const onlyDateMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (onlyDateMatch) {
+                const year = Number(onlyDateMatch[1]);
+                const month = Number(onlyDateMatch[2]) - 1;
+                const day = Number(onlyDateMatch[3]);
+                const localDate = new Date(year, month, day);
+                localDate.setHours(0, 0, 0, 0);
+                return localDate;
+            }
+
+            // YYYY-MM-DDTHH:mm => parse local
+            const localDateTimeMatch = trimmed.match(
+                /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
+            );
+            if (localDateTimeMatch) {
+                const year = Number(localDateTimeMatch[1]);
+                const month = Number(localDateTimeMatch[2]) - 1;
+                const day = Number(localDateTimeMatch[3]);
+                const hours = Number(localDateTimeMatch[4]);
+                const minutes = Number(localDateTimeMatch[5]);
+                return new Date(year, month, day, hours, minutes, 0, 0);
+            }
+        }
+
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return null;
+
+        return parsed;
+    }
+
+    function getPlayCalendarDate(play) {
+        const suit = String(play?.card_suit || play?.suit || "").toUpperCase();
+        const spadeMode = String(play?.spade_mode || "").toUpperCase();
+
+        let selectedValue = null;
+
+        if (suit === "SPADE") {
+            if (spadeMode === "APPOINTMENT") {
+                selectedValue = play?.start_date || play?.created_at;
+            } else if (spadeMode === "DEADLINE") {
+                selectedValue = play?.end_date || play?.created_at;
+            } else {
+                selectedValue =
+                    play?.start_date ||
+                    play?.end_date ||
+                    play?.created_at;
+            }
+        } else {
+            selectedValue = play?.created_at;
+        }
+
+        return parseLocalDate(selectedValue);
+    }
+
+    function getPlayCalendarTime(play) {
+        const date = getPlayCalendarDate(play);
+        return date ? date.getTime() : Number.POSITIVE_INFINITY;
+    }
+
     function groupByYmd(plays) {
         const map = {};
 
         plays.forEach((p) => {
-            const date = new Date(p.created_at);
+            const date = getPlayCalendarDate(p);
+            if (!date) return;
+
             const ymd = toYmd(date);
 
             if (!map[ymd]) {
@@ -224,9 +292,7 @@
         if (!plays.length) return null;
 
         const sorted = [...plays].sort((a, b) => {
-            const dateA = new Date(a.created_at).getTime();
-            const dateB = new Date(b.created_at).getTime();
-            return dateA - dateB;
+            return getPlayCalendarTime(a) - getPlayCalendarTime(b);
         });
 
         return sorted[0];
@@ -238,10 +304,10 @@
         let filteredPlays = applyFilters(allPlays);
 
         if (activeSearchQuery && filteredPlays.length) {
-            const firstMatch = getFirstChronologicalMatch(filteredPlays);
+             const firstMatchDate = getPlayCalendarDate(firstMatch);
 
             if (firstMatch?.created_at) {
-                currentDate = new Date(firstMatch.created_at);
+                currentDate = new Date(firstMatchDate);
                 currentDate.setHours(0, 0, 0, 0);
 
                 const nextRange = getVisibleRange();
