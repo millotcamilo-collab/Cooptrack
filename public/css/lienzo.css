@@ -588,6 +588,39 @@ body {
   min-width: 0;
 }
 
+#amsterdam .lienzo-panel--target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.lienzo-week-row-wrap {
+  width: 100%;
+  max-width: 560px;
+}
+
+.lienzo-week-row__title {
+  margin-bottom: 8px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.lienzo-week-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lienzo-weekday .dia__header,
+.lienzo-weekday .dia__body {
+  text-align: center;
+}
+
+.lienzo-weekday__number {
+  font-weight: 700;
+}
+
 @media (max-width: 900px) {
   .lienzo-grid {
     grid-template-columns: 1fr;
@@ -597,3 +630,5 @@ body {
     width: 180px;
   }
 }
+
+

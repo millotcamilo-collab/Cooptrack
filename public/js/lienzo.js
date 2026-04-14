@@ -35,6 +35,89 @@
     );
   }
 
+  function parsePlayReferenceDate(play) {
+    const parentPlay = getPlayById(play?.parent_play_id);
+
+    const candidates = [
+      parentPlay?.scheduled_for,
+      parentPlay?.play_date,
+      parentPlay?.date,
+      parentPlay?.created_at,
+      play?.scheduled_for,
+      play?.play_date,
+      play?.date,
+      play?.created_at
+    ];
+
+    for (const value of candidates) {
+      if (!value) continue;
+      const parsed = new Date(value);
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+
+    return new Date();
+  }
+
+  function startOfWeek(date) {
+    const base = new Date(date);
+    const day = base.getDay();
+    const diff = (day + 6) % 7; // lunes = inicio
+    base.setHours(0, 0, 0, 0);
+    base.setDate(base.getDate() - diff);
+    return base;
+  }
+
+  function isSameDay(a, b) {
+    return (
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+    );
+  }
+
+  function renderWeekRow(referenceDate) {
+    const start = startOfWeek(referenceDate);
+    const labels = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const daysHtml = labels.map((label, index) => {
+      const currentDate = new Date(start);
+      currentDate.setDate(start.getDate() + index);
+
+      const bodyHtml = `<div class="lienzo-weekday__number">${currentDate.getDate()}</div>`;
+
+      if (typeof window.renderDia === "function") {
+        return window.renderDia({
+          headerText: label,
+          bodyHtml,
+          isCurrent: isSameDay(currentDate, referenceDate),
+          isToday: isSameDay(currentDate, today),
+          isOutsideMonth: currentDate.getMonth() !== referenceDate.getMonth(),
+          extraClass: "lienzo-weekday"
+        });
+      }
+
+      return `
+        <article class="dia lienzo-weekday">
+          <div class="dia__header">${label}</div>
+          <div class="dia__body">${bodyHtml}</div>
+        </article>
+      `;
+    }).join("");
+
+    return `
+      <section class="lienzo-week-row-wrap">
+        <div class="lienzo-week-row__title">Semana</div>
+        <div class="lienzo-week-row">
+          ${daysHtml}
+        </div>
+      </section>
+    `;
+  }
+
   function getCurrentUser() {
     return window.__currentUser || null;
   }
@@ -540,6 +623,8 @@
             alt=""
           />
         </div>
+
+        ${renderWeekRow(parsePlayReferenceDate(play))}
 
         ${showActionsHere ? renderTargetActions() : ""}
       </section>
