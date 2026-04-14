@@ -652,4 +652,35 @@ body {
   }
 }
 
+.lienzo-session-dia-wrap {
+  width: 100%;
+  max-width: 320px;
+  margin-top: 14px;
+}
+
+.lienzo-session-dia .dia__header {
+  font-weight: 700;
+}
+
+.lienzo-session-dia .dia__body {
+  padding-top: 8px;
+}
+
+.lienzo-session-dia__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lienzo-session-dia__icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+}
+
+.lienzo-session-dia__time {
+  font-weight: 600;
+}
 
