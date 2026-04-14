@@ -615,13 +615,24 @@ body {
   gap: 8px;
 }
 
-.lienzo-weekday .dia__header,
+.lienzo-weekday .dia__header {
+  text-align: center;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .lienzo-weekday .dia__body {
   display: none;
 }
 
 .lienzo-weekday__number {
   font-weight: 700;
+}
+
+.lienzo-weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .lienzo-weekday--compact {
