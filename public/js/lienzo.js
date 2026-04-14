@@ -35,43 +35,99 @@
     );
   }
 
-  function parsePlayReferenceDate(play) {
-    const parentPlay = getPlayById(play?.parent_play_id);
+  function parseLocalReferenceDate(value) {
+    if (!value) return null;
 
-    const candidates = [
-      parentPlay?.scheduled_for,
-      parentPlay?.play_date,
-      parentPlay?.date,
-      parentPlay?.created_at,
-      play?.scheduled_for,
-      play?.play_date,
-      play?.date,
-      play?.created_at
-    ];
+    if (typeof value === "string") {
+      const trimmed = value.trim();
 
-    for (const value of candidates) {
-      if (!value) continue;
-
-      if (typeof value === "string") {
-        const trimmed = value.trim();
-
-        // Caso YYYY-MM-DD: parse local, no UTC
-        const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-        if (match) {
-          const year = Number(match[1]);
-          const month = Number(match[2]) - 1;
-          const day = Number(match[3]);
-          return new Date(year, month, day);
-        }
+      const onlyDateMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (onlyDateMatch) {
+        const year = Number(onlyDateMatch[1]);
+        const month = Number(onlyDateMatch[2]) - 1;
+        const day = Number(onlyDateMatch[3]);
+        return new Date(year, month, day);
       }
 
-      const parsed = new Date(value);
-      if (!Number.isNaN(parsed.getTime())) {
-        return parsed;
+      const localDateTimeMatch = trimmed.match(
+        /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
+      );
+      if (localDateTimeMatch) {
+        const year = Number(localDateTimeMatch[1]);
+        const month = Number(localDateTimeMatch[2]) - 1;
+        const day = Number(localDateTimeMatch[3]);
+        const hour = Number(localDateTimeMatch[4]);
+        const minute = Number(localDateTimeMatch[5]);
+        return new Date(year, month, day, hour, minute, 0, 0);
       }
     }
 
-    return new Date();
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return null;
+
+    return parsed;
+  }
+
+  function resolveCalendarDateFromPlay(play) {
+    if (!play) return null;
+
+    const suit = normalizeSuit(play?.card_suit || play?.suit);
+    const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
+
+    let candidates = [];
+
+    if (suit === "SPADE") {
+      if (spadeMode === "APPOINTMENT") {
+        candidates = [
+          play?.start_date,
+          play?.scheduled_for,
+          play?.play_date,
+          play?.date,
+          play?.created_at
+        ];
+      } else if (spadeMode === "DEADLINE") {
+        candidates = [
+          play?.end_date,
+          play?.scheduled_for,
+          play?.play_date,
+          play?.date,
+          play?.created_at
+        ];
+      } else {
+        candidates = [
+          play?.start_date,
+          play?.end_date,
+          play?.scheduled_for,
+          play?.play_date,
+          play?.date,
+          play?.created_at
+        ];
+      }
+    } else {
+      candidates = [
+        play?.scheduled_for,
+        play?.play_date,
+        play?.date,
+        play?.created_at
+      ];
+    }
+
+    for (const value of candidates) {
+      const parsed = parseLocalReferenceDate(value);
+      if (parsed) return parsed;
+    }
+
+    return null;
+  }
+
+  function parsePlayReferenceDate(play) {
+    const parentPlay = getPlayById(play?.parent_play_id);
+
+    return (
+      resolveCalendarDateFromPlay(parentPlay) ||
+      resolveCalendarDateFromPlay(play) ||
+      new Date()
+    );
   }
 
   function startOfWeek(date) {
