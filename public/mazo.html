@@ -215,7 +215,14 @@
         const status = String(play?.play_status || "").toUpperCase();
         const action = String(parts[5] || "").toLowerCase();
 
-        if (status !== "ACTIVE") return false;
+        if (
+          status === "CANCELLED" ||
+          status === "DELETED" ||
+          status === "REJECTED"
+        ) {
+          return false;
+        }
+
         if (action === "init_ace" || action === "puedejugar") return false;
 
         return rank === "J" || rank === "Q";
