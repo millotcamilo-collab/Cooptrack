@@ -603,19 +603,35 @@ body {
   max-width: 560px;
 }
 
-.lienzo-week-row__title {
-  margin-bottom: 8px;
-  font-weight: 700;
-  text-align: center;
-}
-
 .lienzo-week-row {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
 }
 
+.lienzo-weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
 .lienzo-weekday .dia__header {
+  text-align: center;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lienzo-weekday {
+  display: block;
+  min-width: 0;
+}
+
+.lienzo-weekday .dia__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
   text-align: center;
   font-weight: 700;
   white-space: nowrap;
@@ -625,19 +641,6 @@ body {
   display: none;
 }
 
-.lienzo-weekday__number {
-  font-weight: 700;
-}
-
-.lienzo-weekday {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.lienzo-weekday--compact {
-  min-height: 54px;
-}
 
 @media (max-width: 900px) {
   .lienzo-grid {
