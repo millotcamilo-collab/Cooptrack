@@ -87,16 +87,16 @@
       const currentDate = new Date(start);
       currentDate.setDate(start.getDate() + index);
 
-      const bodyHtml = `<div class="lienzo-weekday__number">${currentDate.getDate()}</div>`;
+      const bodyHtml = "";
 
       if (typeof window.renderDia === "function") {
         return window.renderDia({
-          headerText: label,
+          headerText: `${label} ${currentDate.getDate()}`,
           bodyHtml,
           isCurrent: isSameDay(currentDate, referenceDate),
           isToday: isSameDay(currentDate, today),
           isOutsideMonth: currentDate.getMonth() !== referenceDate.getMonth(),
-          extraClass: "lienzo-weekday"
+          extraClass: "lienzo-weekday lienzo-weekday--compact"
         });
       }
 
@@ -110,7 +110,6 @@
 
     return `
       <section class="lienzo-week-row-wrap">
-        <div class="lienzo-week-row__title">Semana</div>
         <div class="lienzo-week-row">
           ${daysHtml}
         </div>

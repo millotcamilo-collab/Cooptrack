@@ -588,6 +588,9 @@ body {
   min-width: 0;
 }
 
+
+/* semana */
+
 #amsterdam .lienzo-panel--target {
   display: flex;
   flex-direction: column;
@@ -614,11 +617,15 @@ body {
 
 .lienzo-weekday .dia__header,
 .lienzo-weekday .dia__body {
-  text-align: center;
+  display: none;
 }
 
 .lienzo-weekday__number {
   font-weight: 700;
+}
+
+.lienzo-weekday--compact {
+  min-height: 54px;
 }
 
 @media (max-width: 900px) {
