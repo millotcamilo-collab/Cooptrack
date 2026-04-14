@@ -739,26 +739,40 @@
     } else {
       const startLabel = formatTimeLabel(play?.start_date);
       const endLabel = formatTimeLabel(play?.end_date);
+      const location = String(play?.location || "").trim();
 
       bodyHtml = `
+    <div class="lienzo-session-dia__row">
+      <img
+        class="lienzo-session-dia__icon"
+        src="${clockIcon}"
+        alt="Inicio"
+      />
+      <span class="lienzo-session-dia__time">${escapeHtml(startLabel || "—")}</span>
+
+      ${endLabel ? `
+        <img
+          class="lienzo-session-dia__icon"
+          src="${bellIcon}"
+          alt="Fin"
+        />
+        <span class="lienzo-session-dia__time">${escapeHtml(endLabel)}</span>
+      ` : ""}
+    </div>
+
+    ${location ? `
       <div class="lienzo-session-dia__row">
         <img
           class="lienzo-session-dia__icon"
-          src="${clockIcon}"
-          alt="Inicio"
+          src="/assets/icons/LocGlobito.gif"
+          alt="Lugar"
         />
-        <span class="lienzo-session-dia__time">${escapeHtml(startLabel || "—")}</span>
-
-        ${endLabel ? `
-          <img
-            class="lienzo-session-dia__icon"
-            src="${bellIcon}"
-            alt="Fin"
-          />
-          <span class="lienzo-session-dia__time">${escapeHtml(endLabel)}</span>
-        ` : ""}
+        <span class="lienzo-session-dia__location">
+          ${escapeHtml(location)}
+        </span>
       </div>
-    `;
+    ` : ""}
+  `;
     }
 
     return `
