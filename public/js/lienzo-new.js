@@ -702,63 +702,70 @@
       return "";
     }
 
-    const clockIcon = "/assets/icons/reloj60.gif";
-    const bellIcon = "/assets/icons/campana60.gif";
-    const bombIcon = "/assets/icons/bombaRedonda60.gif";
-
     let bodyHtml = "";
 
     if (spadeMode === "DEADLINE") {
-  const endLabel = formatTimeLabel(play?.end_date);
+      const endLabel = formatTimeLabel(play?.end_date);
 
-  bodyHtml = `
-    <div class="lienzo-session-dia__row">
-      <img
-        class="lienzo-session-dia__icon"
-        src="/assets/icons/bombaRedonda60.gif"
-        alt="Deadline"
-      />
-      <span class="lienzo-session-dia__time">${escapeHtml(endLabel || "—")}</span>
-    </div>
-  `;
-} else {
-  const startLabel = formatTimeLabel(play?.start_date);
-  const endLabel = formatTimeLabel(play?.end_date);
-  const location = String(play?.location || "").trim();
-
-  bodyHtml = `
-    <div class="lienzo-session-dia__row">
-      <img
-        class="lienzo-session-dia__icon"
-        src="/assets/icons/reloj60.gif"
-        alt="Inicio"
-      />
-      <span class="lienzo-session-dia__time">${escapeHtml(startLabel || "—")}</span>
-
-      ${endLabel ? `
-        <img
-          class="lienzo-session-dia__icon"
-          src="/assets/icons/campana60.gif"
-          alt="Fin"
-        />
-        <span class="lienzo-session-dia__time">${escapeHtml(endLabel)}</span>
-      ` : ""}
-    </div>
-
-    ${location ? `
+      bodyHtml = `
       <div class="lienzo-session-dia__row">
         <img
           class="lienzo-session-dia__icon"
-          src="/assets/icons/LocGlobito.gif"
-          alt="Lugar"
+          src="/assets/icons/bombaRedonda60.gif"
+          alt="Deadline"
         />
-        <span class="lienzo-session-dia__location">
-          ${escapeHtml(location)}
-        </span>
+        <span class="lienzo-session-dia__time">${escapeHtml(endLabel || "—")}</span>
       </div>
-    ` : ""}
+    `;
+    } else {
+      const startLabel = formatTimeLabel(play?.start_date);
+      const endLabel = formatTimeLabel(play?.end_date);
+      const location = String(play?.location || "").trim();
+
+      bodyHtml = `
+      <div class="lienzo-session-dia__row">
+        <img
+          class="lienzo-session-dia__icon"
+          src="/assets/icons/reloj60.gif"
+          alt="Inicio"
+        />
+        <span class="lienzo-session-dia__time">${escapeHtml(startLabel || "—")}</span>
+
+        ${endLabel ? `
+          <img
+            class="lienzo-session-dia__icon"
+            src="/assets/icons/campana60.gif"
+            alt="Fin"
+          />
+          <span class="lienzo-session-dia__time">${escapeHtml(endLabel)}</span>
+        ` : ""}
+      </div>
+
+      ${location ? `
+        <div class="lienzo-session-dia__row">
+          <img
+            class="lienzo-session-dia__icon"
+            src="/assets/icons/LocGlobito.gif"
+            alt="Lugar"
+          />
+          <span class="lienzo-session-dia__location">
+            ${escapeHtml(location)}
+          </span>
+        </div>
+      ` : ""}
+    `;
+    }
+
+    return `
+    <div class="lienzo-session-dia-wrap">
+      ${window.renderDia({
+      headerText: formatSessionDayHeader(sessionDate),
+      bodyHtml,
+      extraClass: "lienzo-session-dia"
+    })}
+    </div>
   `;
-}
+  }
 
   function renderSourcePlayerPanel(draft) {
     const user = getCurrentUser();
