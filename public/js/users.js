@@ -518,7 +518,7 @@ function renderUsersPicker(containerId, options = {}) {
     <div class="users-picker__top">
       <img
         class="users-picker__people-icon"
-        src="${escapeHtml(options.peopleIcon || "/assets/icons/Gente120.gif")}"
+        src="${escapeHtml(options.peopleIcon || "/assets/icons/GenteGris.gif")}"
         alt="Usuarios"
       />
 

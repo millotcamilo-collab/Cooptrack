@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 10px;
   padding: 8px;
-  border: 1px dotted #999;
+  border: none;
   background: none;
   font-family: Arial, sans-serif;
 }
