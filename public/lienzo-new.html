@@ -1,174 +1,180 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CoopTrack · Lienzo New</title>
-    <link rel="icon" type="image/png" href="/assets/icons/bigote.png" />
 
-    <link rel="stylesheet" href="/css/global.css" />
-    <link rel="stylesheet" href="/css/topbar.css" />
-    <link rel="stylesheet" href="/css/lienzo.css" />
-    <link rel="stylesheet" href="/css/users.css" />
-    <link rel="stylesheet" href="/css/placard.css" />
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoopTrack · Lienzo New</title>
+  <link rel="icon" type="image/png" href="/assets/icons/bigote.png" />
 
-  <body>
-    <div id="topbar-container"></div>
-  
-    <main class="lienzo-page">
-      <div class="page-container">
-        <section class="lienzo-page__body">
-          <div id="lienzo-container"></div>
-        </section>
-      </div>
-    </main>
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="/css/topbar.css" />
+  <link rel="stylesheet" href="/css/lienzo.css" />
+  <link rel="stylesheet" href="/css/users.css" />
+  <link rel="stylesheet" href="/css/placard.css" />
+  <link rel="stylesheet" href="/css/dia.css" />
+  <link rel="stylesheet" href="/css/almanaque.css" />
 
-    <script src="/js/icons.js"></script>
-    <script src="/js/topbar.js"></script>
-    <script src="/js/users.js"></script>
-    <script src="/js/placard.js"></script>
-    <script src="/js/Jcontent.js"></script>
-    <script src="/js/lienzo-new.js"></script>
+</head>
 
-    <script>
-      (function () {
-        function getQueryParam(name) {
-          const params = new URLSearchParams(window.location.search);
-          return params.get(name);
+<body>
+  <div id="topbar-container"></div>
+
+  <main class="lienzo-page">
+    <div class="page-container">
+      <section class="lienzo-page__body">
+        <div id="lienzo-container"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/js/icons.js"></script>
+  <script src="/js/topbar.js"></script>
+  <script src="/js/users.js"></script>
+  <script src="/js/placard.js"></script>
+  <script src="/js/Jcontent.js"></script>
+  <script src="/js/dia.js"></script>
+  <script src="/js/lienzo-new.js"></script>
+
+  <script>
+    (function () {
+      function getQueryParam(name) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(name);
+      }
+
+      function getToken() {
+        return localStorage.getItem("cooptrackToken");
+      }
+
+      function getStoredUser() {
+        try {
+          return JSON.parse(localStorage.getItem("cooptrackUser") || "null");
+        } catch (error) {
+          console.warn("No se pudo leer cooptrackUser desde localStorage", error);
+          return null;
+        }
+      }
+
+      async function fetchDeckState(deckId) {
+        const token = getToken();
+
+        if (!token) {
+          throw new Error("Token no encontrado");
         }
 
-        function getToken() {
-          return localStorage.getItem("cooptrackToken");
+        const response = await fetch(`/mazo/${deckId}/state`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("No se pudo cargar el estado del mazo");
         }
 
-        function getStoredUser() {
-          try {
-            return JSON.parse(localStorage.getItem("cooptrackUser") || "null");
-          } catch (error) {
-            console.warn("No se pudo leer cooptrackUser desde localStorage", error);
-            return null;
-          }
+        return response.json();
+      }
+
+      async function fetchMe() {
+        const token = getToken();
+
+        if (!token) {
+          throw new Error("Token no encontrado");
         }
 
-        async function fetchDeckState(deckId) {
-          const token = getToken();
-
-          if (!token) {
-            throw new Error("Token no encontrado");
+        const response = await fetch("/me", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`
           }
+        });
 
-          const response = await fetch(`/mazo/${deckId}/state`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
-
-          if (!response.ok) {
-            throw new Error("No se pudo cargar el estado del mazo");
-          }
-
-          return response.json();
+        if (!response.ok) {
+          throw new Error("No se pudo cargar el usuario actual");
         }
 
-        async function fetchMe() {
-          const token = getToken();
+        return response.json();
+      }
 
-          if (!token) {
-            throw new Error("Token no encontrado");
-          }
+      async function initTopbar() {
+        if (typeof window.renderTopbar !== "function") return;
+        await window.renderTopbar();
+      }
 
-          const response = await fetch("/me", {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
+      async function resolveCurrentUser(state) {
+        const userFromState =
+          state?.currentUser ||
+          state?.viewer ||
+          null;
 
-          if (!response.ok) {
-            throw new Error("No se pudo cargar el usuario actual");
-          }
-
-          return response.json();
+        if (userFromState) {
+          return userFromState;
         }
 
-        async function initTopbar() {
-          if (typeof window.renderTopbar !== "function") return;
-          await window.renderTopbar();
+        const storedUser = getStoredUser();
+        if (storedUser) {
+          return storedUser;
         }
 
-        async function resolveCurrentUser(state) {
-          const userFromState =
-            state?.currentUser ||
-            state?.viewer ||
-            null;
-
-          if (userFromState) {
-            return userFromState;
-          }
-
-          const storedUser = getStoredUser();
-          if (storedUser) {
-            return storedUser;
-          }
-
-          try {
-            const meResponse = await fetchMe();
-            return meResponse?.user || meResponse || null;
-          } catch (error) {
-            console.warn("No se pudo cargar /me", error);
-            return null;
-          }
+        try {
+          const meResponse = await fetchMe();
+          return meResponse?.user || meResponse || null;
+        } catch (error) {
+          console.warn("No se pudo cargar /me", error);
+          return null;
         }
+      }
 
-        async function bootstrapLienzoNewPage() {
-          try {
-            await initTopbar();
+      async function bootstrapLienzoNewPage() {
+        try {
+          await initTopbar();
 
-            const deckId = Number(
-              getQueryParam("deckId") || getQueryParam("id") || 0
-            );
+          const deckId = Number(
+            getQueryParam("deckId") || getQueryParam("id") || 0
+          );
 
-            if (!deckId) {
-              console.warn("Falta deckId en la URL");
-              return;
-            }
+          if (!deckId) {
+            console.warn("Falta deckId en la URL");
+            return;
+          }
 
-            const stateResponse = await fetchDeckState(deckId);
-            const state = stateResponse?.state || stateResponse || {};
-            const currentUser = await resolveCurrentUser(state);
+          const stateResponse = await fetchDeckState(deckId);
+          const state = stateResponse?.state || stateResponse || {};
+          const currentUser = await resolveCurrentUser(state);
 
-            window.__currentState = state;
-            window.__currentDeck = state?.deck || state?.mazo || state || {};
-            window.__currentUser = currentUser;
+          window.__currentState = state;
+          window.__currentDeck = state?.deck || state?.mazo || state || {};
+          window.__currentUser = currentUser;
 
-            console.log("stateResponse =", stateResponse);
-            console.log("state =", state);
-            console.log("window.__currentDeck =", window.__currentDeck);
-            console.log("window.__currentUser =", window.__currentUser);
+          console.log("stateResponse =", stateResponse);
+          console.log("state =", state);
+          console.log("window.__currentDeck =", window.__currentDeck);
+          console.log("window.__currentUser =", window.__currentUser);
 
-            if (typeof window.openNewLienzo === "function") {
-              window.openNewLienzo();
-            } else {
-              console.warn("openNewLienzo no está disponible");
-            }
-          } catch (error) {
-            console.error("Error iniciando lienzo-new.html", error);
+          if (typeof window.openNewLienzo === "function") {
+            window.openNewLienzo();
+          } else {
+            console.warn("openNewLienzo no está disponible");
+          }
+        } catch (error) {
+          console.error("Error iniciando lienzo-new.html", error);
 
-            const container = document.getElementById("lienzo-container");
-            if (container) {
-              container.innerHTML = `
+          const container = document.getElementById("lienzo-container");
+          if (container) {
+            container.innerHTML = `
                 <div class="lienzo-error">
                   No se pudo cargar el lienzo nuevo.
                 </div>
               `;
-            }
           }
         }
+      }
 
-        document.addEventListener("DOMContentLoaded", bootstrapLienzoNewPage);
-      })();
-    </script>
-  </body>
+      document.addEventListener("DOMContentLoaded", bootstrapLienzoNewPage);
+    })();
+  </script>
+</body>
+
 </html>
