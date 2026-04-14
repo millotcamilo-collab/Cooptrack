@@ -770,7 +770,7 @@
     const delivered =
       window.__lienzoAnimationState?.sourceCardDelivered === true;
 
-    const parentPlay = getPlayById(play?.parent_play_id);
+    const parentPlay = draft?.parentPlay || null;
     const sessionDiaHtml = renderSourceSessionDia(parentPlay);
 
     return `
