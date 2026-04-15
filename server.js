@@ -18,6 +18,7 @@ const {
 
 const {
   setPlayReaders,
+  addReadersToPlay,
 } = require('./services/readers');
 
 app.use(cors({
@@ -82,6 +83,34 @@ function mapUserCategory(user) {
   };
 }
 
+function normalizeReaders(rawReaders) {
+  if (!Array.isArray(rawReaders)) return [];
+
+  return [...new Set(
+    rawReaders
+      .map((item) => String(item || '').trim())
+      .filter(Boolean)
+      .map((item) => item.toUpperCase() === 'TODOS' ? 'TODOS' : item)
+  )];
+}
+
+function buildReadersVisibilityWhereClause({
+  readersColumn = 'p.reader_user_ids',
+  userIdParamIndex,
+}) {
+  return `
+    (
+      ${readersColumn} IS NULL
+      OR jsonb_typeof(${readersColumn}) <> 'array'
+      OR jsonb_array_length(${readersColumn}) = 0
+      OR ${readersColumn} ? 'TODOS'
+      OR ${readersColumn} ? $${userIdParamIndex}
+      OR ${readersColumn} ? $${userIdParamIndex + 1}
+    )
+  `;
+}
+
+
 // =====================================================
 // HELPERS DE MAZO
 // =====================================================
@@ -99,7 +128,7 @@ async function userIsMazoMember(client, mazoId, userId) {
   return result.rows.length > 0;
 }
 
-async function getApprovedJHeartIdsByDeck(client, deckId) {
+async function getApprovedJHeartsByDeck(client, deckId) {
   const result = await client.query(
     `
       SELECT id
@@ -657,7 +686,6 @@ app.put('/me', requireAuth, async (req, res) => {
 app.get('/plays/almanaque', requireAuth, async (req, res) => {
   try {
     const userId = req.auth.userId;
-
     const { from, to } = req.query;
 
     if (!from || !to) {
@@ -667,6 +695,11 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
       });
     }
 
+    const visibilityWhere = buildReadersVisibilityWhereClause({
+      readersColumn: 'p.reader_user_ids',
+      userIdParamIndex: 1,
+    });
+
     const result = await pool.query(
       `
       SELECT
@@ -675,7 +708,6 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
         target.nickname AS target_user_nickname,
         d.name AS deck_name,
 
-        -- fecha calendario calculada
         CASE
           WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
                AND UPPER(COALESCE(p.spade_mode, '')) = 'APPOINTMENT'
@@ -697,15 +729,7 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
         ON d.id = p.deck_id
 
       WHERE
-        (
-          -- J mías
-          (p.card_rank = 'J' AND p.created_by_user_id = $1)
-
-          OR
-
-          -- Q que recibí
-          (p.card_rank = 'Q' AND p.target_user_id = $1)
-        )
+        ${visibilityWhere}
 
         AND (
           CASE
@@ -719,7 +743,7 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
 
             ELSE p.created_at::date
           END
-        ) BETWEEN $2 AND $3
+        ) BETWEEN $3 AND $4
 
       ORDER BY
         CASE
@@ -735,7 +759,7 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
         END ASC,
         p.id ASC
       `,
-      [userId, from, to]
+      [String(userId), `U:${userId}`, from, to]
     );
 
     return res.json({
@@ -756,6 +780,11 @@ app.get('/plays/bitacora', requireAuth, async (req, res) => {
   try {
     const userId = req.auth.userId;
 
+    const visibilityWhere = buildReadersVisibilityWhereClause({
+      readersColumn: 'p.reader_user_ids',
+      userIdParamIndex: 1,
+    });
+
     const result = await pool.query(
       `
       SELECT
@@ -770,12 +799,10 @@ app.get('/plays/bitacora', requireAuth, async (req, res) => {
         ON target.id = p.target_user_id
       LEFT JOIN decks d
         ON d.id = p.deck_id
-      WHERE p.created_by_user_id = $1
-        AND p.card_rank = 'J'
-        AND p.card_suit IN ('HEART', 'SPADE', 'CLUB')
+      WHERE ${visibilityWhere}
       ORDER BY p.created_at DESC, p.id DESC
       `,
-      [userId]
+      [String(userId), `U:${userId}`]
     );
 
     return res.json({
@@ -1194,29 +1221,37 @@ async function getMazoStateHandler(req, res) {
       });
     }
 
+    const visibilityWhere = buildReadersVisibilityWhereClause({
+      readersColumn: 'p.reader_user_ids',
+      userIdParamIndex: 3,
+    });
+
     const result = await pool.query(
-      `SELECT
-     p.*,
-     creator.nickname AS created_by_nickname,
-     creator.profile_photo_url AS created_by_profile_photo_url,
-     target.nickname AS target_user_nickname,
-     target.profile_photo_url AS target_user_profile_photo_url,
-     EXISTS (
-       SELECT 1
-       FROM play_recurrences pr
-       WHERE pr.play_id = p.id
-     ) AS has_recurrence
-   FROM plays p
-   INNER JOIN deck_members dm
-     ON dm.deck_id = p.deck_id
-   LEFT JOIN users creator
-     ON creator.id = p.created_by_user_id
-   LEFT JOIN users target
-     ON target.id = p.target_user_id
-   WHERE p.deck_id = $1
-     AND dm.user_id = $2
-   ORDER BY p.id ASC`,
-      [mazoId, userId]
+      `
+      SELECT
+        p.*,
+        creator.nickname AS created_by_nickname,
+        creator.profile_photo_url AS created_by_profile_photo_url,
+        target.nickname AS target_user_nickname,
+        target.profile_photo_url AS target_user_profile_photo_url,
+        EXISTS (
+          SELECT 1
+          FROM play_recurrences pr
+          WHERE pr.play_id = p.id
+        ) AS has_recurrence
+      FROM plays p
+      INNER JOIN deck_members dm
+        ON dm.deck_id = p.deck_id
+      LEFT JOIN users creator
+        ON creator.id = p.created_by_user_id
+      LEFT JOIN users target
+        ON target.id = p.target_user_id
+      WHERE p.deck_id = $1
+        AND dm.user_id = $2
+        AND ${visibilityWhere}
+      ORDER BY p.id ASC
+      `,
+      [mazoId, userId, String(userId), `U:${userId}`]
     );
 
     const plays = result.rows;
@@ -1535,7 +1570,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
   const client = await pool.connect();
 
   try {
-    console.log("PATCH /plays/:id req.body =", req.body);
+    console.log('PATCH /plays/:id req.body =', req.body);
 
     const playId = Number(req.params.id);
     const userId = req.auth.userId;
@@ -1692,11 +1727,11 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       const baseQReaders = [`U:${authorUserId}`, `U:${invitedUserId}`];
 
       // 1) La propia Q♠ la ven anfitrión + invitado
-      await setPlayReaders(client, updatedPlay.id, baseQReaders);
+      await addReadersToPlay(client, updatedPlay.id, baseQReaders);
 
       // 2) La J♠ madre la ve el invitado
       if (parentPlayId) {
-        await setPlayReaders(client, parentPlayId, invitedReader);
+        await addReadersToPlay(client, parentPlayId, invitedReader);
       }
 
       // 3) La A♥ titular del mazo la ve el invitado
@@ -1704,14 +1739,14 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         const deckTitleAHeartPlayId = await getDeckTitleAHeartPlayId(client, deckId);
 
         if (deckTitleAHeartPlayId) {
-          await setPlayReaders(client, deckTitleAHeartPlayId, invitedReader);
+          await addReadersToPlay(client, deckTitleAHeartPlayId, invitedReader);
         }
 
         // 4) Las J♥ aprobadas del mazo las ve el invitado
-        const approvedJHeartIds = await getApprovedJHeartIdsByDeck(client, deckId);
+        const approvedJHeartIds = await getApprovedJHeartsByDeck(client, deckId);
 
         for (const approvedPlayId of approvedJHeartIds) {
-          await setPlayReaders(client, approvedPlayId, invitedReader);
+          await addReadersToPlay(client, approvedPlayId, invitedReader);
         }
       }
     }
@@ -1815,6 +1850,7 @@ app.delete('/plays/:id', requireAuth, async (req, res) => {
 
 app.get('/plays', requireAuth, async (req, res) => {
   try {
+    const userId = req.auth.userId;
     const mazoId = Number(req.query.mazoId || req.query.deckId);
 
     if (!Number.isInteger(mazoId) || mazoId <= 0) {
@@ -1824,8 +1860,14 @@ app.get('/plays', requireAuth, async (req, res) => {
       });
     }
 
+    const visibilityWhere = buildReadersVisibilityWhereClause({
+      readersColumn: 'p.reader_user_ids',
+      userIdParamIndex: 2,
+    });
+
     const result = await pool.query(
-      `SELECT
+      `
+      SELECT
          p.*,
          creator.nickname AS created_by_nickname,
          target.nickname AS target_user_nickname,
@@ -1840,8 +1882,10 @@ app.get('/plays', requireAuth, async (req, res) => {
        LEFT JOIN users target
          ON target.id = p.target_user_id
        WHERE p.deck_id = $1
-       ORDER BY p.created_at DESC, p.id DESC`,
-      [mazoId]
+         AND ${visibilityWhere}
+       ORDER BY p.created_at DESC, p.id DESC
+      `,
+      [mazoId, String(userId), `U:${userId}`]
     );
 
     return res.json({
@@ -1869,8 +1913,14 @@ app.get('/mazos/:mazoId/plays', requireAuth, async (req, res) => {
       });
     }
 
+    const visibilityWhere = buildReadersVisibilityWhereClause({
+      readersColumn: 'p.reader_user_ids',
+      userIdParamIndex: 3,
+    });
+
     const result = await pool.query(
-      `SELECT
+      `
+      SELECT
          p.*,
          creator.nickname AS created_by_nickname,
          target.nickname AS target_user_nickname,
@@ -1888,8 +1938,10 @@ app.get('/mazos/:mazoId/plays', requireAuth, async (req, res) => {
          ON target.id = p.target_user_id
        WHERE p.deck_id = $1
          AND dm.user_id = $2
-       ORDER BY p.id ASC`,
-      [mazoId, userId]
+         AND ${visibilityWhere}
+       ORDER BY p.id ASC
+      `,
+      [mazoId, userId, String(userId), `U:${userId}`]
     );
 
     return res.json({
