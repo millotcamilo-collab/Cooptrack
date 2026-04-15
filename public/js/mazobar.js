@@ -871,9 +871,7 @@
 
     document.querySelectorAll("[data-command-suit]").forEach((button) => {
       button.addEventListener("click", () => {
-        const suit = button.dataset.commandSuit;
-
-        showTableroView();
+        const suit = String(button.dataset.commandSuit || "").toUpperCase();
 
         document.dispatchEvent(
           new CustomEvent("mazobar:filterSuit", {
