@@ -1,4 +1,3 @@
-
 .playform {
   width: 100%;
   background: #fffdf8;
@@ -9,8 +8,7 @@
   border: 1px dotted #777;
   border-radius: 8px;
   box-sizing: border-box;
-
-  margin: 8px 0;
+  margin: 0 var(--layout-padding);
 }
 
 .is-hidden {
@@ -139,6 +137,7 @@
   background: #f3efe6;
   border-color: #444;
 }
+
 .playform__left {
   display: flex;
   align-items: center;
