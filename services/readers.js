@@ -1,4 +1,3 @@
-
 // services/readers.js
 
 function normalizeReaderEntry(value) {
@@ -9,10 +8,8 @@ function normalizeReaderEntry(value) {
 
   if (raw === 'TODOS') return 'TODOS';
 
-  // ya viene en formato U:123
   if (/^U:\d+$/.test(raw)) return raw;
 
-  // si viene como numero o string numerico
   const numeric = Number(raw);
   if (Number.isInteger(numeric) && numeric > 0) {
     return `U:${numeric}`;
@@ -35,7 +32,6 @@ function mergeReaderEntries(currentEntries = [], newEntries = []) {
   const current = normalizeReaderEntries(currentEntries);
   const incoming = normalizeReaderEntries(newEntries);
 
-  // Si aparece TODOS, ya no hace falta guardar el resto
   if (current.includes('TODOS') || incoming.includes('TODOS')) {
     return ['TODOS'];
   }
@@ -89,6 +85,22 @@ async function getPlayReaders(client, playId) {
   };
 }
 
+async function setPlayReaders(client, playId, readerEntries = []) {
+  const normalized = normalizeReaderEntries(readerEntries);
+
+  await client.query(
+    `
+      UPDATE plays
+      SET reader_user_ids = $1::jsonb,
+          updated_at = NOW()
+      WHERE id = $2
+    `,
+    [JSON.stringify(normalized), playId]
+  );
+
+  return normalized;
+}
+
 async function addReadersToPlay(client, playId, readerEntries = []) {
   if (!playId) return [];
 
@@ -110,37 +122,13 @@ async function addReadersToPlay(client, playId, readerEntries = []) {
   return merged;
 }
 
-async function getPlayReaders(client, playId) {
-  const result = await client.query(
-    `
-      SELECT reader_user_ids
-      FROM plays
-      WHERE id = $1
-      LIMIT 1
-    `,
-    [playId]
-  );
-
-  if (!result.rows.length) {
-    return [];
-  }
-
-  const value = result.rows[0].reader_user_ids;
-
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return normalizeReaderEntries(value);
-}
-
 async function markPlayAsPublic(client, playId) {
-  return addReadersToPlay(client, playId, ['TODOS']);
+  return setPlayReaders(client, playId, ['TODOS']);
 }
 
 /**
  * Debe devolver los user_id actuales que poseen una carta dada en el mazo.
- * Por ahora la dejamos como stub hasta conectar con la logica real del mazo.
+ * Por ahora la dejamos como stub hasta conectar con la lógica real del mazo.
  */
 async function getCurrentCardHolderUserIds(client, deckId, rank, suit) {
   void client;
@@ -164,7 +152,7 @@ async function getActiveDeckMemberUserIds(client, deckId) {
 }
 
 /**
- * J♥ recien creada:
+ * J♥ recién creada:
  * readers = solo autor
  */
 async function computeReadersForNewJHeart(client, deckId, authorUserId) {
@@ -268,18 +256,15 @@ async function expandReadersForQSpadeContext(
     return;
   }
 
-  // 1) J♠ madre
   if (parentPlayId) {
     await addReadersToPlay(client, parentPlayId, invitedReaders);
   }
 
-  // 2) A♥ titular del mazo
   const deckTitleAHeartPlayId = await getDeckTitleAHeartPlayId(client, deckId);
   if (deckTitleAHeartPlayId) {
     await addReadersToPlay(client, deckTitleAHeartPlayId, invitedReaders);
   }
 
-  // 3) J♥ aprobadas del mazo
   const approvedJHeartIds = await getApprovedJHeartsByDeck(client, deckId);
 
   for (const playId of approvedJHeartIds) {
