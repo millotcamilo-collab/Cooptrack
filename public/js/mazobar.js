@@ -560,7 +560,7 @@
     const enabledCards = getEnabledTopCards(normalizedPlays);
     const deckName = deck?.name || "Mazo";
     const currencyCode = getCurrencyCode(deck);
-    const balance = getClubApprovedAmount(normalizedPlays);
+    const balance = getApprovedClubTotal(normalizedPlays);
     const isAdminPage = getCurrentPageType() === "administradores";
 
     return `
