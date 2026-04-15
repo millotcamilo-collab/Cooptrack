@@ -862,7 +862,9 @@
     const rank = normalizeRank(play?.card_rank || play?.rank);
     const suit = normalizeSuit(play?.card_suit || play?.suit);
     const imageSrc = getCardImageSrc(rank, suit);
+
     const showActionsHere = isCurrentUserTarget(play);
+    const showWeekHere = isCurrentUserTarget(play);
 
     const topbar = buildPanelTopbar({
       identityHtml: `
@@ -892,7 +894,7 @@
         />
       </div>
 
-      ${renderWeekRow(parsePlayReferenceDate(play))}
+      ${showWeekHere ? renderWeekRow(parsePlayReferenceDate(play)) : ""}
     </section>
   `;
   }
