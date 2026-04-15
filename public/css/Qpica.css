@@ -104,19 +104,25 @@
 
 .qpica-panel__actions img {
   width: auto;
-  height: 40px;
+  height: 35px;
   display: block;
 }
 
 .tablero-row--link {
   width: 100%;
-  border: none;
-  background: none;
-  padding: 0;
-  text-align: inherit;
+  box-sizing: border-box;
   cursor: pointer;
+  text-align: left;
+  border-radius: 8px;
 }
 
 .tablero-row--link:hover {
   transform: scale(1.01);
+}
+
+.tablero-row--qpike .tablero-row__card {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
 }
