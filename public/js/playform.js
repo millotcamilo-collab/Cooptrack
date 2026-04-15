@@ -59,75 +59,74 @@
   }
 
   function buildPlayformHTML() {
-    return `
-      <section id="playform-j" class="playform is-hidden">
-        <div class="page-container">
-          <div class="playform__inner">
+  return `
+    <section id="playform-j" class="playform ct-block ct-surface is-hidden">
 
-<div class="playform__left">
-  <img
-    src="/assets/icons/maquina80.gif"
-    alt="Nueva jugada"
-    class="playform__icon"
-  />
+      <div class="playform__inner">
 
-  <div class="playform__prefix">J</div>
+        <div class="playform__left">
+          <img
+            src="/assets/icons/maquina80.gif"
+            alt="Nueva jugada"
+            class="playform__icon"
+          />
 
-  <input
-    id="playformTextInput"
-    type="text"
-    class="playform__input"
-    placeholder="Escribí una jugada..."
-    autocomplete="off"
-  />
-</div>
+          <div class="playform__prefix">J</div>
 
-            <div class="playform__center">
-              <button
-                type="button"
-                class="playform__action-btn playform__action-btn--heart"
-                data-play-suit="HEART"
-                title="Nota"
-              >
-                ♥
-              </button>
-
-              <button
-                type="button"
-                class="playform__action-btn playform__action-btn--spade"
-                data-play-suit="SPADE"
-                title="Actividad"
-              >
-                ♠
-              </button>
-
-              <button
-                type="button"
-                class="playform__action-btn playform__action-btn--club"
-                data-play-suit="CLUB"
-                title="Concepto factura"
-              >
-                ♣
-              </button>
-            </div>
-
-            <div class="playform__right">
-<button
-  type="button"
-  class="playform__exit-btn"
-  id="playformCloseBtn"
-  title="Cerrar"
->
-  <img src="/assets/icons/exit40.gif" alt="Cerrar" />
-</button>
-            </div>
-
-          </div>
+          <input
+            id="playformTextInput"
+            type="text"
+            class="playform__input"
+            placeholder="Escribí una jugada..."
+            autocomplete="off"
+          />
         </div>
-      </section>
-    `;
-  }
 
+        <div class="playform__center">
+          <button
+            type="button"
+            class="playform__action-btn playform__action-btn--heart"
+            data-play-suit="HEART"
+            title="Nota"
+          >
+            ♥
+          </button>
+
+          <button
+            type="button"
+            class="playform__action-btn playform__action-btn--spade"
+            data-play-suit="SPADE"
+            title="Actividad"
+          >
+            ♠
+          </button>
+
+          <button
+            type="button"
+            class="playform__action-btn playform__action-btn--club"
+            data-play-suit="CLUB"
+            title="Concepto factura"
+          >
+            ♣
+          </button>
+        </div>
+
+        <div class="playform__right">
+          <button
+            type="button"
+            class="playform__exit-btn"
+            id="playformCloseBtn"
+            title="Cerrar"
+          >
+            <img src="/assets/icons/exit40.gif" alt="Cerrar" />
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+  `;
+}
   function dispatchCreatePlay(deck, state, suit, text) {
     document.dispatchEvent(
       new CustomEvent("playform:createPlay", {
