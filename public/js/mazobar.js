@@ -149,6 +149,27 @@
     return String(value);
   }
 
+  function getApprovedClubTotal(plays) {
+    if (!Array.isArray(plays)) return "0";
+
+    const total = plays.reduce((sum, play) => {
+      const rank = String(play?.rank || "").toUpperCase();
+      const suit = String(play?.suit || "").toUpperCase();
+      const status = String(play?.status || "").toUpperCase();
+
+      if (rank !== "J") return sum;
+      if (suit !== "CLUB") return sum;
+      if (status !== "APPROVED") return sum;
+
+      const amount = Number(play?.amount || 0);
+      if (!Number.isFinite(amount)) return sum;
+
+      return sum + amount;
+    }, 0);
+
+    return String(total);
+  }
+
   function getEnabledTopCards(plays) {
     return plays.filter((p) => {
       const rank = String(p.rank || "").toUpperCase();
