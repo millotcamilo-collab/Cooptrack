@@ -146,6 +146,8 @@
   align-items: center;
   gap: 10px;
   background: #fffdf8;
+  border: 1px dotted #777;
+  border-radius: 8px;
 }
 
 .tablero-row--link {
@@ -155,14 +157,3 @@
   outline: none;
 }
 
-.tablero-row--qpike {
-  min-height: 58px;
-  padding: 8px 12px;
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  background: #fffdf8;
-  border: 1px dotted #777;
-  border-radius: 8px;
-}
