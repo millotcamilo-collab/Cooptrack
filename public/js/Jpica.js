@@ -839,13 +839,6 @@
   </div>
 </div>
 
-        <div
-          class="tablero-row__fields tablero-row__fields--recurrence"
-          data-role="recurrence-read"
-        >
-          ${escapeHtml(hasRecurrence ? "Rutina configurada" : "Sin rutina")}
-        </div>
-      </div>
 
       <div class="tablero-row__mode-edit" data-role="mode-edit" style="display:none;">
         <div
