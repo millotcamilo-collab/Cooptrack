@@ -58,7 +58,7 @@
         return;
       }
 
-      
+
 
       // -----------------------------------
       // CASO LEGACY / EXISTENTE
@@ -760,23 +760,23 @@
   });
 
   document.addEventListener("click", (event) => {
-  const row = event.target.closest('[data-open-lienzo="true"]');
-  if (!row) return;
+    const row = event.target.closest('[data-open-lienzo="true"]');
+    if (!row) return;
 
-  const playId = Number(row.dataset.playId || 0);
-  const deckId =
-    row.dataset.deckId ||
-    window.__currentDeck?.id ||
-    window.__currentState?.deck?.id ||
-    new URLSearchParams(window.location.search).get("id");
+    const playId = Number(row.dataset.playId || 0);
+    const deckId =
+      row.dataset.deckId ||
+      window.__currentDeck?.id ||
+      window.__currentState?.deck?.id ||
+      new URLSearchParams(window.location.search).get("id");
 
-  if (!playId || !deckId) {
-    console.warn("No se pudo abrir lienzo desde Q♠", { playId, deckId });
-    return;
-  }
+    if (!playId || !deckId) {
+      console.warn("No se pudo abrir lienzo desde Q♠", { playId, deckId });
+      return;
+    }
 
-  window.location.href = `/lienzo.html?deckId=${deckId}&playId=${playId}`;
-});
+    window.location.href = `/lienzo.html?deckId=${deckId}&playId=${playId}`;
+  });
 
   document.addEventListener("tablero:add-child-play", async (event) => {
     try {
