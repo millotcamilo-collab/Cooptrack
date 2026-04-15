@@ -1692,11 +1692,11 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       const baseQReaders = [`U:${authorUserId}`, `U:${invitedUserId}`];
 
       // 1) La propia Q♠ la ven anfitrión + invitado
-      await addReadersToPlay(client, updatedPlay.id, baseQReaders);
+      await setPlayReaders(client, updatedPlay.id, baseQReaders);
 
       // 2) La J♠ madre la ve el invitado
       if (parentPlayId) {
-        await addReadersToPlay(client, parentPlayId, invitedReader);
+        await setPlayReaders(client, parentPlayId, invitedReader);
       }
 
       // 3) La A♥ titular del mazo la ve el invitado
@@ -1704,14 +1704,14 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         const deckTitleAHeartPlayId = await getDeckTitleAHeartPlayId(client, deckId);
 
         if (deckTitleAHeartPlayId) {
-          await addReadersToPlay(client, deckTitleAHeartPlayId, invitedReader);
+          await setPlayReaders(client, deckTitleAHeartPlayId, invitedReader);
         }
 
         // 4) Las J♥ aprobadas del mazo las ve el invitado
         const approvedJHeartIds = await getApprovedJHeartIdsByDeck(client, deckId);
 
         for (const approvedPlayId of approvedJHeartIds) {
-          await addReadersToPlay(client, approvedPlayId, invitedReader);
+          await setPlayReaders(client, approvedPlayId, invitedReader);
         }
       }
     }
