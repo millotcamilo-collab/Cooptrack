@@ -4,6 +4,7 @@
   padding: 16px 24px;
 }
 
+
 .qpica-panel {
   display: grid;
   grid-template-columns: 220px 1fr;
@@ -82,6 +83,16 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+}
+
+.tablero-row--qpike .tablero-row__right {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
 }
 
 .qpike-row__photo {
@@ -125,4 +136,14 @@
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
+}
+
+.tablero-row--qpike {
+  min-height: 58px;
+  padding: 8px 12px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  background: #fffdf8;
 }
