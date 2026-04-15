@@ -584,25 +584,49 @@
     });
   }
 
-  function renderUsersPanel() {
+  function buildPanelTopbar({ identityHtml, actionsHtml, single = false }) {
     return `
-    <section class="lienzo-panel lienzo-panel--users">
-      <div class="lienzo-target-header">
+    <div class="panel-topbar ${single ? "panel-topbar--single" : ""}">
+      <div class="panel-topbar__col panel-topbar__col--identity">
+        ${identityHtml}
+      </div>
+      ${single
+        ? ""
+        : `
+      <div class="panel-topbar__col panel-topbar__col--actions">
+        ${actionsHtml}
+      </div>`
+      }
+    </div>
+  `;
+  }
+
+  function renderUsersPanel() {
+    const topbar = buildPanelTopbar({
+      identityHtml: `
+      <div class="lienzo-target-header lienzo-target-header--top">
+        <div class="lienzo-target-header__name">
+          Destinatario
+        </div>
         <img
           class="lienzo-target-header__photo"
           src="/assets/icons/singeta120.gif"
           alt="Destinatario"
         />
-        <div class="lienzo-target-header__name">
-          Destinatario
-        </div>
       </div>
+    `,
+      single: true
+    });
+
+    return `
+    <section class="lienzo-panel lienzo-panel--users panel--split-top">
+      ${topbar}
 
       <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
     </section>
   `;
   }
-
+  
   function getCurrentUser() {
     return window.__currentUser || window.__currentState?.currentUser || null;
   }
