@@ -739,3 +739,32 @@ body {
   display: none;
 }
 
+/* Amsterdam usa topbar simple (no 50/50) */
+.panel-topbar--single {
+  grid-template-columns: 1fr;
+}
+
+/* mantenemos alineación derecha del header */
+.lienzo-source-header--top {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+/* por si el layout se rompe */
+.amsterdam-stage {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.amsterdam-stage__left {
+  flex: 1;
+}
+
+.amsterdam-stage__right {
+  flex: 0 0 220px;
+}
+

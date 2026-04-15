@@ -105,62 +105,69 @@
     </div>
 
     <!-- AMSTERDAM -->
-<div class="panel panel--split-top" id="amsterdam-panel">
-  <div class="panel-topbar">
-    <div class="panel-topbar__col panel-topbar__col--identity">
-      <div class="lienzo-source-header lienzo-source-header--top">
-        <span class="lienzo-source-header__name">Cooptrack server</span>
-        <img
-          src="/assets/icons/Compila60.gif"
-          class="lienzo-source-header__photo"
-          alt="Cooptrack server"
-        >
+    <div class="panel panel--split-top" id="amsterdam-panel">
+      <!-- TOPBAR (solo identidad, sin acciones) -->
+      <div class="panel-topbar panel-topbar--single">
+        <div class="panel-topbar__col panel-topbar__col--identity">
+          <div class="lienzo-source-header lienzo-source-header--top">
+            <span class="lienzo-source-header__name">Cooptrack server</span>
+            <img src="/assets/icons/Compila60.gif" class="lienzo-source-header__photo" alt="Cooptrack server">
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="panel-topbar__col panel-topbar__col--actions">
-      <div id="serverNextPanel" class="server-next server-next--readonly">
-        <label class="server-next__item">
-          <span class="server-next__fake-checkbox"></span>
-          <img src="/assets/icons/Sello40.gif" class="server-next__icon">
-          <span class="server-next__label">Aprobar J ♠ ♥ ♦ ♣</span>
-        </label>
+      <!-- CONTENIDO ORIGINAL (se mantiene) -->
+      <div class="content">
+        <div class="amsterdam-stage">
 
-        <label class="server-next__item">
-          <span class="server-next__fake-checkbox"></span>
-          <img src="/assets/icons/buzon60.gif" class="server-next__icon">
-          <span class="server-next__label">Enviar Q ♠</span>
-        </label>
+          <!-- IZQUIERDA: mazo -->
+          <div class="amsterdam-stage__left">
+            <div class="amsterdam-pack-wrap">
+              <div id="pack" class="pack">
+                <img src="/assets/icons/joker_blue.gif" class="joker-blue">
+                <img src="/assets/icons/Joker.gif" class="joker-red">
+                <img src="/assets/icons/Apike.gif" class="spade">
+                <img src="/assets/icons/Adiamante.gif" class="diamond">
+                <img src="/assets/icons/Atrebol.gif" class="club">
+              </div>
+            </div>
+          </div>
 
-        <label class="server-next__item">
-          <span class="server-next__fake-checkbox"></span>
-          <img src="/assets/icons/pistola60.gif" class="server-next__icon">
-          <span class="server-next__label">Despedir Q ♠</span>
-        </label>
+          <!-- DERECHA: checklist (SE QUEDA ACÁ) -->
+          <div class="amsterdam-stage__right">
+            <div id="serverNextPanel" class="server-next server-next--readonly">
 
-        <label class="server-next__item">
-          <span class="server-next__fake-checkbox"></span>
-          <img src="/assets/icons/Extra60.gif" class="server-next__icon">
-          <span class="server-next__label">Publicar A♥ J♥♠</span>
-        </label>
-      </div>
-    </div>
-  </div>
+              <label class="server-next__item">
+                <span class="server-next__fake-checkbox"></span>
+                <img src="/assets/icons/Sello40.gif" class="server-next__icon">
+                <span class="server-next__label">Aprobar J ♠ ♥ ♦ ♣</span>
+              </label>
 
-  <div class="content">
-    <div class="amsterdam-stage amsterdam-stage--single">
-      <div class="amsterdam-pack-wrap">
-        <div id="pack" class="pack">
-          <img src="/assets/icons/joker_blue.gif" class="joker-blue">
-          <img src="/assets/icons/Joker.gif" class="joker-red">
-          <img src="/assets/icons/Apike.gif" class="spade">
-          <img src="/assets/icons/Adiamante.gif" class="diamond">
-          <img src="/assets/icons/Atrebol.gif" class="club">
+              <label class="server-next__item">
+                <span class="server-next__fake-checkbox"></span>
+                <img src="/assets/icons/buzon60.gif" class="server-next__icon">
+                <span class="server-next__label">Enviar Q ♠</span>
+              </label>
+
+              <label class="server-next__item">
+                <span class="server-next__fake-checkbox"></span>
+                <img src="/assets/icons/pistola60.gif" class="server-next__icon">
+                <span class="server-next__label">Despedir Q ♠</span>
+              </label>
+
+              <label class="server-next__item">
+                <span class="server-next__fake-checkbox"></span>
+                <img src="/assets/icons/Extra60.gif" class="server-next__icon">
+                <span class="server-next__label">Publicar A♥ J♥♠</span>
+              </label>
+
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
   </div>
-</div>
 
   </div>
 
