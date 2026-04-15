@@ -1,20 +1,28 @@
+
 .playform {
   width: 100%;
-  border-bottom: 1px solid #d8d1c5;
   background: #fffdf8;
   position: sticky;
-  top: 72px; /* ajustá según altura del topbar + mazobar */
+  top: 72px;
   z-index: 900;
+
+  border: 1px dotted #777;
+  border-radius: 8px;
+  box-sizing: border-box;
+
+  margin: 8px 0;
 }
+
 .is-hidden {
   display: none;
 }
+
 .playform__inner {
   display: grid;
   grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 16px;
-   padding: 10px 20px;
+  padding: 8px 12px;
 }
 
 /* IZQUIERDA */
