@@ -32,7 +32,6 @@
     window.location.href = `/mazo.html?id=${deckId}`;
   }
 
-
   function normalizePlay(play) {
     if (!play) return null;
 
@@ -44,33 +43,10 @@
       suit: parsed.suit || play.card_suit || "",
       action: parsed.action || "",
       status: play.play_status || "",
+      amount: Number(play.amount || 0),
       parsed,
       raw: play.play_code || ""
     };
-  }
-
-  function getClubApprovedAmount(plays) {
-    if (!Array.isArray(plays)) return 0;
-
-    return plays.reduce((sum, p) => {
-      const rank = String(p.rank || "").toUpperCase();
-      const suit = String(p.suit || "").toUpperCase();
-      const status = String(p.status || "").toUpperCase();
-
-      // solo J♣ aprobadas
-      if (rank !== "J" || suit !== "CLUB") return sum;
-      if (status !== "APPROVED") return sum;
-
-      // acá tenés que ver de dónde sale el monto
-      // intento estándar:
-      const amount =
-        Number(p.raw?.amount) ||
-        Number(p.parsed?.amount) ||
-        Number(p.amount) ||
-        0;
-
-      return sum + amount;
-    }, 0);
   }
 
   function getSuitSymbol(suit) {
