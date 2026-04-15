@@ -714,7 +714,6 @@
     </div>
 
     <div class="tablero-row__center">
-      <div class="tablero-row__title" data-role="text-view">${safeText || "Sin texto"}</div>
 
       <input
         id="${textInputId}"
@@ -726,13 +725,17 @@
       />
 
       <div class="tablero-row__mode-read" data-role="mode-read">
-        <div
-          class="tablero-row__fields tablero-row__fields--deadline"
-          data-role="deadline-read"
-        >
-          <div class="tablero-row__field-inline">
-            <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
-            <span>${escapeHtml(
+       <div
+  class="tablero-row__fields tablero-row__fields--deadline"
+  data-role="deadline-read"
+>
+  <div class="tablero-row__field-inline tablero-row__field-inline--title">
+    <span>${safeText || "Sin texto"}</span>
+  </div>
+
+  <div class="tablero-row__field-inline">
+    <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
+    <span>${escapeHtml(
       getDeadlineReadLabel(
         play?.end_date,
         recurrenceTypeValue,
@@ -740,8 +743,8 @@
         recurrenceMonthsValue
       )
     )}</span>
-          </div>
-        </div>
+  </div>
+</div>
 
         <div
           class="tablero-row__fields tablero-row__fields--recurrence"
