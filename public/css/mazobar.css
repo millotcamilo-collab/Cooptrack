@@ -148,8 +148,7 @@
 }
 
 .mazobar__balance-currency {
-  margin-left: 6px;
-  font-weight: 600;
+  font-family: var(--font-card);
 }
 
 .mazobar__balance-value {
