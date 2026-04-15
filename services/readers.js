@@ -1,3 +1,4 @@
+
 // services/readers.js
 
 function normalizeReaderEntry(value) {
@@ -54,6 +55,73 @@ async function getPlayReaders(client, playId) {
   );
 
   if (!result.rows.length) {
+    return {
+      exists: false,
+      isPublic: false,
+      readers: []
+    };
+  }
+
+  const value = result.rows[0].reader_user_ids;
+
+  if (value === null) {
+    return {
+      exists: true,
+      isPublic: true,
+      readers: []
+    };
+  }
+
+  if (!Array.isArray(value)) {
+    return {
+      exists: true,
+      isPublic: true,
+      readers: []
+    };
+  }
+
+  const normalized = normalizeReaderEntries(value);
+
+  return {
+    exists: true,
+    isPublic: normalized.length === 0 || normalized.includes('TODOS'),
+    readers: normalized
+  };
+}
+
+async function addReadersToPlay(client, playId, readerEntries = []) {
+  if (!playId) return [];
+
+  const currentState = await getPlayReaders(client, playId);
+
+  if (!currentState.exists) {
+    return [];
+  }
+
+  // Si ya es pública, agregar lectores no debe privatizarla
+  if (currentState.isPublic) {
+    return currentState.readers;
+  }
+
+  const merged = mergeReaderEntries(currentState.readers, readerEntries);
+
+  await setPlayReaders(client, playId, merged);
+
+  return merged;
+}
+
+async function getPlayReaders(client, playId) {
+  const result = await client.query(
+    `
+      SELECT reader_user_ids
+      FROM plays
+      WHERE id = $1
+      LIMIT 1
+    `,
+    [playId]
+  );
+
+  if (!result.rows.length) {
     return [];
   }
 
@@ -64,33 +132,6 @@ async function getPlayReaders(client, playId) {
   }
 
   return normalizeReaderEntries(value);
-}
-
-async function setPlayReaders(client, playId, readerEntries = []) {
-  const normalized = normalizeReaderEntries(readerEntries);
-
-  await client.query(
-    `
-      UPDATE plays
-      SET reader_user_ids = $1::jsonb,
-          updated_at = NOW()
-      WHERE id = $2
-    `,
-    [JSON.stringify(normalized), playId]
-  );
-
-  return normalized;
-}
-
-async function addReadersToPlay(client, playId, readerEntries = []) {
-  if (!playId) return [];
-
-  const current = await getPlayReaders(client, playId);
-  const merged = mergeReaderEntries(current, readerEntries);
-
-  await setPlayReaders(client, playId, merged);
-
-  return merged;
 }
 
 async function markPlayAsPublic(client, playId) {
