@@ -684,3 +684,58 @@ body {
   font-weight: 600;
 }
 
+.panel--split-top {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-topbar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.panel-topbar__col {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.panel-topbar__col--identity {
+  justify-content: flex-end;
+}
+
+.panel-topbar__col--actions {
+  justify-content: flex-start;
+}
+
+.lienzo-target-header--top {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.lienzo-target-header--top .lienzo-target-header__name {
+  order: 1;
+}
+
+.lienzo-target-header--top .lienzo-target-header__photo {
+  order: 2;
+}
+
+.nuevo-mazo-target-actions--top {
+  width: 100%;
+  margin-top: 0;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.colombes-editor__actions {
+  display: none;
+}
+
