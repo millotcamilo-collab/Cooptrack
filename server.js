@@ -1711,9 +1711,6 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
 
     if (isSendingQSpadeNow) {
       const invitedUserId = Number(updatedPlay.target_user_id || 0);
-      const authorUserId = Number(updatedPlay.created_by_user_id || 0);
-      const parentPlayId = Number(updatedPlay.parent_play_id || 0);
-      const deckId = Number(updatedPlay.deck_id || 0);
 
       if (!invitedUserId) {
         await client.query('ROLLBACK');
@@ -1723,32 +1720,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         });
       }
 
-      const invitedReader = [`U:${invitedUserId}`];
-      const baseQReaders = [`U:${authorUserId}`, `U:${invitedUserId}`];
-
-      // 1) La propia Q♠ la ven anfitrión + invitado
-      await addReadersToPlay(client, updatedPlay.id, baseQReaders);
-
-      // 2) La J♠ madre la ve el invitado
-      if (parentPlayId) {
-        await addReadersToPlay(client, parentPlayId, invitedReader);
-      }
-
-      // 3) La A♥ titular del mazo la ve el invitado
-      if (deckId) {
-        const deckTitleAHeartPlayId = await getDeckTitleAHeartPlayId(client, deckId);
-
-        if (deckTitleAHeartPlayId) {
-          await addReadersToPlay(client, deckTitleAHeartPlayId, invitedReader);
-        }
-
-        // 4) Las J♥ aprobadas del mazo las ve el invitado
-        const approvedJHeartIds = await getApprovedJHeartsByDeck(client, deckId);
-
-        for (const approvedPlayId of approvedJHeartIds) {
-          await addReadersToPlay(client, approvedPlayId, invitedReader);
-        }
-      }
+      await expandReadersForQSpadeSend(client, updatedPlay);
     }
 
     await client.query('COMMIT');
