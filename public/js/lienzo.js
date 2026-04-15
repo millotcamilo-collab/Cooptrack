@@ -488,7 +488,7 @@
     const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
 
     return `
-    <div class="lienzo-panel__actions">
+    <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
       <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
         <img src="${sendIcon}" alt="Enviar" />
       </button>
@@ -506,7 +506,7 @@
     const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
 
     return `
-    <div class="lienzo-panel__actions">
+    <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
       <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
         <img src="${acceptIcon}" alt="Aceptar" />
       </button>
@@ -786,6 +786,24 @@
   `;
   }
 
+  function buildPanelTopbar({ identityHtml, actionsHtml = "", single = false }) {
+    return `
+    <div class="panel-topbar ${single ? "panel-topbar--single" : ""}">
+      <div class="panel-topbar__col panel-topbar__col--identity">
+        ${identityHtml}
+      </div>
+      ${single
+        ? ""
+        : `
+            <div class="panel-topbar__col panel-topbar__col--actions">
+              ${actionsHtml}
+            </div>
+          `
+      }
+    </div>
+  `;
+  }
+
   function renderSourcePlayerPanel(play) {
     const user = resolveSourceUser(play);
     const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
@@ -801,18 +819,25 @@
     const parentPlay = getPlayById(play?.parent_play_id);
     const sessionDiaHtml = renderSourceSessionDia(parentPlay);
 
-    return `
-    <section class="lienzo-panel lienzo-panel--source">
-      <div class="lienzo-source-header">
+    const topbar = buildPanelTopbar({
+      identityHtml: `
+      <div class="lienzo-source-header lienzo-source-header--top">
+        <div class="lienzo-source-header__name">
+          ${escapeHtml(userName)}
+        </div>
         <img
           class="lienzo-source-header__photo"
           src="${escapeHtml(userPhoto)}"
           alt="${escapeHtml(userName)}"
         />
-        <div class="lienzo-source-header__name">
-          ${escapeHtml(userName)}
-        </div>
       </div>
+    `,
+      actionsHtml: showActionsHere ? renderSourceActions() : ""
+    });
+
+    return `
+    <section class="lienzo-panel lienzo-panel--source panel--split-top">
+      ${topbar}
 
       <div class="lienzo-source-cards">
         <div class="lienzo-source-stack">
@@ -821,8 +846,6 @@
       </div>
 
       ${sessionDiaHtml}
-
-      ${showActionsHere ? renderSourceActions() : ""}
     </section>
   `;
   }
@@ -841,32 +864,37 @@
     const imageSrc = getCardImageSrc(rank, suit);
     const showActionsHere = isCurrentUserTarget(play);
 
+    const topbar = buildPanelTopbar({
+      identityHtml: `
+      <div class="lienzo-target-header lienzo-target-header--top">
+        <div class="lienzo-target-header__name">
+          ${escapeHtml(userName)}
+        </div>
+        <img
+          class="lienzo-target-header__photo"
+          src="${escapeHtml(userPhoto)}"
+          alt="${escapeHtml(userName)}"
+        />
+      </div>
+    `,
+      actionsHtml: showActionsHere ? renderTargetActions() : ""
+    });
+
     return `
-      <section class="lienzo-panel lienzo-panel--target">
-        <div class="lienzo-target-header">
-          <img
-            class="lienzo-target-header__photo"
-            src="${escapeHtml(userPhoto)}"
-            alt="${escapeHtml(userName)}"
-          />
-          <div class="lienzo-target-header__name">
-            ${escapeHtml(userName)}
-          </div>
-        </div>
+    <section class="lienzo-panel lienzo-panel--target panel--split-top">
+      ${topbar}
 
-        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-          <img
-            class="lienzo-card-image"
-            src="${escapeHtml(imageSrc)}"
-            alt=""
-          />
-        </div>
+      <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+        <img
+          class="lienzo-card-image"
+          src="${escapeHtml(imageSrc)}"
+          alt=""
+        />
+      </div>
 
-        ${renderWeekRow(parsePlayReferenceDate(play))}
-
-        ${showActionsHere ? renderTargetActions() : ""}
-      </section>
-    `;
+      ${renderWeekRow(parsePlayReferenceDate(play))}
+    </section>
+  `;
   }
 
   function renderLienzo(play) {
