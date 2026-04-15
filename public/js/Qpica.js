@@ -12,6 +12,12 @@
     const helpers = context.helpers || {};
     const escape = helpers.escapeHtml || escapeHtml;
 
+    const deckId =
+      context?.deck?.id ||
+      context?.state?.deck?.id ||
+      play?.deck_id ||
+      "";
+
     const targetPhoto =
       play.target_user_profile_photo_url ||
       play.target_user_photo_url ||
@@ -31,7 +37,15 @@
     if (status === "CANCELLED") statusLabel = "Cancelada";
 
     return `
-      <article class="tablero-row tablero-row--qpike" id="tablero-row-${play.id}">
+      <button
+        type="button"
+        class="tablero-row tablero-row--qpike tablero-row--link"
+        id="tablero-row-${play.id}"
+        data-open-lienzo="true"
+        data-play-id="${play.id}"
+        data-deck-id="${deckId}"
+        title="Abrir lienzo"
+      >
         <div class="tablero-row__left">
           <div class="tablero-row__card">Q♠</div>
         </div>
@@ -56,7 +70,7 @@
             title="Q de picas"
           />
         </div>
-      </article>
+      </button>
     `;
   }
 

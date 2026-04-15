@@ -107,3 +107,16 @@
   height: 40px;
   display: block;
 }
+
+.tablero-row--link {
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.tablero-row--link:hover {
+  transform: scale(1.01);
+}
