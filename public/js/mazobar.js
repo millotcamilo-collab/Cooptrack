@@ -49,6 +49,30 @@
     };
   }
 
+  function getClubApprovedAmount(plays) {
+    if (!Array.isArray(plays)) return 0;
+
+    return plays.reduce((sum, p) => {
+      const rank = String(p.rank || "").toUpperCase();
+      const suit = String(p.suit || "").toUpperCase();
+      const status = String(p.status || "").toUpperCase();
+
+      // solo J♣ aprobadas
+      if (rank !== "J" || suit !== "CLUB") return sum;
+      if (status !== "APPROVED") return sum;
+
+      // acá tenés que ver de dónde sale el monto
+      // intento estándar:
+      const amount =
+        Number(p.raw?.amount) ||
+        Number(p.parsed?.amount) ||
+        Number(p.amount) ||
+        0;
+
+      return sum + amount;
+    }, 0);
+  }
+
   function getSuitSymbol(suit) {
     switch (String(suit || "").toUpperCase()) {
       case "HEART":
@@ -539,7 +563,7 @@
     const enabledCards = getEnabledTopCards(normalizedPlays);
     const deckName = deck?.name || "Mazo";
     const currencyCode = getCurrencyCode(deck);
-    const balance = getBalanceValue(deck);
+    const balance = getClubApprovedAmount(normalizedPlays);
     const isAdminPage = getCurrentPageType() === "administradores";
 
     return `
