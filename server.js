@@ -14,6 +14,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 const {
   handleReadersOnPlayCreate,
+  expandReadersForQSpadeSend,
 } = require('./services/play-readers');
 
 const {
