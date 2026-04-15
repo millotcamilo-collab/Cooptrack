@@ -63,12 +63,7 @@
         </div>
 
         <div class="tablero-row__right qpike-row__right">
-          <img
-            class="qpike-row__status-icon"
-            src="/assets/icons/Qpike.gif"
-            alt="Q de picas"
-            title="Q de picas"
-          />
+          
         </div>
       </button>
     `;
