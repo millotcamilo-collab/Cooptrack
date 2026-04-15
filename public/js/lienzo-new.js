@@ -626,7 +626,7 @@
     </section>
   `;
   }
-  
+
   function getCurrentUser() {
     return window.__currentUser || window.__currentState?.currentUser || null;
   }
@@ -815,18 +815,31 @@
     const parentPlay = draft?.parentPlay || null;
     const sessionDiaHtml = renderSourceSessionDia(parentPlay);
 
-    return `
-    <section class="lienzo-panel lienzo-panel--source">
-      <div class="lienzo-source-header">
+    const topbar = buildPanelTopbar({
+      identityHtml: `
+      <div class="lienzo-source-header lienzo-source-header--top">
+        <div class="lienzo-source-header__name">
+          ${escapeHtml(userName)}
+        </div>
         <img
           class="lienzo-source-header__photo"
           src="${escapeHtml(userPhoto)}"
           alt="${escapeHtml(userName)}"
         />
-        <div class="lienzo-source-header__name">
-          ${escapeHtml(userName)}
-        </div>
       </div>
+    `,
+      actionsHtml: delivered
+        ? `
+        <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
+          ${renderActionButtons()}
+        </div>
+      `
+        : ``
+    });
+
+    return `
+    <section class="lienzo-panel lienzo-panel--source panel--split-top">
+      ${topbar}
 
       <div class="lienzo-source-cards">
         <div class="lienzo-source-stack">
@@ -853,15 +866,6 @@
       </div>
 
       ${sessionDiaHtml}
-
-      ${delivered
-        ? `
-          <div class="lienzo-panel__actions">
-            ${renderActionButtons()}
-          </div>
-        `
-        : ""
-      }
     </section>
   `;
   }
