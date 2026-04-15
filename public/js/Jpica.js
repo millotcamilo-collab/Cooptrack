@@ -792,7 +792,19 @@
     </div>
 
     <div class="tablero-row__center">
-      <div class="tablero-row__title" data-role="text-view">${safeText || "Sin texto"}</div>
+      <div class="tablero-row__title" data-role="text-view">
+        ${safeText || "Sin texto"}
+  ·       ${escapeHtml(
+          getAppointmentReadLabel(
+          startDateValue,
+          endDateValue,
+          recurrenceTypeValue,
+          recurrenceWeekdaysValue,
+          recurrenceMonthsValue
+          )
+        )}
+  ·     ${escapeHtml(locationValue || "—")}
+      </div>
 
       <input
         id="${textInputId}"
@@ -804,10 +816,7 @@
       />
 
       <div class="tablero-row__mode-read" data-role="mode-read">
-        <div
-          class="tablero-row__fields tablero-row__fields--appointment"
-          data-role="appointment-read"
-        >
+
           <div class="tablero-row__field-inline">
             <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
             <span>${escapeHtml(
