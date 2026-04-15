@@ -792,7 +792,6 @@
     </div>
 
     <div class="tablero-row__center">
-    <div class="tablero-row__title" data-role="text-view">${safeText || "Sin texto"}</div>  
 
       <input
         id="${textInputId}"
