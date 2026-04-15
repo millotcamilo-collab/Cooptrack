@@ -792,19 +792,7 @@
     </div>
 
     <div class="tablero-row__center">
-      <div class="tablero-row__title" data-role="text-view">
-        ${safeText || "Sin texto"}
-  ·       ${escapeHtml(
-          getAppointmentReadLabel(
-          startDateValue,
-          endDateValue,
-          recurrenceTypeValue,
-          recurrenceWeekdaysValue,
-          recurrenceMonthsValue
-          )
-        )}
-  ·     ${escapeHtml(locationValue || "—")}
-      </div>
+    <div class="tablero-row__title" data-role="text-view">${safeText || "Sin texto"}</div>  
 
       <input
         id="${textInputId}"
@@ -816,10 +804,17 @@
       />
 
       <div class="tablero-row__mode-read" data-role="mode-read">
+  <div
+    class="tablero-row__fields tablero-row__fields--appointment"
+    data-role="appointment-read"
+  >
+    <div class="tablero-row__field-inline tablero-row__field-inline--title">
+      <span>${safeText || "Sin texto"}</span>
+    </div>
 
-          <div class="tablero-row__field-inline">
-            <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
-            <span>${escapeHtml(
+    <div class="tablero-row__field-inline">
+      <img src="${startIcon}" alt="Inicio" class="tablero-row__field-icon" />
+      <span>${escapeHtml(
       getAppointmentReadLabel(
         startDateValue,
         endDateValue,
@@ -828,14 +823,21 @@
         recurrenceMonthsValue
       )
     )}</span>
-          
-          </div>
+    </div>
 
-          <div class="tablero-row__field-inline">
-            <img src="${locationIcon}" alt="Locación" class="tablero-row__field-icon" />
-            <span>${escapeHtml(locationValue || "—")}</span>
-          </div>
-        </div>
+    <div class="tablero-row__field-inline">
+      <img src="${locationIcon}" alt="Locación" class="tablero-row__field-icon" />
+      <span>${escapeHtml(locationValue || "—")}</span>
+    </div>
+  </div>
+
+  <div
+    class="tablero-row__fields tablero-row__fields--recurrence"
+    data-role="recurrence-read"
+  >
+    ${escapeHtml(hasRecurrence ? "Rutina configurada" : "Sin rutina")}
+  </div>
+</div>
 
         <div
           class="tablero-row__fields tablero-row__fields--recurrence"
@@ -1067,7 +1069,6 @@
     </div>
 
     <div class="tablero-row__center">
-      <div class="tablero-row__title" data-role="text-view">${safeText || "Sin texto"}</div>
       <div class="tablero-row__mode-choose" data-role="mode-choose"></div>
     </div>
 
