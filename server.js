@@ -1075,69 +1075,78 @@ async function listMazosHandler(req, res) {
 
     const mazos = await Promise.all(
       mazosBase.map(async (deck) => {
-        const playsResult = await pool.query(
-          `
-          SELECT
-            p.id,
-            p.created_by_user_id,
-            p.target_user_id,
-            p.card_rank,
-            p.card_suit,
-            p.play_status,
-            p.play_code,
-            p.created_at,
-            p.updated_at
-          FROM plays p
-          WHERE p.deck_id = $1
-          ORDER BY p.id ASC
-          `,
-          [deck.id]
-        );
+        try {
+          const playsResult = await pool.query(
+            `
+            SELECT
+              p.id,
+              p.created_by_user_id,
+              p.target_user_id,
+              p.card_rank,
+              p.card_suit,
+              p.play_status,
+              p.play_code,
+              p.created_at,
+              p.updated_at
+            FROM plays p
+            WHERE p.deck_id = $1
+            ORDER BY p.id ASC
+            `,
+            [deck.id]
+          );
 
-        const plays = playsResult.rows;
-        const membership = getDeckMembershipStatusFromPlays(plays, userId);
+          const plays = Array.isArray(playsResult.rows) ? playsResult.rows : [];
+          const membership = getDeckMembershipStatusFromPlays(plays, userId);
 
-        const hasActiveBlueJoker = plays.some((play) => {
-          const rank = String(play.card_rank || '').toUpperCase();
-          const suit = String(play.card_suit || '').toUpperCase();
-          const status = String(play.play_status || '').toUpperCase();
-
-          return rank === 'JOKER' && suit === 'BLUE' && status === 'ACTIVE';
-        });
-
-        const joker_type = hasActiveBlueJoker ? 'BLUE' : 'RED';
-
-        const current_user_cards = plays
-          .filter((play) => {
-            const playCode = String(play.play_code || '');
-            const parts = playCode.split('§');
-
-            const rank = String(play.card_rank || parts[3] || '').toUpperCase();
-            const suit = String(play.card_suit || parts[4] || '').toUpperCase();
-            const flow = String(parts[7] || '').toLowerCase();
-
-            if (rank !== 'A') return false;
-            if (!['HEART', 'SPADE', 'DIAMOND', 'CLUB'].includes(suit)) return false;
-
-            const ownerUserId = Number(
-              play.target_user_id || play.created_by_user_id || 0
-            );
-
-            return flow === 'foundation' && ownerUserId === Number(userId);
-          })
-          .map((play) => {
+          const hasActiveBlueJoker = plays.some((play) => {
             const rank = String(play.card_rank || '').toUpperCase();
             const suit = String(play.card_suit || '').toUpperCase();
-            return `${rank}_${suit}`;
+            const status = String(play.play_status || '').toUpperCase();
+
+            return rank === 'JOKER' && suit === 'BLUE' && status === 'ACTIVE';
           });
 
-        return {
-          ...deck,
-          joker_type,
-          current_user_cards,
-          membership_status: membership.status,
-          is_active_member: membership.isActive,
-        };
+          const joker_type = hasActiveBlueJoker ? 'BLUE' : 'RED';
+
+          const current_user_cards = plays
+            .filter((play) => {
+              const playCode = String(play.play_code || '');
+              const parts = playCode.split('§');
+
+              const rank = String(play.card_rank || parts[3] || '').toUpperCase();
+              const suit = String(play.card_suit || parts[4] || '').toUpperCase();
+              const flow = String(parts[7] || '').toLowerCase();
+
+              if (rank !== 'A') return false;
+              if (!['HEART', 'SPADE', 'DIAMOND', 'CLUB'].includes(suit)) return false;
+
+              const ownerUserId = Number(
+                play.target_user_id || play.created_by_user_id || 0
+              );
+
+              return flow === 'foundation' && ownerUserId === Number(userId);
+            })
+            .map((play) => {
+              const rank = String(play.card_rank || '').toUpperCase();
+              const suit = String(play.card_suit || '').toUpperCase();
+              return `${rank}_${suit}`;
+            });
+
+          return {
+            ...deck,
+            joker_type,
+            current_user_cards,
+            membership_status: membership.status,
+            is_active_member: membership.isActive,
+          };
+        } catch (error) {
+          console.error('Error armando mazo', {
+            deckId: deck?.id,
+            deckName: deck?.name,
+            error
+          });
+          throw error;
+        }
       })
     );
 
