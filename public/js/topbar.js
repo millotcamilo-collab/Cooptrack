@@ -136,12 +136,36 @@
     window.location.href = "/nuevo-mazo.html";
   }
 
+  async function hasArchivedDecks() {
+    try {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return false;
+
+      const response = await fetch(`${API_BASE_URL}/decks?archived=true`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) return false;
+
+      const data = await response.json();
+      const mazos = data?.mazos || data?.decks || [];
+
+      return mazos.length > 0;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
   async function renderTopbar() {
     const user = await getLoggedUser();
     const userHasDecks = await hasDecks();
+    const userHasJPlays = user ? await hasUserJPlays(user.id) : false;
 
     const onMazosPage = isMazosPage();
-    const userHasJPlays = user ? await hasUserJPlays(user.id) : false;
+    const userHasArchivedDecks = await hasArchivedDecks();
     const latestIncomingCard = await getLatestIncomingCard();
     const userHasPendingApprovals = !!latestIncomingCard;
 
@@ -202,8 +226,8 @@
         }
 
 
-${userHasJPlays
-  ? `
+${userHasArchivedDecks
+          ? `
     <button
       class="topbar__icon-btn"
       id="archivoBtn"
@@ -211,7 +235,12 @@ ${userHasJPlays
     >
       <img src="/assets/icons/archivo80.gif" class="topbar__icon-img" />
     </button>
+    `
+          : ""
+        }
 
+${userHasJPlays
+          ? `
     <button
       class="topbar__icon-btn"
       id="bitacoraBtn"
@@ -228,33 +257,11 @@ ${userHasJPlays
       <img src="/assets/icons/calculadora80.gif" class="topbar__icon-img" />
     </button>
     `
-  : ""
-}
-             <a
-                href="/almanaque.html"
-                class="topbar__icon-btn"
-                title="Aqui esta el calendario aun no te programe"
-              >
-                <img src="/assets/icons/Schedule80.gif" class="topbar__icon-img" />
-              </a>
+          : ""
+        }
 
-              <a
-                href="/noticias.html"
-                class="topbar__icon-btn"
-                title="Aca estan las noticias que aun no ocurren"
-              >
-                <img src="/assets/icons/Extra120.gif" class="topbar__icon-img" />
-              </a>
-
-              <a
-                href="/help.html"
-                class="topbar__icon-btn"
-                title="help"
-              >
-                <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
-              </a>
 ${user.is_admin
-            ? `
+          ? `
       <a
         href="/protected-pages/administradores.html"
         class="topbar__icon-btn"
@@ -263,8 +270,8 @@ ${user.is_admin
         <img src="/assets/icons/Tools120.gif" class="topbar__icon-img" />
       </a>
     `
-            : ""
-          }
+          : ""
+        }
               <button class="topbar__icon-btn" id="logoutBtn">
                 <img src="/assets/icons/exit80.gif" class="topbar__icon-img topbar__icon-img--exit" />
               </button>
@@ -352,7 +359,7 @@ ${user.is_admin
         window.location.href = "/contabilidad.html";
       });
     }
-    
+
     const pendingBtn = document.getElementById("pendingBtn");
     if (pendingBtn && latestIncomingCard) {
       pendingBtn.addEventListener("click", () => {
