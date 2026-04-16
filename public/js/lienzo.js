@@ -638,7 +638,7 @@
       }
 
       alert("Invitación aceptada");
-      window.location.href = "/mazos.html";
+      window.location.href = "/mazo.html";
     } catch (error) {
       console.error("Error en handleAcceptPlay", error);
       alert("No se pudo aprobar la jugada");
