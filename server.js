@@ -1124,29 +1124,58 @@ async function listMazosHandler(req, res) {
 
           const joker_type = hasActiveBlueJoker ? 'BLUE' : 'RED';
 
-          const current_user_cards = plays
+          const activeStatuses = ['ACTIVE', 'APPROVED', 'SENT', 'ACKNOWLEDGED'];
+
+          const corporateCards = plays
             .filter((play) => {
               const playCode = String(play.play_code || '');
               const parts = playCode.split('§');
 
               const rank = String(play.card_rank || parts[3] || '').toUpperCase();
               const suit = String(play.card_suit || parts[4] || '').toUpperCase();
-              const flow = String(parts[7] || '').toLowerCase();
+    
+              const status = String(play.play_status || '').toUpperCase();
 
-              if (rank !== 'A') return false;
+              if (!['A', 'K'].includes(rank)) return false;
               if (!['HEART', 'SPADE', 'DIAMOND', 'CLUB'].includes(suit)) return false;
+              if (!activeStatuses.includes(status)) return false;
 
               const ownerUserId = Number(
                 play.target_user_id || play.created_by_user_id || 0
               );
 
-              return flow === 'foundation' && ownerUserId === Number(userId);
+              return ownerUserId === Number(userId);
             })
             .map((play) => {
               const rank = String(play.card_rank || '').toUpperCase();
               const suit = String(play.card_suit || '').toUpperCase();
               return `${rank}_${suit}`;
             });
+
+          let current_user_cards = [...new Set(corporateCards)];
+
+          // Si no tiene A/K, mostrar su Q visible más alta para que no quede vacío
+          if (!current_user_cards.length) {
+            const fallbackQCards = plays
+              .filter((play) => {
+                const rank = String(play.card_rank || '').toUpperCase();
+                const suit = String(play.card_suit || '').toUpperCase();
+                const status = String(play.play_status || '').toUpperCase();
+                const targetUserId = Number(play.target_user_id || 0);
+
+                if (rank !== 'Q') return false;
+                if (!['SPADE', 'CLUB'].includes(suit)) return false;
+                if (!activeStatuses.includes(status)) return false;
+
+                return targetUserId === Number(userId);
+              })
+              .map((play) => {
+                const suit = String(play.card_suit || '').toUpperCase();
+                return `Q_${suit}`;
+              });
+
+            current_user_cards = [...new Set(fallbackQCards)].slice(0, 1);
+          }
 
           return {
             ...deck,

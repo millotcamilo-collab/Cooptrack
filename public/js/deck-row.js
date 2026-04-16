@@ -8,7 +8,10 @@ function getCardImageSrc(cardCode) {
     K_HEART: "/assets/icons/Kcorazon.gif",
     K_SPADE: "/assets/icons/Kpike.gif",
     K_DIAMOND: "/assets/icons/Kdiamante.gif",
-    K_CLUB: "/assets/icons/Ktrebol.gif"
+    K_CLUB: "/assets/icons/Ktrebol.gif",
+
+    Q_SPADE: "/assets/icons/Qpike.gif",
+    Q_CLUB: "/assets/icons/Qtrebol.gif"
   };
 
   return map[String(cardCode || "").toUpperCase()] || null;
@@ -24,7 +27,10 @@ function getCardAlt(cardCode) {
     K_HEART: "K corazón",
     K_SPADE: "K pica",
     K_DIAMOND: "K diamante",
-    K_CLUB: "K trébol"
+    K_CLUB: "K trébol",
+
+    Q_SPADE: "Q pica",
+    Q_CLUB: "Q trébol"
   };
 
   return map[String(cardCode || "").toUpperCase()] || String(cardCode || "");
@@ -211,7 +217,7 @@ function attachDeckRowEvents() {
             Authorization: `Bearer ${token}`
           }
         });
-        
+
         const data = await response.json();
 
         if (!response.ok || !data.ok) {
