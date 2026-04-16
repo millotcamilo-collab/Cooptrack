@@ -56,9 +56,7 @@ function renderCardsStack(cards) {
       const src = getCardImageSrc(cardCode);
       const alt = getCardAlt(cardCode);
 
-      if (!src) {
-        return "";
-      }
+      if (!src) return "";
 
       return `
         <img
@@ -91,6 +89,8 @@ function renderDeckRow(deck) {
     "/assets/icons/sinPicture.gif";
 
   const jokerType = String(deck.joker || deck.joker_type || "RED").toUpperCase();
+  const membershipStatus = String(deck.membershipStatus || deck.membership_status || "ACTIVE").toUpperCase();
+
   const currentUserCards = Array.isArray(deck.currentUserCards)
     ? deck.currentUserCards
     : Array.isArray(deck.current_user_cards)
@@ -99,9 +99,14 @@ function renderDeckRow(deck) {
 
   const jokerSrc = getJokerImageSrc(jokerType);
   const jokerAlt = getJokerAlt(jokerType);
+  const isArchived = membershipStatus === "ARCHIVED";
 
   return `
-    <article class="deck-row" data-deck-id="${deckId}">
+    <article
+      class="deck-row${isArchived ? " deck-row--archived" : ""}"
+      data-deck-id="${deckId}"
+      data-membership-status="${membershipStatus}"
+    >
       <div class="deck-row__left">
         ${renderCardsStack(currentUserCards)}
       </div>
@@ -119,7 +124,12 @@ function renderDeckRow(deck) {
         <div class="deck-row__name">
           ${deckName}
         </div>
-         <div class="deck-row__joker-wrap">
+
+        ${isArchived
+          ? `<div class="deck-row__status">Archivado</div>`
+          : ""}
+
+        <div class="deck-row__joker-wrap">
           <img
             src="${jokerSrc}"
             class="deck-row__joker"

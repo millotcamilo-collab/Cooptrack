@@ -4,6 +4,11 @@ function getToken() {
   return localStorage.getItem("cooptrackToken");
 }
 
+function getDecksMode() {
+  const mode = document.body?.dataset?.decksMode || "active";
+  return mode === "archived" ? "archived" : "active";
+}
+
 function goToMazoPage(deck) {
   if (!deck || !deck.id) {
     console.warn("Deck inválido", deck);
@@ -13,7 +18,7 @@ function goToMazoPage(deck) {
   window.location.href = `/mazo.html?id=${deck.id}`;
 }
 
-async function fetchDecks() {
+async function fetchDecks(mode = "active") {
   try {
     const token = getToken();
 
@@ -34,7 +39,15 @@ async function fetchDecks() {
       throw new Error(data.message || data.error || "Error cargando mazos");
     }
 
-    return data.mazos || data.decks || [];
+    if (mode === "archived") {
+      return Array.isArray(data.archivedMazos) ? data.archivedMazos : [];
+    }
+
+    return Array.isArray(data.mazos)
+      ? data.mazos
+      : Array.isArray(data.decks)
+        ? data.decks
+        : [];
   } catch (error) {
     console.error("Error trayendo mazos:", error);
     return [];
@@ -62,6 +75,7 @@ function buildDeckRowViewModel(deck) {
     currentUserCards: Array.isArray(deck.current_user_cards)
       ? deck.current_user_cards
       : [],
+    membershipStatus: String(deck.membership_status || "ACTIVE").toUpperCase(),
     originalDeck: deck
   };
 }
@@ -75,13 +89,14 @@ async function renderDecksView() {
     return;
   }
 
-  const decks = await fetchDecks();
+  const mode = getDecksMode();
+  const decks = await fetchDecks(mode);
 
   if (!decks.length) {
     container.innerHTML = `
       <section class="decks-view">
         <div class="page-container">
-          <p>No hay mazos todavía.</p>
+          <p>${mode === "archived" ? "No hay mazos archivados." : "No hay mazos todavía."}</p>
         </div>
       </section>
     `;

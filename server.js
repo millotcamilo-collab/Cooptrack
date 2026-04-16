@@ -1090,48 +1090,39 @@ async function listMazosHandler(req, res) {
         );
 
         const plays = playsResult.rows;
+        const membership = getDeckMembershipStatusFromPlays(plays, userId);
 
-        // -------------------------
-        // JOKER DEL MAZO
-        // -------------------------
         const hasActiveBlueJoker = plays.some((play) => {
-          const rank = String(play.card_rank || "").toUpperCase();
-          const suit = String(play.card_suit || "").toUpperCase();
-          const status = String(play.play_status || "").toUpperCase();
+          const rank = String(play.card_rank || '').toUpperCase();
+          const suit = String(play.card_suit || '').toUpperCase();
+          const status = String(play.play_status || '').toUpperCase();
 
-          return rank === "JOKER" && suit === "BLUE" && status === "ACTIVE";
+          return rank === 'JOKER' && suit === 'BLUE' && status === 'ACTIVE';
         });
 
-        const joker_type = hasActiveBlueJoker ? "BLUE" : "RED";
+        const joker_type = hasActiveBlueJoker ? 'BLUE' : 'RED';
 
-        // -------------------------
-        // CARTAS CORPORATIVAS DEL USUARIO
-        // -------------------------
-        // -------------------------
-        // CARTAS QUE PERTENECEN AL USUARIO
-        // (propiedad, no habilitación)
-        // -------------------------
         const current_user_cards = plays
           .filter((play) => {
-            const playCode = String(play.play_code || "");
-            const parts = playCode.split("§");
+            const playCode = String(play.play_code || '');
+            const parts = playCode.split('§');
 
-            const rank = String(play.card_rank || parts[3] || "").toUpperCase();
-            const suit = String(play.card_suit || parts[4] || "").toUpperCase();
-            const flow = String(parts[7] || "").toLowerCase();
+            const rank = String(play.card_rank || parts[3] || '').toUpperCase();
+            const suit = String(play.card_suit || parts[4] || '').toUpperCase();
+            const flow = String(parts[7] || '').toLowerCase();
 
-            if (rank !== "A") return false;
-            if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+            if (rank !== 'A') return false;
+            if (!['HEART', 'SPADE', 'DIAMOND', 'CLUB'].includes(suit)) return false;
 
             const ownerUserId = Number(
               play.target_user_id || play.created_by_user_id || 0
             );
 
-            return flow === "foundation" && ownerUserId === Number(userId);
+            return flow === 'foundation' && ownerUserId === Number(userId);
           })
           .map((play) => {
-            const rank = String(play.card_rank || "").toUpperCase();
-            const suit = String(play.card_suit || "").toUpperCase();
+            const rank = String(play.card_rank || '').toUpperCase();
+            const suit = String(play.card_suit || '').toUpperCase();
             return `${rank}_${suit}`;
           });
 
@@ -1139,16 +1130,22 @@ async function listMazosHandler(req, res) {
           ...deck,
           joker_type,
           current_user_cards,
+          membership_status: membership.status,
+          is_active_member: membership.isActive,
         };
       })
     );
 
+    const activeMazos = mazos.filter((deck) => deck.is_active_member);
+    const archivedMazos = mazos.filter((deck) => !deck.is_active_member);
+
     return res.json({
       ok: true,
-      mazos,
+      mazos: activeMazos,
+      archivedMazos,
     });
   } catch (error) {
-    console.error("Error en listar mazos", error);
+    console.error('Error en listar mazos', error);
     return res.status(500).json({ ok: false });
   }
 }

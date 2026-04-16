@@ -6,38 +6,27 @@
     <title>Bitácora</title>
     <link rel="icon" type="image/png" href="/assets/icons/bigote.png" />
 
-    <link rel="stylesheet" href="/css/global.css" />
-    <link rel="stylesheet" href="/css/topbar.css" />
-    <link rel="stylesheet" href="/css/bitacorabar.css" />
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="/css/topbar.css" />
+  <link rel="stylesheet" href="/css/deck-row.css" />
+
 
 </head>
 
 <body>
 
-    <!-- TOPBAR -->
-    <div id="topbar-container"></div>
+  <div id="topbar-container"></div>
+  <div id="decks-view-container"></div>
 
-    <!-- BITACORA BAR -->
-    <div id="bitacorabar-container"></div>
-
-    <!-- LISTADO DE JOTAS -->
-    <div id="jotas-container"></div>
-
-    <script>
-        window.transversalBarConfig = {
-            containerId: "bitacorabar-container",
-            title: "Archivo",
-            iconSrc: "/assets/icons/archivo80.gif",
-            iconAlt: "Archivo",
-            searchPlaceholder: "Buscar en archivo",
-            filterEventName: "archivo:filterSuit",
-            searchEventName: "archivo:search",
-            filterPrefix: "archivo"
-        };
-    </script>
-    <script src="/js/topbar.js"></script>
-    <script src="/js/bitacorabar.js"></script>
-
+  <script src="/js/deck-view.js"></script>
+  <script src="/js/deck-row.js"></script>
+  <script src="/js/topbar.js"></script>
+   
+  <script>
+    if (typeof renderDecksView === "function") {
+      renderDecksView();
+    }
+  </script>
 
 
 </body>
