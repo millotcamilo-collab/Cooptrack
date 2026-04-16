@@ -1660,6 +1660,31 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
     }
 
+    if (play_status === 'ACKNOWLEDGED') {
+      if (!(currentRank === 'Q' && currentSuit === 'SPADE')) {
+        return res.status(400).json({
+          ok: false,
+          error: 'Solo una Q♠ puede marcarse como leída'
+        });
+      }
+
+      const creatorUserId = Number(current.created_by_user_id || 0);
+
+      if (!creatorUserId || Number(userId) !== creatorUserId) {
+        return res.status(403).json({
+          ok: false,
+          error: 'Solo el anfitrión puede marcar esta confirmación como leída'
+        });
+      }
+
+      if (currentStatus !== 'APPROVED') {
+        return res.status(400).json({
+          ok: false,
+          error: 'Solo una Q♠ aprobada puede marcarse como leída'
+        });
+      }
+    }
+
     const nextText =
       text !== undefined ? String(text || '').trim() : current.play_text;
 
