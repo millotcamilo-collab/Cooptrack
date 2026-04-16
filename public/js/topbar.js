@@ -260,6 +260,30 @@ ${userHasJPlays
           : ""
         }
 
+<a
+  href="/almanaque.html"
+  class="topbar__icon-btn"
+  title="Almanaque"
+>
+  <img src="/assets/icons/Schedule80.gif" class="topbar__icon-img" />
+</a>
+
+<a
+  href="/noticias.html"
+  class="topbar__icon-btn"
+  title="Noticias"
+>
+  <img src="/assets/icons/Extra120.gif" class="topbar__icon-img" />
+</a>
+
+<a
+  href="/help.html"
+  class="topbar__icon-btn"
+  title="help"
+>
+  <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
+</a>
+
 ${user.is_admin
           ? `
       <a
