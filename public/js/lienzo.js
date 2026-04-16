@@ -697,7 +697,18 @@
       }
 
       alert("Invitación aceptada");
-      window.location.href = "/mazo.html";
+
+      const deckId =
+        Number(play?.deck_id || 0) ||
+        Number(getCurrentDeck()?.id || 0);
+
+      if (deckId) {
+        window.location.href = `/mazo.html?id=${deckId}`;
+        return;
+      }
+
+      window.history.back();
+      
     } catch (error) {
       console.error("Error en handleAcceptPlay", error);
       alert("No se pudo aprobar la jugada");
