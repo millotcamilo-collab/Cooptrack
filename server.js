@@ -1669,26 +1669,59 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     }
 
     if (play_status === 'APPROVED') {
-      if (!(currentRank === 'Q' && currentSuit === 'SPADE')) {
-        return res.status(400).json({
-          ok: false,
-          error: 'Solo una Q♠ puede aprobarse como invitación'
-        });
+      // -----------------------------------------
+      // CASO 1: Q♠ = invitación
+      // -----------------------------------------
+      if (currentRank === 'Q' && currentSuit === 'SPADE') {
+        const targetUserId = Number(current.target_user_id || 0);
+
+        if (!targetUserId || Number(userId) !== targetUserId) {
+          return res.status(403).json({
+            ok: false,
+            error: 'Solo el invitado puede aceptar esta Q♠'
+          });
+        }
+
+        if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
+          return res.status(400).json({
+            ok: false,
+            error: 'Solo una Q♠ enviada puede aprobarse'
+          });
+        }
       }
 
-      const targetUserId = Number(current.target_user_id || 0);
+      // -----------------------------------------
+      // CASO 2: J♠ = actividad / cita
+      // -----------------------------------------
+      else if (currentRank === 'J' && currentSuit === 'SPADE') {
+        const start = startDate !== undefined ? startDate || null : current.start_date;
+        const locationToCheck =
+          location !== undefined
+            ? String(location || '').trim()
+            : String(current.location || '').trim();
 
-      if (!targetUserId || Number(userId) !== targetUserId) {
-        return res.status(403).json({
-          ok: false,
-          error: 'Solo el invitado puede aceptar esta Q♠'
-        });
+        if (!start || !locationToCheck) {
+          return res.status(400).json({
+            ok: false,
+            error: 'Para aprobar una J♠, fecha inicio y locación son obligatorias'
+          });
+        }
+
+        if (currentStatus === 'CANCELLED' || currentStatus === 'REJECTED') {
+          return res.status(400).json({
+            ok: false,
+            error: 'Esta J♠ ya no puede aprobarse'
+          });
+        }
       }
 
-      if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
+      // -----------------------------------------
+      // OTROS CASOS
+      // -----------------------------------------
+      else {
         return res.status(400).json({
           ok: false,
-          error: 'Solo una Q♠ enviada puede aprobarse'
+          error: 'Esta jugada no admite aprobación'
         });
       }
     }
