@@ -1125,6 +1125,7 @@ async function listMazosHandler(req, res) {
           const joker_type = hasActiveBlueJoker ? 'BLUE' : 'RED';
 
           const activeStatuses = ['ACTIVE', 'APPROVED', 'SENT', 'ACKNOWLEDGED'];
+          const archivedVisibleStatuses = [...activeStatuses, 'REJECTED'];
 
           const corporateCards = plays
             .filter((play) => {
@@ -1133,12 +1134,14 @@ async function listMazosHandler(req, res) {
 
               const rank = String(play.card_rank || parts[3] || '').toUpperCase();
               const suit = String(play.card_suit || parts[4] || '').toUpperCase();
-    
+              const flow = String(parts[7] || '').toLowerCase();
               const status = String(play.play_status || '').toUpperCase();
 
+              // solo cartas corporativas reales del libro, no las ACL iniciales
               if (!['A', 'K'].includes(rank)) return false;
               if (!['HEART', 'SPADE', 'DIAMOND', 'CLUB'].includes(suit)) return false;
               if (!activeStatuses.includes(status)) return false;
+              if (flow === 'acl') return false;
 
               const ownerUserId = Number(
                 play.target_user_id || play.created_by_user_id || 0
@@ -1154,8 +1157,12 @@ async function listMazosHandler(req, res) {
 
           let current_user_cards = [...new Set(corporateCards)];
 
-          // Si no tiene A/K, mostrar su Q visible más alta para que no quede vacío
+          // Si no tiene A/K reales, mostrar Q♠ / Q♣ como carta visible de referencia
           if (!current_user_cards.length) {
+            const fallbackStatuses = wantsArchived
+              ? archivedVisibleStatuses
+              : activeStatuses;
+
             const fallbackQCards = plays
               .filter((play) => {
                 const rank = String(play.card_rank || '').toUpperCase();
@@ -1165,7 +1172,7 @@ async function listMazosHandler(req, res) {
 
                 if (rank !== 'Q') return false;
                 if (!['SPADE', 'CLUB'].includes(suit)) return false;
-                if (!activeStatuses.includes(status)) return false;
+                if (!fallbackStatuses.includes(status)) return false;
 
                 return targetUserId === Number(userId);
               })
@@ -1176,7 +1183,6 @@ async function listMazosHandler(req, res) {
 
             current_user_cards = [...new Set(fallbackQCards)].slice(0, 1);
           }
-
           return {
             ...deck,
             joker_type,
