@@ -26,7 +26,12 @@ async function fetchDecks(mode = "active") {
       throw new Error("Token no encontrado");
     }
 
-    const response = await fetch(`${API_BASE_URL}/decks`, {
+    const url =
+      mode === "archived"
+        ? `${API_BASE_URL}/decks?archived=true`
+        : `${API_BASE_URL}/decks`;
+
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`
@@ -37,10 +42,6 @@ async function fetchDecks(mode = "active") {
 
     if (!response.ok || !data.ok) {
       throw new Error(data.message || data.error || "Error cargando mazos");
-    }
-
-    if (mode === "archived") {
-      return Array.isArray(data.archivedMazos) ? data.archivedMazos : [];
     }
 
     return Array.isArray(data.mazos)
