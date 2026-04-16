@@ -1056,20 +1056,38 @@ async function createMazoHandler(req, res) {
 async function listMazosHandler(req, res) {
   try {
     const userId = req.auth.userId;
+    const wantsArchived =
+      String(req.query.archived || '').trim().toLowerCase() === 'true';
 
-    const result = await pool.query(
-      `
-      SELECT d.*
-      FROM decks d
-      INNER JOIN deck_members dm
-        ON dm.deck_id = d.id
-      WHERE dm.user_id = $1
-      ORDER BY d.id DESC
-      `,
-      [userId]
-    );
+    const membershipResult = wantsArchived
+      ? await pool.query(
+          `
+          SELECT
+            d.*,
+            false AS is_active_member
+          FROM decks d
+          INNER JOIN ex_deck_members edm
+            ON edm.deck_id = d.id
+          WHERE edm.user_id = $1
+          ORDER BY d.id DESC
+          `,
+          [userId]
+        )
+      : await pool.query(
+          `
+          SELECT
+            d.*,
+            true AS is_active_member
+          FROM decks d
+          INNER JOIN deck_members dm
+            ON dm.deck_id = d.id
+          WHERE dm.user_id = $1
+          ORDER BY d.id DESC
+          `,
+          [userId]
+        );
 
-    const mazosBase = result.rows;
+    const mazosBase = membershipResult.rows;
 
     const mazos = await Promise.all(
       mazosBase.map(async (deck) => {
@@ -1135,7 +1153,7 @@ async function listMazosHandler(req, res) {
             joker_type,
             current_user_cards,
             membership_status: membership.status,
-            is_active_member: membership.isActive,
+            is_active_member: wantsArchived ? false : true
           };
         } catch (error) {
           console.error('Error armando mazo', {
@@ -1148,13 +1166,9 @@ async function listMazosHandler(req, res) {
       })
     );
 
-    const activeMazos = mazos.filter((deck) => deck.is_active_member);
-    const archivedMazos = mazos.filter((deck) => !deck.is_active_member);
-
     return res.json({
       ok: true,
-      mazos: activeMazos,
-      archivedMazos,
+      mazos
     });
   } catch (error) {
     console.error('Error en listar mazos', error);
