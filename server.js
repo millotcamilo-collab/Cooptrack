@@ -1061,7 +1061,7 @@ async function listMazosHandler(req, res) {
 
     const membershipResult = wantsArchived
       ? await pool.query(
-          `
+        `
           SELECT
             d.*,
             false AS is_active_member
@@ -1071,10 +1071,10 @@ async function listMazosHandler(req, res) {
           WHERE edm.user_id = $1
           ORDER BY d.id DESC
           `,
-          [userId]
-        )
+        [userId]
+      )
       : await pool.query(
-          `
+        `
           SELECT
             d.*,
             true AS is_active_member
@@ -1084,8 +1084,8 @@ async function listMazosHandler(req, res) {
           WHERE dm.user_id = $1
           ORDER BY d.id DESC
           `,
-          [userId]
-        );
+        [userId]
+      );
 
     const mazosBase = membershipResult.rows;
 
@@ -1705,19 +1705,43 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       // -----------------------------------------
-      // CASO 2: J♠ = actividad / cita
+      // CASO 2: J♠ = actividad / cita / deadline
       // -----------------------------------------
       else if (currentRank === 'J' && currentSuit === 'SPADE') {
-        const start = startDate !== undefined ? startDate || null : current.start_date;
+        const nextSpadeModeToCheck =
+          spadeMode !== undefined
+            ? String(spadeMode || '').trim().toUpperCase()
+            : String(current.spade_mode || '').trim().toUpperCase();
+
+        const startToCheck =
+          startDate !== undefined ? startDate || null : current.start_date;
+
+        const endToCheck =
+          endDate !== undefined ? endDate || null : current.end_date;
+
         const locationToCheck =
           location !== undefined
             ? String(location || '').trim()
             : String(current.location || '').trim();
 
-        if (!start || !locationToCheck) {
+        if (nextSpadeModeToCheck === 'APPOINTMENT') {
+          if (!startToCheck || !locationToCheck) {
+            return res.status(400).json({
+              ok: false,
+              error: 'Para aprobar una J♠ cita, fecha inicio y locación son obligatorias'
+            });
+          }
+        } else if (nextSpadeModeToCheck === 'DEADLINE') {
+          if (!endToCheck) {
+            return res.status(400).json({
+              ok: false,
+              error: 'Para aprobar una J♠ bomba, fecha límite es obligatoria'
+            });
+          }
+        } else {
           return res.status(400).json({
             ok: false,
-            error: 'Para aprobar una J♠, fecha inicio y locación son obligatorias'
+            error: 'La J♠ debe tener spade_mode APPOINTMENT o DEADLINE antes de aprobarse'
           });
         }
 
@@ -1730,37 +1754,24 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       // -----------------------------------------
+      // CASO 3: J♥ / J♣ / J♦
+      // -----------------------------------------
+      else if (currentRank === 'J' && ['HEART', 'CLUB', 'DIAMOND'].includes(currentSuit)) {
+        if (currentStatus === 'CANCELLED' || currentStatus === 'REJECTED') {
+          return res.status(400).json({
+            ok: false,
+            error: 'Esta jugada ya no puede aprobarse'
+          });
+        }
+      }
+
+      // -----------------------------------------
       // OTROS CASOS
       // -----------------------------------------
       else {
         return res.status(400).json({
           ok: false,
           error: 'Esta jugada no admite aprobación'
-        });
-      }
-    }
-
-    if (play_status === 'REJECTED') {
-      if (!(currentRank === 'Q' && currentSuit === 'SPADE')) {
-        return res.status(400).json({
-          ok: false,
-          error: 'Solo una Q♠ puede rechazarse como invitación'
-        });
-      }
-
-      const targetUserId = Number(current.target_user_id || 0);
-
-      if (!targetUserId || Number(userId) !== targetUserId) {
-        return res.status(403).json({
-          ok: false,
-          error: 'Solo el invitado puede rechazar esta Q♠'
-        });
-      }
-
-      if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
-        return res.status(400).json({
-          ok: false,
-          error: 'Solo una Q♠ pendiente/enviada puede rechazarse'
         });
       }
     }
