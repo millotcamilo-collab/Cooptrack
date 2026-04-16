@@ -1137,24 +1137,34 @@ async function listMazosHandler(req, res) {
               const flow = String(parts[7] || '').toLowerCase();
               const status = String(play.play_status || '').toUpperCase();
 
-              // solo cartas corporativas reales del libro, no las ACL iniciales
               if (!['A', 'K'].includes(rank)) return false;
               if (!['HEART', 'SPADE', 'DIAMOND', 'CLUB'].includes(suit)) return false;
-              if (!activeStatuses.includes(status)) return false;
-              if (flow === 'acl') return false;
 
               const ownerUserId = Number(
                 play.target_user_id || play.created_by_user_id || 0
               );
 
-              return ownerUserId === Number(userId);
+              if (ownerUserId !== Number(userId)) return false;
+
+              // A reales del libro: foundation, aunque estén BLOCKED
+              if (rank === 'A') {
+                return flow === 'foundation';
+              }
+
+              // K reales: no mostrar las ACL iniciales
+              if (rank === 'K') {
+                if (flow === 'acl') return false;
+                return activeStatuses.includes(status);
+              }
+
+              return false;
             })
             .map((play) => {
               const rank = String(play.card_rank || '').toUpperCase();
               const suit = String(play.card_suit || '').toUpperCase();
               return `${rank}_${suit}`;
             });
-
+            
           let current_user_cards = [...new Set(corporateCards)];
 
           // Si no tiene A/K reales, mostrar Q♠ / Q♣ como carta visible de referencia
