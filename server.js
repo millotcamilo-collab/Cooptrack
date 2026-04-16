@@ -6,7 +6,7 @@ const cors = require('cors');
 
 require('dotenv').config();
 
-const deckMembership = require('./services/deck-membership');
+const getDeckMembershipStatusFromPlays = require('./services/deck-membership');
 
 const { parseAndValidatePlayCode } = require('./engine/playParser');
 
@@ -1094,7 +1094,7 @@ async function listMazosHandler(req, res) {
           );
 
           const plays = Array.isArray(playsResult.rows) ? playsResult.rows : [];
-          const membership = deckMembership.getDeckMembershipStatusFromPlays(plays, userId);
+          const membership = getDeckMembershipStatusFromPlays(plays, userId);
 
           const hasActiveBlueJoker = plays.some((play) => {
             const rank = String(play.card_rank || '').toUpperCase();
