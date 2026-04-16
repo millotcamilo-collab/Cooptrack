@@ -483,15 +483,31 @@
     return currentUserId && targetUserId && currentUserId === targetUserId;
   }
 
-  function renderSourceActions() {
-    const sendIcon = "/assets/icons/buzon60.gif";
+  function renderSourceActions(play) {
+    const status = String(play?.play_status || "").trim().toUpperCase();
+    const rank = normalizeRank(play?.card_rank || play?.rank);
+    const suit = normalizeSuit(play?.card_suit || play?.suit);
+
     const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
+
+    const showSend =
+      rank === "Q" &&
+      suit === "SPADE" &&
+      status !== "SENT" &&
+      status !== "APPROVED" &&
+      status !== "REJECTED" &&
+      status !== "CANCELLED" &&
+      status !== "ACKNOWLEDGED";
+
+    const sendIcon = "/assets/icons/buzon60.gif";
 
     return `
     <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-      <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
-        <img src="${sendIcon}" alt="Enviar" />
-      </button>
+      ${showSend ? `
+        <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
+          <img src="${sendIcon}" alt="Enviar" />
+        </button>
+      ` : ""}
 
       <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
         <img src="${exitIcon}" alt="Salir" />
@@ -600,6 +616,49 @@
     } catch (error) {
       console.error("Error en handleSendPlay", error);
       alert("No se pudo enviar la jugada");
+    }
+  }
+
+  async function autoAcknowledgeApprovedPlay(play) {
+    try {
+      const playId = Number(play?.id || 0);
+      const token = localStorage.getItem("cooptrackToken");
+
+      if (!playId || !token) return;
+
+      const rank = normalizeRank(play?.card_rank || play?.rank);
+      const suit = normalizeSuit(play?.card_suit || play?.suit);
+      const status = String(play?.play_status || "").trim().toUpperCase();
+
+      if (!(rank === "Q" && suit === "SPADE" && status === "APPROVED")) {
+        return;
+      }
+
+      if (!isCurrentUserSource(play)) {
+        return;
+      }
+
+      const response = await fetch(`/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_status: "ACKNOWLEDGED"
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("No se pudo marcar como leída la confirmación:", data);
+        return;
+      }
+
+      play.play_status = "ACKNOWLEDGED";
+    } catch (error) {
+      console.error("Error en autoAcknowledgeApprovedPlay", error);
     }
   }
 
@@ -874,7 +933,7 @@
         />
       </div>
     `,
-      actionsHtml: showActionsHere ? renderSourceActions() : ""
+      actionsHtml: showActionsHere ? renderSourceActions(play) : ""
     });
 
     return `
@@ -965,21 +1024,22 @@
     bindLienzoActions(play);
   }
 
-  function openLienzoByPlayId(playId) {
+  async function openLienzoByPlayId(playId) {
     const play = getPlayById(playId);
 
     if (!play) {
       const container = getLienzoContainer();
       if (container) {
         container.innerHTML = `
-          <div class="lienzo-error">
-            No se encontró la jugada ${escapeHtml(playId)}.
-          </div>
-        `;
+        <div class="lienzo-error">
+          No se encontró la jugada ${escapeHtml(playId)}.
+        </div>
+      `;
       }
       return;
     }
 
+    await autoAcknowledgeApprovedPlay(play);
     renderLienzo(play);
   }
 
