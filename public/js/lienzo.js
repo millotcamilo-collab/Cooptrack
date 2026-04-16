@@ -558,7 +558,7 @@
 
     if (rejectBtn) {
       rejectBtn.addEventListener("click", () => {
-        alert("Rechazar: pendiente de programar");
+        handleRejectPlay(play);
       });
     }
 
@@ -701,6 +701,53 @@
     } catch (error) {
       console.error("Error en handleAcceptPlay", error);
       alert("No se pudo aprobar la jugada");
+    }
+  }
+
+  async function handleRejectPlay(play) {
+    try {
+      const playId = Number(play?.id || 0);
+      const token = localStorage.getItem("cooptrackToken");
+
+      if (!playId) {
+        alert("playId inválido");
+        return;
+      }
+
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      const confirmed = window.confirm("¿Querés rechazar esta invitación?");
+      if (!confirmed) {
+        return;
+      }
+
+      const response = await fetch(`/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_status: "REJECTED"
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("Error rechazando jugada:", data);
+        alert(data?.error || "No se pudo rechazar la invitación");
+        return;
+      }
+
+      alert("Invitación rechazada");
+      window.location.href = "/archivo.html";
+    } catch (error) {
+      console.error("Error en handleRejectPlay", error);
+      alert("No se pudo rechazar la invitación");
     }
   }
 

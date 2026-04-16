@@ -1633,11 +1633,37 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     const currentSuit = String(current.card_suit || '').trim().toUpperCase();
     const currentStatus = String(current.play_status || '').trim().toUpperCase();
 
+    // ---------------------------------------------------
+    // VALIDACIONES DE TRANSICIÓN DE ESTADO
+    // ---------------------------------------------------
+
     if (play_status === 'SENT') {
       if (!(currentRank === 'Q' && currentSuit === 'SPADE')) {
         return res.status(400).json({
           ok: false,
           error: 'Solo una Q♠ puede enviarse como invitación'
+        });
+      }
+
+      const creatorUserId = Number(current.created_by_user_id || 0);
+
+      if (!creatorUserId || Number(userId) !== creatorUserId) {
+        return res.status(403).json({
+          ok: false,
+          error: 'Solo el anfitrión puede enviar esta Q♠'
+        });
+      }
+
+      if (
+        currentStatus === 'SENT' ||
+        currentStatus === 'APPROVED' ||
+        currentStatus === 'REJECTED' ||
+        currentStatus === 'CANCELLED' ||
+        currentStatus === 'ACKNOWLEDGED'
+      ) {
+        return res.status(400).json({
+          ok: false,
+          error: 'Esta Q♠ ya no puede enviarse'
         });
       }
     }
@@ -1656,6 +1682,38 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         return res.status(403).json({
           ok: false,
           error: 'Solo el invitado puede aceptar esta Q♠'
+        });
+      }
+
+      if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
+        return res.status(400).json({
+          ok: false,
+          error: 'Solo una Q♠ enviada puede aprobarse'
+        });
+      }
+    }
+
+    if (play_status === 'REJECTED') {
+      if (!(currentRank === 'Q' && currentSuit === 'SPADE')) {
+        return res.status(400).json({
+          ok: false,
+          error: 'Solo una Q♠ puede rechazarse como invitación'
+        });
+      }
+
+      const targetUserId = Number(current.target_user_id || 0);
+
+      if (!targetUserId || Number(userId) !== targetUserId) {
+        return res.status(403).json({
+          ok: false,
+          error: 'Solo el invitado puede rechazar esta Q♠'
+        });
+      }
+
+      if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
+        return res.status(400).json({
+          ok: false,
+          error: 'Solo una Q♠ pendiente/enviada puede rechazarse'
         });
       }
     }
@@ -1684,6 +1742,10 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         });
       }
     }
+
+    // ---------------------------------------------------
+    // NORMALIZACIÓN DE CAMPOS
+    // ---------------------------------------------------
 
     const nextText =
       text !== undefined ? String(text || '').trim() : current.play_text;
@@ -1754,6 +1816,10 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
 
     const updatedPlay = updateResult.rows[0];
 
+    // ---------------------------------------------------
+    // EFECTOS POSTERIORES AL UPDATE
+    // ---------------------------------------------------
+
     const isSendingQSpadeNow =
       currentRank === 'Q' &&
       currentSuit === 'SPADE' &&
@@ -1772,6 +1838,95 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       await expandReadersForQSpadeSend(client, updatedPlay);
+    }
+
+    const isApprovingQSpadeNow =
+      currentRank === 'Q' &&
+      currentSuit === 'SPADE' &&
+      currentStatus !== 'APPROVED' &&
+      nextStatus === 'APPROVED';
+
+    if (isApprovingQSpadeNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+      const deckId = Number(updatedPlay.deck_id || 0);
+
+      if (!invitedUserId || !deckId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La Q♠ aprobada debe tener target_user_id y deck_id válidos'
+        });
+      }
+
+      await client.query(
+        `
+        INSERT INTO deck_members (deck_id, user_id)
+        VALUES ($1, $2)
+        ON CONFLICT DO NOTHING
+        `,
+        [deckId, invitedUserId]
+      );
+    }
+
+    const isRejectingQSpadeNow =
+      currentRank === 'Q' &&
+      currentSuit === 'SPADE' &&
+      currentStatus !== 'REJECTED' &&
+      nextStatus === 'REJECTED';
+
+    if (isRejectingQSpadeNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+      const deckId = Number(updatedPlay.deck_id || 0);
+
+      if (!invitedUserId || !deckId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La Q♠ rechazada debe tener target_user_id y deck_id válidos'
+        });
+      }
+
+      const tieCheck = await client.query(
+        `
+        SELECT 1
+        FROM plays
+        WHERE deck_id = $1
+          AND target_user_id = $2
+          AND id <> $3
+          AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'BLOCKED')
+          AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
+        LIMIT 1
+        `,
+        [deckId, invitedUserId, updatedPlay.id]
+      );
+
+      const hasAnotherTie = tieCheck.rows.length > 0;
+
+      if (!hasAnotherTie) {
+        await client.query(
+          `
+          DELETE FROM deck_members
+          WHERE deck_id = $1
+            AND user_id = $2
+          `,
+          [deckId, invitedUserId]
+        );
+
+        await client.query(
+          `
+          INSERT INTO ex_deck_members (
+            deck_id,
+            user_id,
+            reason,
+            source_play_id,
+            created_at
+          )
+          VALUES ($1, $2, $3, $4, NOW())
+          ON CONFLICT DO NOTHING
+          `,
+          [deckId, invitedUserId, 'Q_SPADE_REJECTED', updatedPlay.id]
+        );
+      }
     }
 
     await client.query('COMMIT');
