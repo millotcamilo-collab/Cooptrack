@@ -3,7 +3,12 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+
 require('dotenv').config();
+
+const {
+  getDeckMembershipStatusFromPlays
+} = require('./services/deck-membership');
 
 const { parseAndValidatePlayCode } = require('./engine/playParser');
 
