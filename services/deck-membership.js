@@ -1,6 +1,7 @@
+// services/deck-membership.js
+
 function getDeckMembershipStatusFromPlays(plays, userId) {
   const safePlays = Array.isArray(plays) ? plays : [];
-
   const userIdStr = String(userId);
 
   let hasActiveAorK = false;
@@ -43,3 +44,5 @@ function getDeckMembershipStatusFromPlays(plays, userId) {
     status: isActive ? 'ACTIVE' : 'ARCHIVED'
   };
 }
+
+module.exports = getDeckMembershipStatusFromPlays;
