@@ -536,7 +536,7 @@
 
     if (acceptBtn) {
       acceptBtn.addEventListener("click", () => {
-        alert("Aceptar: pendiente de programar");
+        handleAcceptPlay(play);
       });
     }
 
@@ -600,6 +600,48 @@
     } catch (error) {
       console.error("Error en handleSendPlay", error);
       alert("No se pudo enviar la jugada");
+    }
+  }
+
+  async function handleAcceptPlay(play) {
+    try {
+      const playId = Number(play?.id || 0);
+      const token = localStorage.getItem("cooptrackToken");
+
+      if (!playId) {
+        alert("playId inválido");
+        return;
+      }
+
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      const response = await fetch(`/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_status: "APPROVED"
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("Error aprobando jugada:", data);
+        alert(data?.error || "No se pudo aprobar la jugada");
+        return;
+      }
+
+      alert("Invitación aceptada");
+      window.location.href = "/mazos.html";
+    } catch (error) {
+      console.error("Error en handleAcceptPlay", error);
+      alert("No se pudo aprobar la jugada");
     }
   }
 

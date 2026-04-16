@@ -1642,6 +1642,24 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
     }
 
+    if (play_status === 'APPROVED') {
+      if (!(currentRank === 'Q' && currentSuit === 'SPADE')) {
+        return res.status(400).json({
+          ok: false,
+          error: 'Solo una Q♠ puede aprobarse como invitación'
+        });
+      }
+
+      const targetUserId = Number(current.target_user_id || 0);
+
+      if (!targetUserId || Number(userId) !== targetUserId) {
+        return res.status(403).json({
+          ok: false,
+          error: 'Solo el invitado puede aceptar esta Q♠'
+        });
+      }
+    }
+
     const nextText =
       text !== undefined ? String(text || '').trim() : current.play_text;
 
@@ -1950,32 +1968,41 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
 
     const result = await pool.query(
       `SELECT
-         p.id,
-         p.deck_id,
-         p.parent_play_id,
-         p.created_by_user_id,
-         p.target_user_id,
-         p.card_rank,
-         p.card_suit,
-         p.play_status,
-         p.play_text,
-         p.created_at,
-         p.updated_at,
-         parent.play_text AS parent_play_text,
-         author.nickname AS author_nickname,
-         deck.name AS deck_name
-       FROM plays p
-       LEFT JOIN plays parent
-         ON parent.id = p.parent_play_id
-       LEFT JOIN users author
-         ON author.id = p.created_by_user_id
-       LEFT JOIN decks deck
-         ON deck.id = p.deck_id
-       WHERE p.target_user_id = $1
-         AND p.card_rank = 'Q'
-         AND p.card_suit = 'SPADE'
+     p.id,
+     p.deck_id,
+     p.parent_play_id,
+     p.created_by_user_id,
+     p.target_user_id,
+     p.card_rank,
+     p.card_suit,
+     p.play_status,
+     p.play_text,
+     p.created_at,
+     p.updated_at,
+     parent.play_text AS parent_play_text,
+     author.nickname AS author_nickname,
+     deck.name AS deck_name
+   FROM plays p
+   LEFT JOIN plays parent
+     ON parent.id = p.parent_play_id
+   LEFT JOIN users author
+     ON author.id = p.created_by_user_id
+   LEFT JOIN decks deck
+     ON deck.id = p.deck_id
+   WHERE p.card_rank = 'Q'
+     AND p.card_suit = 'SPADE'
+     AND (
+       (
+         p.target_user_id = $1
          AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
-       ORDER BY p.created_at DESC`,
+       )
+       OR
+       (
+         p.created_by_user_id = $1
+         AND COALESCE(p.play_status, '') = 'APPROVED'
+       )
+     )
+   ORDER BY p.created_at DESC`,
       [userId]
     );
 

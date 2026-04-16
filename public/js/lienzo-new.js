@@ -627,6 +627,41 @@
   `;
   }
 
+  async function refreshCurrentUser() {
+    try {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return getCurrentUser();
+
+      const response = await fetch("/me", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        return getCurrentUser();
+      }
+
+      const data = await response.json();
+      const freshUser = data?.user || null;
+
+      if (freshUser) {
+        window.__currentUser = freshUser;
+
+        window.__currentState = {
+          ...(window.__currentState || {}),
+          currentUser: freshUser
+        };
+      }
+
+      return freshUser || getCurrentUser();
+    } catch (error) {
+      console.error("No se pudo refrescar el usuario actual", error);
+      return getCurrentUser();
+    }
+  }
+
   function getCurrentUser() {
     return window.__currentUser || window.__currentState?.currentUser || null;
   }
@@ -994,7 +1029,9 @@
     });
   }
 
-  function renderNewLienzo() {
+  async function renderNewLienzo() {
+    await refreshCurrentUser();
+
     const container = getLienzoContainer();
     const deck = getCurrentDeck();
     const draft = buildDraftFromParams();
