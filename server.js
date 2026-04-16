@@ -2743,6 +2743,56 @@ app.get('/admin/joker-blue-requests', requireAuth, async (req, res) => {
   }
 });
 
+app.get("/decks/:deckId/archive-state", requireAuth, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const userId = req.auth.userId;
+    const deckId = Number(req.params.deckId);
+
+    if (!deckId) {
+      return res.status(400).json({ ok: false });
+    }
+
+    // 🔐 verificar que sea ex miembro
+    const membership = await client.query(
+      `
+      SELECT 1
+      FROM ex_deck_members
+      WHERE deck_id = $1 AND user_id = $2
+      LIMIT 1
+      `,
+      [deckId, userId]
+    );
+
+    if (!membership.rows.length) {
+      return res.status(403).json({ ok: false });
+    }
+
+    // 📜 traer jugadas
+    const playsResult = await client.query(
+      `
+      SELECT *
+      FROM plays
+      WHERE deck_id = $1
+      ORDER BY id ASC
+      `,
+      [deckId]
+    );
+
+    return res.json({
+      ok: true,
+      plays: playsResult.rows
+    });
+
+  } catch (error) {
+    console.error("archive-state error", error);
+    return res.status(500).json({ ok: false });
+  } finally {
+    client.release();
+  }
+});
+
 // =====================================================
 // START
 // =====================================================

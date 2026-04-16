@@ -102,53 +102,133 @@ function renderDeckRow(deck) {
   const isArchived = membershipStatus === "ARCHIVED";
 
   return `
-    <article
-      class="deck-row${isArchived ? " deck-row--archived" : ""}"
+    <section
+      class="deck-row-wrap${isArchived ? " deck-row-wrap--archived" : ""}"
       data-deck-id="${deckId}"
       data-membership-status="${membershipStatus}"
     >
-      <div class="deck-row__left">
-        ${renderCardsStack(currentUserCards)}
-      </div>
-
-      <div class="deck-row__photo">
-        <img
-          src="${photoUrl}"
-          class="deck-row__photo-img"
-          alt="${deckName}"
-          onerror="this.onerror=null; this.src='/assets/icons/sinPicture.gif';"
-        />
-      </div>
-
-      <div class="deck-row__right">
-        <div class="deck-row__name">
-          ${deckName}
+      <article
+        class="deck-row${isArchived ? " deck-row--archived" : ""}"
+        data-deck-id="${deckId}"
+        data-membership-status="${membershipStatus}"
+      >
+        <div class="deck-row__left">
+          ${renderCardsStack(currentUserCards)}
         </div>
 
-        ${isArchived
-          ? `<div class="deck-row__status">Archivado</div>`
-          : ""}
-
-        <div class="deck-row__joker-wrap">
+        <div class="deck-row__photo">
           <img
-            src="${jokerSrc}"
-            class="deck-row__joker"
-            alt="${jokerAlt}"
-            title="${jokerAlt}"
+            src="${photoUrl}"
+            class="deck-row__photo-img"
+            alt="${deckName}"
+            onerror="this.onerror=null; this.src='/assets/icons/sinPicture.gif';"
           />
         </div>
-      </div>
-    </article>
+
+        <div class="deck-row__right">
+          <div class="deck-row__name">
+            ${deckName}
+          </div>
+
+          ${isArchived
+      ? `<div class="deck-row__status">Archivado</div>`
+      : ""}
+
+          <div class="deck-row__joker-wrap">
+            <img
+              src="${jokerSrc}"
+              class="deck-row__joker"
+              alt="${jokerAlt}"
+              title="${jokerAlt}"
+            />
+          </div>
+        </div>
+      </article>
+
+      ${isArchived
+      ? `
+          <div
+            class="deck-row__archive-panel"
+            id="deck-row-archive-panel-${deckId}"
+            data-deck-id="${deckId}"
+            hidden
+          ></div>
+        `
+      : ""}
+    </section>
   `;
 }
 
 function attachDeckRowEvents() {
   document.querySelectorAll(".deck-row").forEach((row) => {
     const deckId = row.dataset.deckId;
+    const membershipStatus = String(row.dataset.membershipStatus || "").toUpperCase();
+    const isArchived = membershipStatus === "ARCHIVED";
 
-    row.addEventListener("click", () => {
+    row.addEventListener("click", async () => {
       if (!deckId) return;
-      window.location.href = `/mazo.html?id=${deckId}`;
+
+      if (!isArchived) {
+        window.location.href = `/mazo.html?id=${deckId}`;
+        return;
+      }
+
+      const panel = document.getElementById(`deck-row-archive-panel-${deckId}`);
+      if (!panel) return;
+
+      const isOpen = !panel.hidden;
+
+      // cerrar si ya estaba abierto
+      if (isOpen) {
+        panel.hidden = true;
+        panel.innerHTML = "";
+        row.classList.remove("deck-row--expanded");
+        return;
+      }
+
+      // abrir
+      panel.hidden = false;
+      row.classList.add("deck-row--expanded");
+      panel.innerHTML = `
+        <div class="deck-row__archive-loading">
+          Cargando archivo...
+        </div>
+      `;
+
+      try {
+        // por ahora placeholder
+        // después acá hacemos fetch al endpoint archive-state
+        panel.innerHTML = `<div class="deck-row__archive-content" id="archive-tablero-${deckId}"></div>`;
+
+        const archiveContainer = document.getElementById(`archive-tablero-${deckId}`);
+
+        // fetch al endpoint que traiga las jugadas visibles archivadas
+        const token = localStorage.getItem("cooptrackToken");
+
+        const response = await fetch(`/decks/${deckId}/archive-state`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "No se pudo cargar archivo");
+        }
+
+        if (typeof window.renderArchivedTablero === "function") {
+          window.renderArchivedTablero(archiveContainer, data.plays || []);
+        }
+      } catch (error) {
+        console.error("Error abriendo archivo del mazo", error);
+        panel.innerHTML = `
+          <div class="deck-row__archive-error">
+            No se pudo cargar el archivo del mazo.
+          </div>
+        `;
+      }
     });
   });
 }

@@ -1,0 +1,32 @@
+.tablero--archivado .tablero-row__left {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 48px;
+}
+
+.tablero--archivado .tablero-row__card {
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.tablero--archivado .tablero-row__center {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tablero--archivado .tablero-row__title {
+  font-size: 16px;
+}
+
+.tablero--archivado .tablero-row__meta {
+  font-size: 13px;
+  color: #666;
+}
+
+.tablero-archivado__empty {
+  margin: 0 var(--layout-padding);
+  padding: 20px;
+}
