@@ -91,6 +91,44 @@ async function expandReadersForQSpadeSend(client, play) {
   }
 }
 
+async function computeReadersForJSpade(client, play) {
+  const deckId = Number(play?.deck_id || 0);
+  const authorUserId = Number(play?.created_by_user_id || 0);
+
+  const aceHolders = await getAllAceHolderUserIds(client, deckId);
+  const kSpadeHolders = await getCurrentCardHolderUserIds(
+    client,
+    deckId,
+    'K',
+    'SPADE'
+  );
+
+  return normalizeReaderEntries([
+    authorUserId,
+    ...aceHolders,
+    ...kSpadeHolders,
+  ]);
+}
+
+async function computeReadersForJClub(client, play) {
+  const deckId = Number(play?.deck_id || 0);
+  const authorUserId = Number(play?.created_by_user_id || 0);
+
+  const aceHolders = await getAllAceHolderUserIds(client, deckId);
+  const kClubHolders = await getCurrentCardHolderUserIds(
+    client,
+    deckId,
+    'K',
+    'CLUB'
+  );
+
+  return normalizeReaderEntries([
+    authorUserId,
+    ...aceHolders,
+    ...kClubHolders,
+  ]);
+}
+
 /**
  * Se ejecuta cuando se CREA una jugada
  */
@@ -111,6 +149,20 @@ async function handleReadersOnPlayCreate(client, play) {
   // --- Q♠ guardada en borrador institucional ---
   if (rank === 'Q' && suit === 'SPADE') {
     const readers = await computeReadersForQSpadeDraft(client, play);
+    await setPlayReaders(client, id, readers);
+    return;
+  }
+
+  // --- J♠ actividad ---
+  if (rank === 'J' && suit === 'SPADE') {
+    const readers = await computeReadersForJSpade(client, play);
+    await setPlayReaders(client, id, readers);
+    return;
+  }
+
+  // --- J♣ bien ---
+  if (rank === 'J' && suit === 'CLUB') {
+    const readers = await computeReadersForJClub(client, play);
     await setPlayReaders(client, id, readers);
     return;
   }

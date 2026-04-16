@@ -1568,8 +1568,6 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
   const client = await pool.connect();
 
   try {
-    console.log('PATCH /plays/:id req.body =', req.body);
-
     const playId = Number(req.params.id);
     const userId = req.auth.userId;
 
@@ -1735,6 +1733,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     }
 
     console.error('Error en PATCH /plays/:id', error);
+
     return res.status(500).json({
       ok: false,
       error: 'No se pudo actualizar la jugada'
