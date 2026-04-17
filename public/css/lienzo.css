@@ -232,13 +232,6 @@ body {
   display: block;
 }
 
-.lienzo-target-dropzone {
-  min-height: 120px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-  width: 100%;
-}
 
 .lienzo-target-actions {
   display: flex;
@@ -288,12 +281,17 @@ body {
 
 .lienzo-source-cards {
   position: relative;
-
   display: flex;
-  justify-content: flex-start;
   align-items: flex-start;
-
+  gap: 16px;
+  flex-wrap: wrap;
   min-height: 180px;
+}
+
+.lienzo-dropped-extra-slot {
+  position: static;
+  flex: 0 0 auto;
+  z-index: 4;
 }
 
 .nuevo-mazo-target-actions {
@@ -828,7 +826,7 @@ body {
 }
 
 .lienzo-card-image--dropped {
-  height: 110px;
+  height: 120px;
   width: auto;
   display: block;
   object-fit: contain;
@@ -851,9 +849,23 @@ body {
   z-index: 2;
 }
 
-.lienzo-dropped-extra-slot,
+.lienzo-target-mainrow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  min-height: 190px;
+}
+
+.lienzo-target-dropzone {
+  position: relative;
+  min-height: 180px;
+  flex: 0 0 auto;
+}
+
 .lienzo-target-extra-slot {
   position: static;
+  flex: 0 0 auto;
   z-index: 4;
 }
 
@@ -873,10 +885,7 @@ body {
   flex: 0 0 auto;
 }
 
-.lienzo-target-mainrow {
-  position: relative;
-  min-height: 190px;
-}
+
 
 .lienzo-qheart-box {
   width: 190px;
@@ -906,7 +915,7 @@ body {
   padding: 0 8px;
   box-sizing: border-box;
   border: 1px solid #999;
-  background: #999;
+  background: #e5e9e1;
 }
 
 .lienzo-qheart-box__amount-row {
