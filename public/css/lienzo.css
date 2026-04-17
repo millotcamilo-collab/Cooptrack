@@ -17,7 +17,7 @@ body {
 
 .lienzo-page {
   min-height: calc(100vh - var(--topbar-height));
-  padding: 24px 0 40px;
+  padding: 0px 0 40px;
   box-sizing: border-box;
 }
 
@@ -445,7 +445,7 @@ body {
 .lienzo-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 5px;
+  gap: 0px;
   align-items: start;
 }
 
