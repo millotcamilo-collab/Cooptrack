@@ -853,13 +853,21 @@
 
       const conceptInput = document.querySelector(".lienzo-qheart-box__concept");
       const amountInput = document.querySelector(".lienzo-qheart-box__amount");
+      const payDateInput = document.querySelector(".lienzo-qheart-box__paydate");
 
       const concept = String(conceptInput?.value || "").trim() || "Ticket";
       const amount = String(amountInput?.value || "").trim();
+      const payDate = String(payDateInput?.value || "").trim();
 
       if (!amount) {
         alert("Falta el monto.");
         amountInput?.focus();
+        return;
+      }
+
+      if (!payDate) {
+        alert("Falta la fecha de pago.");
+        payDateInput?.focus();
         return;
       }
 
@@ -889,7 +897,8 @@
         `|payer:${payer}` +
         `|concept:${concept}` +
         `|amount:${amount}` +
-        `|currency:${currency}`;
+        `|currency:${currency}` +
+        `|payDate:${payDate}`;
 
       const currentPlayCode = String(play?.play_code || "").trim();
 
@@ -898,9 +907,22 @@
         return;
       }
 
-      const playCodeParts = currentPlayCode.split("§");
-      const cleanedParts = playCodeParts.slice(0, 9);
-      const nextPlayCode = [...cleanedParts, paymentBlock].join("§");
+      const parts = currentPlayCode.split("§");
+
+      while (parts.length < 9) {
+        parts.push("");
+      }
+
+      const currentFlow = String(parts[7] || "")
+        .split(";")
+        .filter((item) => item && !item.startsWith("pay:QHEART"))
+        .join(";");
+
+      parts[7] = currentFlow
+        ? `${currentFlow};${paymentBlock}`
+        : paymentBlock;
+
+      const nextPlayCode = parts.slice(0, 9).join("§");
 
       const response = await fetch(`/plays/${playId}`, {
         method: "PATCH",
@@ -931,7 +953,8 @@
         payerLabel,
         concept,
         amount,
-        currency
+        currency,
+        payDate
       };
 
       window.__lienzoQHeartDraft = null;
@@ -949,7 +972,7 @@
       alert("No se pudo guardar");
     }
   }
-  
+
   async function handleSendPlay(play) {
     try {
       const playId = Number(play?.id || 0);

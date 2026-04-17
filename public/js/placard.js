@@ -24,10 +24,12 @@
     <div class="placard-qheart-summary">
       ${escapeHtml(data.concept)}
       ${escapeHtml(data.currency)} ${escapeHtml(data.amount)}
+      ${escapeHtml(data.payDate)}
       paga ${escapeHtml(data.payerLabel)}
     </div>
   `;
   }
+
   function getSuitIconSrc(suit) {
     const s = normalizeSuit(suit);
 
