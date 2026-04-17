@@ -1825,19 +1825,23 @@
 
     if (!container || !play) return;
 
+    // Si la jugada tiene Q♥ persistida, rehidratar siempre antes de pintar
+    hydrateQHeartSavedFromPlay(play);
+    hydrateQHeartVisualFromPlay(play);
+
     container.innerHTML = `
-      ${renderDeckHeader(deck)}
+    ${renderDeckHeader(deck)}
 
-      <div class="lienzo-grid">
-        <div id="colombes" class="lienzo-grid__left">
-          ${renderSourcePlayerPanel(play)}
-        </div>
-
-        <div id="amsterdam" class="lienzo-grid__right">
-          ${renderTargetPlayerPanel(play)}
-        </div>
+    <div class="lienzo-grid">
+      <div id="colombes" class="lienzo-grid__left">
+        ${renderSourcePlayerPanel(play)}
       </div>
-    `;
+
+      <div id="amsterdam" class="lienzo-grid__right">
+        ${renderTargetPlayerPanel(play)}
+      </div>
+    </div>
+  `;
 
     mountPlacardFromDataset();
     bindLienzoActions(play);
@@ -1859,8 +1863,11 @@
       return;
     }
 
-    await autoAcknowledgeApprovedPlay(play);
+    // Rehidratar estado persistido de la Q♥ antes de renderizar
+    hydrateQHeartSavedFromPlay(play);
     hydrateQHeartVisualFromPlay(play);
+
+    await autoAcknowledgeApprovedPlay(play);
     renderLienzo(play);
   }
 
