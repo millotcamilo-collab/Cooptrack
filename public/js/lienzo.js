@@ -743,7 +743,7 @@
     const showSave = showSend && !window.__lienzoQHeartSaved;
 
     const sendIcon = "/assets/icons/buzon60.gif";
-    const saveIcon = "/assets/icons/guardar60.gif";
+    const saveIcon = "/assets/icons/salvar40.gif";
 
     return `
     <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">

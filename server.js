@@ -1164,7 +1164,7 @@ async function listMazosHandler(req, res) {
               const suit = String(play.card_suit || '').toUpperCase();
               return `${rank}_${suit}`;
             });
-            
+
           let current_user_cards = [...new Set(corporateCards)];
 
           // Si no tiene A/K reales, mostrar Q♠ / Q♣ como carta visible de referencia
@@ -1650,7 +1650,8 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       location,
       amount,
       play_status,
-      card_suit
+      card_suit,
+      play_code
     } = req.body || {};
 
     if (!playId) {
@@ -1678,6 +1679,34 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     }
 
     const current = existingResult.rows[0];
+    let parsedPatchedPlayCode = null;
+
+    if (play_code !== undefined && play_code !== null && String(play_code).trim()) {
+      const parsed = parseAndValidatePlayCode(String(play_code).trim());
+
+      if (!parsed.ok) {
+        return res.status(400).json({
+          ok: false,
+          error: `play_code inválido: ${parsed.errors.join(', ')}`
+        });
+      }
+
+      if (String(parsed.deckId) !== String(current.deck_id)) {
+        return res.status(400).json({
+          ok: false,
+          error: 'play_code.deckId no coincide con la jugada'
+        });
+      }
+
+      if (parsed.userId && String(parsed.userId) !== String(current.created_by_user_id)) {
+        return res.status(400).json({
+          ok: false,
+          error: 'play_code.userId no coincide con el autor original'
+        });
+      }
+
+      parsedPatchedPlayCode = parsed;
+    }
 
     const mazo = await getMazoByIdForUser(client, current.deck_id, userId);
 
@@ -1886,24 +1915,30 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         ? String(spadeMode || '').trim() || null
         : current.spade_mode;
 
+    const nextPlayCode =
+      play_code !== undefined && play_code !== null && String(play_code).trim()
+        ? String(play_code).trim()
+        : current.play_code;
+
     await client.query('BEGIN');
 
     const updateResult = await client.query(
       `
-      UPDATE plays
-      SET
-        play_text = $1,
-        play_status = $2,
-        card_suit = $3,
-        start_date = $4,
-        end_date = $5,
-        location = $6,
-        amount = $7,
-        spade_mode = $8,
-        updated_at = NOW()
-      WHERE id = $9
-      RETURNING *
-      `,
+  UPDATE plays
+  SET
+    play_text = $1,
+    play_status = $2,
+    card_suit = $3,
+    start_date = $4,
+    end_date = $5,
+    location = $6,
+    amount = $7,
+    spade_mode = $8,
+    play_code = $9,
+    updated_at = NOW()
+  WHERE id = $10
+  RETURNING *
+  `,
       [
         nextText || null,
         nextStatus || null,
@@ -1913,6 +1948,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         nextLocation,
         nextAmount,
         nextSpadeMode,
+        nextPlayCode,
         playId
       ]
     );
