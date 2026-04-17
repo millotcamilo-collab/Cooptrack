@@ -466,6 +466,69 @@
     return window.__lienzoQHeartSaved;
   }
 
+  function parseQHeartPaymentFromPlay(play) {
+    if (!play?.play_code) return null;
+
+    const parsed = parsePlayCode(play.play_code);
+    const flow = String(parsed.flow || "").trim();
+
+    if (!flow) return null;
+
+    const paymentChunk = flow
+      .split(";")
+      .map((item) => item.trim())
+      .find((item) => item.startsWith("pay:QHEART"));
+
+    if (!paymentChunk) return null;
+
+    const payment = {
+      attachedRank: "Q",
+      attachedSuit: "HEART"
+    };
+
+    paymentChunk.split("|").forEach((part, index) => {
+      if (index === 0) return;
+
+      const sepIndex = part.indexOf(":");
+      if (sepIndex === -1) return;
+
+      const key = part.slice(0, sepIndex).trim();
+      const value = part.slice(sepIndex + 1).trim();
+
+      if (!key) return;
+      payment[key] = value;
+    });
+
+    return payment;
+  }
+
+  function hydrateQHeartVisualFromPlay(play) {
+    const payment = parseQHeartPaymentFromPlay(play);
+
+    if (!payment) {
+      window.__lienzoDropSelection = null;
+      return null;
+    }
+
+    const side = String(payment.side || "").trim().toUpperCase();
+
+    if (side !== "COLOMBES" && side !== "AMSTERDAM") {
+      window.__lienzoDropSelection = null;
+      return null;
+    }
+
+    window.__lienzoDropSelection = {
+      targetZone: side,
+      rank: "Q",
+      suit: "HEART",
+      cardId: "virtual-Q-HEART",
+      isVirtual: true,
+      playId: Number(play?.id || 0)
+    };
+
+    return window.__lienzoDropSelection;
+  }
+
   function parsePlayCode(code) {
     const parts = String(code || "").split("§");
 
@@ -1797,7 +1860,7 @@
     }
 
     await autoAcknowledgeApprovedPlay(play);
-    hydrateQHeartSavedFromPlay(play);
+    hydrateQHeartVisualFromPlay(play);
     renderLienzo(play);
   }
 
