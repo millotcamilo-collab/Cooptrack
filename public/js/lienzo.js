@@ -382,6 +382,90 @@
     return document.getElementById("lienzo-container");
   }
 
+  function parseFlowMetadata(flowValue) {
+    const raw = String(flowValue || "").trim();
+    if (!raw) return { baseFlow: "", payment: null };
+
+    const chunks = raw.split(";").map((item) => item.trim()).filter(Boolean);
+
+    let baseFlow = "";
+    let payment = null;
+
+    chunks.forEach((chunk) => {
+      if (chunk.startsWith("pay:QHEART")) {
+        const parts = chunk.split("|");
+        const paymentData = {
+          attachedRank: "Q",
+          attachedSuit: "HEART"
+        };
+
+        parts.forEach((part, index) => {
+          if (index === 0) return; // pay:QHEART
+
+          const separatorIndex = part.indexOf(":");
+          if (separatorIndex === -1) return;
+
+          const key = part.slice(0, separatorIndex).trim();
+          const value = part.slice(separatorIndex + 1).trim();
+
+          if (!key) return;
+          paymentData[key] = value;
+        });
+
+        payment = paymentData;
+      } else if (!baseFlow) {
+        baseFlow = chunk;
+      }
+    });
+
+    return { baseFlow, payment };
+  }
+
+  function hydrateQHeartSavedFromPlay(play) {
+    if (!play?.play_code) {
+      window.__lienzoQHeartSaved = null;
+      return null;
+    }
+
+    const parsed = parsePlayCode(play.play_code);
+    const meta = parseFlowMetadata(parsed.flow);
+
+    if (!meta.payment) {
+      window.__lienzoQHeartSaved = null;
+      return null;
+    }
+
+    const payment = meta.payment;
+    const deck = getCurrentDeck();
+    const targetUser = resolveTargetUser(play);
+
+    let payerLabel = String(deck?.name || "Mazo").trim();
+
+    if (String(payment.side || "").toUpperCase() === "AMSTERDAM") {
+      payerLabel = String(
+        targetUser?.nickname ||
+        targetUser?.full_name ||
+        targetUser?.name ||
+        "Invitado"
+      ).trim();
+    }
+
+    window.__lienzoQHeartSaved = {
+      playId: Number(play?.id || 0),
+      attachedRank: "Q",
+      attachedSuit: "HEART",
+      side: String(payment.side || "").toUpperCase(),
+      payer: payment.payer || "deck",
+      payerLabel,
+      concept: payment.concept || "Ticket",
+      amount: payment.amount || "",
+      currency: payment.currency || getCurrencyCode(deck) || "",
+      payDate: payment.payDate || ""
+    };
+
+    return window.__lienzoQHeartSaved;
+  }
+
   function parsePlayCode(code) {
     const parts = String(code || "").split("§");
 
@@ -924,22 +1008,22 @@
 
       const nextPlayCode = parts.slice(0, 9).join("§");
 
-const response = await fetch(`/plays/${playId}`, {
-  method: "PATCH",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`
-  },
-  body: JSON.stringify({
-    play_status: "DRAFT",
-    play_code: nextPlayCode
-  })
-});
+      const response = await fetch(`/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_status: "DRAFT",
+          play_code: nextPlayCode
+        })
+      });
 
-const data = await response.json();
+      const data = await response.json();
 
-console.log("SAVE response status =", response.status);
-console.log("SAVE response data =", data);
+      console.log("SAVE response status =", response.status);
+      console.log("SAVE response data =", data);
 
       if (!response.ok || !data.ok) {
         console.error("Error guardando jugada:", data);
@@ -1286,7 +1370,7 @@ console.log("SAVE response data =", data);
     }
 
     const clockIcon = "/assets/icons/reloj60.gif";
-    const bellIcon = "/assets/icons/campana60.gif";
+    const bellIcon = "/assets/icons/campana80.gif";
     const bombIcon = "/assets/icons/bombaRedonda60.gif";
 
     let bodyHtml = "";
@@ -1713,6 +1797,7 @@ console.log("SAVE response data =", data);
     }
 
     await autoAcknowledgeApprovedPlay(play);
+    hydrateQHeartSavedFromPlay(play);
     renderLienzo(play);
   }
 
