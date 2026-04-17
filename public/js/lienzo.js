@@ -742,8 +742,7 @@
 
     const sendIcon = "/assets/icons/buzon60.gif";
 
-    // 👇 nuevo icono save (podés cambiarlo)
-    const saveIcon = "/assets/icons/guardar60.gif";
+    const saveIcon = "/assets/icons/salvar40.gif";
 
     return `
     <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
