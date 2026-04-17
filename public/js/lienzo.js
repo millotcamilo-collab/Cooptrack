@@ -924,20 +924,19 @@
 
       const nextPlayCode = parts.slice(0, 9).join("§");
 
-console.log("SAVE currentPlayCode =", currentPlayCode);
-console.log("SAVE nextPlayCode =", nextPlayCode);
+const response = await fetch(`/plays/${playId}`, {
+  method: "PATCH",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    play_status: "DRAFT",
+    play_code: nextPlayCode
+  })
+});
 
-      const response = await fetch(`/plays/${playId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          play_status: "DRAFT",
-          play_code: nextPlayCode
-        })
-      });
+const data = await response.json();
 
 console.log("SAVE response status =", response.status);
 console.log("SAVE response data =", data);
