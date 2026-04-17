@@ -740,14 +740,15 @@
       status !== "CANCELLED" &&
       status !== "ACKNOWLEDGED";
 
-    const sendIcon = "/assets/icons/buzon60.gif";
+    const showSave = showSend && !window.__lienzoQHeartSaved;
 
-    const saveIcon = "/assets/icons/salvar40.gif";
+    const sendIcon = "/assets/icons/buzon60.gif";
+    const saveIcon = "/assets/icons/guardar60.gif";
 
     return `
     <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
 
-      ${showSend ? `
+      ${showSave ? `
         <button id="lienzo-save-btn" class="icon-btn" title="Guardar">
           <img src="${saveIcon}" alt="Guardar" />
         </button>
@@ -825,72 +826,72 @@
   }
 
   async function handleSavePlay(play) {
-  try {
-    const playId = Number(play?.id || 0);
+    try {
+      const playId = Number(play?.id || 0);
 
-    if (!playId) {
-      alert("playId inválido");
-      return;
+      if (!playId) {
+        alert("playId inválido");
+        return;
+      }
+
+      const selection = getLienzoDropSelection();
+
+      if (
+        !selection ||
+        normalizeRank(selection.rank) !== "Q" ||
+        normalizeSuit(selection.suit) !== "HEART"
+      ) {
+        alert("Primero tenés que bajar una Q de corazón.");
+        return;
+      }
+
+      const conceptInput = document.querySelector(".lienzo-qheart-box__concept");
+      const amountInput = document.querySelector(".lienzo-qheart-box__amount");
+
+      const concept = String(conceptInput?.value || "").trim() || "Ticket";
+      const amount = String(amountInput?.value || "").trim();
+      const deck = getCurrentDeck();
+      const currency = getCurrencyCode(deck);
+
+      if (!amount) {
+        alert("Falta el monto.");
+        amountInput?.focus();
+        return;
+      }
+
+      let payer = "deck";
+      let payerLabel = String(deck?.name || "Mazo").trim();
+
+      if (String(selection.targetZone || "").toUpperCase() === "AMSTERDAM") {
+        const targetUser = resolveTargetUser(play);
+        payer = `U:${Number(targetUser?.id || 0)}`;
+        payerLabel = String(
+          targetUser?.nickname ||
+          targetUser?.full_name ||
+          targetUser?.name ||
+          "Invitado"
+        ).trim();
+      }
+
+      window.__lienzoQHeartSaved = {
+        playId,
+        attachedRank: "Q",
+        attachedSuit: "HEART",
+        side: String(selection.targetZone || "").toUpperCase(),
+        payer,
+        payerLabel,
+        concept,
+        amount,
+        currency
+      };
+
+      renderLienzo(play);
+
+    } catch (error) {
+      console.error("Error en handleSavePlay", error);
+      alert("No se pudo guardar");
     }
-
-    const selection = getLienzoDropSelection();
-
-    if (
-      !selection ||
-      normalizeRank(selection.rank) !== "Q" ||
-      normalizeSuit(selection.suit) !== "HEART"
-    ) {
-      alert("Primero tenés que bajar una Q de corazón.");
-      return;
-    }
-
-    const conceptInput = document.querySelector(".lienzo-qheart-box__concept");
-    const amountInput = document.querySelector(".lienzo-qheart-box__amount");
-
-    const concept = String(conceptInput?.value || "").trim() || "Ticket";
-    const amount = String(amountInput?.value || "").trim();
-    const deck = getCurrentDeck();
-    const currency = getCurrencyCode(deck);
-
-    if (!amount) {
-      alert("Falta el monto.");
-      amountInput?.focus();
-      return;
-    }
-
-    let payer = "deck";
-    let payerLabel = String(deck?.name || "Mazo").trim();
-
-    if (String(selection.targetZone || "").toUpperCase() === "AMSTERDAM") {
-      const targetUser = resolveTargetUser(play);
-      payer = `U:${Number(targetUser?.id || 0)}`;
-      payerLabel = String(
-        targetUser?.nickname ||
-        targetUser?.full_name ||
-        targetUser?.name ||
-        "Invitado"
-      ).trim();
-    }
-
-    window.__lienzoQHeartSaved = {
-      playId,
-      attachedRank: "Q",
-      attachedSuit: "HEART",
-      side: String(selection.targetZone || "").toUpperCase(),
-      payer,
-      payerLabel,
-      concept,
-      amount,
-      currency
-    };
-
-    renderLienzo(play);
-
-  } catch (error) {
-    console.error("Error en handleSavePlay", error);
-    alert("No se pudo guardar");
   }
-}
 
   async function handleSendPlay(play) {
     try {
@@ -1349,7 +1350,8 @@
 
     const selection = getLienzoDropSelection();
     const droppedInColombes = selection?.targetZone === "COLOMBES";
-    const showQHeartBox = isSelectedQHeartInZone("COLOMBES");
+    const showQHeartBox =
+      isSelectedQHeartInZone("COLOMBES") && !window.__lienzoQHeartSaved;
 
     const deck = getCurrentDeck();
     const deckName = String(deck?.name || "Mazo").trim();
@@ -1424,7 +1426,8 @@
 
     const selection = getLienzoDropSelection();
     const droppedInAmsterdam = selection?.targetZone === "AMSTERDAM";
-    const showQHeartBox = isSelectedQHeartInZone("AMSTERDAM");
+    const showQHeartBox =
+      isSelectedQHeartInZone("AMSTERDAM") && !window.__lienzoQHeartSaved;
 
     const baseRank = normalizeRank(play?.card_rank || play?.rank);
     const baseSuit = normalizeSuit(play?.card_suit || play?.suit);

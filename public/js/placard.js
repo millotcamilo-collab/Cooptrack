@@ -22,21 +22,12 @@
 
     return `
     <div class="placard-qheart-summary">
-      <div class="placard-qheart-summary__title">
-        Paga ${escapeHtml(data.payerLabel)}
-      </div>
-
-      <div class="placard-qheart-summary__line">
-        ${escapeHtml(data.concept)}
-      </div>
-
-      <div class="placard-qheart-summary__line">
-        ${escapeHtml(data.currency)} ${escapeHtml(data.amount)}
-      </div>
+      ${escapeHtml(data.concept)}
+      ${escapeHtml(data.currency)} ${escapeHtml(data.amount)}
+      paga ${escapeHtml(data.payerLabel)}
     </div>
   `;
   }
-
   function getSuitIconSrc(suit) {
     const s = normalizeSuit(suit);
 
