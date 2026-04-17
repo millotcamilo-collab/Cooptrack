@@ -825,47 +825,72 @@
   }
 
   async function handleSavePlay(play) {
-    try {
-      const playId = Number(play?.id || 0);
-      const token = localStorage.getItem("cooptrackToken");
+  try {
+    const playId = Number(play?.id || 0);
 
-      if (!playId) {
-        alert("playId inválido");
-        return;
-      }
-
-      if (!token) {
-        alert("No estás logueado");
-        return;
-      }
-
-      // 👇 por ahora solo guardamos como DRAFT
-      const response = await fetch(`/plays/${playId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          play_status: "DRAFT"
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.ok) {
-        console.error("Error guardando jugada:", data);
-        alert(data?.error || "No se pudo guardar");
-        return;
-      }
-
-      alert("Guardado sin enviar");
-
-    } catch (error) {
-      console.error("Error en handleSavePlay", error);
-      alert("No se pudo guardar");
+    if (!playId) {
+      alert("playId inválido");
+      return;
     }
+
+    const selection = getLienzoDropSelection();
+
+    if (
+      !selection ||
+      normalizeRank(selection.rank) !== "Q" ||
+      normalizeSuit(selection.suit) !== "HEART"
+    ) {
+      alert("Primero tenés que bajar una Q de corazón.");
+      return;
+    }
+
+    const conceptInput = document.querySelector(".lienzo-qheart-box__concept");
+    const amountInput = document.querySelector(".lienzo-qheart-box__amount");
+
+    const concept = String(conceptInput?.value || "").trim() || "Ticket";
+    const amount = String(amountInput?.value || "").trim();
+    const deck = getCurrentDeck();
+    const currency = getCurrencyCode(deck);
+
+    if (!amount) {
+      alert("Falta el monto.");
+      amountInput?.focus();
+      return;
+    }
+
+    let payer = "deck";
+    let payerLabel = String(deck?.name || "Mazo").trim();
+
+    if (String(selection.targetZone || "").toUpperCase() === "AMSTERDAM") {
+      const targetUser = resolveTargetUser(play);
+      payer = `U:${Number(targetUser?.id || 0)}`;
+      payerLabel = String(
+        targetUser?.nickname ||
+        targetUser?.full_name ||
+        targetUser?.name ||
+        "Invitado"
+      ).trim();
+    }
+
+    window.__lienzoQHeartSaved = {
+      playId,
+      attachedRank: "Q",
+      attachedSuit: "HEART",
+      side: String(selection.targetZone || "").toUpperCase(),
+      payer,
+      payerLabel,
+      concept,
+      amount,
+      currency
+    };
+
+    renderLienzo(play);
+
+  } catch (error) {
+    console.error("Error en handleSavePlay", error);
+    alert("No se pudo guardar");
   }
+}
 
   async function handleSendPlay(play) {
     try {

@@ -12,6 +12,31 @@
     return String(value || "").trim().toUpperCase();
   }
 
+  function isQHeartSaved() {
+    return !!window.__lienzoQHeartSaved;
+  }
+
+  function renderQHeartSummary() {
+    const data = window.__lienzoQHeartSaved;
+    if (!data) return "";
+
+    return `
+    <div class="placard-qheart-summary">
+      <div class="placard-qheart-summary__title">
+        Paga ${escapeHtml(data.payerLabel)}
+      </div>
+
+      <div class="placard-qheart-summary__line">
+        ${escapeHtml(data.concept)}
+      </div>
+
+      <div class="placard-qheart-summary__line">
+        ${escapeHtml(data.currency)} ${escapeHtml(data.amount)}
+      </div>
+    </div>
+  `;
+  }
+
   function getSuitIconSrc(suit) {
     const s = normalizeSuit(suit);
 
@@ -222,37 +247,40 @@
       config?.leftCardsHtml || buildTopCardsHTML(config?.leftCards || [])
     );
 
+    const qHeartHtml = renderQHeartSummary();
+
     container.innerHTML = `
-      <section class="placard">
-        <div class="placard__left">
-          ${leftCardsHtml}
-          ${photoHtml}
-        </div>
+  <section class="placard">
+    <div class="placard__left">
+      ${leftCardsHtml}
+      ${photoHtml}
+    </div>
 
-        <div class="placard__center">
-          <div class="placard__titleline">
-            <span class="placard__rank">${escapeHtml(rank)}</span>
+    <div class="placard__center">
+      <div class="placard__titleline">
+        <span class="placard__rank">${escapeHtml(rank)}</span>
 
-            ${suitIcon
+        ${suitIcon
         ? `<img src="${escapeHtml(suitIcon)}" alt="" class="placard__suit" />`
         : ""
       }
 
-            <span class="placard__name">${escapeHtml(title)}</span>
+        <span class="placard__name">${escapeHtml(title)}</span>
 
-            ${showCurrency
+        ${showCurrency
         ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
         : ""
       }
-          </div>
+      </div>
 
-          ${photoEditorHtml}
-        </div>
+      ${photoEditorHtml}
 
-        ${rightHtml}
-      </section>
-    `;
+      ${qHeartHtml}  <!-- 👈 ACA VA -->
+    </div>
 
+    ${rightHtml}
+  </section>
+`;
     container
       .querySelectorAll(".placard__topcard-image, .placard__topcard-fallback")
       .forEach((cardEl) => {
