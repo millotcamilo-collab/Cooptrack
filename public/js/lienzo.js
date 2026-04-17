@@ -1280,15 +1280,20 @@
     const selection = getLienzoDropSelection();
     const droppedInAmsterdam = selection?.targetZone === "AMSTERDAM";
 
-    const rank = droppedInAmsterdam
-      ? normalizeRank(selection.rank)
-      : normalizeRank(play?.card_rank || play?.rank);
+    const baseRank = normalizeRank(play?.card_rank || play?.rank);
+    const baseSuit = normalizeSuit(play?.card_suit || play?.suit);
+    const baseImageSrc = getCardImageSrc(baseRank, baseSuit);
 
-    const suit = droppedInAmsterdam
-      ? normalizeSuit(selection.suit)
-      : normalizeSuit(play?.card_suit || play?.suit);
-
-    const imageSrc = getCardImageSrc(rank, suit);
+    const droppedCardHtml = droppedInAmsterdam
+      ? `
+      <img
+        class="lienzo-card-image lienzo-card-image--overlay"
+        src="${escapeHtml(getCardImageSrc(selection.rank, selection.suit))}"
+        alt="${escapeHtml(getCardLabel(selection.rank, selection.suit))}"
+        title="${escapeHtml(getCardLabel(selection.rank, selection.suit))}"
+      />
+    `
+      : "";
 
     const showActionsHere = isCurrentUserTarget(play);
     const showWeekHere = isCurrentUserTarget(play);
@@ -1315,11 +1320,13 @@
 
       <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
         <img
-          class="lienzo-card-image"
-          src="${escapeHtml(imageSrc)}"
-          alt="${escapeHtml(getCardLabel(rank, suit))}"
-          title="${escapeHtml(getCardLabel(rank, suit))}"
+          class="lienzo-card-image lienzo-card-image--base"
+          src="${escapeHtml(baseImageSrc)}"
+          alt="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
+          title="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
         />
+
+        ${droppedCardHtml}
       </div>
 
       ${showWeekHere ? renderWeekRow(parsePlayReferenceDate(play)) : ""}

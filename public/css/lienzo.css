@@ -832,4 +832,21 @@ body {
   object-fit: contain;
 }
 
+.lienzo-target-dropzone {
+  position: relative;
+  min-height: 180px;
+}
+
+.lienzo-card-image--base {
+  position: relative;
+  z-index: 1;
+}
+
+.lienzo-card-image--overlay {
+  position: absolute;
+  top: 14px;
+  left: 48px;
+  z-index: 2;
+}
+
 
