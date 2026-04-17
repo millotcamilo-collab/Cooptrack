@@ -906,7 +906,7 @@ body {
   padding: 0 8px;
   box-sizing: border-box;
   border: 1px solid #999;
-  background: #fff;
+  background: none;
 }
 
 .lienzo-qheart-box__amount-row {
