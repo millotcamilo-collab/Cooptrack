@@ -69,6 +69,17 @@
   }
 
   function parseDraggedCardPayload(event) {
+    const globalCard = window.__draggingPlacardCard;
+    if (globalCard) {
+      return {
+        source: String(globalCard.source || "").trim(),
+        rank: normalizeRank(globalCard.rank),
+        suit: normalizeSuit(globalCard.suit),
+        cardId: globalCard.cardId || null,
+        isVirtual: Boolean(globalCard.isVirtual)
+      };
+    }
+
     try {
       const json = event.dataTransfer?.getData("application/json");
       if (json) {
@@ -1343,7 +1354,8 @@
       el.addEventListener("dragover", (event) => {
         event.preventDefault();
 
-        const card = parseDraggedCardPayload(event);
+        const card =
+          window.__draggingPlacardCard || parseDraggedCardPayload(event);
 
         if (card && canDropCardOnZone(card, zoneName)) {
           event.dataTransfer.dropEffect = "copy";
@@ -1367,7 +1379,8 @@
         el.classList.remove("is-drag-valid");
         el.classList.remove("is-drag-invalid");
 
-        const card = parseDraggedCardPayload(event);
+        const card =
+          window.__draggingPlacardCard || parseDraggedCardPayload(event);
 
         if (!card) {
           console.warn("DROP sin card payload");
@@ -1391,6 +1404,7 @@
         console.log("DROP OK", selection);
 
         setLienzoDropSelection(selection);
+        window.__draggingPlacardCard = null;
         renderLienzo(play);
       });
     });

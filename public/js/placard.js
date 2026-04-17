@@ -265,6 +265,9 @@
             isVirtual: cardEl.dataset.virtual === "true"
           };
 
+          window.__draggingPlacardCard = payload;
+          console.log("DRAG START", payload);
+
           event.dataTransfer.setData(
             "application/json",
             JSON.stringify(payload)
@@ -276,6 +279,9 @@
           event.dataTransfer.effectAllowed = "copy";
         });
       });
+    document.addEventListener("dragend", () => {
+      window.__draggingPlacardCard = null;
+    });
   }
 
   window.renderPlacard = renderPlacard;
