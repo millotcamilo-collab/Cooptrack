@@ -120,11 +120,17 @@
   function renderDroppedCardPreview(container, selection) {
     if (!container) return;
 
-    const preview = container.querySelector(".lienzo-drop-preview");
-    if (!preview) return;
+    let preview = container.querySelector(".lienzo-drop-preview");
+
+    if (!preview) {
+      preview = document.createElement("div");
+      preview.className = "lienzo-drop-preview";
+      container.appendChild(preview);
+    }
 
     if (!selection?.rank || !selection?.suit) {
       preview.innerHTML = "";
+      preview.classList.remove("is-visible");
       return;
     }
 
@@ -141,6 +147,8 @@
       />
     </div>
   `;
+
+    preview.classList.add("is-visible");
   }
 
   function resolveCalendarDateFromPlay(play) {
@@ -1191,14 +1199,6 @@
       </div>
 
       ${sessionDiaHtml}
-            <div
-        id="lienzo-dropzone-colombes"
-        class="lienzo-side-dropzone"
-        data-dropzone="COLOMBES"
-      >
-        <div class="lienzo-side-dropzone__label">Colombes</div>
-        <div class="lienzo-drop-preview"></div>
-      </div>
     </section>
   `;
   }
@@ -1247,34 +1247,30 @@
         />
       </div>
 
-      <div
-        id="lienzo-dropzone-amsterdam"
-        class="lienzo-side-dropzone"
-        data-dropzone="AMSTERDAM"
-      >
-        <div class="lienzo-side-dropzone__label">Amsterdam</div>
-        <div class="lienzo-drop-preview"></div>
-      </div>
-
       ${showWeekHere ? renderWeekRow(parsePlayReferenceDate(play)) : ""}
     </section>
   `;
   }
 
   function bindLienzoDropzones(play) {
+    const colombesZone = document.querySelector(".lienzo-source-cards");
+    const amsterdamZone = document.getElementById("lienzo-target-dropzone");
+
     const zones = [
       {
-        el: document.getElementById("lienzo-dropzone-colombes"),
+        el: colombesZone,
         zoneName: "COLOMBES"
       },
       {
-        el: document.getElementById("lienzo-dropzone-amsterdam"),
+        el: amsterdamZone,
         zoneName: "AMSTERDAM"
       }
     ];
 
     zones.forEach(({ el, zoneName }) => {
       if (!el) return;
+
+      el.dataset.dropzone = zoneName;
 
       el.addEventListener("dragover", (event) => {
         const card = parseDraggedCardPayload(event);
@@ -1298,6 +1294,7 @@
 
       el.addEventListener("drop", (event) => {
         const card = parseDraggedCardPayload(event);
+
         el.classList.remove("is-drag-valid");
         el.classList.remove("is-drag-invalid");
 
@@ -1316,9 +1313,6 @@
         };
 
         setLienzoDropSelection(selection);
-
-        const colombesZone = document.getElementById("lienzo-dropzone-colombes");
-        const amsterdamZone = document.getElementById("lienzo-dropzone-amsterdam");
 
         renderDroppedCardPreview(
           colombesZone,
