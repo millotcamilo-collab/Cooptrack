@@ -113,6 +113,68 @@
     `;
   }
 
+  function buildLeftCardsHTML(leftCardsHtml) {
+    if (!leftCardsHtml) return "";
+    return `
+      <div class="placard__left-cards">
+        ${leftCardsHtml}
+      </div>
+    `;
+  }
+
+  function buildTopCardImageHTML(card) {
+    const rank = String(card?.rank || card?.card_rank || "").trim().toUpperCase();
+    const suit = normalizeSuit(card?.suit || card?.card_suit);
+
+    let src = "";
+
+    if (rank === "A" && suit === "HEART") src = "/assets/icons/Acorazon.gif";
+    if (rank === "A" && suit === "SPADE") src = "/assets/icons/Apike.gif";
+    if (rank === "A" && suit === "DIAMOND") src = "/assets/icons/Adiamante.gif";
+    if (rank === "A" && suit === "CLUB") src = "/assets/icons/Atrebol.gif";
+
+    if (rank === "K" && suit === "HEART") src = "/assets/icons/Kcorazon.gif";
+    if (rank === "K" && suit === "SPADE") src = "/assets/icons/Kpike.gif";
+    if (rank === "K" && suit === "DIAMOND") src = "/assets/icons/Kdiamante.gif";
+    if (rank === "K" && suit === "CLUB") src = "/assets/icons/Ktrebol.gif";
+
+    const labelMap = {
+      HEART: "♥",
+      SPADE: "♠",
+      DIAMOND: "♦",
+      CLUB: "♣"
+    };
+
+    const label = `${rank}${labelMap[suit] || ""}`;
+
+    if (src) {
+      return `
+        <img
+          src="${escapeHtml(src)}"
+          alt="${escapeHtml(label)}"
+          title="${escapeHtml(label)}"
+          class="placard__topcard-image"
+          draggable="false"
+        />
+      `;
+    }
+
+    return `
+      <div
+        class="placard__topcard-fallback"
+        title="${escapeHtml(label)}"
+      >
+        ${escapeHtml(label)}
+      </div>
+    `;
+  }
+
+  function buildTopCardsHTML(cards) {
+    if (!Array.isArray(cards) || !cards.length) return "";
+
+    return cards.map(buildTopCardImageHTML).join("");
+  }
+
   function renderPlacard(containerId, config) {
     const container =
       typeof containerId === "string"
@@ -142,9 +204,14 @@
     const photoHtml = buildPhotoHTML(photoUrl, canEditPhoto);
     const photoEditorHtml = buildPhotoEditorHTML(config);
 
+    const leftCardsHtml = buildLeftCardsHTML(
+      config?.leftCardsHtml || buildTopCardsHTML(config?.leftCards || [])
+    );
+
     container.innerHTML = `
       <section class="placard">
         <div class="placard__left">
+          ${leftCardsHtml}
           ${photoHtml}
         </div>
 

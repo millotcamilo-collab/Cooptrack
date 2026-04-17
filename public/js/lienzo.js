@@ -257,6 +257,86 @@
     return document.getElementById("lienzo-container");
   }
 
+  function parsePlayCode(code) {
+    const parts = String(code || "").split("§");
+
+    return {
+      deckId: parts[0] || null,
+      userId: parts[1] || null,
+      date: parts[2] || null,
+      rank: parts[3] || null,
+      suit: parts[4] || null,
+      action: parts[5] || null,
+      autorizados: parts[6] || null,
+      flow: parts[7] || null,
+      recipients: parts[8] || null
+    };
+  }
+
+  function normalizePlayForTopCards(play) {
+    if (!play) return null;
+
+    const parsed = parsePlayCode(play.play_code);
+
+    return {
+      id: play.id || null,
+      rank: parsed.rank || play.card_rank || play.rank || "",
+      suit: parsed.suit || play.card_suit || play.suit || "",
+      action: parsed.action || play.action || "",
+      status: play.play_status || play.status || "",
+      createdByUserId:
+        Number(play.created_by_user_id || 0) ||
+        Number(parsed.userId || 0),
+      raw: play
+    };
+  }
+
+  function compareEnabledTopCards(a, b) {
+    const order = {
+      A_HEART: 1,
+      A_SPADE: 2,
+      A_DIAMOND: 3,
+      A_CLUB: 4,
+      K_HEART: 5,
+      K_SPADE: 6,
+      K_DIAMOND: 7,
+      K_CLUB: 8
+    };
+
+    const aKey = `${normalizeRank(a?.rank)}_${normalizeSuit(a?.suit)}`;
+    const bKey = `${normalizeRank(b?.rank)}_${normalizeSuit(b?.suit)}`;
+
+    return (order[aKey] || 999) - (order[bKey] || 999);
+  }
+
+  function getEnabledTopCardsForCurrentUser() {
+    const plays = getAllPlays();
+    const currentUser = getCurrentUser();
+    const currentUserId = Number(currentUser?.id || 0);
+
+    if (!currentUserId || !Array.isArray(plays)) {
+      return [];
+    }
+
+    return plays
+      .map(normalizePlayForTopCards)
+      .filter(Boolean)
+      .filter((play) => {
+        const rank = normalizeRank(play.rank);
+        const suit = normalizeSuit(play.suit);
+        const action = String(play.action || "").trim();
+        const status = String(play.status || "").trim().toUpperCase();
+
+        if (!["A", "K"].includes(rank)) return false;
+        if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+        if (status !== "ACTIVE") return false;
+        if (action !== "puedeJugar") return false;
+
+        return Number(play.createdByUserId || 0) === currentUserId;
+      })
+      .sort(compareEnabledTopCards);
+  }
+
   function deriveOwnedCorporateCards(plays, currentUserId) {
     if (!Array.isArray(plays) || !currentUserId) return [];
 
@@ -336,6 +416,8 @@
     if (!placardHost) return;
     if (typeof window.renderPlacard !== "function") return;
 
+    const enabledTopCards = getEnabledTopCardsForCurrentUser();
+
     window.renderPlacard(placardHost, {
       photoUrl: placardHost.dataset.photoUrl || "",
       rank: placardHost.dataset.rank || "A",
@@ -343,7 +425,8 @@
       title: placardHost.dataset.title || "Mazo",
       currencyCode: placardHost.dataset.currencyCode || "",
       currencyName: placardHost.dataset.currencyName || "",
-      showCurrency: false
+      showCurrency: false,
+      leftCards: enabledTopCards
     });
   }
 
@@ -708,7 +791,7 @@
       }
 
       window.history.back();
-      
+
     } catch (error) {
       console.error("Error en handleAcceptPlay", error);
       alert("No se pudo aprobar la jugada");

@@ -157,6 +157,39 @@
   border-radius: 10px;
 }
 
+.placard__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.placard__left-cards {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 72px;
+}
+
+.placard__topcard-image {
+  width: auto;
+  height: 58px;
+  display: block;
+  object-fit: contain;
+}
+
+.placard__topcard-fallback {
+  min-width: 36px;
+  height: 58px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #777;
+  border-radius: 6px;
+  background: #fff;
+  font-weight: 700;
+}
+
 /* RESPONSIVE */
 @media (max-width: 900px) {
   .placard {
@@ -173,3 +206,4 @@
     justify-content: flex-end;
   }
 }
+
