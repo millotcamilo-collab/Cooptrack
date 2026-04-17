@@ -847,6 +847,7 @@ body {
   top: 14px;
   left: 48px;
   z-index: 2;
+  height: 120px;
 }
 
 .lienzo-target-mainrow {
@@ -860,7 +861,8 @@ body {
 .lienzo-target-dropzone {
   position: relative;
   min-height: 180px;
-  flex: 0 0 auto;
+  width: 190px;
+  flex: 0 0 190px;
 }
 
 .lienzo-target-extra-slot {
