@@ -104,6 +104,24 @@
     return false;
   }
 
+  function isCardCurrentlyDropped(card, selection) {
+    if (!card || !selection) return false;
+
+    const cardRank = normalizeRank(card.rank || card.card_rank);
+    const cardSuit = normalizeSuit(card.suit || card.card_suit);
+    const selectionRank = normalizeRank(selection.rank);
+    const selectionSuit = normalizeSuit(selection.suit);
+
+    if (cardRank !== selectionRank) return false;
+    if (cardSuit !== selectionSuit) return false;
+
+    if (selection.cardId && card.id) {
+      return String(card.id) === String(selection.cardId);
+    }
+
+    return true;
+  }
+
   function getCardLabel(rank, suit) {
     const symbol = getSuitSymbol(suit);
     return `${normalizeRank(rank)}${symbol}`;
@@ -528,6 +546,11 @@
     if (typeof window.renderPlacard !== "function") return;
 
     const enabledTopCards = getEnabledTopCardsForCurrentUser();
+    const selection = getLienzoDropSelection();
+
+    const visibleCards = enabledTopCards.filter((card) => {
+      return !isCardCurrentlyDropped(card, selection);
+    });
 
     window.renderPlacard(placardHost, {
       photoUrl: placardHost.dataset.photoUrl || "",
@@ -537,7 +560,7 @@
       currencyCode: placardHost.dataset.currencyCode || "",
       currencyName: placardHost.dataset.currencyName || "",
       showCurrency: false,
-      leftCards: enabledTopCards
+      leftCards: visibleCards
     });
   }
 
@@ -1172,6 +1195,22 @@
     const parentPlay = getPlayById(play?.parent_play_id);
     const sessionDiaHtml = renderSourceSessionDia(parentPlay);
 
+    const selection = getLienzoDropSelection();
+    const droppedInColombes = selection?.targetZone === "COLOMBES";
+
+    const droppedCardHtml = droppedInColombes
+      ? `
+      <div class="lienzo-dropped-card-slot">
+        <img
+          class="lienzo-card-image lienzo-card-image--dropped"
+          src="${escapeHtml(getCardImageSrc(selection.rank, selection.suit))}"
+          alt="${escapeHtml(getCardLabel(selection.rank, selection.suit))}"
+          title="${escapeHtml(getCardLabel(selection.rank, selection.suit))}"
+        />
+      </div>
+    `
+      : "";
+
     const topbar = buildPanelTopbar({
       identityHtml: `
       <div class="lienzo-source-header lienzo-source-header--top">
@@ -1196,6 +1235,8 @@
         <div class="lienzo-source-stack">
           ${scene.backgroundCards.map(renderBackgroundCard).join("")}
         </div>
+
+        ${droppedCardHtml}
       </div>
 
       ${sessionDiaHtml}
@@ -1212,8 +1253,17 @@
       user?.name ||
       "Invitado";
 
-    const rank = normalizeRank(play?.card_rank || play?.rank);
-    const suit = normalizeSuit(play?.card_suit || play?.suit);
+    const selection = getLienzoDropSelection();
+    const droppedInAmsterdam = selection?.targetZone === "AMSTERDAM";
+
+    const rank = droppedInAmsterdam
+      ? normalizeRank(selection.rank)
+      : normalizeRank(play?.card_rank || play?.rank);
+
+    const suit = droppedInAmsterdam
+      ? normalizeSuit(selection.suit)
+      : normalizeSuit(play?.card_suit || play?.suit);
+
     const imageSrc = getCardImageSrc(rank, suit);
 
     const showActionsHere = isCurrentUserTarget(play);
@@ -1243,7 +1293,8 @@
         <img
           class="lienzo-card-image"
           src="${escapeHtml(imageSrc)}"
-          alt=""
+          alt="${escapeHtml(getCardLabel(rank, suit))}"
+          title="${escapeHtml(getCardLabel(rank, suit))}"
         />
       </div>
 
@@ -1313,16 +1364,7 @@
         };
 
         setLienzoDropSelection(selection);
-
-        renderDroppedCardPreview(
-          colombesZone,
-          selection.targetZone === "COLOMBES" ? selection : null
-        );
-
-        renderDroppedCardPreview(
-          amsterdamZone,
-          selection.targetZone === "AMSTERDAM" ? selection : null
-        );
+        renderLienzo(play);
       });
     });
   }

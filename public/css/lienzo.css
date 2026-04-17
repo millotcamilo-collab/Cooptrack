@@ -813,4 +813,23 @@ body {
   object-fit: contain;
 }
 
+.lienzo-source-cards {
+  position: relative;
+  min-height: 160px;
+}
+
+.lienzo-dropped-card-slot {
+  position: absolute;
+  top: 8px;
+  left: 110px;
+  z-index: 3;
+}
+
+.lienzo-card-image--dropped {
+  height: 110px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
 
