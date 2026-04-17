@@ -1204,6 +1204,50 @@
   `;
   }
 
+  function isSelectedQHeartInZone(zoneName) {
+    const selection = getLienzoDropSelection();
+
+    if (!selection) return false;
+
+    return (
+      normalizeRank(selection.rank) === "Q" &&
+      normalizeSuit(selection.suit) === "HEART" &&
+      String(selection.targetZone || "").toUpperCase() === String(zoneName || "").toUpperCase()
+    );
+  }
+
+  function renderQHeartBudgetBox({ title, currencyCode = "" }) {
+    const safeTitle = escapeHtml(title || "Paga");
+    const safeCurrency = escapeHtml(currencyCode || "");
+
+    return `
+    <div class="lienzo-qheart-box">
+      <div class="lienzo-qheart-box__title">
+        ${safeTitle}
+      </div>
+
+      <div class="lienzo-qheart-box__body">
+        <input
+          type="text"
+          class="lienzo-qheart-box__concept"
+          placeholder="Ticket"
+          value="Ticket"
+        />
+
+        <div class="lienzo-qheart-box__amount-row">
+          <span class="lienzo-qheart-box__currency">${safeCurrency}</span>
+          <input
+            type="text"
+            class="lienzo-qheart-box__amount"
+            placeholder="0"
+            inputmode="decimal"
+          />
+        </div>
+      </div>
+    </div>
+  `;
+  }
+
   function renderSourcePlayerPanel(play) {
     const user = resolveSourceUser(play);
     const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
@@ -1221,6 +1265,11 @@
 
     const selection = getLienzoDropSelection();
     const droppedInColombes = selection?.targetZone === "COLOMBES";
+    const showQHeartBox = isSelectedQHeartInZone("COLOMBES");
+
+    const deck = getCurrentDeck();
+    const deckName = String(deck?.name || "Mazo").trim();
+    const currencyCode = getCurrencyCode(deck);
 
     const droppedCardHtml = droppedInColombes
       ? `
@@ -1231,6 +1280,17 @@
           alt="${escapeHtml(getCardLabel(selection.rank, selection.suit))}"
           title="${escapeHtml(getCardLabel(selection.rank, selection.suit))}"
         />
+      </div>
+    `
+      : "";
+
+    const qHeartBoxHtml = showQHeartBox
+      ? `
+      <div class="lienzo-dropped-extra-slot">
+        ${renderQHeartBudgetBox({
+        title: `Paga ${deckName}`,
+        currencyCode
+      })}
       </div>
     `
       : "";
@@ -1261,6 +1321,7 @@
         </div>
 
         ${droppedCardHtml}
+        ${qHeartBoxHtml}
       </div>
 
       ${sessionDiaHtml}
@@ -1279,10 +1340,14 @@
 
     const selection = getLienzoDropSelection();
     const droppedInAmsterdam = selection?.targetZone === "AMSTERDAM";
+    const showQHeartBox = isSelectedQHeartInZone("AMSTERDAM");
 
     const baseRank = normalizeRank(play?.card_rank || play?.rank);
     const baseSuit = normalizeSuit(play?.card_suit || play?.suit);
     const baseImageSrc = getCardImageSrc(baseRank, baseSuit);
+
+    const deck = getCurrentDeck();
+    const currencyCode = getCurrencyCode(deck);
 
     const droppedCardHtml = droppedInAmsterdam
       ? `
@@ -1292,6 +1357,17 @@
         alt="${escapeHtml(getCardLabel(selection.rank, selection.suit))}"
         title="${escapeHtml(getCardLabel(selection.rank, selection.suit))}"
       />
+    `
+      : "";
+
+    const qHeartBoxHtml = showQHeartBox
+      ? `
+      <div class="lienzo-target-extra-slot">
+        ${renderQHeartBudgetBox({
+        title: `Paga ${userName}`,
+        currencyCode
+      })}
+      </div>
     `
       : "";
 
@@ -1318,15 +1394,19 @@
     <section class="lienzo-panel lienzo-panel--target panel--split-top">
       ${topbar}
 
-      <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-        <img
-          class="lienzo-card-image lienzo-card-image--base"
-          src="${escapeHtml(baseImageSrc)}"
-          alt="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
-          title="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
-        />
+      <div class="lienzo-target-mainrow">
+        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+          <img
+            class="lienzo-card-image lienzo-card-image--base"
+            src="${escapeHtml(baseImageSrc)}"
+            alt="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
+            title="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
+          />
 
-        ${droppedCardHtml}
+          ${droppedCardHtml}
+        </div>
+
+        ${qHeartBoxHtml}
       </div>
 
       ${showWeekHere ? renderWeekRow(parsePlayReferenceDate(play)) : ""}

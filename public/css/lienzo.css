@@ -287,9 +287,13 @@ body {
 }
 
 .lienzo-source-cards {
+  position: relative;
+
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
+
+  min-height: 180px;
 }
 
 .nuevo-mazo-target-actions {
@@ -847,6 +851,62 @@ body {
   top: 14px;
   left: 48px;
   z-index: 2;
+}
+
+.lienzo-dropped-extra-slot,
+.lienzo-target-extra-slot {
+  position: absolute;
+  top: 12px;
+  left: 180px;
+  z-index: 4;
+}
+
+.lienzo-target-mainrow {
+  position: relative;
+  min-height: 190px;
+}
+
+.lienzo-qheart-box {
+  width: 190px;
+  padding: 10px;
+  border: 1px solid #999;
+  border-radius: 8px;
+  background: #fffdf8;
+  box-sizing: border-box;
+}
+
+.lienzo-qheart-box__title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.lienzo-qheart-box__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lienzo-qheart-box__concept,
+.lienzo-qheart-box__amount {
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border: 1px solid #999;
+  background: #fff;
+}
+
+.lienzo-qheart-box__amount-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lienzo-qheart-box__currency {
+  min-width: 28px;
+  font-weight: 700;
+  text-align: right;
 }
 
 
