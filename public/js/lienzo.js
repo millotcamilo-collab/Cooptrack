@@ -1825,9 +1825,16 @@
 
     if (!container || !play) return;
 
-    // Si la jugada tiene Q♥ persistida, rehidratar siempre antes de pintar
-    hydrateQHeartSavedFromPlay(play);
-    hydrateQHeartVisualFromPlay(play);
+    // Solo rehidratar desde play_code si realmente hay Q♥ guardada.
+    // Si no, conservar el estado transitorio del drag & drop.
+    const persistedPayment = parseQHeartPaymentFromPlay(play);
+
+    if (persistedPayment) {
+      hydrateQHeartSavedFromPlay(play);
+      hydrateQHeartVisualFromPlay(play);
+    } else {
+      window.__lienzoQHeartSaved = null;
+    }
 
     container.innerHTML = `
     ${renderDeckHeader(deck)}
@@ -1863,7 +1870,6 @@
       return;
     }
 
-    // Rehidratar estado persistido de la Q♥ antes de renderizar
     hydrateQHeartSavedFromPlay(play);
     hydrateQHeartVisualFromPlay(play);
 
