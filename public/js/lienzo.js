@@ -941,8 +941,6 @@ const data = await response.json();
 console.log("SAVE response status =", response.status);
 console.log("SAVE response data =", data);
 
-      const data = await response.json();
-
       if (!response.ok || !data.ok) {
         console.error("Error guardando jugada:", data);
         alert(data?.error || "No se pudo guardar");
