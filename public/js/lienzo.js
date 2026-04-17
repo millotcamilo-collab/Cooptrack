@@ -828,9 +828,15 @@
   async function handleSavePlay(play) {
     try {
       const playId = Number(play?.id || 0);
+      const token = localStorage.getItem("cooptrackToken");
 
       if (!playId) {
         alert("playId inválido");
+        return;
+      }
+
+      if (!token) {
+        alert("No estás logueado");
         return;
       }
 
@@ -850,8 +856,6 @@
 
       const concept = String(conceptInput?.value || "").trim() || "Ticket";
       const amount = String(amountInput?.value || "").trim();
-      const deck = getCurrentDeck();
-      const currency = getCurrencyCode(deck);
 
       if (!amount) {
         alert("Falta el monto.");
@@ -859,12 +863,18 @@
         return;
       }
 
+      const deck = getCurrentDeck();
+      const currency = getCurrencyCode(deck) || "";
+      const side = String(selection.targetZone || "").toUpperCase();
+
       let payer = "deck";
       let payerLabel = String(deck?.name || "Mazo").trim();
 
-      if (String(selection.targetZone || "").toUpperCase() === "AMSTERDAM") {
+      if (side === "AMSTERDAM") {
         const targetUser = resolveTargetUser(play);
-        payer = `U:${Number(targetUser?.id || 0)}`;
+        const targetUserId = Number(targetUser?.id || 0);
+
+        payer = targetUserId ? `U:${targetUserId}` : "guest";
         payerLabel = String(
           targetUser?.nickname ||
           targetUser?.full_name ||
@@ -873,11 +883,50 @@
         ).trim();
       }
 
+      const paymentBlock =
+        `pay:QHEART` +
+        `|side:${side}` +
+        `|payer:${payer}` +
+        `|concept:${concept}` +
+        `|amount:${amount}` +
+        `|currency:${currency}`;
+
+      const currentPlayCode = String(play?.play_code || "").trim();
+
+      if (!currentPlayCode) {
+        alert("La jugada no tiene play_code.");
+        return;
+      }
+
+      const playCodeParts = currentPlayCode.split("§");
+      const cleanedParts = playCodeParts.slice(0, 9);
+      const nextPlayCode = [...cleanedParts, paymentBlock].join("§");
+
+      const response = await fetch(`/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_status: "DRAFT",
+          play_code: nextPlayCode
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("Error guardando jugada:", data);
+        alert(data?.error || "No se pudo guardar");
+        return;
+      }
+
       window.__lienzoQHeartSaved = {
         playId,
         attachedRank: "Q",
         attachedSuit: "HEART",
-        side: String(selection.targetZone || "").toUpperCase(),
+        side,
         payer,
         payerLabel,
         concept,
@@ -885,6 +934,14 @@
         currency
       };
 
+      window.__lienzoQHeartDraft = null;
+
+      if (data.play) {
+        play.play_code = data.play.play_code;
+        play.play_status = data.play.play_status;
+      }
+
+      alert("Guardado sin enviar");
       renderLienzo(play);
 
     } catch (error) {
@@ -892,7 +949,7 @@
       alert("No se pudo guardar");
     }
   }
-
+  
   async function handleSendPlay(play) {
     try {
       const playId = Number(play?.id || 0);
