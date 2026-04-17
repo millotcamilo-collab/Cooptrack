@@ -70,17 +70,30 @@
 
   function parseDraggedCardPayload(event) {
     try {
-      const json = event.dataTransfer.getData("application/json");
-      if (!json) return null;
+      const json = event.dataTransfer?.getData("application/json");
+      if (json) {
+        const payload = JSON.parse(json);
 
-      const payload = JSON.parse(json);
+        return {
+          source: String(payload?.source || "").trim(),
+          rank: normalizeRank(payload?.rank),
+          suit: normalizeSuit(payload?.suit),
+          cardId: payload?.cardId || null,
+          isVirtual: Boolean(payload?.isVirtual)
+        };
+      }
+
+      const plain = String(event.dataTransfer?.getData("text/plain") || "").trim();
+      if (!plain) return null;
+
+      const [rank, suit] = plain.split("|");
 
       return {
-        source: String(payload?.source || "").trim(),
-        rank: normalizeRank(payload?.rank),
-        suit: normalizeSuit(payload?.suit),
-        cardId: payload?.cardId || null,
-        isVirtual: Boolean(payload?.isVirtual)
+        source: "placard",
+        rank: normalizeRank(rank),
+        suit: normalizeSuit(suit),
+        cardId: null,
+        isVirtual: false
       };
     } catch (error) {
       console.warn("No se pudo parsear drag payload", error);
@@ -1323,16 +1336,21 @@
 
       el.dataset.dropzone = zoneName;
 
-      el.addEventListener("dragover", (event) => {
-        const card = parseDraggedCardPayload(event);
-        if (!card) return;
+      el.addEventListener("dragenter", (event) => {
+        event.preventDefault();
+      });
 
-        if (canDropCardOnZone(card, zoneName)) {
-          event.preventDefault();
+      el.addEventListener("dragover", (event) => {
+        event.preventDefault();
+
+        const card = parseDraggedCardPayload(event);
+
+        if (card && canDropCardOnZone(card, zoneName)) {
           event.dataTransfer.dropEffect = "copy";
           el.classList.add("is-drag-valid");
           el.classList.remove("is-drag-invalid");
         } else {
+          event.dataTransfer.dropEffect = "none";
           el.classList.add("is-drag-invalid");
           el.classList.remove("is-drag-valid");
         }
@@ -1344,15 +1362,22 @@
       });
 
       el.addEventListener("drop", (event) => {
-        const card = parseDraggedCardPayload(event);
+        event.preventDefault();
 
         el.classList.remove("is-drag-valid");
         el.classList.remove("is-drag-invalid");
 
-        if (!card) return;
-        if (!canDropCardOnZone(card, zoneName)) return;
+        const card = parseDraggedCardPayload(event);
 
-        event.preventDefault();
+        if (!card) {
+          console.warn("DROP sin card payload");
+          return;
+        }
+
+        if (!canDropCardOnZone(card, zoneName)) {
+          console.warn("DROP inválido para", zoneName, card);
+          return;
+        }
 
         const selection = {
           targetZone: zoneName,
@@ -1362,6 +1387,8 @@
           isVirtual: card.isVirtual,
           playId: Number(play?.id || 0)
         };
+
+        console.log("DROP OK", selection);
 
         setLienzoDropSelection(selection);
         renderLienzo(play);
