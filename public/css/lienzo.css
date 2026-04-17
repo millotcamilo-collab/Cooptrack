@@ -887,7 +887,14 @@ body {
   flex: 0 0 auto;
 }
 
-
+.lienzo-qheart-box__paydate {
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border: 1px solid #999;
+  background: #e5e9e1;
+}
 
 .lienzo-qheart-box {
   width: 190px;

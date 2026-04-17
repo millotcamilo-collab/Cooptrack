@@ -16,11 +16,11 @@
     return !!window.__lienzoQHeartSaved;
   }
 
-  function renderQHeartSummary() {
-    const data = window.__lienzoQHeartSaved;
-    if (!data) return "";
+function renderQHeartSummary() {
+  const data = window.__lienzoQHeartSaved;
+  if (!data) return "";
 
-    return `
+  return `
     <div class="placard-qheart-summary">
       ${escapeHtml(data.concept)}
       ${escapeHtml(data.currency)} ${escapeHtml(data.amount)}
@@ -28,7 +28,7 @@
       paga ${escapeHtml(data.payerLabel)}
     </div>
   `;
-  }
+}
 
   function getSuitIconSrc(suit) {
     const s = normalizeSuit(suit);

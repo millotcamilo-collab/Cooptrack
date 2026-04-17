@@ -1408,6 +1408,11 @@
             inputmode="decimal"
           />
         </div>
+
+        <input
+          type="date"
+          class="lienzo-qheart-box__paydate"
+        />
       </div>
     </div>
   `;
