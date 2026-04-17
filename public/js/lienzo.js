@@ -318,7 +318,7 @@
       return [];
     }
 
-    return plays
+    const cards = plays
       .map(normalizePlayForTopCards)
       .filter(Boolean)
       .filter((play) => {
@@ -335,6 +335,18 @@
         return Number(play.createdByUserId || 0) === currentUserId;
       })
       .sort(compareEnabledTopCards);
+
+    // 🔵 AGREGAR Q♥ SI HAY JOKER AZUL
+    if (hasBlueJokerActive()) {
+      cards.push({
+        id: "virtual-Q-HEART",
+        rank: "Q",
+        suit: "HEART",
+        isVirtual: true
+      });
+    }
+
+    return cards;
   }
 
   function deriveOwnedCorporateCards(plays, currentUserId) {
@@ -409,6 +421,22 @@
         data-currency-name="${escapeHtml(currencyName)}"
       ></div>
     `;
+  }
+
+  function hasBlueJokerActive() {
+    const plays = getAllPlays();
+
+    if (!Array.isArray(plays)) return false;
+
+    return plays.some((p) => {
+      const parsed = parsePlayCode(p.play_code);
+
+      const rank = normalizeRank(parsed.rank || p.card_rank || p.rank);
+      const suit = normalizeSuit(parsed.suit || p.card_suit || p.suit);
+      const status = String(p.play_status || p.status || "").toUpperCase();
+
+      return rank === "JOKER" && suit === "BLUE" && status === "ACTIVE";
+    });
   }
 
   function mountPlacardFromDataset() {

@@ -138,6 +138,11 @@
     if (rank === "K" && suit === "DIAMOND") src = "/assets/icons/Kdiamante.gif";
     if (rank === "K" && suit === "CLUB") src = "/assets/icons/Ktrebol.gif";
 
+    if (rank === "Q" && suit === "HEART") src = "/assets/icons/Qcorazon.gif";
+    if (rank === "Q" && suit === "SPADE") src = "/assets/icons/Qpike.gif";
+    if (rank === "Q" && suit === "DIAMOND") src = "/assets/icons/Qdiamante.gif";
+    if (rank === "Q" && suit === "CLUB") src = "/assets/icons/Qtrebol.gif";
+
     const labelMap = {
       HEART: "♥",
       SPADE: "♠",
