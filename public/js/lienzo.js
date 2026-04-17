@@ -742,8 +742,18 @@
 
     const sendIcon = "/assets/icons/buzon60.gif";
 
+    // 👇 nuevo icono save (podés cambiarlo)
+    const saveIcon = "/assets/icons/guardar60.gif";
+
     return `
     <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
+
+      ${showSend ? `
+        <button id="lienzo-save-btn" class="icon-btn" title="Guardar">
+          <img src="${saveIcon}" alt="Guardar" />
+        </button>
+      ` : ""}
+
       ${showSend ? `
         <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
           <img src="${sendIcon}" alt="Enviar" />
@@ -780,10 +790,17 @@
   }
 
   function bindLienzoActions(play) {
+    const saveBtn = document.getElementById("lienzo-save-btn");
     const sendBtn = document.getElementById("lienzo-send-btn");
     const acceptBtn = document.getElementById("lienzo-accept-btn");
     const rejectBtn = document.getElementById("lienzo-reject-btn");
     const exitBtn = document.getElementById("lienzo-exit-btn");
+
+    if (saveBtn) {
+      saveBtn.addEventListener("click", () => {
+        handleSavePlay(play);
+      });
+    }
 
     if (sendBtn) {
       sendBtn.addEventListener("click", () => {
@@ -805,6 +822,49 @@
 
     if (exitBtn) {
       exitBtn.addEventListener("click", handleExitLienzo);
+    }
+  }
+
+  async function handleSavePlay(play) {
+    try {
+      const playId = Number(play?.id || 0);
+      const token = localStorage.getItem("cooptrackToken");
+
+      if (!playId) {
+        alert("playId inválido");
+        return;
+      }
+
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      // 👇 por ahora solo guardamos como DRAFT
+      const response = await fetch(`/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_status: "DRAFT"
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("Error guardando jugada:", data);
+        alert(data?.error || "No se pudo guardar");
+        return;
+      }
+
+      alert("Guardado sin enviar");
+
+    } catch (error) {
+      console.error("Error en handleSavePlay", error);
+      alert("No se pudo guardar");
     }
   }
 

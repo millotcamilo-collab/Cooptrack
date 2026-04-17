@@ -444,16 +444,18 @@ body {
 
 .lienzo-grid {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
-  gap: var(--lienzo-gap);
+  grid-template-columns: minmax(420px, max-content) minmax(0, 1fr);
+  gap: 24px;
   align-items: stretch;
-  height: var(--lienzo-panels-height);
 }
 
 .lienzo-grid__left,
 .lienzo-grid__right {
   min-width: 0;
-  height: 100%;
+}
+
+.lienzo-grid__left {
+  width: fit-content;
 }
 
 /* 1) La tribuna mantiene header arriba, contenido al medio, acciones abajo */
