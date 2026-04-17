@@ -190,6 +190,16 @@
   font-weight: 700;
 }
 
+.placard__topcard-image,
+.placard__topcard-fallback {
+  cursor: grab;
+}
+
+.placard__topcard-image:active,
+.placard__topcard-fallback:active {
+  cursor: grabbing;
+}
+
 /* RESPONSIVE */
 @media (max-width: 900px) {
   .placard {

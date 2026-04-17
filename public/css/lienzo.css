@@ -773,3 +773,49 @@ body {
   justify-content: center;
 }
 
+/*dropzones*/
+.lienzo-side-dropzone {
+  margin-top: 14px;
+  min-height: 110px;
+  border: 2px dashed #999;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.lienzo-side-dropzone__label {
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.lienzo-drop-preview {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lienzo-drop-preview__image {
+  height: 64px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.lienzo-side-dropzone.is-drag-valid {
+  border-color: #2d7a2d;
+}
+
+.lienzo-side-dropzone.is-drag-invalid {
+  border-color: #b33a3a;
+}
+
+

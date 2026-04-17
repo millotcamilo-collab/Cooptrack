@@ -154,24 +154,33 @@
 
     if (src) {
       return `
-        <img
-          src="${escapeHtml(src)}"
-          alt="${escapeHtml(label)}"
-          title="${escapeHtml(label)}"
-          class="placard__topcard-image"
-          draggable="false"
-        />
-      `;
+    <img
+      src="${escapeHtml(src)}"
+      alt="${escapeHtml(label)}"
+      title="${escapeHtml(label)}"
+      class="placard__topcard-image"
+      draggable="true"
+      data-rank="${escapeHtml(rank)}"
+      data-suit="${escapeHtml(suit)}"
+      data-card-id="${escapeHtml(card?.id || "")}"
+      data-virtual="${card?.isVirtual ? "true" : "false"}"
+    />
+  `;
     }
 
     return `
-      <div
-        class="placard__topcard-fallback"
-        title="${escapeHtml(label)}"
-      >
-        ${escapeHtml(label)}
-      </div>
-    `;
+  <div
+    class="placard__topcard-fallback"
+    title="${escapeHtml(label)}"
+    draggable="true"
+    data-rank="${escapeHtml(rank)}"
+    data-suit="${escapeHtml(suit)}"
+    data-card-id="${escapeHtml(card?.id || "")}"
+    data-virtual="${card?.isVirtual ? "true" : "false"}"
+  >
+    ${escapeHtml(label)}
+  </div>
+`;
   }
 
   function buildTopCardsHTML(cards) {
@@ -243,6 +252,30 @@
         ${rightHtml}
       </section>
     `;
+
+    container
+      .querySelectorAll(".placard__topcard-image, .placard__topcard-fallback")
+      .forEach((cardEl) => {
+        cardEl.addEventListener("dragstart", (event) => {
+          const payload = {
+            source: "placard",
+            rank: String(cardEl.dataset.rank || "").toUpperCase(),
+            suit: String(cardEl.dataset.suit || "").toUpperCase(),
+            cardId: cardEl.dataset.cardId || null,
+            isVirtual: cardEl.dataset.virtual === "true"
+          };
+
+          event.dataTransfer.setData(
+            "application/json",
+            JSON.stringify(payload)
+          );
+          event.dataTransfer.setData(
+            "text/plain",
+            `${payload.rank}|${payload.suit}`
+          );
+          event.dataTransfer.effectAllowed = "copy";
+        });
+      });
   }
 
   window.renderPlacard = renderPlacard;

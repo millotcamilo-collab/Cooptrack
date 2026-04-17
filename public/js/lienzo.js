@@ -68,6 +68,81 @@
     return parsed;
   }
 
+  function parseDraggedCardPayload(event) {
+    try {
+      const json = event.dataTransfer.getData("application/json");
+      if (!json) return null;
+
+      const payload = JSON.parse(json);
+
+      return {
+        source: String(payload?.source || "").trim(),
+        rank: normalizeRank(payload?.rank),
+        suit: normalizeSuit(payload?.suit),
+        cardId: payload?.cardId || null,
+        isVirtual: Boolean(payload?.isVirtual)
+      };
+    } catch (error) {
+      console.warn("No se pudo parsear drag payload", error);
+      return null;
+    }
+  }
+
+  function canDropCardOnZone(card, zoneName) {
+    const rank = normalizeRank(card?.rank);
+    const suit = normalizeSuit(card?.suit);
+    const zone = String(zoneName || "").trim().toUpperCase();
+
+    if (rank === "Q" && suit === "HEART") {
+      return zone === "COLOMBES" || zone === "AMSTERDAM";
+    }
+
+    if ((rank === "A" || rank === "K")) {
+      return zone === "COLOMBES";
+    }
+
+    return false;
+  }
+
+  function getCardLabel(rank, suit) {
+    const symbol = getSuitSymbol(suit);
+    return `${normalizeRank(rank)}${symbol}`;
+  }
+
+  function setLienzoDropSelection(selection) {
+    window.__lienzoDropSelection = selection || null;
+  }
+
+  function getLienzoDropSelection() {
+    return window.__lienzoDropSelection || null;
+  }
+
+  function renderDroppedCardPreview(container, selection) {
+    if (!container) return;
+
+    const preview = container.querySelector(".lienzo-drop-preview");
+    if (!preview) return;
+
+    if (!selection?.rank || !selection?.suit) {
+      preview.innerHTML = "";
+      return;
+    }
+
+    const imageSrc = getCardImageSrc(selection.rank, selection.suit);
+    const label = getCardLabel(selection.rank, selection.suit);
+
+    preview.innerHTML = `
+    <div class="lienzo-drop-preview__card">
+      <img
+        class="lienzo-drop-preview__image"
+        src="${escapeHtml(imageSrc)}"
+        alt="${escapeHtml(label)}"
+        title="${escapeHtml(label)}"
+      />
+    </div>
+  `;
+  }
+
   function resolveCalendarDateFromPlay(play) {
     if (!play) return null;
 
@@ -1116,6 +1191,14 @@
       </div>
 
       ${sessionDiaHtml}
+            <div
+        id="lienzo-dropzone-colombes"
+        class="lienzo-side-dropzone"
+        data-dropzone="COLOMBES"
+      >
+        <div class="lienzo-side-dropzone__label">Colombes</div>
+        <div class="lienzo-drop-preview"></div>
+      </div>
     </section>
   `;
   }
@@ -1164,9 +1247,90 @@
         />
       </div>
 
+      <div
+        id="lienzo-dropzone-amsterdam"
+        class="lienzo-side-dropzone"
+        data-dropzone="AMSTERDAM"
+      >
+        <div class="lienzo-side-dropzone__label">Amsterdam</div>
+        <div class="lienzo-drop-preview"></div>
+      </div>
+
       ${showWeekHere ? renderWeekRow(parsePlayReferenceDate(play)) : ""}
     </section>
   `;
+  }
+
+  function bindLienzoDropzones(play) {
+    const zones = [
+      {
+        el: document.getElementById("lienzo-dropzone-colombes"),
+        zoneName: "COLOMBES"
+      },
+      {
+        el: document.getElementById("lienzo-dropzone-amsterdam"),
+        zoneName: "AMSTERDAM"
+      }
+    ];
+
+    zones.forEach(({ el, zoneName }) => {
+      if (!el) return;
+
+      el.addEventListener("dragover", (event) => {
+        const card = parseDraggedCardPayload(event);
+        if (!card) return;
+
+        if (canDropCardOnZone(card, zoneName)) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "copy";
+          el.classList.add("is-drag-valid");
+          el.classList.remove("is-drag-invalid");
+        } else {
+          el.classList.add("is-drag-invalid");
+          el.classList.remove("is-drag-valid");
+        }
+      });
+
+      el.addEventListener("dragleave", () => {
+        el.classList.remove("is-drag-valid");
+        el.classList.remove("is-drag-invalid");
+      });
+
+      el.addEventListener("drop", (event) => {
+        const card = parseDraggedCardPayload(event);
+        el.classList.remove("is-drag-valid");
+        el.classList.remove("is-drag-invalid");
+
+        if (!card) return;
+        if (!canDropCardOnZone(card, zoneName)) return;
+
+        event.preventDefault();
+
+        const selection = {
+          targetZone: zoneName,
+          rank: card.rank,
+          suit: card.suit,
+          cardId: card.cardId,
+          isVirtual: card.isVirtual,
+          playId: Number(play?.id || 0)
+        };
+
+        setLienzoDropSelection(selection);
+
+        const colombesZone = document.getElementById("lienzo-dropzone-colombes");
+        const amsterdamZone = document.getElementById("lienzo-dropzone-amsterdam");
+
+        renderDroppedCardPreview(
+          colombesZone,
+          selection.targetZone === "COLOMBES" ? selection : null
+        );
+
+        renderDroppedCardPreview(
+          amsterdamZone,
+          selection.targetZone === "AMSTERDAM" ? selection : null
+        );
+      });
+    });
   }
 
   function renderLienzo(play) {
@@ -1191,6 +1355,7 @@
 
     mountPlacardFromDataset();
     bindLienzoActions(play);
+    bindLienzoDropzones(play);
   }
 
   async function openLienzoByPlayId(playId) {
