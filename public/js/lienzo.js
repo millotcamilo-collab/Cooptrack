@@ -972,130 +972,110 @@
     }
   }
 
-  async function handleSavePlay(play) {
-    try {
-      const playId = Number(play?.id || 0);
-      const token = localStorage.getItem("cooptrackToken");
+  function buildPlayCodeWithQHeartPayment(play) {
+    const selection = getLienzoDropSelection();
 
-      if (!playId) {
-        alert("playId inválido");
-        return;
-      }
+    if (
+      !selection ||
+      normalizeRank(selection.rank) !== "Q" ||
+      normalizeSuit(selection.suit) !== "HEART"
+    ) {
+      return {
+        ok: true,
+        hasQHeart: false,
+        playCode: String(play?.play_code || "").trim(),
+        savedData: null
+      };
+    }
 
-      if (!token) {
-        alert("No estás logueado");
-        return;
-      }
+    const conceptInput = document.querySelector(".lienzo-qheart-box__concept");
+    const amountInput = document.querySelector(".lienzo-qheart-box__amount");
+    const payDateInput = document.querySelector(".lienzo-qheart-box__paydate");
 
-      const selection = getLienzoDropSelection();
+    const concept = String(conceptInput?.value || "").trim() || "Ticket";
+    const amount = String(amountInput?.value || "").trim();
+    const payDate = String(payDateInput?.value || "").trim();
 
-      if (
-        !selection ||
-        normalizeRank(selection.rank) !== "Q" ||
-        normalizeSuit(selection.suit) !== "HEART"
-      ) {
-        alert("Primero tenés que bajar una Q de corazón.");
-        return;
-      }
+    if (!amount) {
+      return {
+        ok: false,
+        error: "Falta el monto.",
+        focusEl: amountInput || null
+      };
+    }
 
-      const conceptInput = document.querySelector(".lienzo-qheart-box__concept");
-      const amountInput = document.querySelector(".lienzo-qheart-box__amount");
-      const payDateInput = document.querySelector(".lienzo-qheart-box__paydate");
+    if (!payDate) {
+      return {
+        ok: false,
+        error: "Falta la fecha de pago.",
+        focusEl: payDateInput || null
+      };
+    }
 
-      const concept = String(conceptInput?.value || "").trim() || "Ticket";
-      const amount = String(amountInput?.value || "").trim();
-      const payDate = String(payDateInput?.value || "").trim();
+    const currentPlayCode = String(play?.play_code || "").trim();
 
-      if (!amount) {
-        alert("Falta el monto.");
-        amountInput?.focus();
-        return;
-      }
+    if (!currentPlayCode) {
+      return {
+        ok: false,
+        error: "La jugada no tiene play_code.",
+        focusEl: null
+      };
+    }
 
-      if (!payDate) {
-        alert("Falta la fecha de pago.");
-        payDateInput?.focus();
-        return;
-      }
+    const parsed = parsePlayCode(currentPlayCode);
+    const meta = parseFlowMetadata(parsed.flow);
 
-      const deck = getCurrentDeck();
-      const currency = getCurrencyCode(deck) || "";
-      const side = String(selection.targetZone || "").toUpperCase();
+    const deck = getCurrentDeck();
+    const currency = getCurrencyCode(deck) || "";
+    const side = String(selection.targetZone || "").toUpperCase();
 
-      let payer = "deck";
-      let payerLabel = String(deck?.name || "Mazo").trim();
+    let payer = "deck";
+    let payerLabel = String(deck?.name || "Mazo").trim();
 
-      if (side === "AMSTERDAM") {
-        const targetUser = resolveTargetUser(play);
-        const targetUserId = Number(targetUser?.id || 0);
+    if (side === "AMSTERDAM") {
+      const targetUser = resolveTargetUser(play);
+      const targetUserId = Number(targetUser?.id || 0);
 
-        payer = targetUserId ? `U:${targetUserId}` : "guest";
-        payerLabel = String(
-          targetUser?.nickname ||
-          targetUser?.full_name ||
-          targetUser?.name ||
-          "Invitado"
-        ).trim();
-      }
+      payer = targetUserId ? `U:${targetUserId}` : "guest";
+      payerLabel = String(
+        targetUser?.nickname ||
+        targetUser?.full_name ||
+        targetUser?.name ||
+        "Invitado"
+      ).trim();
+    }
 
-      const paymentBlock =
-        `pay:QHEART` +
-        `|side:${side}` +
-        `|payer:${payer}` +
-        `|concept:${concept}` +
-        `|amount:${amount}` +
-        `|currency:${currency}` +
-        `|payDate:${payDate}`;
+    const paymentBlock =
+      `pay:QHEART` +
+      `|side:${side}` +
+      `|payer:${payer}` +
+      `|concept:${concept}` +
+      `|amount:${amount}` +
+      `|currency:${currency}` +
+      `|payDate:${payDate}`;
 
-      const currentPlayCode = String(play?.play_code || "").trim();
+    const nextFlow = meta.baseFlow
+      ? `${meta.baseFlow};${paymentBlock}`
+      : paymentBlock;
 
-      if (!currentPlayCode) {
-        alert("La jugada no tiene play_code.");
-        return;
-      }
+    const updatedPlayCode = [
+      parsed.deckId || "",
+      parsed.userId || "",
+      parsed.date || "",
+      parsed.rank || "",
+      parsed.suit || "",
+      parsed.action || "",
+      parsed.autorizados || "",
+      nextFlow,
+      parsed.recipients || ""
+    ].join("§");
 
-      const parts = currentPlayCode.split("§");
-
-      while (parts.length < 9) {
-        parts.push("");
-      }
-
-      const currentFlow = String(parts[7] || "")
-        .split(";")
-        .filter((item) => item && !item.startsWith("pay:QHEART"))
-        .join(";");
-
-      parts[7] = currentFlow
-        ? `${currentFlow};${paymentBlock}`
-        : paymentBlock;
-
-      const nextPlayCode = parts.slice(0, 9).join("§");
-
-      const response = await fetch(`/plays/${playId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          play_status: "DRAFT",
-          play_code: nextPlayCode
-        })
-      });
-
-      const data = await response.json();
-
-      console.log("SAVE response status =", response.status);
-      console.log("SAVE response data =", data);
-
-      if (!response.ok || !data.ok) {
-        console.error("Error guardando jugada:", data);
-        alert(data?.error || "No se pudo guardar");
-        return;
-      }
-
-      window.__lienzoQHeartSaved = {
-        playId,
+    return {
+      ok: true,
+      hasQHeart: true,
+      playCode: updatedPlayCode,
+      savedData: {
+        playId: Number(play?.id || 0),
         attachedRank: "Q",
         attachedSuit: "HEART",
         side,
@@ -1105,25 +1085,16 @@
         amount,
         currency,
         payDate
-      };
-
-      window.__lienzoQHeartDraft = null;
-
-      if (data.play) {
-        play.play_code = data.play.play_code;
-        play.play_status = data.play.play_status;
       }
-
-      alert("Guardado sin enviar");
-      renderLienzo(play);
-
-    } catch (error) {
-      console.error("Error en handleSavePlay", error);
-      alert("No se pudo guardar");
-    }
+    };
   }
 
-  async function handleSendPlay(play) {
+  function applyLocalQHeartSavedState(savedData) {
+    if (!savedData) return;
+    window.__lienzoQHeartSaved = savedData;
+  }
+
+    async function handleSendPlay(play) {
     try {
       const playId = Number(play?.id || 0);
       const token = localStorage.getItem("cooptrackToken");
@@ -1138,15 +1109,29 @@
         return;
       }
 
+      const payload = {
+        play_status: "SENT"
+      };
+
+      const built = buildPlayCodeWithQHeartPayment(play);
+
+      if (!built.ok) {
+        alert(built.error || "No se pudo enviar la jugada.");
+        built.focusEl?.focus?.();
+        return;
+      }
+
+      if (built.hasQHeart) {
+        payload.play_code = built.playCode;
+      }
+
       const response = await fetch(`/plays/${playId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({
-          play_status: "SENT"
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
@@ -1156,6 +1141,13 @@
         alert(data?.error || "No se pudo enviar la jugada");
         return;
       }
+
+      if (built.hasQHeart) {
+        play.play_code = built.playCode;
+        applyLocalQHeartSavedState(built.savedData);
+      }
+
+      play.play_status = "SENT";
 
       alert("Invitación enviada");
 
@@ -1174,7 +1166,7 @@
       alert("No se pudo enviar la jugada");
     }
   }
-
+  
   async function autoAcknowledgeApprovedPlay(play) {
     try {
       const playId = Number(play?.id || 0);
