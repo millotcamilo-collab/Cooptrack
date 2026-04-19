@@ -1153,9 +1153,10 @@
       const built = buildPlayCodeWithQHeartPayment(play);
 
       if (!built.ok) {
-        alert(built.error || "No se pudo guardar la Q de corazón.");
-        built.focusEl?.focus?.();
-        return;
+        // Si la Q♥ está incompleta, ignorarla y seguir enviando solo la Q♠
+        console.warn("Q♥ incompleta, se envía solo la Q♠");
+      } else if (built.hasQHeart) {
+        payload.play_code = built.playCode;
       }
 
       if (!built.hasQHeart) {
