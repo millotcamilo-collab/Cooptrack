@@ -27,6 +27,24 @@
       return null;
     }
   }
+  function resolveLienzoPageForPlay(play) {
+    const rank = String(play?.card_rank || play?.rank || "").trim().toUpperCase();
+    const suit = String(play?.card_suit || play?.suit || "").trim().toUpperCase();
+
+    if (rank === "Q" && suit === "SPADE") {
+      return "/lienzoQpica.html";
+    }
+
+    if (rank === "K") {
+      return "/lienzoK.html";
+    }
+
+    if (rank === "A") {
+      return "/lienzoA.html";
+    }
+
+    return "/lienzo.html";
+  }
 
   async function hasUserJPlays(userId) {
     try {
@@ -389,8 +407,9 @@ ${user.is_admin
       pendingBtn.addEventListener("click", () => {
         const deckId = latestIncomingCard.deck_id;
         const playId = latestIncomingCard.id;
+        const nextPage = resolveLienzoPageForPlay(latestIncomingCard);
 
-        window.location.href = `/lienzo.html?deckId=${deckId}&playId=${playId}`;
+        window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
       });
     }
   }
