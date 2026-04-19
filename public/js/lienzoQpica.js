@@ -804,7 +804,8 @@
             currencyCode: placardHost.dataset.currencyCode || "",
             currencyName: placardHost.dataset.currencyName || "",
             showCurrency: false,
-            leftCards: visibleCards
+            leftCards: visibleCards,
+            plays: getAllPlays()
         });
     }
 

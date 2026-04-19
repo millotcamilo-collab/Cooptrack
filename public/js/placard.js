@@ -190,19 +190,6 @@
     `;
   }
 
-  function renderProposalSummary(summary) {
-    if (!summary) return "";
-
-    return `
-      <div class="placard__subtitle">
-        ${escapeHtml(summary.concept || "")}
-        ${escapeHtml(summary.currency || "")} ${escapeHtml(summary.amount || "")}
-        ${escapeHtml(summary.payDate || "")}
-        paga ${escapeHtml(summary.payerLabel || "")}
-      </div>
-    `;
-  }
-
   function bindPlacardDrag(container) {
     container
       .querySelectorAll(".placard__topcard-image, .placard__topcard-fallback")

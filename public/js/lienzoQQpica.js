@@ -676,15 +676,7 @@
       currencyName: placardHost.dataset.currencyName || "",
       showCurrency: false,
       leftCards: [],
-      proposalSummary: qqState
-        ? {
-          concept: qqState.concept,
-          currency: qqState.currency,
-          amount: qqState.amount,
-          payDate: qqState.payDate,
-          payerLabel: qqState.payerLabel
-        }
-        : null
+      plays: getAllPlays()
     });
   }
 
