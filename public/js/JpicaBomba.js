@@ -421,7 +421,9 @@
         const isEdit = visualMode === "edit";
         const isRead = visualMode === "read";
 
-        const showApprovedExtras = isApproved && !isCancelled;
+        const userCanCreateChildren = !!window.__canPlay;
+        const showApprovedExtras =
+          isApproved && !isCancelled && userCanCreateChildren;
         const showCancelApproved = canCancelApprovedPlay();
         const { endDate } = getFieldValues();
         const routineAvailable = !isApproved && !!endDate;
