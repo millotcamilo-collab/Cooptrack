@@ -27,12 +27,83 @@
       return null;
     }
   }
+
+  function normalizeText(value) {
+    return String(value || "").trim().toUpperCase();
+  }
+
+  function parsePlayCode(code) {
+    const parts = String(code || "").split("§");
+
+    return {
+      deckId: parts[0] || null,
+      userId: parts[1] || null,
+      date: parts[2] || null,
+      rank: parts[3] || null,
+      suit: parts[4] || null,
+      action: parts[5] || null,
+      autorizados: parts[6] || null,
+      flow: parts[7] || null,
+      recipients: parts[8] || null
+    };
+  }
+
+  function parseFlowMetadata(flowValue) {
+    const raw = String(flowValue || "").trim();
+    if (!raw) return { baseFlow: "", payment: null };
+
+    const chunks = raw
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    let baseFlow = "";
+    let payment = null;
+
+    chunks.forEach((chunk) => {
+      if (chunk.startsWith("pay:QHEART")) {
+        const parts = chunk.split("|");
+        const paymentData = {
+          attachedRank: "Q",
+          attachedSuit: "HEART"
+        };
+
+        parts.forEach((part, index) => {
+          if (index === 0) return;
+
+          const separatorIndex = part.indexOf(":");
+          if (separatorIndex === -1) return;
+
+          const key = part.slice(0, separatorIndex).trim();
+          const value = part.slice(separatorIndex + 1).trim();
+
+          if (!key) return;
+          paymentData[key] = value;
+        });
+
+        payment = paymentData;
+      } else if (!baseFlow) {
+        baseFlow = chunk;
+      }
+    });
+
+    return { baseFlow, payment };
+  }
+
+  function playHasQHeartAttachment(play) {
+    const parsed = parsePlayCode(play?.play_code || "");
+    const meta = parseFlowMetadata(parsed.flow);
+    return Boolean(meta.payment);
+  }
+
   function resolveLienzoPageForPlay(play) {
-    const rank = String(play?.card_rank || play?.rank || "").trim().toUpperCase();
-    const suit = String(play?.card_suit || play?.suit || "").trim().toUpperCase();
+    const rank = normalizeText(play?.card_rank || play?.rank);
+    const suit = normalizeText(play?.card_suit || play?.suit);
 
     if (rank === "Q" && suit === "SPADE") {
-      return "/lienzoQpica.html";
+      return playHasQHeartAttachment(play)
+        ? "/lienzoQQpica.html"
+        : "/lienzoQpica.html";
     }
 
     if (rank === "K") {
@@ -60,7 +131,6 @@
 
       const data = await response.json();
       return !!data.hasJ;
-
     } catch (error) {
       console.error(error);
       return false;
@@ -102,8 +172,8 @@
       const mazos = Array.isArray(data?.mazos)
         ? data.mazos
         : Array.isArray(data?.decks)
-          ? data.decks
-          : [];
+        ? data.decks
+        : [];
 
       return mazos.length > 0;
     } catch (error) {
@@ -111,7 +181,6 @@
       return false;
     }
   }
-
 
   async function getLatestIncomingCard() {
     try {
@@ -131,7 +200,7 @@
       const plays = Array.isArray(data?.plays) ? data.plays : [];
 
       const incoming = plays.filter((p) => {
-        const rank = String(p.card_rank || p.rank || "").toUpperCase();
+        const rank = normalizeText(p.card_rank || p.rank);
         return rank === "Q" || rank === "K" || rank === "A";
       });
 
@@ -146,8 +215,10 @@
   }
 
   function isMazosPage() {
-    return window.location.pathname.endsWith("/mazos.html") ||
-      window.location.pathname === "/mazos.html";
+    return (
+      window.location.pathname.endsWith("/mazos.html") ||
+      window.location.pathname === "/mazos.html"
+    );
   }
 
   function goToCreateDeckPage() {
@@ -196,14 +267,14 @@
 
             <div class="topbar__left">
               <a href="/index.html" class="topbar__logo" title="home">
-  <img src="/assets/icons/cooptrack3.png" class="topbar__logo-img" />
-</a>
+                <img src="/assets/icons/cooptrack3.png" class="topbar__logo-img" />
+              </a>
             </div>
 
             <nav class="topbar__right">
 
               <a href="/profile.html" class="topbar__profile">
-                <span class="topbar__nickname">${user.nickname || ''}</span>
+                <span class="topbar__nickname">${user.nickname || ""}</span>
                 <img src="${getProfileImage(user)}" class="topbar__icon-img topbar__icon-img--profile" />
               </a>
 
@@ -215,105 +286,111 @@
                 <img src="/assets/icons/Acorazon.gif" class="topbar__icon-img" />
               </button>
 
-              ${userHasPendingApprovals
-          ? `
+              ${
+                userHasPendingApprovals
+                  ? `
                     <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
                       <img src="/assets/icons/Dorso70.gif" class="topbar__icon-img" />
                     </button>
                   `
-          : ""
-        }
+                  : ""
+              }
 
-              ${userHasDecks
-          ? `
+              ${
+                userHasDecks
+                  ? `
                     <a
                       href="${onMazosPage ? "/index.html" : "/mazos.html"}"
                       class="topbar__icon-btn"
                       title="Aqui estan los mazos"
                     >
                       <img
-                        src="${onMazosPage
-            ? "/assets/icons/portafolioAbierto.png"
-            : "/assets/icons/portafolios80.gif"
-          }"
+                        src="${
+                          onMazosPage
+                            ? "/assets/icons/portafolioAbierto.png"
+                            : "/assets/icons/portafolios80.gif"
+                        }"
                         class="topbar__icon-img"
                       />
                     </a>
                   `
-          : ""
-        }
+                  : ""
+              }
 
+              ${
+                userHasArchivedDecks
+                  ? `
+                    <button
+                      class="topbar__icon-btn"
+                      id="archivoBtn"
+                      title="archivo"
+                    >
+                      <img src="/assets/icons/archivo80.gif" class="topbar__icon-img" />
+                    </button>
+                  `
+                  : ""
+              }
 
-${userHasArchivedDecks
-          ? `
-    <button
-      class="topbar__icon-btn"
-      id="archivoBtn"
-      title="archivo"
-    >
-      <img src="/assets/icons/archivo80.gif" class="topbar__icon-img" />
-    </button>
-    `
-          : ""
-        }
+              ${
+                userHasJPlays
+                  ? `
+                    <button
+                      class="topbar__icon-btn"
+                      id="bitacoraBtn"
+                      title="log de jotas"
+                    >
+                      <img src="/assets/icons/maquina80.gif" class="topbar__icon-img" />
+                    </button>
 
-${userHasJPlays
-          ? `
-    <button
-      class="topbar__icon-btn"
-      id="bitacoraBtn"
-      title="log de jotas"
-    >
-      <img src="/assets/icons/maquina80.gif" class="topbar__icon-img" />
-    </button>
+                    <button
+                      class="topbar__icon-btn"
+                      id="contabilidadBtn"
+                      title="contabilidad"
+                    >
+                      <img src="/assets/icons/calculadora80.gif" class="topbar__icon-img" />
+                    </button>
+                  `
+                  : ""
+              }
 
-    <button
-      class="topbar__icon-btn"
-      id="contabilidadBtn"
-      title="contabilidad"
-    >
-      <img src="/assets/icons/calculadora80.gif" class="topbar__icon-img" />
-    </button>
-    `
-          : ""
-        }
+              <a
+                href="/almanaque.html"
+                class="topbar__icon-btn"
+                title="Almanaque"
+              >
+                <img src="/assets/icons/Schedule80.gif" class="topbar__icon-img" />
+              </a>
 
-<a
-  href="/almanaque.html"
-  class="topbar__icon-btn"
-  title="Almanaque"
->
-  <img src="/assets/icons/Schedule80.gif" class="topbar__icon-img" />
-</a>
+              <a
+                href="/noticias.html"
+                class="topbar__icon-btn"
+                title="Noticias"
+              >
+                <img src="/assets/icons/Extra120.gif" class="topbar__icon-img" />
+              </a>
 
-<a
-  href="/noticias.html"
-  class="topbar__icon-btn"
-  title="Noticias"
->
-  <img src="/assets/icons/Extra120.gif" class="topbar__icon-img" />
-</a>
+              <a
+                href="/help.html"
+                class="topbar__icon-btn"
+                title="help"
+              >
+                <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
+              </a>
 
-<a
-  href="/help.html"
-  class="topbar__icon-btn"
-  title="help"
->
-  <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
-</a>
+              ${
+                user.is_admin
+                  ? `
+                    <a
+                      href="/protected-pages/administradores.html"
+                      class="topbar__icon-btn"
+                      title="Administración de usuarios"
+                    >
+                      <img src="/assets/icons/Tools120.gif" class="topbar__icon-img" />
+                    </a>
+                  `
+                  : ""
+              }
 
-${user.is_admin
-          ? `
-      <a
-        href="/protected-pages/administradores.html"
-        class="topbar__icon-btn"
-        title="Administración de usuarios"
-      >
-        <img src="/assets/icons/Tools120.gif" class="topbar__icon-img" />
-      </a>
-    `
-          : ""
-        }
               <button class="topbar__icon-btn" id="logoutBtn">
                 <img src="/assets/icons/exit80.gif" class="topbar__icon-img topbar__icon-img--exit" />
               </button>
@@ -334,7 +411,6 @@ ${user.is_admin
             </div>
 
             <nav class="topbar__right">
-           
               <a
                 href="/almanaque.html"
                 class="topbar__icon-btn"
@@ -380,7 +456,6 @@ ${user.is_admin
     }
 
     const bitacoraBtn = document.getElementById("bitacoraBtn");
-
     const archivoBtn = document.getElementById("archivoBtn");
 
     if (archivoBtn) {
