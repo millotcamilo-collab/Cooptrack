@@ -426,18 +426,18 @@
     if (suit === "SPADE") {
       return parseLocalDateTime(
         play?.start_date ||
-          play?.scheduled_for ||
-          play?.play_date ||
-          play?.date ||
-          play?.created_at
+        play?.scheduled_for ||
+        play?.play_date ||
+        play?.date ||
+        play?.created_at
       );
     }
 
     return parseLocalDateTime(
       play?.scheduled_for ||
-        play?.play_date ||
-        play?.date ||
-        play?.created_at
+      play?.play_date ||
+      play?.date ||
+      play?.created_at
     );
   }
 
@@ -460,9 +460,8 @@
       "Dic"
     ];
 
-    return `${weekdayMap[date.getDay()]} ${date.getDate()} ${
-      monthMap[date.getMonth()]
-    } ${date.getFullYear()}`;
+    return `${weekdayMap[date.getDay()]} ${date.getDate()} ${monthMap[date.getMonth()]
+      } ${date.getFullYear()}`;
   }
 
   function formatTimeLabel(value) {
@@ -507,25 +506,23 @@
           <img class="lienzo-session-dia__icon" src="${clockIcon}" alt="Inicio" />
           <span class="lienzo-session-dia__time">${escapeHtml(startLabel || "—")}</span>
 
-          ${
-            endLabel
-              ? `
+          ${endLabel
+          ? `
             <img class="lienzo-session-dia__icon" src="${bellIcon}" alt="Fin" />
             <span class="lienzo-session-dia__time">${escapeHtml(endLabel)}</span>
           `
-              : ""
-          }
+          : ""
+        }
         </div>
 
-        ${
-          location
-            ? `
+        ${location
+          ? `
           <div class="lienzo-session-dia__row">
             <img class="lienzo-session-dia__icon" src="/assets/icons/LocGlobito.gif" alt="Lugar" />
             <span class="lienzo-session-dia__location">${escapeHtml(location)}</span>
           </div>
         `
-            : ""
+          : ""
         }
       `;
     }
@@ -533,10 +530,10 @@
     return `
       <div class="lienzo-session-dia-wrap">
         ${window.renderDia({
-          headerText: formatSessionDayHeader(sessionDate),
-          bodyHtml,
-          extraClass: "lienzo-session-dia"
-        })}
+      headerText: formatSessionDayHeader(sessionDate),
+      bodyHtml,
+      extraClass: "lienzo-session-dia"
+    })}
       </div>
     `;
   }
@@ -547,15 +544,14 @@
         <div class="panel-topbar__col panel-topbar__col--identity">
           ${identityHtml}
         </div>
-        ${
-          single
-            ? ""
-            : `
+        ${single
+        ? ""
+        : `
           <div class="panel-topbar__col panel-topbar__col--actions">
             ${actionsHtml}
           </div>
         `
-        }
+      }
       </div>
     `;
   }
@@ -590,9 +586,9 @@
       if (side === "AMSTERDAM") {
         payerLabel = String(
           targetUser?.nickname ||
-            targetUser?.full_name ||
-            targetUser?.name ||
-            "Invitado"
+          targetUser?.full_name ||
+          targetUser?.name ||
+          "Invitado"
         ).trim();
       }
 
@@ -621,9 +617,9 @@
         if (side === "AMSTERDAM") {
           payerLabel = String(
             targetUser?.nickname ||
-              targetUser?.full_name ||
-              targetUser?.name ||
-              "Invitado"
+            targetUser?.full_name ||
+            targetUser?.name ||
+            "Invitado"
           ).trim();
         }
 
@@ -682,12 +678,12 @@
       leftCards: [],
       proposalSummary: qqState
         ? {
-            concept: qqState.concept,
-            currency: qqState.currency,
-            amount: qqState.amount,
-            payDate: qqState.payDate,
-            payerLabel: qqState.payerLabel
-          }
+          concept: qqState.concept,
+          currency: qqState.currency,
+          amount: qqState.amount,
+          payDate: qqState.payDate,
+          payerLabel: qqState.payerLabel
+        }
         : null
     });
   }
@@ -824,15 +820,14 @@
 
     return `
       <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-        ${
-          showSend
-            ? `
+        ${showSend
+        ? `
           <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
             <img src="${sendIcon}" alt="Enviar" />
           </button>
         `
-            : ""
-        }
+        : ""
+      }
 
         <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
           <img src="${exitIcon}" alt="Salir" />
@@ -868,9 +863,8 @@
 
     return `
       <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-        ${
-          showDecisionButtons
-            ? `
+        ${showDecisionButtons
+        ? `
           <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
             <img src="${acceptIcon}" alt="Aceptar" />
           </button>
@@ -879,18 +873,17 @@
             <img src="${rejectIcon}" alt="Rechazar" />
           </button>
         `
-            : ""
-        }
+        : ""
+      }
 
-        ${
-          showCancel
-            ? `
+        ${showCancel
+        ? `
           <button id="lienzo-cancel-btn" class="icon-btn" title="Cancelar">
             <img src="${cancelIcon}" alt="Cancelar" />
           </button>
         `
-            : ""
-        }
+        : ""
+      }
 
         <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
           <img src="${exitIcon}" alt="Salir" />
@@ -1109,6 +1102,64 @@
     }
   }
 
+  async function acknowledgePlayIfNeeded(play) {
+    try {
+      const playId = Number(play?.id || 0);
+      const token = localStorage.getItem("cooptrackToken");
+      const currentUserId = Number(window.__currentUser?.id || 0);
+      const sourceUserId = Number(play?.created_by_user_id || 0);
+      const status = String(play?.play_status || "").trim().toUpperCase();
+
+      const shouldAcknowledge =
+        playId &&
+        token &&
+        currentUserId &&
+        sourceUserId &&
+        currentUserId === sourceUserId &&
+        (status === "APPROVED" || status === "REJECTED");
+
+      if (!shouldAcknowledge) return true;
+
+      const response = await fetch(`/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_status: "ACKNOWLEDGED"
+        })
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || data?.ok === false) {
+        console.error("No se pudo marcar ACKNOWLEDGED:", data);
+        return false;
+      }
+
+      play.play_status = "ACKNOWLEDGED";
+      return true;
+    } catch (error) {
+      console.error("Error en acknowledgePlayIfNeeded", error);
+      return false;
+    }
+  }
+
+  async function handleExitPlay(play) {
+    await acknowledgePlayIfNeeded(play);
+
+    const deckId =
+      Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
+
+    if (deckId) {
+      window.location.href = `/mazo.html?id=${deckId}`;
+      return;
+    }
+
+    window.history.back();
+  }
+
   async function handleCancelPlay(play) {
     try {
       const playId = Number(play?.id || 0);
@@ -1159,8 +1210,11 @@
     }
   }
 
-  function handleExitLienzo() {
-    const deckId = Number(getCurrentDeck()?.id || 0);
+  async function handleExitPlay(play) {
+    await acknowledgePlayIfNeeded(play);
+
+    const deckId =
+      Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
 
     if (deckId) {
       window.location.href = `/mazo.html?id=${deckId}`;
@@ -1202,7 +1256,9 @@
     }
 
     if (exitBtn) {
-      exitBtn.addEventListener("click", handleExitLienzo);
+      exitBtn.addEventListener("click", () => {
+        handleExitPlay(play);
+      });
     }
   }
 
