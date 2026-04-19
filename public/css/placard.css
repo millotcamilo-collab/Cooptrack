@@ -2,10 +2,12 @@
 
 .placard {
   display: flex;
-  align-items: center;            /* antes flex-start */
-  justify-content: center;        /* 👈 centra todo horizontal */
-  text-align: center;             /* 👈 centra texto */
-  gap: 14px;
+  flex-direction: column;        /* 👈 CLAVE: todo en vertical */
+  align-items: center;           /* 👈 centra todo */
+  justify-content: center;
+  text-align: center;
+
+  gap: 10px;
   padding: 14px 18px;
   background: var(--lienzo-veil-bg);
   border: 1px solid var(--lienzo-veil-border);
@@ -14,13 +16,14 @@
   box-sizing: border-box;
 }
 
-/* IZQUIERDA (foto) */
+/* IZQUIERDA (ahora es bloque superior) */
 .placard__left {
   flex: 0 0 auto;
   display: flex;
-  align-items: center;            /* antes flex-start */
-  justify-content: center;        /* 👈 centra bloque izquierdo */
-  gap: 12px;
+  flex-direction: column;        /* 👈 apila foto + cartas */
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .placard__photo {
@@ -33,13 +36,21 @@
   border: none;
 }
 
+/* CARTAS SUPERIORES */
+.placard__left-cards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 58px;
+}
+
 /* CENTRO */
 .placard__center {
   min-width: 0;
-  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;            /* 👈 centra contenido vertical */
+  align-items: center;
   gap: 6px;
 }
 
@@ -47,15 +58,13 @@
 .placard__titleline {
   display: flex;
   align-items: center;
-  justify-content: center;        /* 👈 centra fila */
+  justify-content: center;
   gap: 8px;
-  min-width: 0;
   flex-wrap: wrap;
 }
 
 /* CARTA */
 .placard__rank {
-  flex: 0 0 auto;
   font-size: 2rem;
   font-weight: 700;
   line-height: 1;
@@ -63,32 +72,25 @@
 }
 
 .placard__suit {
-  flex: 0 0 auto;
   height: 22px;
   width: auto;
-  display: block;
   object-fit: contain;
 }
 
 /* NOMBRE */
 .placard__name {
-  flex: 0 1 auto;
   font-size: 1.1rem;
   font-weight: 500;
   color: #ffffff;
   line-height: 1.2;
-  white-space: nowrap;
-  text-align: center;
 }
 
 /* MONEDA */
 .placard__currency {
-  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  justify-content: center;        /* 👈 centra moneda */
+  justify-content: center;
   gap: 6px;
-  white-space: nowrap;
 }
 
 .placard__currency-code {
@@ -104,80 +106,14 @@
   color: #e4e4e4;
 }
 
-/* DERECHA */
+/* DERECHA (neutralizado) */
 .placard__right {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 0; /* 👈 importante: elimina empuje a la derecha */
+  display: none; /* 👈 opcional: no tiene sentido en layout centrado */
 }
 
-.nuevo-mazo-bar,
-.placard,
-.lienzo-deckbar {
-  height: var(--placard-height);
-  padding: var(--placard-padding);
-  display: flex;
-  align-items: center;
-  box-sizing: border-box;
-}
-
-#placard-container {
-  opacity: 0;
-  transform: translateY(-8px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
-}
-
-#placard-container.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.placard__photo-action {
-  height: 25px;
-  width: auto;
-  padding: 2px 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: transparent;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.placard__photo-action img {
-  height: 100%;
-  width: auto;
-  display: block;
-}
-
-.placard__photo-button {
-  appearance: none;
-  border: none;
-  background: transparent;
-  padding: 0;
-  margin: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: 10px;
-}
-
-.placard__left-cards {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 72px;
-}
-
+/* TOPCARDS */
 .placard__topcard-image {
-  width: auto;
   height: 58px;
-  display: block;
   object-fit: contain;
 }
 
@@ -204,18 +140,22 @@
   cursor: grabbing;
 }
 
+/* ANIMACIÓN */
+#placard-container {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+#placard-container.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* RESPONSIVE */
 @media (max-width: 900px) {
   .placard {
     flex-direction: column;
-    align-items: center;   /* 👈 centrado también en mobile */
-  }
-
-  .placard__titleline {
-    flex-wrap: wrap;
-  }
-
-  .placard__right {
-    justify-content: center;
+    align-items: center;
   }
 }
