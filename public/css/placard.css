@@ -40,13 +40,14 @@
 }
 
 .placard__photo {
-  width: 66px;
-  height: 66px;
+  height: 66px;          /* 👈 tamaño más chico que mazobar */
+  width: auto;
+  max-width: 110px;      /* 👈 opcional, proporcional al mazobar */
   object-fit: contain;
-  border-radius: 10px;
   display: block;
   background: transparent;
-  border: none;
+
+  border-radius: 6px;    /* 👈 igual que mazobar */
 }
 
 .placard__photo-button {
