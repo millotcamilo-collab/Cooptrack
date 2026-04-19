@@ -934,7 +934,7 @@
     return status === "SENT" || status === "PENDING";
   }
 
-    function renderTargetActions(play) {
+  function renderTargetActions(play) {
     const acceptIcon = "/assets/icons/Sello40.gif";
     const rejectIcon = "/assets/icons/stepback40.gif";
     const cancelIcon = "/assets/icons/stop60.gif";
@@ -1135,7 +1135,7 @@
     window.__lienzoQHeartSaved = savedData;
   }
 
-  async function handleSendPlay(play) {
+  async function handleSavePlay(play) {
     try {
       const playId = Number(play?.id || 0);
       const token = localStorage.getItem("cooptrackToken");
@@ -1150,20 +1150,17 @@
         return;
       }
 
-      const payload = {
-        play_status: "SENT"
-      };
-
       const built = buildPlayCodeWithQHeartPayment(play);
 
       if (!built.ok) {
-        alert(built.error || "No se pudo enviar la jugada.");
+        alert(built.error || "No se pudo guardar la Q de corazón.");
         built.focusEl?.focus?.();
         return;
       }
 
-      if (built.hasQHeart) {
-        payload.play_code = built.playCode;
+      if (!built.hasQHeart) {
+        alert("Primero tenés que bajar una Q de corazón.");
+        return;
       }
 
       const response = await fetch(`/plays/${playId}`, {
@@ -1172,39 +1169,26 @@
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          play_code: built.playCode
+        })
       });
 
       const data = await response.json();
 
       if (!response.ok || !data.ok) {
-        console.error("Error enviando jugada:", data);
-        alert(data?.error || "No se pudo enviar la jugada");
+        console.error("Error guardando Q♥:", data);
+        alert(data?.error || "No se pudo guardar la Q de corazón");
         return;
       }
 
-      if (built.hasQHeart) {
-        play.play_code = built.playCode;
-        applyLocalQHeartSavedState(built.savedData);
-      }
+      play.play_code = built.playCode;
+      applyLocalQHeartSavedState(built.savedData);
 
-      play.play_status = "SENT";
-
-      alert("Invitación enviada");
-
-      const deckId =
-        Number(play?.deck_id || 0) ||
-        Number(getCurrentDeck()?.id || 0);
-
-      if (deckId) {
-        window.location.href = `/mazo.html?id=${deckId}`;
-        return;
-      }
-
-      window.history.back();
+      renderLienzo(play);
     } catch (error) {
-      console.error("Error en handleSendPlay", error);
-      alert("No se pudo enviar la jugada");
+      console.error("Error en handleSavePlay", error);
+      alert("No se pudo guardar la Q de corazón");
     }
   }
 
