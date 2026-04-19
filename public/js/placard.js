@@ -32,21 +32,17 @@
       <div class="placard__currency">
         ${
           iconSrc
-            ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__suit" />`
+            ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__currency-suit" />`
             : ""
         }
         ${
           currencyCode
-            ? `<span class="placard__currency-code">${escapeHtml(
-                currencyCode
-              )}</span>`
+            ? `<span class="placard__currency-code">${escapeHtml(currencyCode)}</span>`
             : ""
         }
         ${
           currencyName
-            ? `<span class="placard__currency-name">${escapeHtml(
-                currencyName
-              )}</span>`
+            ? `<span class="placard__currency-name">${escapeHtml(currencyName)}</span>`
             : ""
         }
       </div>
@@ -120,15 +116,6 @@
     `;
   }
 
-  function buildLeftCardsHTML(leftCardsHtml) {
-    if (!leftCardsHtml) return "";
-    return `
-      <div class="placard__left-cards">
-        ${leftCardsHtml}
-      </div>
-    `;
-  }
-
   function buildTopCardImageHTML(card) {
     const rank = String(card?.rank || card?.card_rank || "")
       .trim()
@@ -197,11 +184,20 @@
     return cards.map(buildTopCardImageHTML).join("");
   }
 
+  function buildLeftCardsHTML(leftCardsHtml) {
+    if (!leftCardsHtml) return "";
+    return `
+      <div class="placard__lead-cards">
+        ${leftCardsHtml}
+      </div>
+    `;
+  }
+
   function renderProposalSummary(summary) {
     if (!summary) return "";
 
     return `
-      <div class="placard-qheart-summary">
+      <div class="placard__subtitle">
         ${escapeHtml(summary.concept || "")}
         ${escapeHtml(summary.currency || "")} ${escapeHtml(summary.amount || "")}
         ${escapeHtml(summary.payDate || "")}
@@ -265,10 +261,6 @@
     const canEditPhoto = Boolean(config?.canEditPhoto);
     const mode = String(config?.mode || "DEFAULT").trim().toUpperCase();
 
-    const rightHtml = config?.rightHtml
-      ? `<div class="placard__right">${config.rightHtml}</div>`
-      : "";
-
     const photoHtml = buildPhotoHTML(photoUrl, canEditPhoto);
     const photoEditorHtml = buildPhotoEditorHTML(config);
 
@@ -276,45 +268,53 @@
       config?.leftCardsHtml || buildTopCardsHTML(config?.leftCards || [])
     );
 
-    let centerExtraHtml = "";
+    let subtitleHtml = "";
 
     if (mode === "QQPICA") {
-      centerExtraHtml = renderProposalSummary(config?.proposalSummary || null);
+      subtitleHtml = renderProposalSummary(config?.proposalSummary || null);
+    } else if (config?.subtitle) {
+      subtitleHtml = `<div class="placard__subtitle">${escapeHtml(config.subtitle)}</div>`;
     }
 
     container.innerHTML = `
       <section class="placard">
-        <div class="placard__left">
-          ${leftCardsHtml}
-          ${photoHtml}
-        </div>
-
-        <div class="placard__center">
-          <div class="placard__titleline">
-            <span class="placard__rank">${escapeHtml(rank)}</span>
-
-            ${
-              suitIcon
-                ? `<img src="${escapeHtml(
-                    suitIcon
-                  )}" alt="" class="placard__suit" />`
-                : ""
-            }
-
-            <span class="placard__name">${escapeHtml(title)}</span>
-
-            ${
-              showCurrency
-                ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
-                : ""
-            }
+        <div class="placard__row">
+          <div class="placard__lead">
+            ${leftCardsHtml}
+            <div class="placard__photo-wrap">
+              ${photoHtml}
+            </div>
           </div>
 
-          ${photoEditorHtml}
-          ${centerExtraHtml}
-        </div>
+          <div class="placard__maincard">
+            ${
+              suitIcon
+                ? `
+              <img
+                src="${escapeHtml(suitIcon)}"
+                alt=""
+                class="placard__maincard-suit"
+              />
+            `
+                : ""
+            }
+            <span class="placard__maincard-rank">${escapeHtml(rank)}</span>
+          </div>
 
-        ${rightHtml}
+          <div class="placard__text">
+            <div class="placard__titleline">
+              <span class="placard__name">${escapeHtml(title)}</span>
+              ${
+                showCurrency
+                  ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
+                  : ""
+              }
+            </div>
+
+            ${subtitleHtml}
+            ${photoEditorHtml}
+          </div>
+        </div>
       </section>
     `;
 
