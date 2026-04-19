@@ -12,24 +12,6 @@
     return String(value || "").trim().toUpperCase();
   }
 
-  function isQHeartSaved() {
-    return !!window.__lienzoQHeartSaved;
-  }
-
-function renderQHeartSummary() {
-  const data = window.__lienzoQHeartSaved;
-  if (!data) return "";
-
-  return `
-    <div class="placard-qheart-summary">
-      ${escapeHtml(data.concept)}
-      ${escapeHtml(data.currency)} ${escapeHtml(data.amount)}
-      ${escapeHtml(data.payDate)}
-      paga ${escapeHtml(data.payerLabel)}
-    </div>
-  `;
-}
-
   function getSuitIconSrc(suit) {
     const s = normalizeSuit(suit);
 
@@ -48,18 +30,25 @@ function renderQHeartSummary() {
 
     return `
       <div class="placard__currency">
-        ${iconSrc
-        ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__suit" />`
-        : ""
-      }
-        ${currencyCode
-        ? `<span class="placard__currency-code">${escapeHtml(currencyCode)}</span>`
-        : ""
-      }
-        ${currencyName
-        ? `<span class="placard__currency-name">${escapeHtml(currencyName)}</span>`
-        : ""
-      }
+        ${
+          iconSrc
+            ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__suit" />`
+            : ""
+        }
+        ${
+          currencyCode
+            ? `<span class="placard__currency-code">${escapeHtml(
+                currencyCode
+              )}</span>`
+            : ""
+        }
+        ${
+          currencyName
+            ? `<span class="placard__currency-name">${escapeHtml(
+                currencyName
+              )}</span>`
+            : ""
+        }
       </div>
     `;
   }
@@ -141,7 +130,9 @@ function renderQHeartSummary() {
   }
 
   function buildTopCardImageHTML(card) {
-    const rank = String(card?.rank || card?.card_rank || "").trim().toUpperCase();
+    const rank = String(card?.rank || card?.card_rank || "")
+      .trim()
+      .toUpperCase();
     const suit = normalizeSuit(card?.suit || card?.card_suit);
 
     let src = "";
@@ -172,39 +163,83 @@ function renderQHeartSummary() {
 
     if (src) {
       return `
-    <img
-      src="${escapeHtml(src)}"
-      alt="${escapeHtml(label)}"
-      title="${escapeHtml(label)}"
-      class="placard__topcard-image"
-      draggable="true"
-      data-rank="${escapeHtml(rank)}"
-      data-suit="${escapeHtml(suit)}"
-      data-card-id="${escapeHtml(card?.id || "")}"
-      data-virtual="${card?.isVirtual ? "true" : "false"}"
-    />
-  `;
+        <img
+          src="${escapeHtml(src)}"
+          alt="${escapeHtml(label)}"
+          title="${escapeHtml(label)}"
+          class="placard__topcard-image"
+          draggable="true"
+          data-rank="${escapeHtml(rank)}"
+          data-suit="${escapeHtml(suit)}"
+          data-card-id="${escapeHtml(card?.id || "")}"
+          data-virtual="${card?.isVirtual ? "true" : "false"}"
+        />
+      `;
     }
 
     return `
-  <div
-    class="placard__topcard-fallback"
-    title="${escapeHtml(label)}"
-    draggable="true"
-    data-rank="${escapeHtml(rank)}"
-    data-suit="${escapeHtml(suit)}"
-    data-card-id="${escapeHtml(card?.id || "")}"
-    data-virtual="${card?.isVirtual ? "true" : "false"}"
-  >
-    ${escapeHtml(label)}
-  </div>
-`;
+      <div
+        class="placard__topcard-fallback"
+        title="${escapeHtml(label)}"
+        draggable="true"
+        data-rank="${escapeHtml(rank)}"
+        data-suit="${escapeHtml(suit)}"
+        data-card-id="${escapeHtml(card?.id || "")}"
+        data-virtual="${card?.isVirtual ? "true" : "false"}"
+      >
+        ${escapeHtml(label)}
+      </div>
+    `;
   }
 
   function buildTopCardsHTML(cards) {
     if (!Array.isArray(cards) || !cards.length) return "";
-
     return cards.map(buildTopCardImageHTML).join("");
+  }
+
+  function renderProposalSummary(summary) {
+    if (!summary) return "";
+
+    return `
+      <div class="placard-qheart-summary">
+        ${escapeHtml(summary.concept || "")}
+        ${escapeHtml(summary.currency || "")} ${escapeHtml(summary.amount || "")}
+        ${escapeHtml(summary.payDate || "")}
+        paga ${escapeHtml(summary.payerLabel || "")}
+      </div>
+    `;
+  }
+
+  function bindPlacardDrag(container) {
+    container
+      .querySelectorAll(".placard__topcard-image, .placard__topcard-fallback")
+      .forEach((cardEl) => {
+        cardEl.addEventListener("dragstart", (event) => {
+          const payload = {
+            source: "placard",
+            rank: String(cardEl.dataset.rank || "").toUpperCase(),
+            suit: String(cardEl.dataset.suit || "").toUpperCase(),
+            cardId: cardEl.dataset.cardId || null,
+            isVirtual: cardEl.dataset.virtual === "true"
+          };
+
+          window.__draggingPlacardCard = payload;
+
+          event.dataTransfer.setData(
+            "application/json",
+            JSON.stringify(payload)
+          );
+          event.dataTransfer.setData(
+            "text/plain",
+            `${payload.rank}|${payload.suit}`
+          );
+          event.dataTransfer.effectAllowed = "copy";
+        });
+      });
+
+    document.addEventListener("dragend", () => {
+      window.__draggingPlacardCard = null;
+    });
   }
 
   function renderPlacard(containerId, config) {
@@ -228,6 +263,7 @@ function renderQHeartSummary() {
     const currencyName = String(config?.currencyName || "").trim();
     const showCurrency = Boolean(config?.showCurrency);
     const canEditPhoto = Boolean(config?.canEditPhoto);
+    const mode = String(config?.mode || "DEFAULT").trim().toUpperCase();
 
     const rightHtml = config?.rightHtml
       ? `<div class="placard__right">${config.rightHtml}</div>`
@@ -240,69 +276,49 @@ function renderQHeartSummary() {
       config?.leftCardsHtml || buildTopCardsHTML(config?.leftCards || [])
     );
 
-    const qHeartHtml = renderQHeartSummary();
+    let centerExtraHtml = "";
+
+    if (mode === "QQPICA") {
+      centerExtraHtml = renderProposalSummary(config?.proposalSummary || null);
+    }
 
     container.innerHTML = `
-  <section class="placard">
-    <div class="placard__left">
-      ${leftCardsHtml}
-      ${photoHtml}
-    </div>
+      <section class="placard">
+        <div class="placard__left">
+          ${leftCardsHtml}
+          ${photoHtml}
+        </div>
 
-    <div class="placard__center">
-      <div class="placard__titleline">
-        <span class="placard__rank">${escapeHtml(rank)}</span>
+        <div class="placard__center">
+          <div class="placard__titleline">
+            <span class="placard__rank">${escapeHtml(rank)}</span>
 
-        ${suitIcon
-        ? `<img src="${escapeHtml(suitIcon)}" alt="" class="placard__suit" />`
-        : ""
-      }
+            ${
+              suitIcon
+                ? `<img src="${escapeHtml(
+                    suitIcon
+                  )}" alt="" class="placard__suit" />`
+                : ""
+            }
 
-        <span class="placard__name">${escapeHtml(title)}</span>
+            <span class="placard__name">${escapeHtml(title)}</span>
 
-        ${showCurrency
-        ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
-        : ""
-      }
-      </div>
+            ${
+              showCurrency
+                ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
+                : ""
+            }
+          </div>
 
-      ${photoEditorHtml}
+          ${photoEditorHtml}
+          ${centerExtraHtml}
+        </div>
 
-      ${qHeartHtml}  <!-- 👈 ACA VA -->
-    </div>
+        ${rightHtml}
+      </section>
+    `;
 
-    ${rightHtml}
-  </section>
-`;
-    container
-      .querySelectorAll(".placard__topcard-image, .placard__topcard-fallback")
-      .forEach((cardEl) => {
-        cardEl.addEventListener("dragstart", (event) => {
-          const payload = {
-            source: "placard",
-            rank: String(cardEl.dataset.rank || "").toUpperCase(),
-            suit: String(cardEl.dataset.suit || "").toUpperCase(),
-            cardId: cardEl.dataset.cardId || null,
-            isVirtual: cardEl.dataset.virtual === "true"
-          };
-
-          window.__draggingPlacardCard = payload;
-          console.log("DRAG START", payload);
-
-          event.dataTransfer.setData(
-            "application/json",
-            JSON.stringify(payload)
-          );
-          event.dataTransfer.setData(
-            "text/plain",
-            `${payload.rank}|${payload.suit}`
-          );
-          event.dataTransfer.effectAllowed = "copy";
-        });
-      });
-    document.addEventListener("dragend", () => {
-      window.__draggingPlacardCard = null;
-    });
+    bindPlacardDrag(container);
   }
 
   window.renderPlacard = renderPlacard;
