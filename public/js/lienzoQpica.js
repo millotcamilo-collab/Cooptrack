@@ -814,36 +814,44 @@ function formatDateForInput(value) {
     }
 
     function mountPlacardFromDataset() {
-        const placardHost = document.getElementById("lienzo-placard");
-        if (!placardHost) return;
-        if (typeof window.renderPlacard !== "function") return;
+    const placardHost = document.getElementById("lienzo-placard");
+    if (!placardHost) return;
+    if (typeof window.renderPlacard !== "function") return;
 
-        const selection = getLienzoDropSelection();
+    const selection = getLienzoDropSelection();
 
-        const qHeartCard = {
-            id: "virtual-Q-HEART",
-            rank: "Q",
-            suit: "HEART",
-            isVirtual: true
-        };
+    const currentPlayId =
+        Number(selection?.playId || 0) ||
+        Number(new URLSearchParams(window.location.search).get("playId") || 0);
 
-        const visibleCards = isCardCurrentlyDropped(qHeartCard, selection)
-            ? []
-            : [qHeartCard];
+    const currentPlay = getPlayById(currentPlayId);
+    const userIsSource = currentPlay ? isCurrentUserSource(currentPlay) : false;
 
-        window.renderPlacard(placardHost, {
-            mode: "QPICA",
-            photoUrl: placardHost.dataset.photoUrl || "",
-            rank: placardHost.dataset.rank || "A",
-            suit: placardHost.dataset.suit || "HEART",
-            title: placardHost.dataset.title || "Mazo",
-            currencyCode: placardHost.dataset.currencyCode || "",
-            currencyName: placardHost.dataset.currencyName || "",
-            showCurrency: false,
-            leftCards: visibleCards,
-            plays: getAllPlays()
-        });
-    }
+    const qHeartCard = {
+        id: "virtual-Q-HEART",
+        rank: "Q",
+        suit: "HEART",
+        isVirtual: true
+    };
+
+    const visibleCards = userIsSource && !isCardCurrentlyDropped(qHeartCard, selection)
+        ? [qHeartCard]
+        : [];
+
+    window.renderPlacard(placardHost, {
+        mode: "QPICA",
+        photoUrl: placardHost.dataset.photoUrl || "",
+        rank: placardHost.dataset.rank || "A",
+        suit: placardHost.dataset.suit || "HEART",
+        title: placardHost.dataset.title || "Mazo",
+        currencyCode: placardHost.dataset.currencyCode || "",
+        currencyName: placardHost.dataset.currencyName || "",
+        showCurrency: false,
+        leftCards: visibleCards,
+        plays: getAllPlays()
+    });
+}
+
 
     function renderBackgroundCard(card, index) {
         const src = getCardImageSrc(card?.card_rank, card?.card_suit);

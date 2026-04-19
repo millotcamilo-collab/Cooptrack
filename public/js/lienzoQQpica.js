@@ -631,7 +631,11 @@
       const parsed = parsePlayCode(play.play_code);
       const meta = parseFlowMetadata(parsed.flow);
 
-      if (meta.payment) {
+      if (
+        meta.payment &&
+        meta.payment.amount &&
+        String(meta.payment.amount).trim() !== ""
+      ) {
         const payment = meta.payment;
         const deck = getCurrentDeck();
         const targetUser = resolveTargetUser(play);
