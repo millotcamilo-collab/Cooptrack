@@ -233,16 +233,20 @@
     const rank = String(play?.card_rank || play?.rank || "").trim().toUpperCase();
     const suit = String(play?.card_suit || play?.suit || "").trim().toUpperCase();
 
-    if (rank === "Q" && suit === "SPADE") {
-      const parsed = parsePlayCode(play?.play_code || "");
-      const meta = parseFlowMetadata(parsed?.flow);
+if (rank === "Q" && suit === "SPADE") {
+  const parsed = parsePlayCode(play?.play_code || "");
+  const meta = parseFlowMetadata(parsed?.flow);
 
-      if (meta?.payment) {
-        return "/lienzoQQpica.html";
-      }
+  const amount = String(meta?.payment?.amount || "").trim();
+  const payDate = String(meta?.payment?.payDate || "").trim();
+  const concept = String(meta?.payment?.concept || "").trim();
 
-      return "/lienzoQpica.html";
-    }
+  if (amount && payDate && concept) {
+    return "/lienzoQQpica.html";
+  }
+
+  return "/lienzoQpica.html";
+}
 
     if (rank === "K") {
       return "/lienzoK.html";

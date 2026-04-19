@@ -179,11 +179,18 @@
     return { baseFlow, payment };
   }
 
-  function playHasQHeartAttachment(play) {
-    const parsed = parsePlayCode(play?.play_code || "");
-    const meta = parseFlowMetadata(parsed.flow);
-    return Boolean(meta.payment);
-  }
+function playHasQHeartAttachment(play) {
+  const parsed = parsePlayCode(play?.play_code || "");
+  const meta = parseFlowMetadata(parsed.flow);
+
+  if (!meta?.payment) return false;
+
+  const amount = String(meta.payment.amount || "").trim();
+  const payDate = String(meta.payment.payDate || "").trim();
+  const concept = String(meta.payment.concept || "").trim();
+
+  return !!(amount && payDate && concept);
+}
 
   function resolveLienzoPageForPlay(play) {
     const rank = normalizeText(play?.card_rank || play?.rank);
