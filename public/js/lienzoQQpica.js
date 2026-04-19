@@ -489,76 +489,79 @@
   function renderSourceSessionDia(play) {
     if (!play || typeof window.renderDia !== "function") return "";
 
-    const suit = normalizeSuit(play?.card_suit || play?.suit);
+    const parentPlay = getPlayById(play?.parent_play_id);
+    const sessionPlay = parentPlay || play;
+
+    const suit = normalizeSuit(sessionPlay?.card_suit || sessionPlay?.suit);
     if (suit !== "SPADE") return "";
 
-    const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
-    const sessionDate = getSessionDateFromPlay(play);
+    const spadeMode = String(sessionPlay?.spade_mode || "").trim().toUpperCase();
+    const sessionDate = getSessionDateFromPlay(sessionPlay);
 
     if (!sessionDate) return "";
 
     const clockIcon = "/assets/icons/reloj60.gif";
-    const bellIcon = "/assets/icons/campana80.gif";
+    const bellIcon = "/assets/icons/Campana80.gif";
     const bombIcon = "/assets/icons/bombaRedonda60.gif";
 
     let bodyHtml = "";
 
     if (spadeMode === "DEADLINE") {
-      const endLabel = formatTimeLabel(play?.end_date);
+        const endLabel = formatTimeLabel(sessionPlay?.end_date);
 
-      bodyHtml = `
+        bodyHtml = `
         <div class="lienzo-session-dia__row">
           <img class="lienzo-session-dia__icon" src="${bombIcon}" alt="Deadline" />
           <span class="lienzo-session-dia__time">${escapeHtml(endLabel || "—")}</span>
         </div>
       `;
     } else {
-      const startLabel = formatTimeLabel(play?.start_date);
-      const endLabel = formatTimeLabel(play?.end_date);
-      const location = String(play?.location || "").trim();
+        const startLabel = formatTimeLabel(sessionPlay?.start_date);
+        const endLabel = formatTimeLabel(sessionPlay?.end_date);
+        const location = String(sessionPlay?.location || "").trim();
 
-      bodyHtml = `
+        bodyHtml = `
         <div class="lienzo-session-dia__row">
           <img class="lienzo-session-dia__icon" src="${clockIcon}" alt="Inicio" />
           <span class="lienzo-session-dia__time">${escapeHtml(startLabel || "—")}</span>
 
           ${endLabel
-          ? `
+                ? `
             <img class="lienzo-session-dia__icon" src="${bellIcon}" alt="Fin" />
             <span class="lienzo-session-dia__time">${escapeHtml(endLabel)}</span>
           `
-          : ""
-        }
+                : ""
+            }
         </div>
 
         ${location
-          ? `
+                ? `
           <div class="lienzo-session-dia__row">
             <img class="lienzo-session-dia__icon" src="/assets/icons/LocGlobito.gif" alt="Lugar" />
             <span class="lienzo-session-dia__location">${escapeHtml(location)}</span>
           </div>
         `
-          : ""
-        }
+                : ""
+            }
       `;
     }
 
     const jSpadeText = getParentJSpadeText(play);
 
     const headerText = jSpadeText
-      ? `${formatSessionDayHeader(sessionDate)} — ${jSpadeText}`
-      : formatSessionDayHeader(sessionDate);
+        ? `${formatSessionDayHeader(sessionDate)} — ${jSpadeText}`
+        : formatSessionDayHeader(sessionDate);
 
     return `
   <div class="lienzo-session-dia-wrap">
     ${window.renderDia({
-      headerText: headerText,
-      bodyHtml,
-      extraClass: "lienzo-session-dia"
-    })}
+            headerText: headerText,
+            bodyHtml,
+            extraClass: "lienzo-session-dia"
+        })}
   </div>
 `;
-  }
+}
 
   function buildPanelTopbar({ identityHtml, actionsHtml = "", single = false }) {
     return `

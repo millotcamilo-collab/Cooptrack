@@ -838,7 +838,7 @@ function getJSpadeText(play) {
         ${endLabel ? `
           <img
             class="lienzo-session-dia__icon"
-            src="/assets/icons/campana60.gif"
+            src="/assets/icons/Campana80.gif"
             alt="Fin"
           />
           <span class="lienzo-session-dia__time">${escapeHtml(endLabel)}</span>
