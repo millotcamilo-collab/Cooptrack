@@ -467,6 +467,17 @@
     `;
     }
 
+function formatDateForInput(value) {
+    const date = parseLocalDateTime(value);
+    if (!date) return "";
+
+    const year = date.getFullYear();
+    const month = pad2(date.getMonth() + 1);
+    const day = pad2(date.getDate());
+
+    return `${year}-${month}-${day}`;
+}
+
     function pad2(value) {
         return String(value).padStart(2, "0");
     }
@@ -901,11 +912,12 @@
         };
     }
 
-    function renderQHeartBudgetBox({ title, currencyCode = "" }) {
-        const safeTitle = escapeHtml(title || "Paga");
-        const safeCurrency = escapeHtml(currencyCode || "");
+    function renderQHeartBudgetBox({ title, currencyCode = "", defaultPayDate = "" }) {
+    const safeTitle = escapeHtml(title || "Paga");
+    const safeCurrency = escapeHtml(currencyCode || "");
+    const safePayDate = escapeHtml(defaultPayDate || "");
 
-        return `
+    return `
       <div class="lienzo-qheart-box">
         <div class="lienzo-qheart-box__title">
           ${safeTitle}
@@ -932,12 +944,12 @@
           <input
             type="date"
             class="lienzo-qheart-box__paydate"
+            value="${safePayDate}"
           />
         </div>
       </div>
     `;
-    }
-
+}
     function renderSourceActions(play) {
         const status = String(play?.play_status || "").trim().toUpperCase();
         const rank = normalizeRank(play?.card_rank || play?.rank);
@@ -1065,6 +1077,13 @@
         const deckName = String(deck?.name || "Mazo").trim();
         const currencyCode = getCurrencyCode(deck);
 
+        const parentPlay = getPlayById(play?.parent_play_id);
+        const defaultPayDate = formatDateForInput(
+            parentPlay?.spade_mode === "DEADLINE"
+                ? parentPlay?.end_date
+                : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
+        );
+
         const droppedCardHtml = droppedInColombes
             ? `
         <div class="lienzo-dropped-card-slot">
@@ -1079,15 +1098,16 @@
             : "";
 
         const qHeartBoxHtml = showQHeartBox
-            ? `
+    ? `
         <div class="lienzo-dropped-extra-slot">
           ${renderQHeartBudgetBox({
                 title: `Paga ${deckName}`,
-                currencyCode
+                currencyCode,
+                defaultPayDate
             })}
         </div>
       `
-            : "";
+    : "";
 
         const topbar = buildPanelTopbar({
             identityHtml: `
