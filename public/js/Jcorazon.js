@@ -180,6 +180,25 @@
           return;
         }
 
+if (!userCanEdit) {
+  hideButton(btnSpade);
+  hideButton(btnClub);
+  hideButton(btnEdit);
+  hideButton(btnSave);
+  hideButton(btnApprove);
+  hideButton(btnDelete);
+  hideButton(btnCancel);
+  hideButton(btnExit);
+  hideButton(btnPrived);
+  hideButton(btnReaders);
+
+  showButton(btnHelp);
+
+  if (textView) textView.style.display = "";
+  if (textInput) textInput.style.display = "none";
+  return;
+}
+
         if (isApproved || isEditMode) {
           hideButton(btnSpade);
           hideButton(btnClub);
