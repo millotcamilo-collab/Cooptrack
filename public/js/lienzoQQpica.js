@@ -1285,8 +1285,7 @@
     const scene = buildSourceCardsScene(play);
     const showActionsHere = isCurrentUserSource(play);
 
-    const parentPlay = getPlayById(play?.parent_play_id);
-    const sessionDiaHtml = renderSourceSessionDia(parentPlay);
+    const sessionDiaHtml = renderSourceSessionDia(play);
     const qqState = getQQPicaState(play);
 
     const droppedCardHtml = qqState

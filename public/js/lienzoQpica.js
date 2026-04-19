@@ -1052,8 +1052,7 @@
         const scene = buildSourceCardsScene(play);
         const showActionsHere = isCurrentUserSource(play);
 
-        const parentPlay = getPlayById(play?.parent_play_id);
-        const sessionDiaHtml = renderSourceSessionDia(parentPlay);
+        const sessionDiaHtml = renderSourceSessionDia(play);
 
         const selection = getLienzoDropSelection();
         const droppedInColombes = selection?.targetZone === "COLOMBES";
