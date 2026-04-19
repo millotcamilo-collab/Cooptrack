@@ -606,7 +606,7 @@
               ${buildJokersHTML(normalizedPlays, currentUserId, deck?.id)}
             </div>
 
-          </div>${isMazoPage && window.__canPlay ? 
+          </div>
         </div>
       </div>
     </section>

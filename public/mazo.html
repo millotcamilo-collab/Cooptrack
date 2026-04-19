@@ -173,24 +173,6 @@
       window.__currentDeck = deck;
       window.__currentState = state;
 
-      if (typeof renderMazobar === "function") {
-        renderMazobar(deck, state.plays || [], state.userId);
-      }
-
-      if (typeof renderPlayform === "function") {
-        renderPlayform(deck, state);
-      }
-
-      if (typeof renderTablero === "function") {
-        renderTablero(deck, state.plays || [], state);
-      }
-
-      const tableroEl = document.getElementById("tablero-container");
-      const playformEl = document.getElementById("playform-container");
-
-      if (tableroEl) tableroEl.style.display = "";
-      if (playformEl) playformEl.style.display = "";
-
       const plays = Array.isArray(state?.plays) ? state.plays : [];
       const currentUserId = Number(state?.userId || 0);
 
@@ -210,6 +192,26 @@
 
       window.__canPlay = hasCorporateAccess;
 
+
+      if (typeof renderMazobar === "function") {
+        renderMazobar(deck, state.plays || [], state.userId);
+      }
+
+      if (typeof renderPlayform === "function") {
+        renderPlayform(deck, state);
+      }
+
+      if (typeof renderTablero === "function") {
+        renderTablero(deck, state.plays || [], state);
+      }
+
+      const tableroEl = document.getElementById("tablero-container");
+      const playformEl = document.getElementById("playform-container");
+
+      if (tableroEl) tableroEl.style.display = "";
+      if (playformEl) playformEl.style.display = "";
+
+      
       const hasVisibleGamePlays = plays.some((play) => {
         const playCode = String(play?.play_code || "");
         const parts = playCode.split("§");
