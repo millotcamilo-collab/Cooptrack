@@ -675,7 +675,7 @@
       : "";
 
     return `
-    ${isMazoPage ? `
+    ${isMazoPage && window.__canPlay ? ` `
       <button
         id="btnAddJ"
         type="button"

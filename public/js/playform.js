@@ -48,15 +48,11 @@
     container.innerHTML = "";
   }
 
-  function userCanPlayInDeck(deck, state = null) {
-    if (!getToken()) return false;
+function userCanPlayInDeck(deck, state = null) {
+  if (!getToken()) return false;
 
-    if (!state || !Array.isArray(state.plays)) {
-      return true;
-    }
-
-    return true;
-  }
+  return !!window.__canPlay;
+}
 
   function buildPlayformHTML() {
   return `
