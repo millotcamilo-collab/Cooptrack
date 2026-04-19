@@ -571,15 +571,39 @@ function playHasQHeartAttachment(play) {
     }
 
     const pendingBtn = document.getElementById("pendingBtn");
-    if (pendingBtn && latestIncomingCard) {
-      pendingBtn.addEventListener("click", () => {
-        const deckId = latestIncomingCard.deck_id;
-        const playId = latestIncomingCard.id;
-        const nextPage = resolveLienzoPageForPlay(latestIncomingCard);
+if (pendingBtn && latestIncomingCard) {
+  pendingBtn.addEventListener("click", async () => {
+    const deckId = latestIncomingCard.deck_id;
+    const playId = latestIncomingCard.id;
+    const token = localStorage.getItem("cooptrackToken");
 
-        window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
-      });
+    try {
+      let playForRouting = latestIncomingCard;
+
+      if (token && playId) {
+        const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (response.ok && data?.ok && data.play) {
+          playForRouting = data.play;
+        }
+      }
+
+      const nextPage = resolveLienzoPageForPlay(playForRouting);
+      window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
+    } catch (error) {
+      console.error("Error resolviendo pendiente:", error);
+      const nextPage = resolveLienzoPageForPlay(latestIncomingCard);
+      window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
     }
+  });
+}
   }
 
   document.addEventListener("DOMContentLoaded", renderTopbar);

@@ -2296,6 +2296,7 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
      p.card_suit,
      p.play_status,
      p.play_text,
+     p.play_code,
      p.created_at,
      p.updated_at,
      parent.play_text AS parent_play_text,
