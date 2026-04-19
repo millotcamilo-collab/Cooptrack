@@ -32,6 +32,95 @@
     return String(value || "").trim().toUpperCase();
   }
 
+  function isCorporateIncomingPlay(play) {
+    const rank = normalizeText(play?.card_rank || play?.rank);
+    return rank === "Q" || rank === "K" || rank === "A";
+  }
+
+  function getPendingKindForUser(play, currentUserId) {
+    if (!play || !currentUserId) return null;
+
+    const status = normalizeText(play?.play_status || play?.status);
+    const sourceUserId = Number(play?.created_by_user_id || 0);
+    const targetUserId = Number(play?.target_user_id || 0);
+
+    const isSource = sourceUserId === Number(currentUserId);
+    const isTarget = targetUserId === Number(currentUserId);
+
+    // 1) Pendiente real de acción del invitado/destinatario
+    if (isTarget && (status === "SENT" || status === "PENDING")) {
+      return "ACTION_REQUIRED";
+    }
+
+    // 2) Notificación solo lectura para el anfitrión
+    if (isSource && (status === "APPROVED" || status === "REJECTED")) {
+      return "READ_ONLY";
+    }
+
+    // 3) Ya enterado: no debe aparecer más
+    if (isSource && status === "ACKNOWLEDGED") {
+      return null;
+    }
+
+    // 4) Enviada pero esperando al otro: no es pendiente del anfitrión
+    if (isSource && status === "SENT") {
+      return null;
+    }
+
+    return null;
+  }
+
+  async function getLatestPendingForTopbar(currentUserId) {
+    try {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return null;
+
+      const response = await fetch(`${API_BASE_URL}/plays/pending`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      const plays = Array.isArray(data?.plays) ? data.plays : [];
+
+      const candidates = plays
+        .filter(isCorporateIncomingPlay)
+        .map((play) => {
+          const pendingKind = getPendingKindForUser(play, currentUserId);
+          return pendingKind ? { ...play, pendingKind } : null;
+        })
+        .filter(Boolean);
+
+      if (!candidates.length) return null;
+
+      const priority = {
+        ACTION_REQUIRED: 1,
+        READ_ONLY: 2
+      };
+
+      candidates.sort((a, b) => {
+        const pa = priority[a.pendingKind] || 99;
+        const pb = priority[b.pendingKind] || 99;
+
+        if (pa !== pb) return pa - pb;
+        return Number(b.id || 0) - Number(a.id || 0);
+      });
+
+      return candidates[0];
+    } catch (error) {
+      console.error("Error leyendo pendientes para topbar:", error);
+      return null;
+    }
+  }
+
+  function normalizeText(value) {
+    return String(value || "").trim().toUpperCase();
+  }
+
   function parsePlayCode(code) {
     const parts = String(code || "").split("§");
 
@@ -172,8 +261,8 @@
       const mazos = Array.isArray(data?.mazos)
         ? data.mazos
         : Array.isArray(data?.decks)
-        ? data.decks
-        : [];
+          ? data.decks
+          : [];
 
       return mazos.length > 0;
     } catch (error) {
@@ -255,7 +344,10 @@
 
     const onMazosPage = isMazosPage();
     const userHasArchivedDecks = await hasArchivedDecks();
-    const latestIncomingCard = await getLatestIncomingCard();
+    const latestIncomingCard = user
+      ? await getLatestPendingForTopbar(user.id)
+      : null;
+
     const userHasPendingApprovals = !!latestIncomingCard;
 
     let topbarHTML = "";
@@ -286,40 +378,36 @@
                 <img src="/assets/icons/Acorazon.gif" class="topbar__icon-img" />
               </button>
 
-              ${
-                userHasPendingApprovals
-                  ? `
+              ${userHasPendingApprovals
+          ? `
                     <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
                       <img src="/assets/icons/Dorso70.gif" class="topbar__icon-img" />
                     </button>
                   `
-                  : ""
-              }
+          : ""
+        }
 
-              ${
-                userHasDecks
-                  ? `
+              ${userHasDecks
+          ? `
                     <a
                       href="${onMazosPage ? "/index.html" : "/mazos.html"}"
                       class="topbar__icon-btn"
                       title="Aqui estan los mazos"
                     >
                       <img
-                        src="${
-                          onMazosPage
-                            ? "/assets/icons/portafolioAbierto.png"
-                            : "/assets/icons/portafolios80.gif"
-                        }"
+                        src="${onMazosPage
+            ? "/assets/icons/portafolioAbierto.png"
+            : "/assets/icons/portafolios80.gif"
+          }"
                         class="topbar__icon-img"
                       />
                     </a>
                   `
-                  : ""
-              }
+          : ""
+        }
 
-              ${
-                userHasArchivedDecks
-                  ? `
+              ${userHasArchivedDecks
+          ? `
                     <button
                       class="topbar__icon-btn"
                       id="archivoBtn"
@@ -328,12 +416,11 @@
                       <img src="/assets/icons/archivo80.gif" class="topbar__icon-img" />
                     </button>
                   `
-                  : ""
-              }
+          : ""
+        }
 
-              ${
-                userHasJPlays
-                  ? `
+              ${userHasJPlays
+          ? `
                     <button
                       class="topbar__icon-btn"
                       id="bitacoraBtn"
@@ -350,8 +437,8 @@
                       <img src="/assets/icons/calculadora80.gif" class="topbar__icon-img" />
                     </button>
                   `
-                  : ""
-              }
+          : ""
+        }
 
               <a
                 href="/almanaque.html"
@@ -377,9 +464,8 @@
                 <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
               </a>
 
-              ${
-                user.is_admin
-                  ? `
+              ${user.is_admin
+          ? `
                     <a
                       href="/protected-pages/administradores.html"
                       class="topbar__icon-btn"
@@ -388,8 +474,8 @@
                       <img src="/assets/icons/Tools120.gif" class="topbar__icon-img" />
                     </a>
                   `
-                  : ""
-              }
+          : ""
+        }
 
               <button class="topbar__icon-btn" id="logoutBtn">
                 <img src="/assets/icons/exit80.gif" class="topbar__icon-img topbar__icon-img--exit" />
