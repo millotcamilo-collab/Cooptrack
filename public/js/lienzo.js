@@ -937,7 +937,7 @@
     function renderTargetActions(play) {
     const acceptIcon = "/assets/icons/Sello40.gif";
     const rejectIcon = "/assets/icons/stepback40.gif";
-    const cancelIcon = "/assets/icons/stepback40.gif";
+    const cancelIcon = "/assets/icons/stop60.gif";
     const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
 
     const showDecisionButtons = shouldShowTargetDecisionButtons(play);
