@@ -564,6 +564,22 @@
         return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
     }
 
+    function getParentJSpadeText(play) {
+        if (!play) return "";
+
+        const parentPlay = getPlayById(play?.parent_play_id);
+        if (!parentPlay) return "";
+
+        const rank = String(parentPlay?.card_rank || "").toUpperCase();
+        const suit = String(parentPlay?.card_suit || "").toUpperCase();
+
+        if (rank === "J" && suit === "SPADE") {
+            return parentPlay?.play_text || "";
+        }
+
+        return "";
+    }
+
     function renderSourceSessionDia(play) {
         if (!play || typeof window.renderDia !== "function") return "";
 
@@ -621,15 +637,21 @@
       `;
         }
 
+        const jSpadeText = getParentJSpadeText(play);
+
+        const headerText = jSpadeText
+            ? `${formatSessionDayHeader(sessionDate)} — ${jSpadeText}`
+            : formatSessionDayHeader(sessionDate);
+
         return `
-      <div class="lienzo-session-dia-wrap">
-        ${window.renderDia({
-            headerText: formatSessionDayHeader(sessionDate),
+  <div class="lienzo-session-dia-wrap">
+    ${window.renderDia({
+            headerText: headerText,
             bodyHtml,
             extraClass: "lienzo-session-dia"
         })}
-      </div>
-    `;
+  </div>
+`;
     }
 
     function buildPanelTopbar({ identityHtml, actionsHtml = "", single = false }) {
