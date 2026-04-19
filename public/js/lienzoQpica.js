@@ -1160,6 +1160,13 @@ function formatDateForInput(value) {
         const deck = getCurrentDeck();
         const currencyCode = getCurrencyCode(deck);
 
+        const parentPlay = getPlayById(play?.parent_play_id);
+        const defaultPayDate = formatDateForInput(
+            String(parentPlay?.spade_mode || "").trim().toUpperCase() === "DEADLINE"
+                ? parentPlay?.end_date
+                : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
+        );
+
         const droppedCardHtml = droppedInAmsterdam
             ? `
         <img
@@ -1172,15 +1179,16 @@ function formatDateForInput(value) {
             : "";
 
         const qHeartBoxHtml = showQHeartBox
-            ? `
+    ? `
         <div class="lienzo-target-extra-slot">
           ${renderQHeartBudgetBox({
                 title: `Paga ${userName}`,
-                currencyCode
+                currencyCode,
+                defaultPayDate
             })}
         </div>
       `
-            : "";
+    : "";
 
         const showActionsHere = isCurrentUserTarget(play);
         const showWeekHere = isCurrentUserTarget(play);
