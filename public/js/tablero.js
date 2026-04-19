@@ -323,60 +323,45 @@
 
     return false;
   }
+
   function matchesTableroFilter(play, filterSuit) {
-    const rank = normalizeRank(play?.rank);
-    const suit = normalizeSuit(play?.suit);
-    const filter = normalizeSuit(filterSuit);
+  const rank = normalizeRank(play?.rank);
+  const suit = normalizeSuit(play?.suit);
+  const filter = normalizeSuit(filterSuit);
 
-    if (!filter) {
-      return belongsToTablero(play);
-    }
+  if (!filter) {
+    return belongsToTablero(play);
+  }
 
-    // primero: el play tiene que pertenecer a la vista actual
-    if (!belongsToTablero(play)) {
+  if (!belongsToTablero(play)) {
+    return false;
+  }
+
+  if (activeTableroViewMode === "J") {
+    return suit === filter;
+  }
+
+  if (activeTableroViewMode === "A" || activeTableroViewMode === "AK") {
+    if (filter === "HEART") {
       return false;
     }
 
-    // MODO J
-    if (activeTableroViewMode === "J") {
-      if (filter === "HEART") {
-        return rank === "J" && suit === "HEART";
-      }
-
-      if (filter === "SPADE") {
-        return rank === "J" && suit === "SPADE";
-      }
-
-      if (filter === "DIAMOND") {
-        return rank === "J" && suit === "DIAMOND";
-      }
-
-      if (filter === "CLUB") {
-        return rank === "J" && suit === "CLUB";
-      }
+    if (filter === "SPADE") {
+      return suit === "SPADE";
     }
 
-    // MODO A o AK
-    if (activeTableroViewMode === "A" || activeTableroViewMode === "AK") {
-      if (filter === "HEART") {
-        return false;
-      }
-
-      if (filter === "SPADE") {
-        return suit === "SPADE";
-      }
-
-      if (filter === "DIAMOND") {
-        return suit === "DIAMOND";
-      }
-
-      if (filter === "CLUB") {
-        return suit === "CLUB";
-      }
+    if (filter === "DIAMOND") {
+      return suit === "DIAMOND";
     }
 
-    return belongsToTablero(play);
+    if (filter === "CLUB") {
+      return suit === "CLUB";
+    }
   }
+
+  return belongsToTablero(play);
+}
+
   function getComponentName(play) {
     const rank = normalizeRank(play?.rank);
     const suit = normalizeSuit(play?.suit);
