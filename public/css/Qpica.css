@@ -170,5 +170,9 @@
   width: calc(100% - 16px);
 }
 
-
+.qpike-row__qextra {
+  width: 28px;
+  height: auto;
+  display: block;
+}
 

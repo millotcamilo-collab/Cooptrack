@@ -70,8 +70,16 @@
         return;
       }
 
-      window.location.href =
-        `/lienzo.html?deckId=${deckId}&playId=${playId}`;
+      const currentPlays = Array.isArray(window.__currentState?.plays)
+        ? window.__currentState.plays
+        : [];
+
+      const play =
+        currentPlays.find((item) => Number(item?.id || 0) === playId) || null;
+
+      const nextPage = resolveLienzoPageForPlay(play);
+
+      window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
     });
   }
 
@@ -175,6 +183,76 @@
       authorizedList: parseList(parts[6]),
       recipientList: parseList(parts[8]),
     };
+  }
+
+  function parseFlowMetadata(flowValue) {
+    const raw = String(flowValue || "").trim();
+    if (!raw) return { baseFlow: "", payment: null };
+
+    const chunks = raw
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    let baseFlow = "";
+    let payment = null;
+
+    chunks.forEach((chunk) => {
+      if (chunk.startsWith("pay:QHEART")) {
+        const parts = chunk.split("|");
+        const paymentData = {
+          attachedRank: "Q",
+          attachedSuit: "HEART"
+        };
+
+        parts.forEach((part, index) => {
+          if (index === 0) return;
+
+          const separatorIndex = part.indexOf(":");
+          if (separatorIndex === -1) return;
+
+          const key = part.slice(0, separatorIndex).trim();
+          const value = part.slice(separatorIndex + 1).trim();
+
+          if (!key) return;
+          paymentData[key] = value;
+        });
+
+        payment = paymentData;
+      } else if (!baseFlow) {
+        baseFlow = chunk;
+      }
+    });
+
+    return { baseFlow, payment };
+  }
+
+  function resolveLienzoPageForPlay(play) {
+    if (!play) return "/lienzo.html";
+
+    const rank = String(play?.card_rank || play?.rank || "").trim().toUpperCase();
+    const suit = String(play?.card_suit || play?.suit || "").trim().toUpperCase();
+
+    if (rank === "Q" && suit === "SPADE") {
+      const parsed = parsePlayCode(play?.play_code || "");
+      const meta = parseFlowMetadata(parsed?.flow);
+
+      if (meta?.payment) {
+        return "/lienzoQQpica.html";
+      }
+
+      return "/lienzoQpica.html";
+    }
+
+    if (rank === "K") {
+      return "/lienzoK.html";
+    }
+
+    if (rank === "A") {
+      return "/lienzoA.html";
+    }
+
+    return "/lienzo.html";
   }
 
   function normalizePlay(play) {
@@ -775,7 +853,16 @@
       return;
     }
 
-    window.location.href = `/lienzo.html?deckId=${deckId}&playId=${playId}`;
+    const currentPlays = Array.isArray(window.__currentState?.plays)
+      ? window.__currentState.plays
+      : [];
+
+    const play =
+      currentPlays.find((item) => Number(item?.id || 0) === playId) || null;
+
+    const nextPage = resolveLienzoPageForPlay(play);
+
+    window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
   });
 
   document.addEventListener("tablero:add-child-play", async (event) => {

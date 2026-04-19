@@ -8,6 +8,21 @@
       .replace(/'/g, "&#39;");
   }
 
+  function parseFlowMetadata(flowValue) {
+    const raw = String(flowValue || "").trim();
+    if (!raw) return { payment: null };
+
+    const chunks = raw.split(";").map(s => s.trim());
+
+    for (const chunk of chunks) {
+      if (chunk.startsWith("pay:QHEART")) {
+        return { payment: true };
+      }
+    }
+
+    return { payment: null };
+  }
+
   function renderQpike(play, context = {}) {
     const helpers = context.helpers || {};
     const escape = helpers.escapeHtml || escapeHtml;
@@ -37,37 +52,80 @@
     if (status === "REJECTED") statusLabel = "Rechazada";
     if (status === "CANCELLED") statusLabel = "Cancelada";
 
-    return `
-      <button
-        type="button"
-        class="tablero-row tablero-row--qpike tablero-row--link"
-        id="tablero-row-${play.id}"
-        data-open-lienzo="true"
-        data-play-id="${play.id}"
-        data-deck-id="${deckId}"
-        title="Abrir lienzo"
-      >
-        <div class="tablero-row__left">
-          <div class="tablero-row__card">Q♠</div>
-        </div>
+    // -------------------------
+    // Detectar Q♥ en play_code
+    // -------------------------
+    let hasQHeart = false;
 
-        <div class="tablero-row__center qpike-row__center">
-          <img
-            class="qpike-row__photo"
-            src="${escape(targetPhoto)}"
-            alt="${escape(targetName)}"
-          />
-          <div class="qpike-row__content">
-            <div class="qpike-row__nickname">${escape(targetName)}</div>
-            <div class="qpike-row__meta">${escape(statusLabel)}</div>
-          </div>
-        </div>
+    if (play?.play_code) {
+      const parts = String(play.play_code).split("§");
+      const flow = parts[7] || "";
 
-        <div class="tablero-row__right qpike-row__right">
-          
-        </div>
-      </button>
+      if (flow.includes("pay:QHEART")) {
+        hasQHeart = true;
+      }
+    }
+
+    // -------------------------
+    // Determinar Q a mostrar
+    // -------------------------
+    let qExtraHtml = "";
+
+    if (hasQHeart) {
+      let suit = "HEART";
+
+      if (status === "APPROVED" || status === "ACKNOWLEDGED") {
+        suit = "DIAMOND";
+      }
+
+      const iconMap = {
+        HEART: "/assets/icons/Qcorazon.gif",
+        DIAMOND: "/assets/icons/Qdiamante.gif"
+      };
+
+      const label = suit === "HEART" ? "Q♥" : "Q♦";
+
+      qExtraHtml = `
+      <img
+        class="qpike-row__qextra"
+        src="${iconMap[suit]}"
+        alt="${label}"
+        title="${label}"
+      />
     `;
+    }
+
+    return `
+    <button
+      type="button"
+      class="tablero-row tablero-row--qpike tablero-row--link"
+      id="tablero-row-${play.id}"
+      data-open-lienzo="true"
+      data-play-id="${play.id}"
+      data-deck-id="${deckId}"
+      title="Abrir lienzo"
+    >
+      <div class="tablero-row__left">
+        <div class="tablero-row__card">Q♠</div>
+      </div>
+
+      <div class="tablero-row__center qpike-row__center">
+        <img
+          class="qpike-row__photo"
+          src="${escape(targetPhoto)}"
+          alt="${escape(targetName)}"
+        />
+        <div class="qpike-row__content">
+          <div class="qpike-row__nickname">${escape(targetName)}</div>
+          <div class="qpike-row__meta">${escape(statusLabel)}</div>
+        </div>
+      </div>
+
+      <div class="tablero-row__right qpike-row__right">
+        ${qExtraHtml}
+      </div>
+    </button>
+  `;
   }
 
   window.renderQpike = renderQpike;
