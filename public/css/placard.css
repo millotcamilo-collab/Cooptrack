@@ -2,7 +2,9 @@
 
 .placard {
   display: flex;
-  align-items: flex-start;
+  align-items: center;            /* antes flex-start */
+  justify-content: center;        /* 👈 centra todo horizontal */
+  text-align: center;             /* 👈 centra texto */
   gap: 14px;
   padding: 14px 18px;
   background: var(--lienzo-veil-bg);
@@ -16,7 +18,9 @@
 .placard__left {
   flex: 0 0 auto;
   display: flex;
-  align-items: flex-start;
+  align-items: center;            /* antes flex-start */
+  justify-content: center;        /* 👈 centra bloque izquierdo */
+  gap: 12px;
 }
 
 .placard__photo {
@@ -35,6 +39,7 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  align-items: center;            /* 👈 centra contenido vertical */
   gap: 6px;
 }
 
@@ -42,6 +47,7 @@
 .placard__titleline {
   display: flex;
   align-items: center;
+  justify-content: center;        /* 👈 centra fila */
   gap: 8px;
   min-width: 0;
   flex-wrap: wrap;
@@ -72,6 +78,7 @@
   color: #ffffff;
   line-height: 1.2;
   white-space: nowrap;
+  text-align: center;
 }
 
 /* MONEDA */
@@ -79,6 +86,7 @@
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
+  justify-content: center;        /* 👈 centra moneda */
   gap: 6px;
   white-space: nowrap;
 }
@@ -96,12 +104,13 @@
   color: #e4e4e4;
 }
 
-/* DERECHA (acciones futuras si querés) */
+/* DERECHA */
 .placard__right {
   flex: 0 0 auto;
-  margin-left: auto;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0; /* 👈 importante: elimina empuje a la derecha */
 }
 
 .nuevo-mazo-bar,
@@ -157,15 +166,10 @@
   border-radius: 10px;
 }
 
-.placard__left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
 .placard__left-cards {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   min-height: 72px;
 }
@@ -204,7 +208,7 @@
 @media (max-width: 900px) {
   .placard {
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;   /* 👈 centrado también en mobile */
   }
 
   .placard__titleline {
@@ -212,8 +216,6 @@
   }
 
   .placard__right {
-    margin-left: 0;
-    justify-content: flex-end;
+    justify-content: center;
   }
 }
-
