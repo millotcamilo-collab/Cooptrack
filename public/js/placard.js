@@ -30,21 +30,18 @@
 
     return `
       <div class="placard__currency">
-        ${
-          iconSrc
-            ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__currency-suit" />`
-            : ""
-        }
-        ${
-          currencyCode
-            ? `<span class="placard__currency-code">${escapeHtml(currencyCode)}</span>`
-            : ""
-        }
-        ${
-          currencyName
-            ? `<span class="placard__currency-name">${escapeHtml(currencyName)}</span>`
-            : ""
-        }
+        ${iconSrc
+        ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__currency-suit" />`
+        : ""
+      }
+        ${currencyCode
+        ? `<span class="placard__currency-code">${escapeHtml(currencyCode)}</span>`
+        : ""
+      }
+        ${currencyName
+        ? `<span class="placard__currency-name">${escapeHtml(currencyName)}</span>`
+        : ""
+      }
       </div>
     `;
   }
@@ -286,29 +283,21 @@
             </div>
           </div>
 
-          <div class="placard__maincard">
-            ${
-              suitIcon
-                ? `
-              <img
-                src="${escapeHtml(suitIcon)}"
-                alt=""
-                class="placard__maincard-suit"
-              />
-            `
-                : ""
-            }
-            <span class="placard__maincard-rank">${escapeHtml(rank)}</span>
-          </div>
+<div class="placard__maincard">
+  <img
+    src="/assets/icons/Acorazon.gif"
+    alt="A♥"
+    class="placard__maincard-image"
+  />
+</div>
 
           <div class="placard__text">
             <div class="placard__titleline">
               <span class="placard__name">${escapeHtml(title)}</span>
-              ${
-                showCurrency
-                  ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
-                  : ""
-              }
+              ${showCurrency
+        ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
+        : ""
+      }
             </div>
 
             ${subtitleHtml}
