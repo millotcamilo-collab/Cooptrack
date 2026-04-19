@@ -206,39 +206,46 @@
       }
 
       const tableroEl = document.getElementById("tablero-container");
-      const playformEl = document.getElementById("playform-container");
+const playformEl = document.getElementById("playform-container");
+const mazobarEl = document.getElementById("mazobar-container");
 
-      if (tableroEl) tableroEl.style.display = "";
-      if (playformEl) playformEl.style.display = "";
+// el mazobar siempre visible para quien pudo entrar al mazo
+if (mazobarEl) mazobarEl.style.display = "";
 
-      
-      const hasVisibleGamePlays = plays.some((play) => {
-        const playCode = String(play?.play_code || "");
-        const parts = playCode.split("§");
+// el tablero también debe quedar visible por defecto
+if (tableroEl) tableroEl.style.display = "";
 
-        const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
-        const status = String(play?.play_status || "").toUpperCase();
-        const action = String(parts[5] || "").toLowerCase();
+// el playform solo existe si renderPlayform lo permitió;
+// acá no forzamos nada raro, solo dejamos visible el container
+if (playformEl) playformEl.style.display = "";
 
-        if (
-          status === "CANCELLED" ||
-          status === "DELETED" ||
-          status === "REJECTED"
-        ) {
-          return false;
-        }
+const hasVisibleGamePlays = plays.some((play) => {
+  const playCode = String(play?.play_code || "");
+  const parts = playCode.split("§");
 
-        if (action === "init_ace" || action === "puedejugar") return false;
+  const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
+  const status = String(play?.play_status || "").toUpperCase();
+  const action = String(parts[5] || "").toLowerCase();
 
-        return rank === "J" || rank === "Q";
-      });
+  if (
+    status === "CANCELLED" ||
+    status === "DELETED" ||
+    status === "REJECTED"
+  ) {
+    return false;
+  }
 
-      if (hasCorporateAccess && !hasVisibleGamePlays) {
-        if (tableroEl) tableroEl.style.display = "none";
-        if (playformEl) playformEl.style.display = "";
+  if (action === "init_ace" || action === "puedejugar") return false;
 
-        document.dispatchEvent(new CustomEvent("mazobar:addJ"));
-      }
+  return rank === "J" || rank === "Q";
+});
+
+// solo para usuarios con A/K y sin jugadas visibles:
+// ocultamos tablero y abrimos playform automáticamente
+if (hasCorporateAccess && !hasVisibleGamePlays) {
+  if (tableroEl) tableroEl.style.display = "none";
+  document.dispatchEvent(new CustomEvent("mazobar:addJ"));
+}
 
       if (typeof bindLienzoDropZone === "function") {
         bindLienzoDropZone(deck.id);
