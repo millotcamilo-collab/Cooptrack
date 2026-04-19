@@ -265,13 +265,30 @@
       config?.leftCardsHtml || buildTopCardsHTML(config?.leftCards || [])
     );
 
-    let subtitleHtml = "";
+    function getFirstApprovedJHeartText(plays) {
+      if (!Array.isArray(plays)) return "";
 
-    if (mode === "QQPICA") {
-      subtitleHtml = renderProposalSummary(config?.proposalSummary || null);
-    } else if (config?.subtitle) {
-      subtitleHtml = `<div class="placard__subtitle">${escapeHtml(config.subtitle)}</div>`;
+      const j = plays.find((p) => {
+        const rank = String(p?.card_rank || "").toUpperCase();
+        const suit = String(p?.card_suit || "").toUpperCase();
+        const status = String(p?.play_status || "").toUpperCase();
+
+        return rank === "J" && suit === "HEART" && status === "APPROVED";
+      });
+
+      return j?.play_text || "";
     }
+    const jHeartText = getFirstApprovedJHeartText(config?.plays || []);
+
+let subtitleHtml = "";
+
+if (jHeartText) {
+  subtitleHtml = `
+    <div class="placard__subtitle">
+      ${escapeHtml(jHeartText)}
+    </div>
+  `;
+}
 
     container.innerHTML = `
       <section class="placard">
