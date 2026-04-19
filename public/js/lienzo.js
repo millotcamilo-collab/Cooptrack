@@ -914,20 +914,52 @@
   `;
   }
 
-  function renderTargetActions() {
+  function canCancelTargetPlay(play) {
+    const status = String(play?.play_status || "").trim().toUpperCase();
+
+    if (!["APPROVED", "REJECTED"].includes(status)) {
+      return false;
+    }
+
+    const referenceDate = getSessionDateFromPlay(play);
+    if (!referenceDate) {
+      return false;
+    }
+
+    return referenceDate.getTime() >= Date.now();
+  }
+
+  function shouldShowTargetDecisionButtons(play) {
+    const status = String(play?.play_status || "").trim().toUpperCase();
+    return status === "SENT" || status === "PENDING";
+  }
+
+    function renderTargetActions(play) {
     const acceptIcon = "/assets/icons/Sello40.gif";
     const rejectIcon = "/assets/icons/stepback40.gif";
+    const cancelIcon = "/assets/icons/stepback40.gif";
     const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
+
+    const showDecisionButtons = shouldShowTargetDecisionButtons(play);
+    const showCancel = canCancelTargetPlay(play);
 
     return `
     <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-      <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
-        <img src="${acceptIcon}" alt="Aceptar" />
-      </button>
+      ${showDecisionButtons ? `
+        <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
+          <img src="${acceptIcon}" alt="Aceptar" />
+        </button>
 
-      <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
-        <img src="${rejectIcon}" alt="Rechazar" />
-      </button>
+        <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
+          <img src="${rejectIcon}" alt="Rechazar" />
+        </button>
+      ` : ""}
+
+      ${showCancel ? `
+        <button id="lienzo-cancel-btn" class="icon-btn" title="Cancelar">
+          <img src="${cancelIcon}" alt="Cancelar" />
+        </button>
+      ` : ""}
 
       <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
         <img src="${exitIcon}" alt="Salir" />
@@ -942,6 +974,9 @@
     const acceptBtn = document.getElementById("lienzo-accept-btn");
     const rejectBtn = document.getElementById("lienzo-reject-btn");
     const exitBtn = document.getElementById("lienzo-exit-btn");
+
+    const cancelBtn = document.getElementById("lienzo-cancel-btn");
+
 
     if (saveBtn) {
       saveBtn.addEventListener("click", () => {
@@ -964,6 +999,12 @@
     if (rejectBtn) {
       rejectBtn.addEventListener("click", () => {
         handleRejectPlay(play);
+      });
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", () => {
+        handleCancelPlay(play);
       });
     }
 
@@ -1094,7 +1135,7 @@
     window.__lienzoQHeartSaved = savedData;
   }
 
-    async function handleSendPlay(play) {
+  async function handleSendPlay(play) {
     try {
       const playId = Number(play?.id || 0);
       const token = localStorage.getItem("cooptrackToken");
@@ -1166,7 +1207,7 @@
       alert("No se pudo enviar la jugada");
     }
   }
-  
+
   async function autoAcknowledgeApprovedPlay(play) {
     try {
       const playId = Number(play?.id || 0);
@@ -1307,6 +1348,58 @@
     } catch (error) {
       console.error("Error en handleRejectPlay", error);
       alert("No se pudo rechazar la invitación");
+    }
+  }
+
+  async function handleCancelPlay(play) {
+    try {
+      const playId = Number(play?.id || 0);
+      const token = localStorage.getItem("cooptrackToken");
+
+      if (!playId) {
+        alert("playId inválido");
+        return;
+      }
+
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      if (!canCancelTargetPlay(play)) {
+        alert("Esta jugada ya no puede cancelarse.");
+        return;
+      }
+
+      const confirmed = window.confirm("¿Querés cancelar tu respuesta?");
+      if (!confirmed) {
+        return;
+      }
+
+      const response = await fetch(`/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_status: "CANCELLED"
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("Error cancelando respuesta:", data);
+        alert(data?.error || "No se pudo cancelar la respuesta");
+        return;
+      }
+
+      play.play_status = "CANCELLED";
+      renderLienzo(play);
+    } catch (error) {
+      console.error("Error en handleCancelPlay", error);
+      alert("No se pudo cancelar la respuesta");
     }
   }
 
@@ -1701,7 +1794,7 @@
         />
       </div>
     `,
-      actionsHtml: showActionsHere ? renderTargetActions() : ""
+      actionsHtml: showActionsHere ? renderTargetActions(play) : ""
     });
 
     return `
