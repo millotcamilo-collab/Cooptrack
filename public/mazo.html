@@ -146,9 +146,6 @@
     }
 
     async function loadMazoPage(deckId) {
-      
-const canPlay = hasCorporateAccess;
-window.__canPlay = canPlay;
 
       if (!deckId) {
         console.warn("Mazo sin id");
@@ -198,18 +195,20 @@ window.__canPlay = canPlay;
       const currentUserId = Number(state?.userId || 0);
 
       const hasCorporateAccess = plays.some((play) => {
-        const playCode = String(play?.play_code || "");
-        const parts = playCode.split("§");
+      const playCode = String(play?.play_code || "");
+      const parts = playCode.split("§");
 
-        const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
-        const status = String(play?.play_status || "").toUpperCase();
-        const ownerUserId = Number(parts[1] || 0);
+      const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
+      const status = String(play?.play_status || "").toUpperCase();
+      const ownerUserId = Number(parts[1] || 0);
 
         if (status !== "ACTIVE") return false;
         if (ownerUserId !== currentUserId) return false;
 
         return rank === "A" || rank === "K";
       });
+
+      window.__canPlay = hasCorporateAccess;
 
       const hasVisibleGamePlays = plays.some((play) => {
         const playCode = String(play?.play_code || "");

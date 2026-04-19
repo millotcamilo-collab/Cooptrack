@@ -606,7 +606,7 @@
               ${buildJokersHTML(normalizedPlays, currentUserId, deck?.id)}
             </div>
 
-          </div>
+          </div>${isMazoPage && window.__canPlay ? 
         </div>
       </div>
     </section>
@@ -675,21 +675,21 @@
       : "";
 
     return `
-    ${isMazoPage && window.__canPlay ? ` `
-      <button
-        id="btnAddJ"
-        type="button"
-        class="mazobar__cmd-btn mazobar__cmd-btn--primary"
-        title="Nueva jugada"
-        aria-label="Nueva jugada"
-      >
-        <img
-          src="/assets/icons/maquina80.gif"
-          alt="J+"
-          class="mazobar__cmd-icon"
-        />
-      </button>
-    ` : ""}
+    ${isMazoPage && window.__canPlay ? `
+  <button
+    id="btnAddJ"
+    type="button"
+    class="mazobar__cmd-btn mazobar__cmd-btn--primary"
+    title="Nueva jugada"
+    aria-label="Nueva jugada"
+  >
+    <img
+      src="/assets/icons/maquina80.gif"
+      alt="J+"
+      class="mazobar__cmd-icon"
+    />
+  </button>
+` : ""}
 
     ${isAdminPage ? `
       <button
