@@ -19,6 +19,18 @@
       exitBtn.addEventListener("click", handleExit);
     }
   }
+
+  function resolveLienzoPageForCard(rank, suit) {
+    const normalizedRank = String(rank || "").trim().toUpperCase();
+    const normalizedSuit = String(suit || "").trim().toUpperCase();
+
+    if (normalizedRank === "Q" && normalizedSuit === "SPADE") {
+      return "/lienzoQpica.html";
+    }
+
+    return "/lienzo.html";
+  }
+
   async function handleSavePlay() {
     try {
       const draft = window.__lienzoNewDraft;
@@ -105,7 +117,13 @@
         return;
       }
 
-      window.location.href = `/lienzo.html?deckId=${draft.deckId}&playId=${playId}`;
+      const nextPage = resolveLienzoPageForCard(
+        draft.card_rank,
+        draft.card_suit
+      );
+
+      window.location.href = `${nextPage}?deckId=${draft.deckId}&playId=${playId}`;
+      
     } catch (error) {
       console.error("Error en SAVE", error);
       alert("No se pudo guardar la jugada");
