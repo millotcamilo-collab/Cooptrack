@@ -75,6 +75,43 @@
     return "";
   }
 
+  function renderQQPicaSettlementBadge(play, side) {
+    const settlement = getQQPicaSettlementState(play);
+    const collectorSide = getQQPicaCollectorSide(play);
+
+    if (!settlement) return "";
+
+    const payerSide = collectorSide === "COLOMBES" ? "AMSTERDAM" : "COLOMBES";
+
+    if (settlement.status === "PAID" && side === payerSide) {
+      return `
+      <div class="lienzo-settlement-badge">
+        <img
+          class="lienzo-settlement-badge__icon"
+          src="/assets/icons/award80.gif"
+          alt="Buen pagador"
+          title="Buen pagador"
+        />
+      </div>
+    `;
+    }
+
+    if (settlement.status === "COMPLAINED" && side === payerSide) {
+      return `
+      <div class="lienzo-settlement-badge">
+        <img
+          class="lienzo-settlement-badge__icon"
+          src="/assets/icons/queja80.gif"
+          alt="Queja"
+          title="Queja"
+        />
+      </div>
+    `;
+    }
+
+    return "";
+  }
+
   function getCardLabel(rank, suit) {
     return `${normalizeRank(rank)}${getSuitSymbol(suit)}`;
   }
@@ -294,14 +331,6 @@
     if (!referenceDate) return false;
 
     return Date.now() >= referenceDate.getTime();
-  }
-
-  function canShowSettlementActions(play, side) {
-    const collectorSide = getQQPicaCollectorSide(play);
-    const canResolve = canResolveQQPicaSettlement(play);
-    const settlement = getQQPicaSettlementState(play);
-
-    return collectorSide === side && canResolve && !settlement;
   }
 
   function getQQPicaCollectorSide(play) {
@@ -1074,7 +1103,8 @@
     const settlementBlock =
       `settlement:${String(settlementStatus || "").trim().toUpperCase()}` +
       `|by:${getCurrentUser()?.id || ""}` +
-      `|at:${new Date().toISOString()}`;
+      `|at:${new Date().toISOString()}` +
+      `|notified:false`;
 
     const nextFlow = [...cleanChunks, settlementBlock].join(";");
 
@@ -1517,6 +1547,59 @@
     }
   }
 
+  async function handleSettlementNotificationIfNeeded(play) {
+    try {
+      const settlement = getQQPicaSettlementState(play);
+      if (!settlement) return;
+
+      if (settlement.status !== "PAID") return;
+      if (settlement.notified !== "false") return;
+
+      const currentUser = getCurrentUser();
+      const collectorSide = getQQPicaCollectorSide(play);
+
+      const payerSide =
+        collectorSide === "COLOMBES" ? "AMSTERDAM" : "COLOMBES";
+
+      const isCurrentUserPayer =
+        (payerSide === "COLOMBES" && isCurrentUserSource(play)) ||
+        (payerSide === "AMSTERDAM" && isCurrentUserTarget(play));
+
+      if (!isCurrentUserPayer) return;
+
+      // 👉 acá ocurre la "notificación"
+      alert("Recibiste un reconocimiento por buen pago ⭐");
+
+      // 👉 ahora marcamos como notificado
+      const built = buildPlayCodeWithSettlement(play, "PAID");
+
+      if (!built.ok) return;
+
+      const updatedCode = built.playCode.replace(
+        "notified:false",
+        "notified:true"
+      );
+
+      const token = localStorage.getItem("cooptrackToken");
+
+      await fetch(`/plays/${play.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_code: updatedCode
+        })
+      });
+
+      play.play_code = updatedCode;
+
+    } catch (err) {
+      console.error("Error en settlement notification", err);
+    }
+  }
+
   async function handleExitPlay(play) {
     await acknowledgePlayIfNeeded(play);
 
@@ -1595,6 +1678,7 @@
     const sessionDiaHtml = renderSourceSessionDia(play);
     const qqState = getQQPicaState(play);
     const attachedSuit = qqState?.attachedSuit || "HEART";
+    const settlementBadgeHtml = renderQQPicaSettlementBadge(play, "COLOMBES");
 
     const droppedCardHtml = qqState
       ? `
@@ -1644,6 +1728,7 @@
           </div>
 
           ${qqState && getQQPicaDisplayedSide(play) === "COLOMBES" ? droppedCardHtml : ""}
+          ${settlementBadgeHtml}
           ${qHeartBoxHtml}
         </div>
 
@@ -1663,6 +1748,7 @@
     const baseImageSrc = getCardImageSrc(baseRank, baseSuit);
     const qqState = getQQPicaState(play);
     const attachedSuit = qqState?.attachedSuit || "HEART";
+    const settlementBadgeHtml = renderQQPicaSettlementBadge(play, "AMSTERDAM");
 
     const droppedCardHtml =
       qqState && getQQPicaDisplayedSide(play) === "AMSTERDAM"
@@ -1716,7 +1802,7 @@
               alt="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
               title="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
             />
-
+            ${settlementBadgeHtml}
             ${droppedCardHtml}
           </div>
 
@@ -1749,6 +1835,7 @@
     `;
 
     mountPlacardFromDataset(play);
+    handleSettlementNotificationIfNeeded(play);
     bindLienzoActions(play);
   }
 

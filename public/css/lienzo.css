@@ -1038,3 +1038,16 @@ body {
   border-radius: 14px;
   box-sizing: border-box;
 }
+
+.lienzo-settlement-badge {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 0 0 auto;
+}
+
+.lienzo-settlement-badge__icon {
+  width: auto;
+  height: 36px;
+  display: block;
+}
