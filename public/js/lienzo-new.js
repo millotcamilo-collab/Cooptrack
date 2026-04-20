@@ -20,18 +20,18 @@
     }
   }
 
-function getJSpadeText(play) {
-  if (!play) return "";
+  function getJSpadeText(play) {
+    if (!play) return "";
 
-  const rank = String(play?.card_rank || play?.rank || "").toUpperCase();
-  const suit = String(play?.card_suit || play?.suit || "").toUpperCase();
+    const rank = String(play?.card_rank || play?.rank || "").toUpperCase();
+    const suit = String(play?.card_suit || play?.suit || "").toUpperCase();
 
-  if (rank === "J" && suit === "SPADE") {
-    return play?.play_text || "";
+    if (rank === "J" && suit === "SPADE") {
+      return play?.play_text || "";
+    }
+
+    return "";
   }
-
-  return "";
-}
 
   function resolveLienzoPageForCard(rank, suit) {
     const normalizedRank = String(rank || "").trim().toUpperCase();
@@ -136,7 +136,7 @@ function getJSpadeText(play) {
       );
 
       window.location.href = `${nextPage}?deckId=${draft.deckId}&playId=${playId}`;
-      
+
     } catch (error) {
       console.error("Error en SAVE", error);
       alert("No se pudo guardar la jugada");
@@ -343,9 +343,7 @@ function getJSpadeText(play) {
     const container = document.querySelector(".lienzo-grid__right");
     if (!container) return;
 
-    const photo =
-      user?.profile_photo_url || "/assets/icons/singeta120.gif";
-
+    const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
     const name =
       user?.nickname ||
       user?.full_name ||
@@ -353,20 +351,26 @@ function getJSpadeText(play) {
       `Usuario ${user?.id || ""}`;
 
     container.innerHTML = `
-    <section class="lienzo-panel lienzo-panel--target">
-      <div class="lienzo-target-header">
-        <img
-          class="lienzo-target-header__photo"
-          src="${photo}"
-          alt="${name}"
-        />
-        <div class="lienzo-target-header__name">
-          ${name}
+    <section class="lienzo-panel lienzo-panel--target panel--split-top">
+      <div class="panel-topbar panel-topbar--single">
+        <div class="panel-topbar__col panel-topbar__col--identity">
+          <div class="lienzo-target-header lienzo-target-header--top">
+            <div class="lienzo-target-header__name">
+              ${escapeHtml(name)}
+            </div>
+            <img
+              class="lienzo-target-header__photo"
+              src="${escapeHtml(photo)}"
+              alt="${escapeHtml(name)}"
+            />
+          </div>
         </div>
       </div>
 
-      <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-        <!-- acá aterriza la carta -->
+      <div class="lienzo-target-mainrow">
+        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+          <!-- acá aterriza la carta -->
+        </div>
       </div>
     </section>
   `;
@@ -651,10 +655,16 @@ function getJSpadeText(play) {
     });
 
     return `
-    <section class="lienzo-panel lienzo-panel--users panel--split-top">
+    <section class="lienzo-panel lienzo-panel--target panel--split-top">
       ${topbar}
 
-      <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
+      <div class="lienzo-target-mainrow">
+        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+          <!-- vacío antes de la animación -->
+        </div>
+
+        <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
+      </div>
     </section>
   `;
   }
@@ -785,34 +795,34 @@ function getJSpadeText(play) {
   }
 
   function renderSourceSessionDia(play) {
-  if (!play || typeof window.renderDia !== "function") {
-    return "";
-  }
+    if (!play || typeof window.renderDia !== "function") {
+      return "";
+    }
 
-  const suit = normalizeSuit(play?.card_suit || play?.suit);
-  if (suit !== "SPADE") {
-    return "";
-  }
+    const suit = normalizeSuit(play?.card_suit || play?.suit);
+    if (suit !== "SPADE") {
+      return "";
+    }
 
-  const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
-  const sessionDate = getSessionDateFromPlay(play);
+    const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
+    const sessionDate = getSessionDateFromPlay(play);
 
-  if (!sessionDate) {
-    return "";
-  }
+    if (!sessionDate) {
+      return "";
+    }
 
-  const jSpadeText = getJSpadeText(play);
+    const jSpadeText = getJSpadeText(play);
 
-  const headerText = jSpadeText
-    ? `${formatSessionDayHeader(sessionDate)} — ${jSpadeText}`
-    : formatSessionDayHeader(sessionDate);
+    const headerText = jSpadeText
+      ? `${formatSessionDayHeader(sessionDate)} — ${jSpadeText}`
+      : formatSessionDayHeader(sessionDate);
 
-  let bodyHtml = "";
+    let bodyHtml = "";
 
-  if (spadeMode === "DEADLINE") {
-    const endLabel = formatTimeLabel(play?.end_date);
+    if (spadeMode === "DEADLINE") {
+      const endLabel = formatTimeLabel(play?.end_date);
 
-    bodyHtml = `
+      bodyHtml = `
       <div class="lienzo-session-dia__row">
         <img
           class="lienzo-session-dia__icon"
@@ -822,12 +832,12 @@ function getJSpadeText(play) {
         <span class="lienzo-session-dia__time">${escapeHtml(endLabel || "—")}</span>
       </div>
     `;
-  } else {
-    const startLabel = formatTimeLabel(play?.start_date);
-    const endLabel = formatTimeLabel(play?.end_date);
-    const location = String(play?.location || "").trim();
+    } else {
+      const startLabel = formatTimeLabel(play?.start_date);
+      const endLabel = formatTimeLabel(play?.end_date);
+      const location = String(play?.location || "").trim();
 
-    bodyHtml = `
+      bodyHtml = `
       <div class="lienzo-session-dia__row">
         <img
           class="lienzo-session-dia__icon"
@@ -859,18 +869,18 @@ function getJSpadeText(play) {
         </div>
       ` : ""}
     `;
-  }
+    }
 
-  return `
+    return `
     <div class="lienzo-session-dia-wrap">
       ${window.renderDia({
-        headerText: headerText,
-        bodyHtml,
-        extraClass: "lienzo-session-dia"
-      })}
+      headerText: headerText,
+      bodyHtml,
+      extraClass: "lienzo-session-dia"
+    })}
     </div>
   `;
-}
+  }
 
   function renderSourcePlayerPanel(draft) {
     const user = getCurrentUser();
