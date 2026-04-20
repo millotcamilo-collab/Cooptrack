@@ -1,4 +1,15 @@
 (function () {
+
+  /*provisorio*/
+  function handleAwardPayment(play) {
+    alert("Pago confirmado (falta persistir)");
+  }
+
+  function handleComplaint(play) {
+   alert("Incumplimiento reportado (falta persistir)");
+  }
+  /*provisorio*/
+
   function normalizeRank(value) {
     return String(value || "").trim().toUpperCase();
   }
@@ -14,6 +25,14 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
+  }
+
+  function canShowSettlementActions(play, side) {
+    const collectorSide = getQQPicaCollectorSide(play);
+    const canResolve = canResolveQQPicaSettlement(play);
+    const settlement = getQQPicaSettlementState(play);
+
+    return collectorSide === side && canResolve && !settlement;
   }
 
   function getCurrentState() {
@@ -217,6 +236,71 @@
     const targetUserId = Number(play?.target_user_id || 0);
 
     return currentUserId && targetUserId && currentUserId === targetUserId;
+  }
+
+  function getQQPicaSettlementState(play) {
+    const parsed = parsePlayCode(play?.play_code || "");
+    const meta = parseFlowMetadata(parsed.flow);
+    const qqState = getQQPicaState(play);
+
+    const raw = String(parsed.flow || "");
+    const chunks = raw.split(";").map(s => s.trim()).filter(Boolean);
+
+    let settlement = null;
+
+    chunks.forEach((chunk) => {
+      if (!chunk.startsWith("settlement:")) return;
+
+      const [head, ...parts] = chunk.split("|");
+      const status = head.split(":")[1] || "";
+
+      const data = { status: status.toUpperCase() };
+
+      parts.forEach((part) => {
+        const idx = part.indexOf(":");
+        if (idx === -1) return;
+        const key = part.slice(0, idx).trim();
+        const value = part.slice(idx + 1).trim();
+        data[key] = value;
+      });
+
+      settlement = data;
+    });
+
+    return settlement;
+  }
+
+  function getQQPicaDisplayedSide(play) {
+    const qqState = getQQPicaState(play);
+    const settlement = getQQPicaSettlementState(play);
+
+    if (!qqState) return null;
+
+    if (settlement?.status === "PAID") {
+      return qqState.side === "AMSTERDAM" ? "COLOMBES" : "AMSTERDAM";
+    }
+
+    return qqState.side;
+  }
+
+  function canResolveQQPicaSettlement(play) {
+    const status = String(play?.play_status || "").trim().toUpperCase();
+
+    if (status !== "APPROVED" && status !== "ACKNOWLEDGED") return false;
+
+    const parentPlay = getPlayById(play?.parent_play_id);
+    const referenceDate = getSessionDateFromPlay(parentPlay || play);
+
+    if (!referenceDate) return false;
+
+    return Date.now() >= referenceDate.getTime();
+  }
+
+  function getQQPicaCollectorSide(play) {
+    const qqState = getQQPicaState(play);
+    if (!qqState) return null;
+
+    return qqState.side === "AMSTERDAM" ? "COLOMBES" : "AMSTERDAM";
   }
 
   function parseLocalReferenceDate(value) {
@@ -852,7 +936,7 @@
       status !== "REJECTED" &&
       status !== "CANCELLED" &&
       status !== "ACKNOWLEDGED";
-
+    const showSettlementActions = canShowSettlementActions(play, "COLOMBES");
     return `
       <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
         ${showSend
@@ -864,6 +948,18 @@
         : ""
       }
 
+      ${showSettlementActions
+        ? `
+    <button id="lienzo-award-btn" class="icon-btn" title="Confirmar pago">
+      <img src="/assets/icons/award60oro.gif" alt="Award" />
+    </button>
+
+    <button id="lienzo-complain-btn" class="icon-btn" title="Reportar incumplimiento">
+      <img src="/assets/icons/ticket60.gif" alt="Queja" />
+    </button>
+  `
+        : ""
+      }
         <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
           <img src="${exitIcon}" alt="Salir" />
         </button>
@@ -895,7 +991,7 @@
 
     const showDecisionButtons = shouldShowTargetDecisionButtons(play);
     const showCancel = canCancelTargetPlay(play);
-
+    const showSettlementActions = canShowSettlementActions(play, "AMSTERDAM");
     return `
       <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
         ${showDecisionButtons
@@ -904,6 +1000,18 @@
             <img src="${acceptIcon}" alt="Aceptar" />
           </button>
 
+${showSettlementActions
+  ? `
+    <button id="lienzo-award-btn" class="icon-btn" title="Confirmar pago">
+      <img src="/assets/icons/award60oro.gif" alt="Award" />
+    </button>
+
+    <button id="lienzo-complain-btn" class="icon-btn" title="Reportar incumplimiento">
+      <img src="/assets/icons/ticket60.gif" alt="Queja" />
+    </button>
+  `
+  : ""
+}
           <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
             <img src="${rejectIcon}" alt="Rechazar" />
           </button>
@@ -1265,6 +1373,21 @@
     const rejectBtn = document.getElementById("lienzo-reject-btn");
     const cancelBtn = document.getElementById("lienzo-cancel-btn");
     const exitBtn = document.getElementById("lienzo-exit-btn");
+    const awardBtn = document.getElementById("lienzo-award-btn");
+    const complainBtn = document.getElementById("lienzo-complain-btn");
+
+    if (awardBtn) {
+      awardBtn.addEventListener("click", () => {
+      handleAwardPayment(play);
+     });
+    }
+
+    if (complainBtn) {
+      complainBtn.addEventListener("click", () => {
+      handleComplaint(play);
+      });
+    }
+
 
     if (sendBtn) {
       sendBtn.addEventListener("click", () => {
@@ -1357,7 +1480,7 @@
             ${scene.backgroundCards.map(renderBackgroundCard).join("")}
           </div>
 
-          ${qqState && qqState.side === "COLOMBES" ? droppedCardHtml : ""}
+          ${qqState && getQQPicaDisplayedSide(play) === "COLOMBES" ? droppedCardHtml : ""}
           ${qHeartBoxHtml}
         </div>
 
@@ -1379,7 +1502,7 @@
     const attachedSuit = qqState?.attachedSuit || "HEART";
 
     const droppedCardHtml =
-      qqState && qqState.side === "AMSTERDAM"
+      qqState && getQQPicaDisplayedSide(play) === "AMSTERDAM"
         ? `
         <img
           class="lienzo-card-image lienzo-card-image--overlay"
@@ -1391,7 +1514,7 @@
         : "";
 
     const qHeartBoxHtml =
-      qqState && qqState.side === "AMSTERDAM"
+      qqState && getQQPicaDisplayedSide(play) === "AMSTERDAM"
         ? `
         <div class="lienzo-target-extra-slot">
           ${renderQQHeartSummaryBox(qqState)}
