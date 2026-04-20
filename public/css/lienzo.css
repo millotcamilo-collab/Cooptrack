@@ -938,3 +938,62 @@ body {
   z-index: 3;
 }
 
+/* ===== LAYOUT EN 3 RENGLONES ===== */
+
+.lienzo-panel--source,
+.lienzo-panel--target {
+  display: grid;
+  grid-template-rows: 56px 150px 1fr;
+  row-gap: 12px;
+  align-items: start;
+}
+
+/* renglón 1 */
+.lienzo-panel--source .panel-topbar,
+.lienzo-panel--target .panel-topbar {
+  grid-row: 1;
+  margin-bottom: 0;
+}
+
+/* renglón 2 */
+.lienzo-panel--source .lienzo-source-cards,
+.lienzo-panel--target .lienzo-target-mainrow {
+  grid-row: 2;
+  align-self: start;
+}
+
+/* renglón 3 */
+.lienzo-panel--source .lienzo-session-dia-wrap,
+.lienzo-panel--target .lienzo-week-row-wrap {
+  grid-row: 3;
+  align-self: start;
+  margin-top: 0;
+}
+
+/* Colombes: cartas compactas */
+.lienzo-panel--source .lienzo-source-cards {
+  flex: 0 0 auto;
+  min-height: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.lienzo-panel--source .lienzo-source-stack {
+  height: 110px;
+}
+
+/* Amsterdam: semana arranca arriba del tercer renglón */
+.lienzo-panel--target .lienzo-week-row-wrap {
+  width: 100%;
+  max-width: 560px;
+}
+
+.lienzo-panel--target .lienzo-week-row {
+  align-items: start;
+}
+
+.lienzo-panel--target .lienzo-weekday {
+  align-items: stretch;
+}
