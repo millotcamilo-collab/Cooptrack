@@ -638,33 +638,27 @@
   }
 
   function renderUsersPanel() {
-    const topbar = buildPanelTopbar({
-      identityHtml: `
-      <div class="lienzo-target-header lienzo-target-header--top">
-        <div class="lienzo-target-header__name">
-          Destinatario
-        </div>
+    return `
+    <section class="lienzo-panel lienzo-panel--target panel--split-top">
+
+      <div class="lienzo-target-empty">
         <img
-          class="lienzo-target-header__photo"
+          class="lienzo-target-empty__photo"
           src="/assets/icons/singeta120.gif"
           alt="Destinatario"
         />
-      </div>
-    `,
-      single: true
-    });
 
-    return `
-    <section class="lienzo-panel lienzo-panel--target panel--split-top">
-      ${topbar}
+        <div class="lienzo-target-empty__label">
+          Destinatario
+        </div>
+      </div>
 
       <div class="lienzo-target-mainrow">
-        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-          <!-- vacío antes de la animación -->
-        </div>
+        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone"></div>
 
         <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
       </div>
+
     </section>
   `;
   }

@@ -1035,3 +1035,23 @@ body {
   height: 36px;
   display: block;
 }
+.lienzo-target-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px 0;
+}
+
+.lienzo-target-empty__photo {
+  width: 70px;
+  height: auto;
+  display: block;
+}
+
+.lienzo-target-empty__label {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: #444;
+}
