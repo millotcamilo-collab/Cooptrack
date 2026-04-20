@@ -810,10 +810,25 @@
     if (!placardHost) return;
     if (typeof window.renderPlacard !== "function") return;
 
-    const qqState = getQQPicaState(play);
+    const currentUser = getCurrentUser();
+    const parentPlay = getPlayById(play?.parent_play_id);
+    const referenceDate = parentPlay
+      ? getSessionDateFromPlay(parentPlay)
+      : getSessionDateFromPlay(play);
+
+    const settlement = getQQPicaSettlementState(play);
+    const qqDisplayedSuit = getQQPicaDisplayedSuit(play);
 
     window.renderPlacard(placardHost, {
+      page: "lienzo-qqpica",
       mode: "QQPICA",
+      play,
+      currentUserId: Number(currentUser?.id || 0),
+      referenceDate,
+      settlement,
+      qqDisplayedSuit,
+      now: new Date(),
+
       photoUrl: placardHost.dataset.photoUrl || "",
       rank: placardHost.dataset.rank || "A",
       suit: placardHost.dataset.suit || "HEART",

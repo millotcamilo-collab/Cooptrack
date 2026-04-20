@@ -467,16 +467,16 @@
     `;
     }
 
-function formatDateForInput(value) {
-    const date = parseLocalDateTime(value);
-    if (!date) return "";
+    function formatDateForInput(value) {
+        const date = parseLocalDateTime(value);
+        if (!date) return "";
 
-    const year = date.getFullYear();
-    const month = pad2(date.getMonth() + 1);
-    const day = pad2(date.getDate());
+        const year = date.getFullYear();
+        const month = pad2(date.getMonth() + 1);
+        const day = pad2(date.getDate());
 
-    return `${year}-${month}-${day}`;
-}
+        return `${year}-${month}-${day}`;
+    }
 
     function pad2(value) {
         return String(value).padStart(2, "0");
@@ -592,72 +592,72 @@ function formatDateForInput(value) {
     }
 
     function renderSourceSessionDia(play) {
-    if (!play || typeof window.renderDia !== "function") return "";
+        if (!play || typeof window.renderDia !== "function") return "";
 
-    const parentPlay = getPlayById(play?.parent_play_id);
-    const sessionPlay = parentPlay || play;
+        const parentPlay = getPlayById(play?.parent_play_id);
+        const sessionPlay = parentPlay || play;
 
-    const suit = normalizeSuit(sessionPlay?.card_suit || sessionPlay?.suit);
-    if (suit !== "SPADE") return "";
+        const suit = normalizeSuit(sessionPlay?.card_suit || sessionPlay?.suit);
+        if (suit !== "SPADE") return "";
 
-    const spadeMode = String(sessionPlay?.spade_mode || "").trim().toUpperCase();
-    const sessionDate = getSessionDateFromPlay(sessionPlay);
+        const spadeMode = String(sessionPlay?.spade_mode || "").trim().toUpperCase();
+        const sessionDate = getSessionDateFromPlay(sessionPlay);
 
-    if (!sessionDate) return "";
+        if (!sessionDate) return "";
 
-    const clockIcon = "/assets/icons/reloj60.gif";
-    const bellIcon = "/assets/icons/Campana80.gif";
-    const bombIcon = "/assets/icons/bombaRedonda60.gif";
+        const clockIcon = "/assets/icons/reloj60.gif";
+        const bellIcon = "/assets/icons/Campana80.gif";
+        const bombIcon = "/assets/icons/bombaRedonda60.gif";
 
-    let bodyHtml = "";
+        let bodyHtml = "";
 
-    if (spadeMode === "DEADLINE") {
-        const endLabel = formatTimeLabel(sessionPlay?.end_date);
+        if (spadeMode === "DEADLINE") {
+            const endLabel = formatTimeLabel(sessionPlay?.end_date);
 
-        bodyHtml = `
+            bodyHtml = `
         <div class="lienzo-session-dia__row">
           <img class="lienzo-session-dia__icon" src="${bombIcon}" alt="Deadline" />
           <span class="lienzo-session-dia__time">${escapeHtml(endLabel || "—")}</span>
         </div>
       `;
-    } else {
-        const startLabel = formatTimeLabel(sessionPlay?.start_date);
-        const endLabel = formatTimeLabel(sessionPlay?.end_date);
-        const location = String(sessionPlay?.location || "").trim();
+        } else {
+            const startLabel = formatTimeLabel(sessionPlay?.start_date);
+            const endLabel = formatTimeLabel(sessionPlay?.end_date);
+            const location = String(sessionPlay?.location || "").trim();
 
-        bodyHtml = `
+            bodyHtml = `
         <div class="lienzo-session-dia__row">
           <img class="lienzo-session-dia__icon" src="${clockIcon}" alt="Inicio" />
           <span class="lienzo-session-dia__time">${escapeHtml(startLabel || "—")}</span>
 
           ${endLabel
-                ? `
+                    ? `
             <img class="lienzo-session-dia__icon" src="${bellIcon}" alt="Fin" />
             <span class="lienzo-session-dia__time">${escapeHtml(endLabel)}</span>
           `
-                : ""
-            }
+                    : ""
+                }
         </div>
 
         ${location
-                ? `
+                    ? `
           <div class="lienzo-session-dia__row">
             <img class="lienzo-session-dia__icon" src="/assets/icons/LocGlobito.gif" alt="Lugar" />
             <span class="lienzo-session-dia__location">${escapeHtml(location)}</span>
           </div>
         `
-                : ""
-            }
+                    : ""
+                }
       `;
-    }
+        }
 
-    const jSpadeText = getParentJSpadeText(play);
+        const jSpadeText = getParentJSpadeText(play);
 
-    const headerText = jSpadeText
-        ? `${formatSessionDayHeader(sessionDate)} — ${jSpadeText}`
-        : formatSessionDayHeader(sessionDate);
+        const headerText = jSpadeText
+            ? `${formatSessionDayHeader(sessionDate)} — ${jSpadeText}`
+            : formatSessionDayHeader(sessionDate);
 
-    return `
+        return `
   <div class="lienzo-session-dia-wrap">
     ${window.renderDia({
             headerText: headerText,
@@ -666,7 +666,7 @@ function formatDateForInput(value) {
         })}
   </div>
 `;
-}
+    }
 
     function buildPanelTopbar({ identityHtml, actionsHtml = "", single = false }) {
         return `
@@ -814,43 +814,58 @@ function formatDateForInput(value) {
     }
 
     function mountPlacardFromDataset() {
-    const placardHost = document.getElementById("lienzo-placard");
-    if (!placardHost) return;
-    if (typeof window.renderPlacard !== "function") return;
+        const placardHost = document.getElementById("lienzo-placard");
+        if (!placardHost) return;
+        if (typeof window.renderPlacard !== "function") return;
 
-    const selection = getLienzoDropSelection();
+        const selection = getLienzoDropSelection();
 
-    const currentPlayId =
-        Number(selection?.playId || 0) ||
-        Number(new URLSearchParams(window.location.search).get("playId") || 0);
+        const currentPlayId =
+            Number(selection?.playId || 0) ||
+            Number(new URLSearchParams(window.location.search).get("playId") || 0);
 
-    const currentPlay = getPlayById(currentPlayId);
-    const userIsSource = currentPlay ? isCurrentUserSource(currentPlay) : false;
+        const currentPlay = getPlayById(currentPlayId);
+        const userIsSource = currentPlay ? isCurrentUserSource(currentPlay) : false;
 
-    const qHeartCard = {
-        id: "virtual-Q-HEART",
-        rank: "Q",
-        suit: "HEART",
-        isVirtual: true
-    };
+        const qHeartCard = {
+            id: "virtual-Q-HEART",
+            rank: "Q",
+            suit: "HEART",
+            isVirtual: true
+        };
 
-    const visibleCards = userIsSource && !isCardCurrentlyDropped(qHeartCard, selection)
-        ? [qHeartCard]
-        : [];
+        const visibleCards =
+            userIsSource && !isCardCurrentlyDropped(qHeartCard, selection)
+                ? [qHeartCard]
+                : [];
 
-    window.renderPlacard(placardHost, {
-        mode: "QPICA",
-        photoUrl: placardHost.dataset.photoUrl || "",
-        rank: placardHost.dataset.rank || "A",
-        suit: placardHost.dataset.suit || "HEART",
-        title: placardHost.dataset.title || "Mazo",
-        currencyCode: placardHost.dataset.currencyCode || "",
-        currencyName: placardHost.dataset.currencyName || "",
-        showCurrency: false,
-        leftCards: visibleCards,
-        plays: getAllPlays()
-    });
-}
+        const currentUser = getCurrentUser();
+        const parentPlay = currentPlay ? getPlayById(currentPlay.parent_play_id) : null;
+        const referenceDate = parentPlay
+            ? getSessionDateFromPlay(parentPlay)
+            : currentPlay
+                ? getSessionDateFromPlay(currentPlay)
+                : null;
+
+        window.renderPlacard(placardHost, {
+            page: "lienzo-qpica",
+            mode: "QPICA",
+            play: currentPlay,
+            currentUserId: Number(currentUser?.id || 0),
+            referenceDate,
+            now: new Date(),
+
+            photoUrl: placardHost.dataset.photoUrl || "",
+            rank: placardHost.dataset.rank || "A",
+            suit: placardHost.dataset.suit || "HEART",
+            title: placardHost.dataset.title || "Mazo",
+            currencyCode: placardHost.dataset.currencyCode || "",
+            currencyName: placardHost.dataset.currencyName || "",
+            showCurrency: false,
+            leftCards: visibleCards,
+            plays: getAllPlays()
+        });
+    }
 
 
     function renderBackgroundCard(card, index) {
@@ -921,11 +936,11 @@ function formatDateForInput(value) {
     }
 
     function renderQHeartBudgetBox({ title, currencyCode = "", defaultPayDate = "" }) {
-    const safeTitle = escapeHtml(title || "Paga");
-    const safeCurrency = escapeHtml(currencyCode || "");
-    const safePayDate = escapeHtml(defaultPayDate || "");
+        const safeTitle = escapeHtml(title || "Paga");
+        const safeCurrency = escapeHtml(currencyCode || "");
+        const safePayDate = escapeHtml(defaultPayDate || "");
 
-    return `
+        return `
       <div class="lienzo-qheart-box">
         <div class="lienzo-qheart-box__title">
           ${safeTitle}
@@ -957,7 +972,7 @@ function formatDateForInput(value) {
         </div>
       </div>
     `;
-}
+    }
     function renderSourceActions(play) {
         const status = String(play?.play_status || "").trim().toUpperCase();
         const rank = normalizeRank(play?.card_rank || play?.rank);
@@ -1106,7 +1121,7 @@ function formatDateForInput(value) {
             : "";
 
         const qHeartBoxHtml = showQHeartBox
-    ? `
+            ? `
         <div class="lienzo-dropped-extra-slot">
           ${renderQHeartBudgetBox({
                 title: `Paga ${deckName}`,
@@ -1115,7 +1130,7 @@ function formatDateForInput(value) {
             })}
         </div>
       `
-    : "";
+            : "";
 
         const topbar = buildPanelTopbar({
             identityHtml: `
@@ -1187,7 +1202,7 @@ function formatDateForInput(value) {
             : "";
 
         const qHeartBoxHtml = showQHeartBox
-    ? `
+            ? `
         <div class="lienzo-target-extra-slot">
           ${renderQHeartBudgetBox({
                 title: `Paga ${userName}`,
@@ -1196,7 +1211,7 @@ function formatDateForInput(value) {
             })}
         </div>
       `
-    : "";
+            : "";
 
         const showActionsHere = isCurrentUserTarget(play);
         const showWeekHere = isCurrentUserTarget(play);
