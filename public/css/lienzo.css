@@ -21,49 +21,6 @@ body {
   box-sizing: border-box;
 }
 
-.lienzo-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: stretch;
-  height: 520px;
-}
-
-.lienzo-grid__left,
-.lienzo-grid__right {
-  min-width: 0;
-  height: 100%;
-}
-
-.lienzo-panel {
-  background: var(--lienzo-veil-bg);
-  border: 1px solid var(--lienzo-veil-border);
-  border-radius: 14px;
-  padding: 18px;
-  box-sizing: border-box;
-
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.lienzo-panel__header {
-  margin-bottom: 14px;
-}
-
-.lienzo-panel__title {
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.lienzo-panel__subtitle {
-  margin-top: 4px;
-  font-size: 14px;
-  color: #666;
-}
-
-
 .lienzo-card-image {
   width: auto;
   max-width: 100%;
@@ -438,56 +395,6 @@ body {
   height: var(--placard-photo-size);
 }
 
-/* 2) Cancha */
-
-.lienzo-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0px;
-  align-items: start;
-}
-
-.lienzo-grid__left,
-.lienzo-grid__right {
-  min-width: 0;
-}
-
-/* 1) La tribuna mantiene header arriba, contenido al medio, acciones abajo */
-.lienzo-panel {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-/* 2) Header siempre a la izquierda */
-.lienzo-panel__header {
-  flex: 0 0 var(--lienzo-panel-header-height);
-  min-height: var(--lienzo-panel-header-height);
-  margin-bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-/* 3) Contenido: arriba e izquierda, no centrado */
-.lienzo-panel__content {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding-top: 0px;
-}
-
-
-/* 4) Actions: abajo y a la derecha */
-.lienzo-panel__actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-  margin-top: auto;
-}
 
 /* 5) La carta sola de Amsterdam */
 
@@ -504,16 +411,6 @@ body {
 
 /* 6) El manojo de Colombes */
 
-.lienzo-source-cards {
-  flex: 1 1 auto;
-  min-height: 0;
-  margin-bottom: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  width: 100%;
-  padding-top: 0;
-}
 
 /* 5) Ajuste para cartas/zonas centrales ya existentes */
 .lienzo-card-wrap,
@@ -944,4 +841,100 @@ body {
   height: 100px;
 }
 
+/*Nuevo*/
+/* ===== BASE ===== */
+
+.lienzo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  align-items: start;
+}
+
+.lienzo-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+.lienzo-panel__header {
+  flex: 0 0 64px;
+  display: flex;
+  align-items: center;
+}
+
+.lienzo-panel__content {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.lienzo-panel__actions {
+  margin-top: auto;
+  display: flex;
+  gap: 10px;
+}
+
+/* ===== COLOMBES ===== */
+
+.lienzo-panel--source .lienzo-source-cards {
+  display: flex;
+  flex-direction: column;   /* 🔑 clave */
+  align-items: flex-start;
+  gap: 6px;
+
+  flex: 0 0 auto;           /* 🔑 evita estiramiento */
+  min-height: auto;         /* 🔑 elimina caja fantasma */
+}
+
+.lienzo-panel--source .lienzo-source-stack {
+  width: 240px;
+  height: 100px;            /* 🔑 compacta cartas */
+  position: relative;
+}
+
+.lienzo-panel--source .lienzo-session-dia-wrap {
+  margin-top: 0;
+}
+
+/* ===== AMSTERDAM ===== */
+
+#amsterdam .lienzo-panel--target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.lienzo-week-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.lienzo-weekday .dia__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 6px;
+  font-weight: 700;
+}
+
+/* ===== DROPZONE ===== */
+
+.lienzo-source-cards,
+.lienzo-target-dropzone {
+  position: relative;
+}
+
+.lienzo-dropped-card-slot {
+  position: absolute;
+  top: 8px;
+  left: 110px;
+  z-index: 3;
+}
 
