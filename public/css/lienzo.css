@@ -380,13 +380,6 @@ body {
 }
 
 /* 1) Placard / barra superior */
-.placard,
-.nuevo-mazo-bar,
-.lienzo-deckbar {
-  min-height: var(--placard-height);
-  box-sizing: border-box;
-  align-items: center;
-}
 
 .placard__photo,
 .nuevo-mazo-bar__photo,

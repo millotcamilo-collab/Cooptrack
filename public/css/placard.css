@@ -270,3 +270,7 @@
 
   padding: 3px 0;   /* 👈 esto es lo clave */
 }
+
+.placard {
+  min-height: var(--placard-height);
+}
