@@ -1049,13 +1049,6 @@ body {
   color: #444;
 }
 
-.lienzo-panel--target-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-}
-
 .lienzo-target-empty {
   flex: 1 1 auto;
   display: flex;
@@ -1098,6 +1091,7 @@ body {
 .lienzo-panel--target-empty {
   display: grid;
   grid-template-rows: 56px 150px 1fr;
+  row-gap: 12px;
   align-items: start;
 }
 
