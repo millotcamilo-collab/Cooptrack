@@ -1092,11 +1092,6 @@ body {
   justify-content: center;
 }
 
-.lienzo-panel--target-empty .lienzo-users-picker {
-  flex: 0 0 auto;
-  min-height: 0;
-  margin-top: 12px;
-}
 
 /* ===== AMSTERDAM (lienzo-new FIX) ===== */
 
