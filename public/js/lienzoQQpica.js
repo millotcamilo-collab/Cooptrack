@@ -6,7 +6,7 @@
   }
 
   function handleComplaint(play) {
-   alert("Incumplimiento reportado (falta persistir)");
+    alert("Incumplimiento reportado (falta persistir)");
   }
   /*provisorio*/
 
@@ -294,6 +294,14 @@
     if (!referenceDate) return false;
 
     return Date.now() >= referenceDate.getTime();
+  }
+
+  function canShowSettlementActions(play, side) {
+    const collectorSide = getQQPicaCollectorSide(play);
+    const canResolve = canResolveQQPicaSettlement(play);
+    const settlement = getQQPicaSettlementState(play);
+
+    return collectorSide === side && canResolve && !settlement;
   }
 
   function getQQPicaCollectorSide(play) {
@@ -927,6 +935,8 @@
 
     const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
     const sendIcon = "/assets/icons/buzon60.gif";
+    const awardIcon = "/assets/icons/award60oro.gif";
+    const complainIcon = "/assets/icons/ticket80g.gif";
 
     const showSend =
       rank === "Q" &&
@@ -936,10 +946,12 @@
       status !== "REJECTED" &&
       status !== "CANCELLED" &&
       status !== "ACKNOWLEDGED";
+
     const showSettlementActions = canShowSettlementActions(play, "COLOMBES");
+
     return `
-      <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-        ${showSend
+    <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
+      ${showSend
         ? `
           <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
             <img src="${sendIcon}" alt="Enviar" />
@@ -950,21 +962,22 @@
 
       ${showSettlementActions
         ? `
-    <button id="lienzo-award-btn" class="icon-btn" title="Confirmar pago">
-      <img src="/assets/icons/award60oro.gif" alt="Award" />
-    </button>
+          <button id="lienzo-award-btn" class="icon-btn" title="Confirmar pago">
+            <img src="${awardIcon}" alt="Award" />
+          </button>
 
-    <button id="lienzo-complain-btn" class="icon-btn" title="Reportar incumplimiento">
-      <img src="/assets/icons/ticket60.gif" alt="Queja" />
-    </button>
-  `
+          <button id="lienzo-complain-btn" class="icon-btn" title="Registrar queja">
+            <img src="${complainIcon}" alt="Queja" />
+          </button>
+        `
         : ""
       }
-        <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
-          <img src="${exitIcon}" alt="Salir" />
-        </button>
-      </div>
-    `;
+
+      <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
+        <img src="${exitIcon}" alt="Salir" />
+      </button>
+    </div>
+  `;
   }
 
   function canCancelTargetPlay(play) {
@@ -988,30 +1001,21 @@
     const rejectIcon = "/assets/icons/stepback40.gif";
     const cancelIcon = "/assets/icons/stop60.gif";
     const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
+    const awardIcon = "/assets/icons/award60oro.gif";
+    const complainIcon = "/assets/icons/ticket80g.gif";
 
     const showDecisionButtons = shouldShowTargetDecisionButtons(play);
     const showCancel = canCancelTargetPlay(play);
     const showSettlementActions = canShowSettlementActions(play, "AMSTERDAM");
+
     return `
-      <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-        ${showDecisionButtons
+    <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
+      ${showDecisionButtons
         ? `
           <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
             <img src="${acceptIcon}" alt="Aceptar" />
           </button>
 
-${showSettlementActions
-  ? `
-    <button id="lienzo-award-btn" class="icon-btn" title="Confirmar pago">
-      <img src="/assets/icons/award60oro.gif" alt="Award" />
-    </button>
-
-    <button id="lienzo-complain-btn" class="icon-btn" title="Reportar incumplimiento">
-      <img src="/assets/icons/ticket60.gif" alt="Queja" />
-    </button>
-  `
-  : ""
-}
           <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
             <img src="${rejectIcon}" alt="Rechazar" />
           </button>
@@ -1019,7 +1023,7 @@ ${showSettlementActions
         : ""
       }
 
-        ${showCancel
+      ${showCancel
         ? `
           <button id="lienzo-cancel-btn" class="icon-btn" title="Cancelar">
             <img src="${cancelIcon}" alt="Cancelar" />
@@ -1028,11 +1032,68 @@ ${showSettlementActions
         : ""
       }
 
-        <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
-          <img src="${exitIcon}" alt="Salir" />
-        </button>
-      </div>
-    `;
+      ${showSettlementActions
+        ? `
+          <button id="lienzo-award-btn" class="icon-btn" title="Confirmar pago">
+            <img src="${awardIcon}" alt="Award" />
+          </button>
+
+          <button id="lienzo-complain-btn" class="icon-btn" title="Registrar queja">
+            <img src="${complainIcon}" alt="Queja" />
+          </button>
+        `
+        : ""
+      }
+
+      <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
+        <img src="${exitIcon}" alt="Salir" />
+      </button>
+    </div>
+  `;
+  }
+
+  function buildPlayCodeWithSettlement(play, settlementStatus) {
+    const currentPlayCode = String(play?.play_code || "").trim();
+
+    if (!currentPlayCode) {
+      return {
+        ok: false,
+        error: "La jugada no tiene play_code."
+      };
+    }
+
+    const parsed = parsePlayCode(currentPlayCode);
+    const rawFlow = String(parsed.flow || "").trim();
+
+    const cleanChunks = rawFlow
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .filter((chunk) => !chunk.startsWith("settlement:"));
+
+    const settlementBlock =
+      `settlement:${String(settlementStatus || "").trim().toUpperCase()}` +
+      `|by:${getCurrentUser()?.id || ""}` +
+      `|at:${new Date().toISOString()}`;
+
+    const nextFlow = [...cleanChunks, settlementBlock].join(";");
+
+    const updatedPlayCode = [
+      parsed.deckId || "",
+      parsed.userId || "",
+      parsed.date || "",
+      parsed.rank || "",
+      parsed.suit || "",
+      parsed.action || "",
+      parsed.autorizados || "",
+      nextFlow,
+      parsed.recipients || ""
+    ].join("§");
+
+    return {
+      ok: true,
+      playCode: updatedPlayCode
+    };
   }
 
   function buildPlayCodeWithQHeartPayment(play) {
@@ -1353,6 +1414,109 @@ ${showSettlementActions
     }
   }
 
+  async function handleAwardPayment(play) {
+    try {
+      const playId = Number(play?.id || 0);
+      const token = localStorage.getItem("cooptrackToken");
+
+      if (!playId) {
+        alert("playId inválido");
+        return;
+      }
+
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      const built = buildPlayCodeWithSettlement(play, "PAID");
+
+      if (!built.ok) {
+        alert(built.error || "No se pudo registrar el pago.");
+        return;
+      }
+
+      const response = await fetch(`/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_code: built.playCode
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("Error registrando pago:", data);
+        alert(data?.error || "No se pudo registrar el pago");
+        return;
+      }
+
+      play.play_code = built.playCode;
+      alert("Pago confirmado");
+      renderLienzo(play);
+    } catch (error) {
+      console.error("Error en handleAwardPayment", error);
+      alert("No se pudo registrar el pago");
+    }
+  }
+
+  async function handleComplaint(play) {
+    try {
+      const playId = Number(play?.id || 0);
+      const token = localStorage.getItem("cooptrackToken");
+
+      if (!playId) {
+        alert("playId inválido");
+        return;
+      }
+
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      const confirmed = window.confirm("¿Querés registrar una queja por incumplimiento?");
+      if (!confirmed) return;
+
+      const built = buildPlayCodeWithSettlement(play, "COMPLAINED");
+
+      if (!built.ok) {
+        alert(built.error || "No se pudo registrar la queja.");
+        return;
+      }
+
+      const response = await fetch(`/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_code: built.playCode
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("Error registrando queja:", data);
+        alert(data?.error || "No se pudo registrar la queja");
+        return;
+      }
+
+      play.play_code = built.playCode;
+      alert("Queja registrada");
+      renderLienzo(play);
+    } catch (error) {
+      console.error("Error en handleComplaint", error);
+      alert("No se pudo registrar la queja");
+    }
+  }
+
   async function handleExitPlay(play) {
     await acknowledgePlayIfNeeded(play);
 
@@ -1372,22 +1536,9 @@ ${showSettlementActions
     const acceptBtn = document.getElementById("lienzo-accept-btn");
     const rejectBtn = document.getElementById("lienzo-reject-btn");
     const cancelBtn = document.getElementById("lienzo-cancel-btn");
-    const exitBtn = document.getElementById("lienzo-exit-btn");
     const awardBtn = document.getElementById("lienzo-award-btn");
     const complainBtn = document.getElementById("lienzo-complain-btn");
-
-    if (awardBtn) {
-      awardBtn.addEventListener("click", () => {
-      handleAwardPayment(play);
-     });
-    }
-
-    if (complainBtn) {
-      complainBtn.addEventListener("click", () => {
-      handleComplaint(play);
-      });
-    }
-
+    const exitBtn = document.getElementById("lienzo-exit-btn");
 
     if (sendBtn) {
       sendBtn.addEventListener("click", () => {
@@ -1410,6 +1561,18 @@ ${showSettlementActions
     if (cancelBtn) {
       cancelBtn.addEventListener("click", () => {
         handleCancelPlay(play);
+      });
+    }
+
+    if (awardBtn) {
+      awardBtn.addEventListener("click", () => {
+        handleAwardPayment(play);
+      });
+    }
+
+    if (complainBtn) {
+      complainBtn.addEventListener("click", () => {
+        handleComplaint(play);
       });
     }
 
