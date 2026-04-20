@@ -1687,7 +1687,7 @@
       : "";
 
     const qHeartBoxHtml =
-      qqState && qqState.side === "COLOMBES"
+      qqState && getQQPicaDisplayedSide(play) === "COLOMBES"
         ? `
         <div class="lienzo-dropped-extra-slot">
           ${renderQQHeartSummaryBox(play, qqState)}
