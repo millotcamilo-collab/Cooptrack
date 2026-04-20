@@ -997,3 +997,20 @@ body {
 .lienzo-panel--target .lienzo-weekday {
   align-items: stretch;
 }
+
+/* Ajuste fino: subir un poco la semana */
+.lienzo-panel--target .lienzo-week-row-wrap {
+  margin-top: -10px;
+}
+
+/* Opcional: sacar aire extra del panel derecho */
+#amsterdam .lienzo-panel--target {
+  gap: 8px;
+}
+
+
+.lienzo-weekday .dia__body {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
