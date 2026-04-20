@@ -222,61 +222,69 @@
     });
   }
 
-  function getPlacardHeadline(config) {
-    const page = String(config?.page || "").trim().toLowerCase();
+  function getQpicaHeadline(config) {
     const play = config?.play || null;
     const currentUserId = Number(config?.currentUserId || 0);
     const now = config?.now instanceof Date ? config.now : new Date();
+
+    if (!play) return "";
+
+    const status = String(play?.play_status || "").trim().toUpperCase();
+    const createdByUserId = Number(play?.created_by_user_id || 0);
+    const targetUserId = Number(play?.target_user_id || 0);
+
+    const isSource =
+      currentUserId && createdByUserId && currentUserId === createdByUserId;
+    const isTarget =
+      currentUserId && targetUserId && currentUserId === targetUserId;
+
+    const targetNickname =
+      String(play?.target_user_nickname || "").trim() || "invitado";
+
+    const referenceDate =
+      config?.referenceDate instanceof Date ? config.referenceDate : null;
+
+    const isExpired =
+      referenceDate instanceof Date &&
+      !Number.isNaN(referenceDate.getTime()) &&
+      referenceDate.getTime() < now.getTime();
+
+    if (status === "ACTIVE") {
+      return `Invitación a ${targetNickname} pendiente`;
+    }
+
+    if (status === "SENT" || status === "PENDING") {
+      if (isSource) return "Invitación enviada";
+      if (isTarget) return "Invitación recibida";
+      return "Invitación pendiente";
+    }
+
+    if (status === "APPROVED" || status === "ACKNOWLEDGED") {
+      if (isExpired) return "Actividad concluida";
+      return "Invitación aceptada";
+    }
+
+    if (status === "REJECTED") {
+      return "Invitación rechazada";
+    }
+
+    if (status === "CANCELLED") {
+      return "Actividad cancelada";
+    }
+
+    return "";
+  }
+
+  function getPlacardHeadline(config) {
+    const page = String(config?.page || "").trim().toLowerCase();
+    const play = config?.play || null;
 
     if (page === "lienzo-new") {
       return "Nueva jugada";
     }
 
     if (page === "lienzo-qpica") {
-      if (!play) return "";
-
-      const status = String(play?.play_status || "").trim().toUpperCase();
-      const createdByUserId = Number(play?.created_by_user_id || 0);
-      const targetUserId = Number(play?.target_user_id || 0);
-
-      const isSource = currentUserId && createdByUserId && currentUserId === createdByUserId;
-      const isTarget = currentUserId && targetUserId && currentUserId === targetUserId;
-
-      const targetNickname =
-        String(play?.target_user_nickname || "").trim() || "invitado";
-
-      const referenceDate =
-        config?.referenceDate instanceof Date ? config.referenceDate : null;
-
-      const isExpired =
-        referenceDate instanceof Date &&
-        !Number.isNaN(referenceDate.getTime()) &&
-        referenceDate.getTime() < now.getTime();
-
-      if (status === "ACTIVE") {
-        return `Invitación a ${targetNickname} pendiente`;
-      }
-
-      if (status === "SENT" || status === "PENDING") {
-        if (isSource) return "Invitación enviada";
-        if (isTarget) return "Invitación recibida";
-        return "Invitación pendiente";
-      }
-
-      if (status === "APPROVED" || status === "ACKNOWLEDGED") {
-        if (isExpired) return "Actividad concluida";
-        return "Invitación aceptada";
-      }
-
-      if (status === "REJECTED") {
-        return "Invitación rechazada";
-      }
-
-      if (status === "CANCELLED") {
-        return "Actividad cancelada";
-      }
-
-      return "";
+      return getQpicaHeadline(config);
     }
 
     if (page === "lienzo-qqpica") {
@@ -284,21 +292,21 @@
 
       const status = String(play?.play_status || "").trim().toUpperCase();
       const settlement = config?.settlement || null;
-      const qqDisplayedSuit = String(config?.qqDisplayedSuit || "").trim().toUpperCase();
 
       if (status === "CANCELLED") {
         return "Actividad cancelada";
       }
 
-      if (settlement?.status === "PAID") {
-        return "Actividad concluida";
-      }
+      if (status === "APPROVED" || status === "ACKNOWLEDGED") {
+        if (settlement?.status === "PAID") {
+          return "Actividad concluida";
+        }
 
-      if (qqDisplayedSuit === "DIAMOND") {
         return "Actividad pendiente de confirmación de pago";
       }
 
-      return "Actividad pendiente de confirmación de pago";
+      // antes de aceptación: mismo comportamiento que qpica
+      return getQpicaHeadline(config);
     }
 
     return "";
