@@ -1,15 +1,5 @@
 (function () {
 
-  /*provisorio*/
-  function handleAwardPayment(play) {
-    alert("Pago confirmado (falta persistir)");
-  }
-
-  function handleComplaint(play) {
-    alert("Incumplimiento reportado (falta persistir)");
-  }
-  /*provisorio*/
-
   function normalizeRank(value) {
     return String(value || "").trim().toUpperCase();
   }
@@ -75,7 +65,7 @@
     return "";
   }
 
-  function renderQQPicaSettlementBadge(play, side) {
+  function renderSettlementTopbarIcon(play, side) {
     const settlement = getQQPicaSettlementState(play);
     const collectorSide = getQQPicaCollectorSide(play);
 
@@ -83,29 +73,21 @@
 
     const payerSide = collectorSide === "COLOMBES" ? "AMSTERDAM" : "COLOMBES";
 
-    if (settlement.status === "PAID" && side === payerSide) {
+    if (side !== payerSide) return "";
+
+    if (settlement.status === "PAID") {
       return `
-      <div class="lienzo-settlement-badge">
-        <img
-          class="lienzo-settlement-badge__icon"
-          src="/assets/icons/award80.gif"
-          alt="Buen pagador"
-          title="Buen pagador"
-        />
-      </div>
+      <span class="icon-btn" title="Buen pagador" aria-disabled="true">
+        <img src="/assets/icons/award60oro.gif" alt="Buen pagador" />
+      </span>
     `;
     }
 
-    if (settlement.status === "COMPLAINED" && side === payerSide) {
+    if (settlement.status === "COMPLAINED") {
       return `
-      <div class="lienzo-settlement-badge">
-        <img
-          class="lienzo-settlement-badge__icon"
-          src="/assets/icons/queja80.gif"
-          alt="Queja"
-          title="Queja"
-        />
-      </div>
+      <span class="icon-btn" title="Queja registrada" aria-disabled="true">
+        <img src="/assets/icons/ticket80g.gif" alt="Queja registrada" />
+      </span>
     `;
     }
 
@@ -931,30 +913,40 @@
     };
   }
 
-  function renderQQHeartSummaryBox(qqState) {
+  function renderQQHeartSummaryBox(play, qqState) {
     if (!qqState) return "";
 
+    const settlement = getQQPicaSettlementState(play);
+
+    let title = `Paga ${qqState.payerLabel}`;
+
+    if (settlement?.status === "PAID") {
+      title = `Pagó ${qqState.payerLabel}`;
+    } else if (settlement?.status === "COMPLAINED") {
+      title = `Incumplió ${qqState.payerLabel}`;
+    }
+
     return `
-      <div class="lienzo-qheart-box lienzo-qheart-box--readonly">
-        <div class="lienzo-qheart-box__title">
-          ${escapeHtml(`Paga ${qqState.payerLabel}`)}
+    <div class="lienzo-qheart-box lienzo-qheart-box--readonly">
+      <div class="lienzo-qheart-box__title">
+        ${escapeHtml(title)}
+      </div>
+
+      <div class="lienzo-qheart-box__body">
+        <div class="lienzo-qheart-box__readonly-line">
+          ${escapeHtml(qqState.concept)}
         </div>
 
-        <div class="lienzo-qheart-box__body">
-          <div class="lienzo-qheart-box__readonly-line">
-            ${escapeHtml(qqState.concept)}
-          </div>
+        <div class="lienzo-qheart-box__readonly-line">
+          ${escapeHtml(qqState.currency)} ${escapeHtml(qqState.amount)}
+        </div>
 
-          <div class="lienzo-qheart-box__readonly-line">
-            ${escapeHtml(qqState.currency)} ${escapeHtml(qqState.amount)}
-          </div>
-
-          <div class="lienzo-qheart-box__readonly-line">
-            ${escapeHtml(qqState.payDate)}
-          </div>
+        <div class="lienzo-qheart-box__readonly-line">
+          ${escapeHtml(qqState.payDate)}
         </div>
       </div>
-    `;
+    </div>
+  `;
   }
 
   function renderSourceActions(play) {
@@ -1380,20 +1372,6 @@
     }
   }
 
-  async function handleExitPlay(play) {
-    await acknowledgePlayIfNeeded(play);
-
-    const deckId =
-      Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
-
-    if (deckId) {
-      window.location.href = `/mazo.html?id=${deckId}`;
-      return;
-    }
-
-    window.history.back();
-  }
-
   async function handleCancelPlay(play) {
     try {
       const playId = Number(play?.id || 0);
@@ -1678,7 +1656,7 @@
     const sessionDiaHtml = renderSourceSessionDia(play);
     const qqState = getQQPicaState(play);
     const attachedSuit = qqState?.attachedSuit || "HEART";
-    const settlementBadgeHtml = renderQQPicaSettlementBadge(play, "COLOMBES");
+    const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "COLOMBES");
 
     const droppedCardHtml = qqState
       ? `
@@ -1697,7 +1675,7 @@
       qqState && qqState.side === "COLOMBES"
         ? `
         <div class="lienzo-dropped-extra-slot">
-          ${renderQQHeartSummaryBox(qqState)}
+          ${renderQQHeartSummaryBox(play, qqState)}
         </div>
       `
         : "";
@@ -1715,7 +1693,7 @@
           />
         </div>
       `,
-      actionsHtml: showActionsHere ? renderSourceActions(play) : ""
+      actionsHtml: (showActionsHere ? renderSourceActions(play) : "") + settlementTopbarIconHtml
     });
 
     return `
@@ -1728,7 +1706,6 @@
           </div>
 
           ${qqState && getQQPicaDisplayedSide(play) === "COLOMBES" ? droppedCardHtml : ""}
-          ${settlementBadgeHtml}
           ${qHeartBoxHtml}
         </div>
 
@@ -1748,7 +1725,7 @@
     const baseImageSrc = getCardImageSrc(baseRank, baseSuit);
     const qqState = getQQPicaState(play);
     const attachedSuit = qqState?.attachedSuit || "HEART";
-    const settlementBadgeHtml = renderQQPicaSettlementBadge(play, "AMSTERDAM");
+    const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "AMSTERDAM");
 
     const droppedCardHtml =
       qqState && getQQPicaDisplayedSide(play) === "AMSTERDAM"
@@ -1766,7 +1743,7 @@
       qqState && getQQPicaDisplayedSide(play) === "AMSTERDAM"
         ? `
         <div class="lienzo-target-extra-slot">
-          ${renderQQHeartSummaryBox(qqState)}
+          ${renderQQHeartSummaryBox(play, qqState)}
         </div>
       `
         : "";
@@ -1787,7 +1764,7 @@
           />
         </div>
       `,
-      actionsHtml: showActionsHere ? renderTargetActions(play) : ""
+      actionsHtml: (showActionsHere ? renderTargetActions(play) : "") + settlementTopbarIconHtml
     });
 
     return `
@@ -1802,7 +1779,6 @@
               alt="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
               title="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
             />
-            ${settlementBadgeHtml}
             ${droppedCardHtml}
           </div>
 
