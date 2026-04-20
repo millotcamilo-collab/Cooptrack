@@ -170,9 +170,21 @@
   width: calc(100% - 16px);
 }
 
-.qpike-row__qextra {
-  width: 28px;
-  height: auto;
-  display: block;
+.tablero-row--qpike .tablero-row__card-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tablero-row--qpike .qpike-row__extra-card {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.tablero-row--qpike .qpike-row__extra-card--red {
+  color: #b22222;
 }
 
