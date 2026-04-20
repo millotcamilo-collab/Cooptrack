@@ -222,6 +222,17 @@
     });
   }
 
+  function getPlacardHeadline(config) {
+    const page = String(config?.page || "").trim().toLowerCase();
+    const mode = String(config?.mode || "").trim().toUpperCase();
+
+    if (page === "lienzo-new" || mode === "LIENZO_NEW") {
+      return "Nueva jugada";
+    }
+
+    return "";
+  }
+
   function renderPlacard(containerId, config) {
     const container =
       typeof containerId === "string"
@@ -244,6 +255,7 @@
     const showCurrency = Boolean(config?.showCurrency);
     const canEditPhoto = Boolean(config?.canEditPhoto);
     const mode = String(config?.mode || "DEFAULT").trim().toUpperCase();
+    const headline = getPlacardHeadline(config);
 
     const photoHtml = buildPhotoHTML(photoUrl, canEditPhoto);
     const photoEditorHtml = buildPhotoEditorHTML(config);
@@ -267,50 +279,61 @@
     }
     const jHeartText = getFirstApprovedJHeartText(config?.plays || []);
 
-let subtitleHtml = "";
+    let subtitleHtml = "";
 
-if (jHeartText) {
-  subtitleHtml = `
+    if (jHeartText) {
+      subtitleHtml = `
     <div class="placard__subtitle">
       ${escapeHtml(jHeartText)}
     </div>
   `;
-}
+    }
 
     container.innerHTML = `
-      <section class="placard">
-        <div class="placard__row">
-          <div class="placard__lead">
-            ${leftCardsHtml}
-            <div class="placard__photo-wrap">
-              ${photoHtml}
-            </div>
-          </div>
+  <section class="placard">
+    <div class="placard__row">
+      <div class="placard__lead">
+        ${leftCardsHtml}
+        <div class="placard__photo-wrap">
+          ${photoHtml}
+        </div>
+      </div>
 
-<div class="placard__maincard">
-  <img
-    src="/assets/icons/Acorazon.gif"
-    alt="A♥"
-    class="placard__maincard-image"
-  />
-</div>
+      <div class="placard__maincard">
+        <img
+          src="/assets/icons/Acorazon.gif"
+          alt="A♥"
+          class="placard__maincard-image"
+        />
+      </div>
 
-          <div class="placard__text">
-            <div class="placard__titleline">
-              <span class="placard__name">${escapeHtml(title)}</span>
-              ${showCurrency
-        ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
-        : ""
-      }
-            </div>
+      <div class="placard__text">
+        <div class="placard__titleline">
+          <span class="placard__name">${escapeHtml(title)}</span>
+          ${showCurrency
+            ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
+            : ""
+          }
+        </div>
 
-            ${subtitleHtml}
-            ${photoEditorHtml}
-          </div>
+        ${subtitleHtml}
+        ${photoEditorHtml}
+      </div>
+    </div>
+  </section>
+
+  ${
+    headline
+      ? `
+      <section class="placard placard--headline">
+        <div class="placard__headline">
+          ${escapeHtml(headline)}
         </div>
       </section>
-    `;
-
+    `
+      : ""
+  }
+`;
     bindPlacardDrag(container);
   }
 

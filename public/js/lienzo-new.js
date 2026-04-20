@@ -588,6 +588,7 @@ function getJSpadeText(play) {
     if (typeof window.renderPlacard !== "function") return;
 
     window.renderPlacard(placardHost, {
+      page: "lienzo-new",
       photoUrl: placardHost.dataset.photoUrl || "",
       rank: placardHost.dataset.rank || "A",
       suit: placardHost.dataset.suit || "HEART",
