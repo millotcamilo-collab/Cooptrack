@@ -930,4 +930,18 @@ body {
   text-align: right;
 }
 
+.lienzo-panel--source .lienzo-source-cards {
+  flex: 0 0 auto;
+  min-height: 120px;
+  align-items: flex-start;
+}
+
+.lienzo-panel--source .lienzo-session-dia-wrap {
+  margin-top: 0;
+}
+
+.lienzo-panel--source .lienzo-source-stack {
+  height: 100px;
+}
+
 
