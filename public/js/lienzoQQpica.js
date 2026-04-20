@@ -507,61 +507,61 @@
     let bodyHtml = "";
 
     if (spadeMode === "DEADLINE") {
-        const endLabel = formatTimeLabel(sessionPlay?.end_date);
+      const endLabel = formatTimeLabel(sessionPlay?.end_date);
 
-        bodyHtml = `
+      bodyHtml = `
         <div class="lienzo-session-dia__row">
           <img class="lienzo-session-dia__icon" src="${bombIcon}" alt="Deadline" />
           <span class="lienzo-session-dia__time">${escapeHtml(endLabel || "—")}</span>
         </div>
       `;
     } else {
-        const startLabel = formatTimeLabel(sessionPlay?.start_date);
-        const endLabel = formatTimeLabel(sessionPlay?.end_date);
-        const location = String(sessionPlay?.location || "").trim();
+      const startLabel = formatTimeLabel(sessionPlay?.start_date);
+      const endLabel = formatTimeLabel(sessionPlay?.end_date);
+      const location = String(sessionPlay?.location || "").trim();
 
-        bodyHtml = `
+      bodyHtml = `
         <div class="lienzo-session-dia__row">
           <img class="lienzo-session-dia__icon" src="${clockIcon}" alt="Inicio" />
           <span class="lienzo-session-dia__time">${escapeHtml(startLabel || "—")}</span>
 
           ${endLabel
-                ? `
+          ? `
             <img class="lienzo-session-dia__icon" src="${bellIcon}" alt="Fin" />
             <span class="lienzo-session-dia__time">${escapeHtml(endLabel)}</span>
           `
-                : ""
-            }
+          : ""
+        }
         </div>
 
         ${location
-                ? `
+          ? `
           <div class="lienzo-session-dia__row">
             <img class="lienzo-session-dia__icon" src="/assets/icons/LocGlobito.gif" alt="Lugar" />
             <span class="lienzo-session-dia__location">${escapeHtml(location)}</span>
           </div>
         `
-                : ""
-            }
+          : ""
+        }
       `;
     }
 
     const jSpadeText = getParentJSpadeText(play);
 
     const headerText = jSpadeText
-        ? `${formatSessionDayHeader(sessionDate)} — ${jSpadeText}`
-        : formatSessionDayHeader(sessionDate);
+      ? `${formatSessionDayHeader(sessionDate)} — ${jSpadeText}`
+      : formatSessionDayHeader(sessionDate);
 
     return `
   <div class="lienzo-session-dia-wrap">
     ${window.renderDia({
-            headerText: headerText,
-            bodyHtml,
-            extraClass: "lienzo-session-dia"
-        })}
+      headerText: headerText,
+      bodyHtml,
+      extraClass: "lienzo-session-dia"
+    })}
   </div>
 `;
-}
+  }
 
   function buildPanelTopbar({ identityHtml, actionsHtml = "", single = false }) {
     return `
@@ -598,6 +598,16 @@
     }
   }
 
+  function getQQPicaDisplayedSuit(play) {
+    const status = String(play?.play_status || "").trim().toUpperCase();
+
+    if (status === "APPROVED" || status === "ACKNOWLEDGED") {
+      return "DIAMOND";
+    }
+
+    return "HEART";
+  }
+
   function getQQPicaState(play) {
     const draft = getQHeartDraftFromSession();
 
@@ -623,7 +633,9 @@
         amount: draft.amount || "",
         payDate: draft.payDate || "",
         currency: getCurrencyCode(deck) || "",
-        payerLabel
+        payerLabel,
+        attachedRank: "Q",
+        attachedSuit: getQQPicaDisplayedSuit(play)
       };
     }
 
@@ -658,7 +670,9 @@
           amount: payment.amount || "",
           payDate: payment.payDate || "",
           currency: payment.currency || getCurrencyCode(deck) || "",
-          payerLabel
+          payerLabel,
+          attachedRank: "Q",
+          attachedSuit: getQQPicaDisplayedSuit(play)
         };
       }
     }
@@ -1294,15 +1308,16 @@
 
     const sessionDiaHtml = renderSourceSessionDia(play);
     const qqState = getQQPicaState(play);
+    const attachedSuit = qqState?.attachedSuit || "HEART";
 
     const droppedCardHtml = qqState
       ? `
         <div class="lienzo-dropped-card-slot">
           <img
             class="lienzo-card-image lienzo-card-image--dropped"
-            src="${escapeHtml(getCardImageSrc("Q", "HEART"))}"
-            alt="${escapeHtml(getCardLabel("Q", "HEART"))}"
-            title="${escapeHtml(getCardLabel("Q", "HEART"))}"
+            src="${escapeHtml(getCardImageSrc("Q", attachedSuit))}"
+            alt="${escapeHtml(getCardLabel("Q", attachedSuit))}"
+            title="${escapeHtml(getCardLabel("Q", attachedSuit))}"
           />
         </div>
       `
@@ -1361,15 +1376,16 @@
     const baseSuit = normalizeSuit(play?.card_suit || play?.suit);
     const baseImageSrc = getCardImageSrc(baseRank, baseSuit);
     const qqState = getQQPicaState(play);
+    const attachedSuit = qqState?.attachedSuit || "HEART";
 
     const droppedCardHtml =
       qqState && qqState.side === "AMSTERDAM"
         ? `
         <img
           class="lienzo-card-image lienzo-card-image--overlay"
-          src="${escapeHtml(getCardImageSrc("Q", "HEART"))}"
-          alt="${escapeHtml(getCardLabel("Q", "HEART"))}"
-          title="${escapeHtml(getCardLabel("Q", "HEART"))}"
+          src="${escapeHtml(getCardImageSrc("Q", attachedSuit))}"
+          alt="${escapeHtml(getCardLabel("Q", attachedSuit))}"
+          title="${escapeHtml(getCardLabel("Q", attachedSuit))}"
         />
       `
         : "";
