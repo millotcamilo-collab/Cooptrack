@@ -1086,6 +1086,12 @@ body {
   gap: 10px;
 }
 
+.lienzo-panel--target-empty .lienzo-target-empty {
+  grid-row: 1;              /* 👈 ubicación en la grilla */
+  align-items: center;
+  justify-content: center;
+}
+
 .lienzo-panel--target-empty .lienzo-users-picker {
   flex: 0 0 auto;
   min-height: 0;
