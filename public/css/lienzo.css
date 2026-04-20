@@ -1014,3 +1014,27 @@ body {
   align-items: flex-start;
   justify-content: center;
 }
+
+/* recuperar la cancha central y los recuadros */
+.lienzo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  align-items: stretch;
+  height: 520px;
+}
+
+.lienzo-grid__left,
+.lienzo-grid__right {
+  min-width: 0;
+  height: 100%;
+}
+
+.lienzo-panel--source,
+.lienzo-panel--target {
+  height: 100%;
+  background: var(--lienzo-veil-bg);
+  border: 1px solid var(--lienzo-veil-border);
+  border-radius: 14px;
+  box-sizing: border-box;
+}
