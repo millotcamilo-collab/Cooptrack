@@ -1097,3 +1097,30 @@ body {
   min-height: 0;
   margin-top: 12px;
 }
+
+/* ===== AMSTERDAM (lienzo-new FIX) ===== */
+
+.lienzo-panel--target-empty {
+  display: grid;
+  grid-template-rows: 56px 150px 1fr;
+  align-items: start;
+}
+
+/* fila 1 → destinatario */
+.lienzo-panel--target-empty .lienzo-target-empty {
+  grid-row: 1;
+  justify-content: center;
+  align-items: center;
+}
+
+/* fila 2 → (vacía o futura carta) */
+.lienzo-panel--target-empty .lienzo-target-mainrow {
+  grid-row: 2;
+}
+
+/* fila 3 → users picker */
+.lienzo-panel--target-empty .lienzo-users-picker {
+  grid-row: 2;   /* 👈 PROBÁ ESTO primero */
+  align-self: start;
+  margin-top: 0;
+}
