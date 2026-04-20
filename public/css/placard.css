@@ -1,6 +1,7 @@
 /* ===== PLACARD (modo lectura) ===== */
 
 .placard {
+  min-height: var(--placard-height);
   padding: 14px 18px;
   background: var(--lienzo-veil-bg);
   border: 1px solid var(--lienzo-veil-border);
@@ -253,8 +254,12 @@
 }
 
 .placard--headline {
-  margin-top: 0px;
+  min-height: 0;          /* 🔑 evita heredar altura del placard principal */
+  margin-top: 0;
+  padding: 0 18px;        /* mismo margen lateral que el placard */
   background: #000;
+  border-radius: 14px;    /* opcional: si querés mismo look */
+  box-sizing: border-box;
 }
 
 .placard__headline {
@@ -268,9 +273,6 @@
   font-weight: 500;
   text-align: center;
 
-  padding: 3px 0;   /* 👈 esto es lo clave */
+  padding: 3px 0;         /* 👈 altura mínima controlada */
 }
 
-.placard {
-  min-height: var(--placard-height);
-}

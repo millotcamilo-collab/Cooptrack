@@ -639,7 +639,7 @@
 
   function renderUsersPanel() {
     return `
-    <section class="lienzo-panel lienzo-panel--target panel--split-top">
+    <section class="lienzo-panel lienzo-panel--target lienzo-panel--target-empty panel--split-top">
 
       <div class="lienzo-target-empty">
         <img
@@ -653,11 +653,7 @@
         </div>
       </div>
 
-      <div class="lienzo-target-mainrow">
-        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone"></div>
-
-        <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
-      </div>
+      <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
 
     </section>
   `;
