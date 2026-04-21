@@ -321,6 +321,98 @@ function getSettlementInfoFromPlayCode(playCode) {
   return settlement;
 }
 
+async function appendProfileEntryOnce(client, {
+  userId,
+  fieldName,
+  entry,
+  sourcePlayId
+}) {
+  const allowedFields = {
+    awards: true,
+    complaints: true,
+    moustaches: true,
+  };
+
+  if (!allowedFields[fieldName]) {
+    throw new Error('Campo de perfil inválido');
+  }
+
+  const selectResult = await client.query(
+    `SELECT ${fieldName} FROM users WHERE id = $1 LIMIT 1`,
+    [userId]
+  );
+
+  if (!selectResult.rows.length) {
+    throw new Error('Usuario no encontrado para actualizar perfil');
+  }
+
+  const currentValue = Array.isArray(selectResult.rows[0][fieldName])
+    ? selectResult.rows[0][fieldName]
+    : [];
+
+  const alreadyExists = currentValue.some((item) => {
+    return Number(item?.source_play_id || 0) === Number(sourcePlayId || 0);
+  });
+
+  if (alreadyExists) {
+    return false;
+  }
+
+  await client.query(
+    `
+    UPDATE users
+    SET ${fieldName} = COALESCE(${fieldName}, '[]'::jsonb) || $2::jsonb,
+        updated_at = NOW()
+    WHERE id = $1
+    `,
+    [userId, JSON.stringify([entry])]
+  );
+
+  return true;
+}
+
+async function applySettlementToUserProfile(client, play, settlementInfo) {
+  const targetUserId = Number(play?.target_user_id || 0);
+  const sourcePlayId = Number(play?.id || 0);
+
+  if (!targetUserId || !sourcePlayId || !settlementInfo?.status) {
+    return false;
+  }
+
+  const normalizedStatus = String(settlementInfo.status || '').trim().toUpperCase();
+
+  let fieldName = null;
+  let entryType = null;
+
+  if (normalizedStatus === 'PAID') {
+    fieldName = 'awards';
+    entryType = 'GOOD_PAYER';
+  } else if (normalizedStatus === 'COMPLAINED') {
+    fieldName = 'complaints';
+    entryType = 'COMPLAINT';
+  } else if (normalizedStatus === 'MOUSTACHE') {
+    fieldName = 'moustaches';
+    entryType = 'MOUSTACHE';
+  } else {
+    return false;
+  }
+
+  const entry = {
+    source_play_id: sourcePlayId,
+    deck_id: Number(play.deck_id || 0),
+    granted_by_user_id: Number(play.created_by_user_id || 0),
+    type: entryType,
+    created_at: new Date().toISOString(),
+  };
+
+  return appendProfileEntryOnce(client, {
+    userId: targetUserId,
+    fieldName,
+    entry,
+    sourcePlayId,
+  });
+}
+
 // =====================================================
 // HEALTH
 // =====================================================
@@ -2013,11 +2105,27 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     );
 
     const updatedPlay = updateResult.rows[0];
-    
+
+    const previousSettlement = getSettlementInfoFromPlayCode(current.play_code);
+    const nextSettlement = getSettlementInfoFromPlayCode(updatedPlay.play_code);
+
+    const settlementChangedNow =
+      currentRank === 'Q' &&
+      currentSuit === 'SPADE' &&
+      nextSettlement &&
+      ['PAID', 'COMPLAINED'].includes(nextSettlement.status) &&
+      (
+        !previousSettlement ||
+        previousSettlement.status !== nextSettlement.status
+      );
 
     // ---------------------------------------------------
     // EFECTOS POSTERIORES AL UPDATE
     // ---------------------------------------------------
+
+    if (settlementChangedNow) {
+      await applySettlementToUserProfile(client, updatedPlay, nextSettlement);
+    }
 
     const isSendingQSpadeNow =
       currentRank === 'Q' &&
