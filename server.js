@@ -2161,6 +2161,15 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       await expandReadersForKSend(client, updatedPlay);
+
+      await client.query(
+        `
+        INSERT INTO deck_members (deck_id, user_id)
+        VALUES ($1, $2)
+        ON CONFLICT DO NOTHING
+        `,
+        [updatedPlay.deck_id, invitedUserId]
+      );
     }
 
     if (isSendingQSpadeNow) {
