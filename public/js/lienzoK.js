@@ -44,39 +44,37 @@
         };
     }
 
-    function deriveOwnedCorporateCards(plays, currentUserId) {
-        if (!Array.isArray(plays) || !currentUserId) return [];
+    function deriveOwnedCorporateCards(plays, userId) {
+        if (!Array.isArray(plays) || !userId) return [];
 
         return plays
             .filter((p) => {
-                const parsed = parsePlayCode(p?.play_code);
-                const rank = normalizeRank(parsed.rank || p?.card_rank || p?.rank);
-                const suit = normalizeSuit(parsed.suit || p?.card_suit || p?.suit);
-                const action = String(parsed.action || "").trim();
-                const status = String(p?.play_status || p?.status || "").trim().toUpperCase();
+                const rank = normalizeRank(p?.card_rank || p?.rank);
+                const suit = normalizeSuit(p?.card_suit || p?.suit);
 
                 if (!["A", "K"].includes(rank)) return false;
                 if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
-                if (status !== "ACTIVE") return false;
 
-                // excluye líneas de habilitación tipo "puedeJugar"
+                const status = String(p?.play_status || p?.status || "").trim().toUpperCase();
+                if (status && status !== "ACTIVE") return false;
+
+                const action =
+                    String(p?.action || "").trim() ||
+                    String(parsePlayCode(p?.play_code).action || "").trim();
+
                 if (action === "puedeJugar") return false;
 
                 const ownerId =
                     Number(p?.target_user_id || 0) ||
                     Number(p?.created_by_user_id || 0);
 
-                return ownerId === Number(currentUserId);
+                return ownerId === Number(userId);
             })
-            .map((p) => {
-                const parsed = parsePlayCode(p?.play_code);
-
-                return {
-                    id: p?.id,
-                    card_rank: parsed.rank || p?.card_rank || p?.rank,
-                    card_suit: parsed.suit || p?.card_suit || p?.suit
-                };
-            });
+            .map((p) => ({
+                id: p?.id,
+                card_rank: p?.card_rank || p?.rank,
+                card_suit: p?.card_suit || p?.suit
+            }));
     }
 
     function compareCorporateCards(a, b) {
@@ -120,8 +118,10 @@
             return !(rank === activeRank && suit === activeSuit);
         });
 
+        console.log("K play =", play);
         console.log("K sourceUserId =", sourceUserId);
         console.log("K ownedCards =", ownedCards);
+        console.log("K active =", activeRank, activeSuit);
         console.log("K backgroundCards =", backgroundCards);
 
         return {
