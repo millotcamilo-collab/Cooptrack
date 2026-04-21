@@ -146,6 +146,7 @@
     const suit = normalizeSuit(play?.suit);
     const action = safeTrim(play?.action).toLowerCase();
     const flow = safeTrim(play?.flow).toLowerCase();
+    const playId = Number(play?.id || 0);
 
     if (!rank) return false;
 
@@ -154,13 +155,19 @@
       return true;
     }
 
-    // Solo jugadas de propiedad / libro desde línea 10 en adelante
+    // As fundacionales
     if (rank === "A" && action === "init_ace" && flow === "foundation") {
       return true;
     }
 
+    // Reyes escritos en el libro desde la línea 15 en adelante
+    if (rank === "K" && playId >= 15) {
+      return mode === "AK";
+    }
+
     return false;
   }
+
   function getComponentName(play) {
     const rank = normalizeRank(play?.rank);
     const suit = normalizeSuit(play?.suit);
