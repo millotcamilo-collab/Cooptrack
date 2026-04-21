@@ -2509,26 +2509,46 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
        LEFT JOIN decks deck
          ON deck.id = p.deck_id
        WHERE
-         p.card_rank = 'Q'
-         AND p.card_suit = 'SPADE'
-         AND (
+         (
            (
-             p.target_user_id = $1
+             p.card_rank = 'Q'
+             AND p.card_suit = 'SPADE'
+             AND (
+               (
+                 p.target_user_id = $1
+                 AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+               )
+               OR
+               (
+                 p.created_by_user_id = $1
+                 AND COALESCE(p.play_status, '') = 'APPROVED'
+               )
+               OR
+               (
+                 p.target_user_id = $1
+                 AND COALESCE(p.play_status, '') = 'APPROVED'
+                 AND (
+                   p.play_code LIKE '%settlement:PAID%'
+                   OR p.play_code LIKE '%settlement:COMPLAINED%'
+                 )
+               )
+             )
+           )
+
+           OR
+
+           (
+             p.card_rank = 'K'
+             AND p.target_user_id = $1
              AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
            )
+
            OR
+
            (
-             p.created_by_user_id = $1
-             AND COALESCE(p.play_status, '') = 'APPROVED'
-           )
-           OR
-           (
-             p.target_user_id = $1
-             AND COALESCE(p.play_status, '') = 'APPROVED'
-             AND (
-               p.play_code LIKE '%settlement:PAID%'
-               OR p.play_code LIKE '%settlement:COMPLAINED%'
-             )
+             p.card_rank = 'K'
+             AND p.created_by_user_id = $1
+             AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED')
            )
          )
        ORDER BY p.created_at DESC`,
