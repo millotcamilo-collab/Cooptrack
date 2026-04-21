@@ -41,6 +41,10 @@
       return "/lienzoQpica.html";
     }
 
+    if (normalizedRank === "K") {
+      return "/lienzoK.html";
+    }
+
     return "/lienzo.html";
   }
 
