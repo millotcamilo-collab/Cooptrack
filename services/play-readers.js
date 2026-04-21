@@ -91,6 +91,164 @@ async function expandReadersForQSpadeSend(client, play) {
   }
 }
 
+function hasQHeartAttached(play) {
+  const playCode = String(play?.play_code || "");
+  const playText = String(play?.play_text || "");
+
+  // versión simple y tolerante:
+  // detecta Q roja por card_suit HEART o por menciones en code/text
+  const rank = String(play?.card_rank || "").toUpperCase();
+  const suit = String(play?.card_suit || "").toUpperCase();
+
+  if (rank === "Q" && suit === "HEART") {
+    return true;
+  }
+
+  return (
+    playCode.includes("Q§HEART") ||
+    playCode.includes("Q_HEART") ||
+    /q.?coraz/i.test(playText) ||
+    /q.?roja/i.test(playText)
+  );
+}
+
+async function getDeckPlaysByKinds(client, deckId, filters = {}) {
+  const result = await client.query(
+    `
+    SELECT
+      id,
+      deck_id,
+      parent_play_id,
+      created_by_user_id,
+      target_user_id,
+      card_rank,
+      card_suit,
+      play_status,
+      play_text,
+      play_code,
+      reader_user_ids
+    FROM plays
+    WHERE deck_id = $1
+      AND UPPER(COALESCE(play_status, '')) <> 'BLOCKED'
+    ORDER BY id ASC
+    `,
+    [deckId]
+  );
+
+  const plays = result.rows || [];
+
+  return plays.filter((play) => {
+    const rank = String(play.card_rank || "").toUpperCase();
+    const suit = String(play.card_suit || "").toUpperCase();
+
+    if (filters.rank && rank !== String(filters.rank).toUpperCase()) {
+      return false;
+    }
+
+    if (filters.suit && suit !== String(filters.suit).toUpperCase()) {
+      return false;
+    }
+
+    if (Array.isArray(filters.ranks) && filters.ranks.length) {
+      if (!filters.ranks.map((v) => String(v).toUpperCase()).includes(rank)) {
+        return false;
+      }
+    }
+
+    if (Array.isArray(filters.suits) && filters.suits.length) {
+      if (!filters.suits.map((v) => String(v).toUpperCase()).includes(suit)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+async function expandReadersForKSend(client, play) {
+  const invitedUserId = Number(play?.target_user_id || 0);
+  const deckId = Number(play?.deck_id || 0);
+  const kSuit = String(play?.card_suit || "").toUpperCase();
+
+  if (!invitedUserId || !deckId || !kSuit) {
+    return;
+  }
+
+  const invitedReaders = normalizeReaderEntries([invitedUserId]);
+  if (!invitedReaders.length) return;
+
+  // La propia K enviada debería quedar visible al anfitrión y al destinatario
+  await addReadersToPlay(
+    client,
+    play.id,
+    normalizeReaderEntries([play?.created_by_user_id, invitedUserId])
+  );
+
+  // K♥ -> todas las J♥
+  if (kSuit === "HEART") {
+    const heartJs = await getDeckPlaysByKinds(client, deckId, {
+      rank: "J",
+      suit: "HEART"
+    });
+
+    for (const targetPlay of heartJs) {
+      await addReadersToPlay(client, targetPlay.id, invitedReaders);
+    }
+
+    return;
+  }
+
+  // K♠ -> J♠ y Q♠ sin Q roja
+  if (kSuit === "SPADE") {
+    const spadeJs = await getDeckPlaysByKinds(client, deckId, {
+      rank: "J",
+      suit: "SPADE"
+    });
+
+    for (const targetPlay of spadeJs) {
+      await addReadersToPlay(client, targetPlay.id, invitedReaders);
+    }
+
+    const spadeQs = await getDeckPlaysByKinds(client, deckId, {
+      rank: "Q",
+      suit: "SPADE"
+    });
+
+    for (const targetPlay of spadeQs) {
+      if (hasQHeartAttached(targetPlay)) continue;
+      await addReadersToPlay(client, targetPlay.id, invitedReaders);
+    }
+
+    return;
+  }
+
+  // K♦ -> J♣ + J♠ + Q♠ con o sin roja
+  if (kSuit === "DIAMOND") {
+    const clubJs = await getDeckPlaysByKinds(client, deckId, {
+      rank: "J",
+      suit: "CLUB"
+    });
+
+    const spadeJs = await getDeckPlaysByKinds(client, deckId, {
+      rank: "J",
+      suit: "SPADE"
+    });
+
+    const spadeQs = await getDeckPlaysByKinds(client, deckId, {
+      rank: "Q",
+      suit: "SPADE"
+    });
+
+    for (const targetPlay of [...clubJs, ...spadeJs, ...spadeQs]) {
+      await addReadersToPlay(client, targetPlay.id, invitedReaders);
+    }
+
+    return;
+  }
+
+  // K♣ -> por ahora no hace nada
+}
+
 async function computeReadersForJSpade(client, play) {
   const deckId = Number(play?.deck_id || 0);
   const authorUserId = Number(play?.created_by_user_id || 0);
@@ -239,5 +397,6 @@ module.exports = {
   handleOpenJHeart,
   handleApproveJHeart,
   computeReadersForQSpadeDraft,
-  expandReadersForQSpadeSend
+  expandReadersForQSpadeSend,
+  expandReadersForKSend
 };

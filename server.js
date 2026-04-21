@@ -18,6 +18,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const {
   handleReadersOnPlayCreate,
   expandReadersForQSpadeSend,
+  expandReadersForKSend,
 } = require('./services/play-readers');
 
 const {
@@ -1873,10 +1874,13 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     // ---------------------------------------------------
 
     if (play_status === 'SENT') {
-      if (!(currentRank === 'Q' && currentSuit === 'SPADE')) {
+      const isQSpade = currentRank === 'Q' && currentSuit === 'SPADE';
+      const isKCard = currentRank === 'K';
+
+      if (!isQSpade && !isKCard) {
         return res.status(400).json({
           ok: false,
-          error: 'Solo una Q♠ puede enviarse como invitación'
+          error: 'Solo una Q♠ o una K pueden enviarse'
         });
       }
 
@@ -1885,7 +1889,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       if (!creatorUserId || Number(userId) !== creatorUserId) {
         return res.status(403).json({
           ok: false,
-          error: 'Solo el anfitrión puede enviar esta Q♠'
+          error: 'Solo el anfitrión puede enviar esta jugada'
         });
       }
 
@@ -1898,7 +1902,14 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       ) {
         return res.status(400).json({
           ok: false,
-          error: 'Esta Q♠ ya no puede enviarse'
+          error: 'Esta jugada ya no puede enviarse'
+        });
+      }
+
+      if (isKCard && !Number(current.target_user_id || 0)) {
+        return res.status(400).json({
+          ok: false,
+          error: 'La K enviada debe tener target_user_id'
         });
       }
     }
@@ -2132,6 +2143,25 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       currentSuit === 'SPADE' &&
       currentStatus !== 'SENT' &&
       nextStatus === 'SENT';
+
+    const isSendingKNow =
+      currentRank === 'K' &&
+      currentStatus !== 'SENT' &&
+      nextStatus === 'SENT';
+
+    if (isSendingKNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+
+      if (!invitedUserId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La K enviada debe tener target_user_id'
+        });
+      }
+
+      await expandReadersForKSend(client, updatedPlay);
+    }
 
     if (isSendingQSpadeNow) {
       const invitedUserId = Number(updatedPlay.target_user_id || 0);
