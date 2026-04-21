@@ -44,44 +44,6 @@
         };
     }
 
-    function deriveOwnedCorporateCards(plays, userId) {
-        if (!Array.isArray(plays) || !userId) return [];
-
-        return plays
-            .filter((p) => {
-                const rank = normalizeRank(p?.card_rank || p?.rank);
-                const suit = normalizeSuit(p?.card_suit || p?.suit);
-
-                // por ahora replicamos el criterio sano de lienzo-new:
-                // sólo As corporativos del propietario
-                if (rank !== "A") return false;
-                if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
-
-                const status = String(p?.play_status || p?.status || "").trim().toUpperCase();
-                if (status && status !== "ACTIVE") return false;
-
-                const action =
-                    String(p?.action || "").trim() ||
-                    String(parsePlayCode(p?.play_code).action || "").trim();
-
-                // excluir líneas de habilitación
-                if (action === "puedeJugar") return false;
-
-                // excluir jugadas operativas creadas desde lienzo
-                if (action === "create_from_lienzo") return false;
-
-                const ownerId =
-                    Number(p?.target_user_id || 0) ||
-                    Number(p?.created_by_user_id || 0);
-
-                return ownerId === Number(userId);
-            })
-            .map((p) => ({
-                id: p?.id,
-                card_rank: p?.card_rank || p?.rank,
-                card_suit: p?.card_suit || p?.suit
-            }));
-    }
 
     function compareCorporateCards(a, b) {
         const order = {
@@ -101,18 +63,53 @@
         return (order[aKey] || 999) - (order[bKey] || 999);
     }
 
-    function getOwnedCorporateCardsForUser(userId) {
+    function deriveOwnedCorporateCards(plays, userId) {
+        if (!Array.isArray(plays) || !userId) return [];
+
+        return plays
+            .filter((p) => {
+                const rank = normalizeRank(p?.card_rank || p?.rank);
+                const suit = normalizeSuit(p?.card_suit || p?.suit);
+
+                // mismo criterio visual que lienzo-new:
+                // corporativas visibles del propietario
+                if (!["A", "K"].includes(rank)) return false;
+                if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+
+                const status = String(p?.play_status || p?.status || "").trim().toUpperCase();
+                if (status && status !== "ACTIVE") return false;
+
+                const action =
+                    String(p?.action || "").trim() ||
+                    String(parsePlayCode(p?.play_code).action || "").trim();
+
+                // excluir líneas de habilitación
+                if (action === "puedeJugar") return false;
+
+                const ownerId =
+                    Number(p?.target_user_id || 0) ||
+                    Number(p?.created_by_user_id || 0);
+
+                return ownerId === Number(userId);
+            })
+            .map((p) => ({
+                id: p?.id,
+                card_rank: p?.card_rank || p?.rank,
+                card_suit: p?.card_suit || p?.suit
+            }));
+    }
+
+    function getSourceUserCorporateCards(play) {
         const plays = getAllPlays();
-        const numericUserId = Number(userId || 0);
+        const sourceUserId = Number(play?.created_by_user_id || 0);
 
-        if (!numericUserId) return [];
+        if (!sourceUserId) return [];
 
-        return deriveOwnedCorporateCards(plays, numericUserId).sort(compareCorporateCards);
+        return deriveOwnedCorporateCards(plays, sourceUserId).sort(compareCorporateCards);
     }
 
     function buildSourceCardsScene(play) {
-        const sourceUserId = Number(play?.created_by_user_id || 0);
-        const ownedCards = getOwnedCorporateCardsForUser(sourceUserId);
+        const ownedCards = getSourceUserCorporateCards(play);
 
         const activeRank = normalizeRank(play?.card_rank || play?.rank);
         const activeSuit = normalizeSuit(play?.card_suit || play?.suit);
@@ -124,27 +121,24 @@
             return !(rank === activeRank && suit === activeSuit);
         });
 
-        console.log("K play =", play);
-        console.log("K sourceUserId =", sourceUserId);
-        console.log("K ownedCards =", ownedCards);
-        console.log("K backgroundCards =", backgroundCards);
-
         return {
-            backgroundCards
+            backgroundCards,
+            activeCard: {
+                card_rank: activeRank,
+                card_suit: activeSuit
+            }
         };
     }
 
-    function renderBackgroundCard(card) {
-        const rank = normalizeRank(card?.card_rank);
-        const suit = normalizeSuit(card?.card_suit);
-        const src = getCardImageSrc(rank, suit);
+    function renderBackgroundCard(card, index = 0) {
+        const src = getCardImageSrc(card?.card_rank, card?.card_suit);
 
         return `
       <img
-        class="lienzo-card-image"
+        class="lienzo-source-stack__card"
         src="${escapeHtml(src)}"
-        alt="${escapeHtml(`${rank}${getSuitSymbol(suit)}`)}"
-        title="${escapeHtml(`${rank}${getSuitSymbol(suit)}`)}"
+        alt=""
+        style="left:${index * 18}px;"
       />
     `;
     }
@@ -304,14 +298,6 @@
             ? scene.backgroundCards
             : [];
 
-        const cardsHtml = backgroundCards.length
-            ? backgroundCards.map(renderBackgroundCard).join("")
-            : `
-          <div class="lienzo-source-empty">
-            Sin otras corporativas
-          </div>
-        `;
-
         return `
     <section class="lienzo-panel lienzo-panel--source panel--split-top">
       <div class="panel-topbar">
@@ -330,8 +316,10 @@
         </div>
       </div>
 
-      <div class="lienzo-source-cards" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start; min-height:120px;">
-        ${cardsHtml}
+      <div class="lienzo-source-cards">
+        <div class="lienzo-source-stack">
+          ${backgroundCards.map((card, index) => renderBackgroundCard(card, index)).join("")}
+        </div>
       </div>
     </section>
   `;
