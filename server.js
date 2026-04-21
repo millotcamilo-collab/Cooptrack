@@ -269,6 +269,265 @@ async function getMazoByIdForUser(client, mazoId, userId) {
   return result.rows[0] || null;
 }
 
+function parsePlayCodeRaw(code) {
+  const parts = String(code || '').split('§');
+
+  return {
+    deckId: parts[0] || '',
+    userId: parts[1] || '',
+    date: parts[2] || '',
+    rank: parts[3] || '',
+    suit: parts[4] || '',
+    action: parts[5] || '',
+    authorized: parts[6] || '',
+    flow: parts[7] || '',
+    recipients: parts[8] || '',
+  };
+}
+
+function parseFlowChunks(flowValue) {
+  return String(flowValue || '')
+    .split(';')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function getSettlementInfoFromPlayCode(playCode) {
+  const parsed = parsePlayCodeRaw(playCode);
+  const chunks = parseFlowChunks(parsed.flow);
+
+  let settlement = null;
+
+  chunks.forEach((chunk) => {
+    if (!chunk.startsWith('settlement:')) return;
+
+    const [head, ...parts] = chunk.split('|');
+    const status = String(head.split(':')[1] || '').trim().toUpperCase();
+
+    const data = { status };
+
+    parts.forEach((part) => {
+      const idx = part.indexOf(':');
+      if (idx === -1) return;
+
+      const key = part.slice(0, idx).trim();
+      const value = part.slice(idx + 1).trim();
+      data[key] = value;
+    });
+
+    settlement = data;
+  });
+
+  return settlement;
+}
+
+function hasSettlementNotificationFlag(playCode) {
+  const parsed = parsePlayCodeRaw(playCode);
+  const chunks = parseFlowChunks(parsed.flow);
+
+  return chunks.some((chunk) => chunk.startsWith('profile_notice:'));
+}
+
+function buildProfileNotificationPlayCode({
+  deckId,
+  createdByUserId,
+  notifiedUserId,
+  settlementStatus,
+  sourcePlayId,
+}) {
+  const normalizedStatus = String(settlementStatus || '').trim().toUpperCase();
+
+  return buildPlayCode({
+    mazoId: deckId,
+    userId: createdByUserId,
+    rank: 'K',
+    suit: 'DIAMOND',
+    action: 'profile_notice',
+    authorized: `U:${notifiedUserId}`,
+    flow: `profile_notice:${normalizedStatus}|sourcePlayId:${sourcePlayId}|profileWritten:false`,
+    recipients: `U:${notifiedUserId}`,
+  });
+}
+
+async function createSettlementProfileNotification(client, {
+  sourcePlay,
+  settlementStatus,
+  actorUserId,
+}) {
+  const targetUserId = Number(sourcePlay?.target_user_id || 0);
+  const deckId = Number(sourcePlay?.deck_id || 0);
+  const playId = Number(sourcePlay?.id || 0);
+
+  if (!targetUserId || !deckId || !playId) {
+    throw new Error('No se pudo crear la notificación de perfil');
+  }
+
+  const normalizedStatus = String(settlementStatus || '').trim().toUpperCase();
+
+  const playCode = buildProfileNotificationPlayCode({
+    deckId,
+    createdByUserId: actorUserId,
+    notifiedUserId: targetUserId,
+    settlementStatus: normalizedStatus,
+    sourcePlayId: playId,
+  });
+
+  const playText =
+    normalizedStatus === 'PAID'
+      ? 'Recibiste un award por buen pagador'
+      : 'Recibiste una queja por incumplimiento';
+
+  const created = await insertInstitutionalPlay(client, {
+    mazoId: deckId,
+    createdByUserId: actorUserId,
+    parentPlayId: playId,
+    targetUserId,
+    playCode,
+    playText,
+    playStatus: 'SENT',
+  });
+
+  await setPlayReaders(client, created.row.id, [targetUserId]);
+
+  return created.row;
+}
+
+async function appendProfileEntryOnce(client, {
+  userId,
+  fieldName,
+  entry,
+  sourcePlayId,
+}) {
+  const allowedFields = {
+    awards: true,
+    complaints: true,
+    moustaches: true,
+  };
+
+  if (!allowedFields[fieldName]) {
+    throw new Error('Campo de perfil inválido');
+  }
+
+  const selectResult = await client.query(
+    `SELECT ${fieldName} FROM users WHERE id = $1 LIMIT 1`,
+    [userId]
+  );
+
+  if (!selectResult.rows.length) {
+    throw new Error('Usuario no encontrado para actualizar perfil');
+  }
+
+  const currentValue = Array.isArray(selectResult.rows[0][fieldName])
+    ? selectResult.rows[0][fieldName]
+    : [];
+
+  const alreadyExists = currentValue.some((item) => {
+    return Number(item?.source_play_id || 0) === Number(sourcePlayId || 0);
+  });
+
+  if (alreadyExists) {
+    return false;
+  }
+
+  await client.query(
+    `
+    UPDATE users
+    SET ${fieldName} = COALESCE(${fieldName}, '[]'::jsonb) || $2::jsonb,
+        updated_at = NOW()
+    WHERE id = $1
+    `,
+    [userId, JSON.stringify([entry])]
+  );
+
+  return true;
+}
+
+async function writeProfileBadgeFromNotificationIfNeeded(client, play) {
+  const playCode = String(play?.play_code || '').trim();
+  if (!playCode) return false;
+
+  const parsed = parsePlayCodeRaw(playCode);
+  const chunks = parseFlowChunks(parsed.flow);
+
+  const noticeChunk = chunks.find((chunk) => chunk.startsWith('profile_notice:'));
+  if (!noticeChunk) return false;
+
+  const [head, ...parts] = noticeChunk.split('|');
+  const noticeStatus = String(head.split(':')[1] || '').trim().toUpperCase();
+
+  const meta = {};
+  parts.forEach((part) => {
+    const idx = part.indexOf(':');
+    if (idx === -1) return;
+    const key = part.slice(0, idx).trim();
+    const value = part.slice(idx + 1).trim();
+    meta[key] = value;
+  });
+
+  if (String(meta.profileWritten || '').toLowerCase() === 'true') {
+    return false;
+  }
+
+  const targetUserId = Number(play?.target_user_id || 0);
+  const sourcePlayId = Number(meta.sourcePlayId || play?.parent_play_id || 0);
+
+  if (!targetUserId || !sourcePlayId) return false;
+
+  const fieldName = noticeStatus === 'PAID' ? 'awards' : 'complaints';
+
+  const entry = {
+    source_play_id: sourcePlayId,
+    notification_play_id: Number(play.id || 0),
+    deck_id: Number(play.deck_id || 0),
+    granted_by_user_id: Number(play.created_by_user_id || 0),
+    type: noticeStatus === 'PAID' ? 'GOOD_PAYER' : 'COMPLAINT',
+    created_at: new Date().toISOString(),
+  };
+
+  const wrote = await appendProfileEntryOnce(client, {
+    userId: targetUserId,
+    fieldName,
+    entry,
+    sourcePlayId,
+  });
+
+  const nextChunks = chunks.map((chunk) => {
+    if (!chunk.startsWith('profile_notice:')) return chunk;
+
+    const cleaned = chunk
+      .split('|')
+      .filter((part) => !part.startsWith('profileWritten:'));
+
+    return [...cleaned, 'profileWritten:true'].join('|');
+  });
+
+  const nextPlayCode = [
+    parsed.deckId,
+    parsed.userId,
+    parsed.date,
+    parsed.rank,
+    parsed.suit,
+    parsed.action,
+    parsed.authorized,
+    nextChunks.join(';'),
+    parsed.recipients,
+  ].join('§');
+
+  await client.query(
+    `
+    UPDATE plays
+    SET play_code = $1,
+        updated_at = NOW()
+    WHERE id = $2
+    `,
+    [nextPlayCode, play.id]
+  );
+
+  play.play_code = nextPlayCode;
+
+  return wrote;
+}
+
 // =====================================================
 // HEALTH
 // =====================================================
@@ -590,7 +849,10 @@ app.get('/me', requireAuth, async (req, res) => {
         birth_date,
         user_type,
         country,
-        is_admin
+        is_admin,
+        awards,
+        complaints,
+        moustaches
        FROM users
        WHERE id = $1`,
       [userId]
@@ -1851,27 +2113,56 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     }
 
     if (play_status === 'ACKNOWLEDGED') {
-      if (!(currentRank === 'Q' && currentSuit === 'SPADE')) {
+      const isQSpadeAck =
+        currentRank === 'Q' &&
+        currentSuit === 'SPADE';
+
+      const isProfileNoticeAck =
+        currentRank === 'K' &&
+        currentSuit === 'DIAMOND' &&
+        hasSettlementNotificationFlag(current.play_code);
+
+      if (!isQSpadeAck && !isProfileNoticeAck) {
         return res.status(400).json({
           ok: false,
-          error: 'Solo una Q♠ puede marcarse como leída'
+          error: 'Esta jugada no admite marcado como leído'
         });
       }
 
-      const creatorUserId = Number(current.created_by_user_id || 0);
+      if (isQSpadeAck) {
+        const creatorUserId = Number(current.created_by_user_id || 0);
 
-      if (!creatorUserId || Number(userId) !== creatorUserId) {
-        return res.status(403).json({
-          ok: false,
-          error: 'Solo el anfitrión puede marcar esta confirmación como leída'
-        });
+        if (!creatorUserId || Number(userId) !== creatorUserId) {
+          return res.status(403).json({
+            ok: false,
+            error: 'Solo el anfitrión puede marcar esta confirmación como leída'
+          });
+        }
+
+        if (currentStatus !== 'APPROVED') {
+          return res.status(400).json({
+            ok: false,
+            error: 'Solo una Q♠ aprobada puede marcarse como leída'
+          });
+        }
       }
 
-      if (currentStatus !== 'APPROVED') {
-        return res.status(400).json({
-          ok: false,
-          error: 'Solo una Q♠ aprobada puede marcarse como leída'
-        });
+      if (isProfileNoticeAck) {
+        const targetUserId = Number(current.target_user_id || 0);
+
+        if (!targetUserId || Number(userId) !== targetUserId) {
+          return res.status(403).json({
+            ok: false,
+            error: 'Solo el destinatario puede marcar esta notificación como leída'
+          });
+        }
+
+        if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
+          return res.status(400).json({
+            ok: false,
+            error: 'Solo una notificación pendiente puede marcarse como leída'
+          });
+        }
       }
     }
 
@@ -1954,10 +2245,30 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     );
 
     const updatedPlay = updateResult.rows[0];
+    const previousSettlement = getSettlementInfoFromPlayCode(current.play_code);
+    const nextSettlement = getSettlementInfoFromPlayCode(updatedPlay.play_code);
+
+    const settlementChangedNow =
+      currentRank === 'Q' &&
+      currentSuit === 'SPADE' &&
+      nextSettlement &&
+      ['PAID', 'COMPLAINED'].includes(nextSettlement.status) &&
+      (
+        !previousSettlement ||
+        previousSettlement.status !== nextSettlement.status
+      );
 
     // ---------------------------------------------------
     // EFECTOS POSTERIORES AL UPDATE
     // ---------------------------------------------------
+
+    if (settlementChangedNow) {
+      await createSettlementProfileNotification(client, {
+        sourcePlay: updatedPlay,
+        settlementStatus: nextSettlement.status,
+        actorUserId: userId,
+      });
+    }
 
     const isSendingQSpadeNow =
       currentRank === 'Q' &&
@@ -2066,6 +2377,17 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
           [deckId, invitedUserId, 'Q_SPADE_REJECTED', updatedPlay.id]
         );
       }
+    }
+
+    const isAcknowledgingProfileNoticeNow =
+      currentRank === 'K' &&
+      currentSuit === 'DIAMOND' &&
+      hasSettlementNotificationFlag(current.play_code) &&
+      currentStatus !== 'ACKNOWLEDGED' &&
+      nextStatus === 'ACKNOWLEDGED';
+
+    if (isAcknowledgingProfileNoticeNow) {
+      await writeProfileBadgeFromNotificationIfNeeded(client, updatedPlay);
     }
 
     await client.query('COMMIT');
@@ -2309,19 +2631,30 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
      ON author.id = p.created_by_user_id
    LEFT JOIN decks deck
      ON deck.id = p.deck_id
-   WHERE p.card_rank = 'Q'
-     AND p.card_suit = 'SPADE'
-     AND (
-       (
-         p.target_user_id = $1
-         AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
-       )
-       OR
-       (
-         p.created_by_user_id = $1
-         AND COALESCE(p.play_status, '') = 'APPROVED'
-       )
-     )
+   WHERE
+  (
+    p.card_rank = 'Q'
+    AND p.card_suit = 'SPADE'
+    AND (
+      (
+        p.target_user_id = $1
+        AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+      )
+      OR
+      (
+        p.created_by_user_id = $1
+        AND COALESCE(p.play_status, '') = 'APPROVED'
+      )
+    )
+  )
+  OR
+  (
+    p.target_user_id = $1
+    AND p.card_rank = 'K'
+    AND p.card_suit = 'DIAMOND'
+    AND p.play_code LIKE '%profile_notice:%'
+    AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+  )
    ORDER BY p.created_at DESC`,
       [userId]
     );
