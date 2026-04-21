@@ -91,25 +91,39 @@ async function expandReadersForQSpadeSend(client, play) {
   }
 }
 
-function hasQHeartAttached(play) {
-  const playCode = String(play?.play_code || "");
-  const playText = String(play?.play_text || "");
+function parsePlayCodeRaw(code) {
+  const parts = String(code || "").split("§");
 
-  // versión simple y tolerante:
-  // detecta Q roja por card_suit HEART o por menciones en code/text
-  const rank = String(play?.card_rank || "").toUpperCase();
-  const suit = String(play?.card_suit || "").toUpperCase();
+  return {
+    deckId: parts[0] || "",
+    userId: parts[1] || "",
+    date: parts[2] || "",
+    rank: parts[3] || "",
+    suit: parts[4] || "",
+    action: parts[5] || "",
+    authorized: parts[6] || "",
+    flow: parts[7] || "",
+    recipients: parts[8] || ""
+  };
+}
 
-  if (rank === "Q" && suit === "HEART") {
-    return true;
-  }
+function qSpadeHasAttachedQHeart(play) {
+  const rank = String(play?.card_rank || "").trim().toUpperCase();
+  const suit = String(play?.card_suit || "").trim().toUpperCase();
 
-  return (
-    playCode.includes("Q§HEART") ||
-    playCode.includes("Q_HEART") ||
-    /q.?coraz/i.test(playText) ||
-    /q.?roja/i.test(playText)
-  );
+  if (rank !== "Q" || suit !== "SPADE") return false;
+
+  const parsed = parsePlayCodeRaw(play?.play_code || "");
+  const rawFlow = String(parsed.flow || "").trim();
+
+  if (!rawFlow) return false;
+
+  const chunks = rawFlow
+    .split(";")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return chunks.some((chunk) => chunk.startsWith("pay:QHEART"));
 }
 
 async function getDeckPlaysByKinds(client, deckId, filters = {}) {
@@ -129,7 +143,7 @@ async function getDeckPlaysByKinds(client, deckId, filters = {}) {
       reader_user_ids
     FROM plays
     WHERE deck_id = $1
-      AND UPPER(COALESCE(play_status, '')) <> 'BLOCKED'
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('BLOCKED', 'REJECTED', 'CANCELLED')
     ORDER BY id ASC
     `,
     [deckId]
@@ -215,7 +229,7 @@ async function expandReadersForKSend(client, play) {
     });
 
     for (const targetPlay of spadeQs) {
-      if (hasQHeartAttached(targetPlay)) continue;
+      if (qSpadeHasAttachedQHeart(targetPlay)) continue;
       await addReadersToPlay(client, targetPlay.id, invitedReaders);
     }
 
