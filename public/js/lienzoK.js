@@ -97,18 +97,18 @@
         return (order[aKey] || 999) - (order[bKey] || 999);
     }
 
-    function getOwnedCorporateCardsForCurrentUser() {
+    function getOwnedCorporateCardsForUser(userId) {
         const plays = getAllPlays();
-        const currentUser = getCurrentUser();
-        const userId = Number(currentUser?.id || 0);
+        const numericUserId = Number(userId || 0);
 
-        if (!userId) return [];
+        if (!numericUserId) return [];
 
-        return deriveOwnedCorporateCards(plays, userId).sort(compareCorporateCards);
+        return deriveOwnedCorporateCards(plays, numericUserId).sort(compareCorporateCards);
     }
 
     function buildSourceCardsScene(play) {
-        const ownedCards = getOwnedCorporateCardsForCurrentUser();
+        const sourceUserId = Number(play?.created_by_user_id || 0);
+        const ownedCards = getOwnedCorporateCardsForUser(sourceUserId);
 
         const activeRank = normalizeRank(play?.card_rank || play?.rank);
         const activeSuit = normalizeSuit(play?.card_suit || play?.suit);
@@ -121,31 +121,8 @@
         });
 
         return {
-            backgroundCards,
-            activeCard: {
-                card_rank: activeRank,
-                card_suit: activeSuit
-            }
+            backgroundCards
         };
-    }
-
-    function getCardImageSrc(rank, suit) {
-        const r = normalizeRank(rank);
-        const s = normalizeSuit(suit);
-
-        const map = {
-            A_HEART: "/assets/icons/Acorazon.gif",
-            A_SPADE: "/assets/icons/Apike.gif",
-            A_DIAMOND: "/assets/icons/Adiamante.gif",
-            A_CLUB: "/assets/icons/Atrebol.gif",
-
-            K_HEART: "/assets/icons/Kcorazon.gif",
-            K_SPADE: "/assets/icons/Kpike.gif",
-            K_DIAMOND: "/assets/icons/Kdiamante.gif",
-            K_CLUB: "/assets/icons/Ktrebol.gif"
-        };
-
-        return map[`${r}_${s}`] || "/assets/icons/Dorso70.gif";
     }
 
     function renderBackgroundCard(card, index) {
@@ -212,6 +189,11 @@
         const s = normalizeSuit(suit);
 
         const map = {
+            A_HEART: "/assets/icons/Acorazon.gif",
+            A_SPADE: "/assets/icons/Apike.gif",
+            A_DIAMOND: "/assets/icons/Adiamante.gif",
+            A_CLUB: "/assets/icons/Atrebol.gif",
+
             K_HEART: "/assets/icons/Kcorazon.gif",
             K_SPADE: "/assets/icons/Kpike.gif",
             K_DIAMOND: "/assets/icons/Kdiamante.gif",
@@ -220,7 +202,7 @@
 
         return map[`${r}_${s}`] || "/assets/icons/Dorso70.gif";
     }
-
+    
     function getDeckAvatarSrc(deck) {
         const raw =
             deck?.deck_image_url ||
