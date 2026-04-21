@@ -13,7 +13,7 @@
   <style>
     .profile-page {
       max-width: 760px;
-      margin: 32px auto;
+      margin: 5px auto;
       padding: 0 16px 40px;
     }
 
@@ -107,7 +107,7 @@
 
     .profile-fields {
       display: grid;
-      gap: 14px;
+      gap: 5px;
     }
 
     .profile-field {
@@ -217,6 +217,40 @@
       color: #333;
     }
 
+    .profile-badges-row {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .profile-badge-box {
+      min-width: 110px;
+      padding: 10px 14px;
+      border: 1px solid #e3e3e3;
+      border-radius: 12px;
+      background: #fcfcfc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .profile-badge-box__label {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.1;
+    }
+
+    .profile-badge-box__value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #111;
+      line-height: 1;
+    }
+
     @media (max-width: 640px) {
       .profile-avatar-editor {
         margin-left: 0;
@@ -249,161 +283,179 @@
         </button>
 
         <div class="profile-title">
-          <h1>Mi perfil</h1>
-          <p>Datos personales de tu cuenta</p>
-        </div>
-      </div>
+          <div class="profile-title">
+            <h1>Mi perfil</h1>
+            <p>Datos personales de tu cuenta</p>
 
-      <div id="profileAvatarEditor" class="profile-avatar-editor">
-        <div class="profile-avatar-editor__input-wrap">
-          <input id="input-profile_photo_url" type="text" placeholder="URL de foto de perfil" />
-        </div>
+            <div class="profile-badges-row">
+              <div class="profile-badge-box">
+                <div class="profile-badge-box__label">Awards</div>
+                <div id="view-awards-count" class="profile-badge-box__value">0</div>
+              </div>
 
-        <div class="profile-field__buttons">
-          <button type="button" class="icon-btn" id="saveProfilePhotoBtn" title="Guardar">
-            <img id="saveIcon-profile_photo_url" alt="Guardar" />
-          </button>
+              <div class="profile-badge-box">
+                <div class="profile-badge-box__label">Quejas</div>
+                <div id="view-complaints-count" class="profile-badge-box__value">0</div>
+              </div>
 
-          <button type="button" class="icon-btn" id="exitProfilePhotoBtn" title="Salir">
-            <img id="exitIcon-profile_photo_url" alt="Salir" />
-          </button>
-        </div>
-      </div>
-
-      <section id="profileFields" class="profile-fields">
-        <div class="profile-field" data-field="nickname">
-          <div class="profile-field__view">
-            <div id="view-nickname" class="profile-field__value">-</div>
-            <img id="editIcon-nickname" class="profile-field__edit-icon" alt="Editar" />
-          </div>
-
-          <div class="profile-field__edit">
-            <div class="profile-field__input-wrap">
-              <input id="input-nickname" type="text" autocomplete="nickname" />
-            </div>
-
-            <div class="profile-field__buttons">
-              <button type="button" class="icon-btn js-save-field" data-field="nickname" title="Guardar">
-                <img id="saveIcon-nickname" alt="Guardar" />
-              </button>
-
-              <button type="button" class="icon-btn js-cancel-field" data-field="nickname" title="Salir">
-                <img id="exitIcon-nickname" alt="Salir" />
-              </button>
+              <div class="profile-badge-box">
+                <div class="profile-badge-box__label">Bigotes</div>
+                <div id="view-moustaches-count" class="profile-badge-box__value">0</div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="profile-field" data-field="email">
-          <div class="profile-field__view">
-            <div id="view-email" class="profile-field__value">Email</div>
-            <img id="editIcon-email" class="profile-field__edit-icon" alt="Editar" />
+        <div id="profileAvatarEditor" class="profile-avatar-editor">
+          <div class="profile-avatar-editor__input-wrap">
+            <input id="input-profile_photo_url" type="text" placeholder="URL de foto de perfil" />
           </div>
 
-          <div class="profile-field__edit">
-            <div class="profile-field__input-wrap">
-              <input id="input-email" type="email" autocomplete="email" />
-            </div>
+          <div class="profile-field__buttons">
+            <button type="button" class="icon-btn" id="saveProfilePhotoBtn" title="Guardar">
+              <img id="saveIcon-profile_photo_url" alt="Guardar" />
+            </button>
 
-            <div class="profile-field__buttons">
-              <button type="button" class="icon-btn js-save-field" data-field="email" title="Guardar">
-                <img id="saveIcon-email" alt="Guardar" />
-              </button>
-
-              <button type="button" class="icon-btn js-cancel-field" data-field="email" title="Salir">
-                <img id="exitIcon-email" alt="Salir" />
-              </button>
-            </div>
+            <button type="button" class="icon-btn" id="exitProfilePhotoBtn" title="Salir">
+              <img id="exitIcon-profile_photo_url" alt="Salir" />
+            </button>
           </div>
         </div>
 
-        <div class="profile-field" data-field="phone">
-          <div class="profile-field__view">
-            <div id="view-phone" class="profile-field__value">Teléfono</div>
-            <img id="editIcon-phone" class="profile-field__edit-icon" alt="Editar" />
-          </div>
-
-          <div class="profile-field__edit">
-            <div class="profile-field__input-wrap">
-              <input id="input-phone" type="text" autocomplete="tel" />
+        <section id="profileFields" class="profile-fields">
+          <div class="profile-field" data-field="nickname">
+            <div class="profile-field__view">
+              <div id="view-nickname" class="profile-field__value">-</div>
+              <img id="editIcon-nickname" class="profile-field__edit-icon" alt="Editar" />
             </div>
 
-            <div class="profile-field__buttons">
-              <button type="button" class="icon-btn js-save-field" data-field="phone" title="Guardar">
-                <img id="saveIcon-phone" alt="Guardar" />
-              </button>
+            <div class="profile-field__edit">
+              <div class="profile-field__input-wrap">
+                <input id="input-nickname" type="text" autocomplete="nickname" />
+              </div>
 
-              <button type="button" class="icon-btn js-cancel-field" data-field="phone" title="Salir">
-                <img id="exitIcon-phone" alt="Salir" />
-              </button>
-            </div>
-          </div>
-        </div>
+              <div class="profile-field__buttons">
+                <button type="button" class="icon-btn js-save-field" data-field="nickname" title="Guardar">
+                  <img id="saveIcon-nickname" alt="Guardar" />
+                </button>
 
-        <div class="profile-field" data-field="birth_date">
-          <div class="profile-field__view">
-            <div class="profile-field__value">
-              <strong>Fecha de nacimiento:</strong>
-              <span id="view-birth_date">-</span>
-            </div>
-
-            <img id="editIcon-birth_date" class="profile-field__edit-icon" alt="Editar" />
-          </div>
-
-          <div class="profile-field__edit">
-            <div class="profile-field__input-wrap">
-              <input id="input-birth_date" type="date" autocomplete="bday" />
-            </div>
-
-            <div class="profile-field__buttons">
-              <button type="button" class="icon-btn js-save-field" data-field="birth_date" title="Guardar">
-                <img id="saveIcon-birth_date" alt="Guardar" />
-              </button>
-
-              <button type="button" class="icon-btn js-cancel-field" data-field="birth_date" title="Salir">
-                <img id="exitIcon-birth_date" alt="Salir" />
-              </button>
+                <button type="button" class="icon-btn js-cancel-field" data-field="nickname" title="Salir">
+                  <img id="exitIcon-nickname" alt="Salir" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="profile-field" data-field="country">
-          <div class="profile-field__view">
-            <div class="profile-field__value">
-              <strong>País:</strong>
-              <span id="view-country">-</span>
+          <div class="profile-field" data-field="email">
+            <div class="profile-field__view">
+              <div id="view-email" class="profile-field__value">Email</div>
+              <img id="editIcon-email" class="profile-field__edit-icon" alt="Editar" />
             </div>
 
-            <img id="editIcon-country" class="profile-field__edit-icon" alt="Editar" />
-          </div>
+            <div class="profile-field__edit">
+              <div class="profile-field__input-wrap">
+                <input id="input-email" type="email" autocomplete="email" />
+              </div>
 
-          <div class="profile-field__edit">
-            <div class="profile-field__input-wrap">
-              <select id="input-country" autocomplete="country">
-                <option value="">Seleccionar país</option>
-                <option value="UY">Uruguay</option>
-                <option value="AR">Argentina</option>
-                <option value="CL">Chile</option>
-                <option value="BR">Brasil</option>
-                <option value="US">Estados Unidos</option>
-                <option value="ES">España</option>
-              </select>
-            </div>
+              <div class="profile-field__buttons">
+                <button type="button" class="icon-btn js-save-field" data-field="email" title="Guardar">
+                  <img id="saveIcon-email" alt="Guardar" />
+                </button>
 
-            <div class="profile-field__buttons">
-              <button type="button" class="icon-btn js-save-field" data-field="country" title="Guardar">
-                <img id="saveIcon-country" alt="Guardar" />
-              </button>
-
-              <button type="button" class="icon-btn js-cancel-field" data-field="country" title="Salir">
-                <img id="exitIcon-country" alt="Salir" />
-              </button>
+                <button type="button" class="icon-btn js-cancel-field" data-field="email" title="Salir">
+                  <img id="exitIcon-email" alt="Salir" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <div id="statusMessage" class="status-message"></div>
+          <div class="profile-field" data-field="phone">
+            <div class="profile-field__view">
+              <div id="view-phone" class="profile-field__value">Teléfono</div>
+              <img id="editIcon-phone" class="profile-field__edit-icon" alt="Editar" />
+            </div>
+
+            <div class="profile-field__edit">
+              <div class="profile-field__input-wrap">
+                <input id="input-phone" type="text" autocomplete="tel" />
+              </div>
+
+              <div class="profile-field__buttons">
+                <button type="button" class="icon-btn js-save-field" data-field="phone" title="Guardar">
+                  <img id="saveIcon-phone" alt="Guardar" />
+                </button>
+
+                <button type="button" class="icon-btn js-cancel-field" data-field="phone" title="Salir">
+                  <img id="exitIcon-phone" alt="Salir" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-field" data-field="birth_date">
+            <div class="profile-field__view">
+              <div class="profile-field__value">
+                <strong>Fecha de nacimiento:</strong>
+                <span id="view-birth_date">-</span>
+              </div>
+
+              <img id="editIcon-birth_date" class="profile-field__edit-icon" alt="Editar" />
+            </div>
+
+            <div class="profile-field__edit">
+              <div class="profile-field__input-wrap">
+                <input id="input-birth_date" type="date" autocomplete="bday" />
+              </div>
+
+              <div class="profile-field__buttons">
+                <button type="button" class="icon-btn js-save-field" data-field="birth_date" title="Guardar">
+                  <img id="saveIcon-birth_date" alt="Guardar" />
+                </button>
+
+                <button type="button" class="icon-btn js-cancel-field" data-field="birth_date" title="Salir">
+                  <img id="exitIcon-birth_date" alt="Salir" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-field" data-field="country">
+            <div class="profile-field__view">
+              <div class="profile-field__value">
+                <strong>País:</strong>
+                <span id="view-country">-</span>
+              </div>
+
+              <img id="editIcon-country" class="profile-field__edit-icon" alt="Editar" />
+            </div>
+
+            <div class="profile-field__edit">
+              <div class="profile-field__input-wrap">
+                <select id="input-country" autocomplete="country">
+                  <option value="">Seleccionar país</option>
+                  <option value="UY">Uruguay</option>
+                  <option value="AR">Argentina</option>
+                  <option value="CL">Chile</option>
+                  <option value="BR">Brasil</option>
+                  <option value="US">Estados Unidos</option>
+                  <option value="ES">España</option>
+                </select>
+              </div>
+
+              <div class="profile-field__buttons">
+                <button type="button" class="icon-btn js-save-field" data-field="country" title="Guardar">
+                  <img id="saveIcon-country" alt="Guardar" />
+                </button>
+
+                <button type="button" class="icon-btn js-cancel-field" data-field="country" title="Salir">
+                  <img id="exitIcon-country" alt="Salir" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div id="statusMessage" class="status-message"></div>
     </section>
   </main>
 
@@ -477,6 +529,24 @@
 
       icon.src = iconSrc;
       icon.alt = altText;
+    }
+
+    function getSafeArray(value) {
+      return Array.isArray(value) ? value : [];
+    }
+
+    function renderProfileBadges(user) {
+      const awardsEl = getEl("view-awards-count");
+      const complaintsEl = getEl("view-complaints-count");
+      const moustachesEl = getEl("view-moustaches-count");
+
+      const awardsCount = getSafeArray(user?.awards).length;
+      const complaintsCount = getSafeArray(user?.complaints).length;
+      const moustachesCount = getSafeArray(user?.moustaches).length;
+
+      if (awardsEl) awardsEl.textContent = String(awardsCount);
+      if (complaintsEl) complaintsEl.textContent = String(complaintsCount);
+      if (moustachesEl) moustachesEl.textContent = String(moustachesCount);
     }
 
     function getCountryLabel(code) {
@@ -638,6 +708,7 @@
 
       updateUserCategoryIcon(user);
       updateAvatar(user.profile_photo_url || "");
+      renderProfileBadges(user);
     }
 
     function closeAllEditors() {
@@ -759,7 +830,11 @@
         }
 
         if (data.user) {
-          renderProfile(data.user);
+          currentUser = {
+            ...currentUser,
+            ...data.user
+          };
+          renderProfile(currentUser);
         } else {
           currentUser = {
             ...currentUser,
