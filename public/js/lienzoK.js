@@ -339,6 +339,8 @@
     }
 
     function renderTargetPlayerPanel(play) {
+        console.count("renderTargetPlayerPanel");
+
         const targetUser = resolveTargetUser(play);
 
         return `
@@ -387,6 +389,8 @@
     }
 
     function renderLienzo(play) {
+        console.count("renderLienzo");
+
         const container = getLienzoContainer();
         const deck = getCurrentDeck();
 
