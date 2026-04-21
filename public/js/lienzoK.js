@@ -269,14 +269,90 @@
         };
     }
 
-    function renderExitButton() {
-        const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
+    function getPlayStatus(play) {
+        return String(play?.play_status || "").trim().toUpperCase();
+    }
+
+    function getCurrentUserId() {
+        return Number(getCurrentUser()?.id || 0);
+    }
+
+    function isSourceViewer(play) {
+        return getCurrentUserId() === Number(play?.created_by_user_id || 0);
+    }
+
+    function isTargetViewer(play) {
+        return getCurrentUserId() === Number(play?.target_user_id || 0);
+    }
+
+    function getKUiState(play) {
+        const status = getPlayStatus(play);
+
+        if (status === "SENT") return "SENT";
+        if (status === "APPROVED") return "APPROVED";
+        if (status === "REJECTED") return "REJECTED";
+
+        return "ACTIVE";
+    }
+
+    function getActionIcon(name) {
+        return window.ICONS?.actions?.[name] || "";
+    }
+
+    function renderIconButton({ id, action, icon, title }) {
+        return `
+      <button
+        ${id ? `id="${escapeHtml(id)}"` : ""}
+        class="icon-btn"
+        data-action="${escapeHtml(action)}"
+        title="${escapeHtml(title)}"
+        aria-label="${escapeHtml(title)}"
+        type="button"
+      >
+        <img src="${escapeHtml(icon)}" alt="${escapeHtml(title)}" />
+      </button>
+    `;
+    }
+
+    function renderSourceActions(play) {
+        const uiState = getKUiState(play);
+
+        const buttons = [];
+
+        if (uiState === "ACTIVE" && isSourceViewer(play)) {
+            buttons.push(
+                renderIconButton({
+                    id: "lienzo-send-btn",
+                    action: "send-k",
+                    icon: getActionIcon("send") || "/assets/icons/buzon60.gif",
+                    title: "Enviar"
+                })
+            );
+        }
+
+        if (uiState === "APPROVED" && isSourceViewer(play)) {
+            buttons.push(
+                renderIconButton({
+                    id: "lienzo-dismiss-btn",
+                    action: "dismiss-k",
+                    icon: getActionIcon("fired") || "/assets/icons/pistola60.gif",
+                    title: "Despedir"
+                })
+            );
+        }
+
+        buttons.push(
+            renderIconButton({
+                id: "lienzo-exit-btn",
+                action: "exit",
+                icon: getActionIcon("exit") || "/assets/icons/exit40.gif",
+                title: "Salir"
+            })
+        );
 
         return `
       <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-        <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
-          <img src="${exitIcon}" alt="Salir" />
-        </button>
+        ${buttons.join("")}
       </div>
     `;
     }
@@ -302,7 +378,7 @@
           </div>
         </div>
         <div class="panel-topbar__col panel-topbar__col--actions">
-          ${renderExitButton()}
+          ${renderSourceActions(play)}
         </div>
       </div>
 
@@ -315,14 +391,49 @@
   `;
     }
 
-    function renderTargetPlayerPanel(play) {
-        console.count("renderTargetPlayerPanel");
+    function renderTargetActions(play) {
+        const uiState = getKUiState(play);
 
+        if (!(uiState === "SENT" && isTargetViewer(play))) {
+            return "";
+        }
+
+        const approveBtn = renderIconButton({
+            id: "lienzo-approve-btn",
+            action: "approve-k",
+            icon: getActionIcon("approve") || "/assets/icons/Sello40.gif",
+            title: "Aceptar"
+        });
+
+        const rejectBtn = renderIconButton({
+            id: "lienzo-reject-btn",
+            action: "reject-k",
+            icon: getActionIcon("reject") || "/assets/icons/stepback40.gif",
+            title: "Rechazar"
+        });
+
+        const quitBtn = renderIconButton({
+            id: "lienzo-quit-btn",
+            action: "quit-k",
+            icon: getActionIcon("quit") || "/assets/icons/step60.gif",
+            title: "Renunciar"
+        });
+
+        return `
+      <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
+        ${approveBtn}
+        ${rejectBtn}
+        ${quitBtn}
+      </div>
+    `;
+    }
+
+    function renderTargetPlayerPanel(play) {
         const targetUser = resolveTargetUser(play);
 
         return `
     <section class="lienzo-panel lienzo-panel--target panel--split-top">
-      <div class="panel-topbar panel-topbar--single">
+      <div class="panel-topbar">
         <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-target-header lienzo-target-header--top">
             <div class="lienzo-target-header__name">${escapeHtml(targetUser.nickname)}</div>
@@ -332,6 +443,9 @@
               alt="${escapeHtml(targetUser.nickname)}"
             />
           </div>
+        </div>
+        <div class="panel-topbar__col panel-topbar__col--actions">
+          ${renderTargetActions(play)}
         </div>
       </div>
 
@@ -346,21 +460,125 @@
   `;
     }
 
+    async function patchPlay(playId, payload) {
+        const token = localStorage.getItem("cooptrackToken");
+
+        if (!token) {
+            alert("No estás logueado");
+            return { ok: false };
+        }
+
+        const response = await fetch(`/plays/${playId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(payload || {})
+        });
+
+        let data = null;
+        try {
+            data = await response.json();
+        } catch (_) {
+            data = null;
+        }
+
+        if (!response.ok || data?.ok === false) {
+            alert(data?.error || "No se pudo actualizar la jugada");
+            return { ok: false, data };
+        }
+
+        return { ok: true, data };
+    }
+
+    function goBackToDeck(play) {
+        const deckId =
+            Number(play?.deck_id || 0) ||
+            Number(getCurrentDeck()?.id || 0);
+
+        if (deckId) {
+            window.location.href = `/mazo.html?id=${deckId}`;
+            return;
+        }
+
+        window.history.back();
+    }
+
     function bindLienzoActions(play) {
         const exitBtn = document.getElementById("lienzo-exit-btn");
+        const sendBtn = document.getElementById("lienzo-send-btn");
+        const dismissBtn = document.getElementById("lienzo-dismiss-btn");
+        const approveBtn = document.getElementById("lienzo-approve-btn");
+        const rejectBtn = document.getElementById("lienzo-reject-btn");
+        const quitBtn = document.getElementById("lienzo-quit-btn");
 
         if (exitBtn) {
             exitBtn.addEventListener("click", () => {
-                const deckId =
-                    Number(play?.deck_id || 0) ||
-                    Number(getCurrentDeck()?.id || 0);
+                goBackToDeck(play);
+            });
+        }
 
-                if (deckId) {
-                    window.location.href = `/mazo.html?id=${deckId}`;
-                    return;
+        if (sendBtn) {
+            sendBtn.addEventListener("click", async () => {
+                const result = await patchPlay(play.id, {
+                    play_status: "SENT"
+                });
+
+                if (result.ok) {
+                    window.location.reload();
                 }
+            });
+        }
 
-                window.history.back();
+        if (dismissBtn) {
+            dismissBtn.addEventListener("click", async () => {
+                const confirmed = window.confirm("¿Despedir esta K?");
+                if (!confirmed) return;
+
+                const result = await patchPlay(play.id, {
+                    play_status: "CANCELLED"
+                });
+
+                if (result.ok) {
+                    goBackToDeck(play);
+                }
+            });
+        }
+
+        if (approveBtn) {
+            approveBtn.addEventListener("click", async () => {
+                const result = await patchPlay(play.id, {
+                    play_status: "APPROVED"
+                });
+
+                if (result.ok) {
+                    window.location.reload();
+                }
+            });
+        }
+
+        if (rejectBtn) {
+            rejectBtn.addEventListener("click", async () => {
+                const result = await patchPlay(play.id, {
+                    play_status: "REJECTED"
+                });
+
+                if (result.ok) {
+                    goBackToDeck(play);
+                }
+            });
+        }
+
+        if (quitBtn) {
+            quitBtn.addEventListener("click", async () => {
+                const result = await patchPlay(play.id, {
+                    play_status: "REJECTED"
+                });
+
+                if (result.ok) {
+                    goBackToDeck(play);
+                }
             });
         }
     }
