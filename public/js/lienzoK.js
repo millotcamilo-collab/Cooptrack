@@ -52,7 +52,9 @@
                 const rank = normalizeRank(p?.card_rank || p?.rank);
                 const suit = normalizeSuit(p?.card_suit || p?.suit);
 
-                if (!["A", "K"].includes(rank)) return false;
+                // por ahora replicamos el criterio sano de lienzo-new:
+                // sólo As corporativos del propietario
+                if (rank !== "A") return false;
                 if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
 
                 const status = String(p?.play_status || p?.status || "").trim().toUpperCase();
@@ -62,7 +64,11 @@
                     String(p?.action || "").trim() ||
                     String(parsePlayCode(p?.play_code).action || "").trim();
 
+                // excluir líneas de habilitación
                 if (action === "puedeJugar") return false;
+
+                // excluir jugadas operativas creadas desde lienzo
+                if (action === "create_from_lienzo") return false;
 
                 const ownerId =
                     Number(p?.target_user_id || 0) ||
@@ -105,10 +111,7 @@
     }
 
     function buildSourceCardsScene(play) {
-        const sourceUserId =
-            Number(play?.target_user_id || 0) ||
-            Number(play?.created_by_user_id || 0);
-
+        const sourceUserId = Number(play?.created_by_user_id || 0);
         const ownedCards = getOwnedCorporateCardsForUser(sourceUserId);
 
         const activeRank = normalizeRank(play?.card_rank || play?.rank);
@@ -124,7 +127,6 @@
         console.log("K play =", play);
         console.log("K sourceUserId =", sourceUserId);
         console.log("K ownedCards =", ownedCards);
-        console.log("K active =", activeRank, activeSuit);
         console.log("K backgroundCards =", backgroundCards);
 
         return {
