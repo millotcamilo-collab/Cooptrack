@@ -71,20 +71,9 @@
                 const rank = normalizeRank(p?.card_rank || p?.rank);
                 const suit = normalizeSuit(p?.card_suit || p?.suit);
 
-                // mismo criterio visual que lienzo-new:
-                // corporativas visibles del propietario
-                if (!["A", "K"].includes(rank)) return false;
+                // exactamente el mismo criterio que lienzo-new
+                if (rank !== "A") return false;
                 if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
-
-                const status = String(p?.play_status || p?.status || "").trim().toUpperCase();
-                if (status && status !== "ACTIVE") return false;
-
-                const action =
-                    String(p?.action || "").trim() ||
-                    String(parsePlayCode(p?.play_code).action || "").trim();
-
-                // excluir líneas de habilitación
-                if (action === "puedeJugar") return false;
 
                 const ownerId =
                     Number(p?.target_user_id || 0) ||
@@ -98,6 +87,7 @@
                 card_suit: p?.card_suit || p?.suit
             }));
     }
+
 
     function getSourceUserCorporateCards(play) {
         const plays = getAllPlays();
