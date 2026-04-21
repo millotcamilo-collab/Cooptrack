@@ -120,22 +120,28 @@
             return !(rank === activeRank && suit === activeSuit);
         });
 
+        console.log("K sourceUserId =", sourceUserId);
+        console.log("K ownedCards =", ownedCards);
+        console.log("K backgroundCards =", backgroundCards);
+
         return {
             backgroundCards
         };
     }
 
-    function renderBackgroundCard(card, index) {
-        const src = getCardImageSrc(card?.card_rank, card?.card_suit);
+    function renderBackgroundCard(card) {
+        const rank = normalizeRank(card?.card_rank);
+        const suit = normalizeSuit(card?.card_suit);
+        const src = getCardImageSrc(rank, suit);
 
         return `
-    <img
-      class="lienzo-source-stack__card"
-      src="${src}"
-      alt=""
-      style="left:${index * 18}px;"
-    />
-  `;
+      <img
+        class="lienzo-card-image"
+        src="${escapeHtml(src)}"
+        alt="${escapeHtml(`${rank}${getSuitSymbol(suit)}`)}"
+        title="${escapeHtml(`${rank}${getSuitSymbol(suit)}`)}"
+      />
+    `;
     }
 
     function escapeHtml(value) {
@@ -202,7 +208,7 @@
 
         return map[`${r}_${s}`] || "/assets/icons/Dorso70.gif";
     }
-    
+
     function getDeckAvatarSrc(deck) {
         const raw =
             deck?.deck_image_url ||
@@ -293,6 +299,14 @@
             ? scene.backgroundCards
             : [];
 
+        const cardsHtml = backgroundCards.length
+            ? backgroundCards.map(renderBackgroundCard).join("")
+            : `
+          <div class="lienzo-source-empty">
+            Sin otras corporativas
+          </div>
+        `;
+
         return `
     <section class="lienzo-panel lienzo-panel--source panel--split-top">
       <div class="panel-topbar">
@@ -311,10 +325,8 @@
         </div>
       </div>
 
-      <div class="lienzo-source-cards">
-        <div class="lienzo-source-stack">
-          ${backgroundCards.map(renderBackgroundCard).join("")}
-        </div>
+      <div class="lienzo-source-cards" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start; min-height:120px;">
+        ${cardsHtml}
       </div>
     </section>
   `;
