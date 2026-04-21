@@ -239,3 +239,68 @@
   grid-template-columns: 64px minmax(0, 1fr) 64px;
   align-items: center;
 }
+
+.tablero-row--krow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 12px;
+  background: #fffdf8;
+}
+
+.tablero-row--krow .tablero-row__left {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tablero-row--krow .tablero-row__right {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.tablero-row--krow .tablero-row__icon-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #b8b8b8;
+  border-radius: 8px;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.tablero-row--krow .tablero-row__icon-btn:hover {
+  background: #f4f4f4;
+}
+
+.tablero-row--krow .tablero-row__icon-btn:active {
+  transform: scale(0.97);
+}
+
+.tablero-row--krow .tablero-row__icon-btn:focus-visible {
+  outline: 2px solid #6c8cff;
+  outline-offset: 2px;
+}
+
+.tablero-row--krow .tablero-row__icon-btn img {
+  display: block;
+  max-width: 22px;
+  max-height: 22px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+}
