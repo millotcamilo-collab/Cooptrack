@@ -105,7 +105,10 @@
     }
 
     function buildSourceCardsScene(play) {
-        const sourceUserId = Number(play?.created_by_user_id || 0);
+        const sourceUserId =
+            Number(play?.target_user_id || 0) ||
+            Number(play?.created_by_user_id || 0);
+
         const ownedCards = getOwnedCorporateCardsForUser(sourceUserId);
 
         const activeRank = normalizeRank(play?.card_rank || play?.rank);
