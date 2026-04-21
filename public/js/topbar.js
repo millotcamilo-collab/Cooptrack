@@ -52,6 +52,11 @@
       return "ACTION_REQUIRED";
     }
 
+    // 1b) Settlement confirmado sobre la misma QQ♠ para el pagador
+    if (isTarget && status === "APPROVED" && playHasSettlement(play)) {
+      return "ACTION_REQUIRED";
+    }
+
     // 2) Notificación solo lectura para el anfitrión
     if (isSource && (status === "APPROVED" || status === "REJECTED")) {
       return "READ_ONLY";
@@ -179,18 +184,26 @@
     return { baseFlow, payment };
   }
 
-function playHasQHeartAttachment(play) {
-  const parsed = parsePlayCode(play?.play_code || "");
-  const meta = parseFlowMetadata(parsed.flow);
+  function playHasSettlement(play) {
+    const playCode = String(play?.play_code || "").toUpperCase();
+    return (
+      playCode.includes("SETTLEMENT:PAID") ||
+      playCode.includes("SETTLEMENT:COMPLAINED")
+    );
+  }
 
-  if (!meta?.payment) return false;
+  function playHasQHeartAttachment(play) {
+    const parsed = parsePlayCode(play?.play_code || "");
+    const meta = parseFlowMetadata(parsed.flow);
 
-  const amount = String(meta.payment.amount || "").trim();
-  const payDate = String(meta.payment.payDate || "").trim();
-  const concept = String(meta.payment.concept || "").trim();
+    if (!meta?.payment) return false;
 
-  return !!(amount && payDate && concept);
-}
+    const amount = String(meta.payment.amount || "").trim();
+    const payDate = String(meta.payment.payDate || "").trim();
+    const concept = String(meta.payment.concept || "").trim();
+
+    return !!(amount && payDate && concept);
+  }
 
   function resolveLienzoPageForPlay(play) {
     const rank = normalizeText(play?.card_rank || play?.rank);
@@ -571,39 +584,39 @@ function playHasQHeartAttachment(play) {
     }
 
     const pendingBtn = document.getElementById("pendingBtn");
-if (pendingBtn && latestIncomingCard) {
-  pendingBtn.addEventListener("click", async () => {
-    const deckId = latestIncomingCard.deck_id;
-    const playId = latestIncomingCard.id;
-    const token = localStorage.getItem("cooptrackToken");
+    if (pendingBtn && latestIncomingCard) {
+      pendingBtn.addEventListener("click", async () => {
+        const deckId = latestIncomingCard.deck_id;
+        const playId = latestIncomingCard.id;
+        const token = localStorage.getItem("cooptrackToken");
 
-    try {
-      let playForRouting = latestIncomingCard;
+        try {
+          let playForRouting = latestIncomingCard;
 
-      if (token && playId) {
-        const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`
+          if (token && playId) {
+            const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            });
+
+            const data = await response.json().catch(() => null);
+
+            if (response.ok && data?.ok && data.play) {
+              playForRouting = data.play;
+            }
           }
-        });
 
-        const data = await response.json().catch(() => null);
-
-        if (response.ok && data?.ok && data.play) {
-          playForRouting = data.play;
+          const nextPage = resolveLienzoPageForPlay(playForRouting);
+          window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
+        } catch (error) {
+          console.error("Error resolviendo pendiente:", error);
+          const nextPage = resolveLienzoPageForPlay(latestIncomingCard);
+          window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
         }
-      }
-
-      const nextPage = resolveLienzoPageForPlay(playForRouting);
-      window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
-    } catch (error) {
-      console.error("Error resolviendo pendiente:", error);
-      const nextPage = resolveLienzoPageForPlay(latestIncomingCard);
-      window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
+      });
     }
-  });
-}
   }
 
   document.addEventListener("DOMContentLoaded", renderTopbar);
