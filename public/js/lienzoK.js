@@ -403,36 +403,46 @@
     function renderTargetActions(play) {
         const uiState = getKUiState(play);
 
-        if (!(uiState === "SENT" && isTargetViewer(play))) {
+        if (!isTargetViewer(play)) {
             return "";
         }
 
-        const approveBtn = renderIconButton({
-            id: "lienzo-approve-btn",
-            action: "approve-k",
-            icon: getActionIcon("approve") || "/assets/icons/Sello40.gif",
-            title: "Aceptar"
-        });
+        const buttons = [];
 
-        const rejectBtn = renderIconButton({
-            id: "lienzo-reject-btn",
-            action: "reject-k",
-            icon: getActionIcon("reject") || "/assets/icons/stepback40.gif",
-            title: "Rechazar"
-        });
+        if (uiState === "SENT") {
+            buttons.push(
+                renderIconButton({
+                    id: "lienzo-approve-btn",
+                    action: "approve-k",
+                    icon: getActionIcon("approve") || "/assets/icons/Sello40.gif",
+                    title: "Aceptar"
+                })
+            );
 
-        const quitBtn = renderIconButton({
-            id: "lienzo-quit-btn",
-            action: "quit-k",
-            icon: getActionIcon("quit") || "/assets/icons/step60.gif",
-            title: "Renunciar"
-        });
+            buttons.push(
+                renderIconButton({
+                    id: "lienzo-reject-btn",
+                    action: "reject-k",
+                    icon: getActionIcon("reject") || "/assets/icons/stepback40.gif",
+                    title: "Rechazar"
+                })
+            );
+        }
+
+        if (uiState === "APPROVED") {
+            buttons.push(
+                renderIconButton({
+                    id: "lienzo-quit-btn",
+                    action: "quit-k",
+                    icon: getActionIcon("quit") || "/assets/icons/step60.gif",
+                    title: "Renunciar"
+                })
+            );
+        }
 
         return `
       <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-        ${approveBtn}
-        ${rejectBtn}
-        ${quitBtn}
+        ${buttons.join("")}
       </div>
     `;
     }
