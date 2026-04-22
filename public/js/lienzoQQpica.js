@@ -1344,47 +1344,7 @@
   }
 
   async function acknowledgePlayIfNeeded(play) {
-    try {
-      const playId = Number(play?.id || 0);
-      const token = localStorage.getItem("cooptrackToken");
-      const currentUserId = Number(window.__currentUser?.id || 0);
-      const sourceUserId = Number(play?.created_by_user_id || 0);
-      const status = String(play?.play_status || "").trim().toUpperCase();
-
-      const shouldAcknowledge =
-        playId &&
-        token &&
-        currentUserId &&
-        sourceUserId &&
-        currentUserId === sourceUserId &&
-        (status === "APPROVED" || status === "REJECTED");
-
-      if (!shouldAcknowledge) return true;
-
-      const response = await fetch(`/plays/${playId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          play_status: "ACKNOWLEDGED"
-        })
-      });
-
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok || data?.ok === false) {
-        console.error("No se pudo marcar ACKNOWLEDGED:", data);
-        return false;
-      }
-
-      play.play_status = "ACKNOWLEDGED";
-      return true;
-    } catch (error) {
-      console.error("Error en acknowledgePlayIfNeeded", error);
-      return false;
-    }
+    return true;
   }
 
   async function handleCancelPlay(play) {
@@ -1594,8 +1554,6 @@
   }
 
   async function handleExitPlay(play) {
-    await acknowledgePlayIfNeeded(play);
-
     const deckId =
       Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
 

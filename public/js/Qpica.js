@@ -48,7 +48,6 @@
   let statusLabel = "Pendiente";
   if (status === "SENT") statusLabel = "Enviada";
   if (status === "APPROVED") statusLabel = "Aceptada";
-  if (status === "ACKNOWLEDGED") statusLabel = "Aceptada";
   if (status === "REJECTED") statusLabel = "Rechazada";
   if (status === "CANCELLED") statusLabel = "Cancelada";
 
@@ -107,7 +106,7 @@
 
   if (payment) {
     const qSuit =
-      status === "APPROVED" || status === "ACKNOWLEDGED"
+      status === "APPROVED"
         ? "♦"
         : "♥";
 
