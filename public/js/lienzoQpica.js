@@ -987,7 +987,6 @@
         const rank = normalizeRank(play?.card_rank || play?.rank);
         const suit = normalizeSuit(play?.card_suit || play?.suit);
 
-        const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
         const sendIcon = "/assets/icons/buzon60.gif";
         const saveIcon = "/assets/icons/salvar40.gif";
 
@@ -1002,12 +1001,8 @@
 
         if (!canOperate) {
             return `
-        <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-          <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
-            <img src="${exitIcon}" alt="Salir" />
-          </button>
-        </div>
-      `;
+  <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top"></div>
+`;
         }
 
         const qHeartMode = hasDroppedQHeart();
@@ -1027,9 +1022,6 @@
         `
             }
 
-        <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
-          <img src="${exitIcon}" alt="Salir" />
-        </button>
       </div>
     `;
     }
@@ -1084,9 +1076,6 @@
                 : ""
             }
 
-        <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
-          <img src="${exitIcon}" alt="Salir" />
-        </button>
       </div>
     `;
     }
@@ -1584,7 +1573,6 @@
         const acceptBtn = document.getElementById("lienzo-accept-btn");
         const rejectBtn = document.getElementById("lienzo-reject-btn");
         const cancelBtn = document.getElementById("lienzo-cancel-btn");
-        const exitBtn = document.getElementById("lienzo-exit-btn");
 
         if (saveBtn) {
             saveBtn.addEventListener("click", () => {
@@ -1616,11 +1604,6 @@
             });
         }
 
-        if (exitBtn) {
-            exitBtn.addEventListener("click", async () => {
-                await handleExitPlay(play);
-            });
-        }
     }
 
     function bindLienzoDropzones(play) {

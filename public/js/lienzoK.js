@@ -357,15 +357,6 @@
             );
         }
 
-        buttons.push(
-            renderIconButton({
-                id: "lienzo-exit-btn",
-                action: "exit",
-                icon: getActionIcon("exit") || "/assets/icons/exit40.gif",
-                title: "Salir"
-            })
-        );
-
         return `
       <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
         ${buttons.join("")}
@@ -532,18 +523,12 @@
     }
 
     function bindLienzoActions(play) {
-        const exitBtn = document.getElementById("lienzo-exit-btn");
         const sendBtn = document.getElementById("lienzo-send-btn");
         const dismissBtn = document.getElementById("lienzo-dismiss-btn");
         const approveBtn = document.getElementById("lienzo-approve-btn");
         const rejectBtn = document.getElementById("lienzo-reject-btn");
         const quitBtn = document.getElementById("lienzo-quit-btn");
 
-        if (exitBtn) {
-            exitBtn.addEventListener("click", () => {
-                goBackToDeck(play);
-            });
-        }
 
         if (sendBtn) {
             sendBtn.addEventListener("click", async () => {

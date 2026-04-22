@@ -969,7 +969,6 @@
     const rank = normalizeRank(play?.card_rank || play?.rank);
     const suit = normalizeSuit(play?.card_suit || play?.suit);
 
-    const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
     const sendIcon = "/assets/icons/buzon60.gif";
     const awardIcon = "/assets/icons/award60oro.gif";
     const complainIcon = "/assets/icons/ticket80g.gif";
@@ -1009,9 +1008,6 @@
         : ""
       }
 
-      <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
-        <img src="${exitIcon}" alt="Salir" />
-      </button>
     </div>
   `;
   }
@@ -1036,7 +1032,6 @@
     const acceptIcon = "/assets/icons/Sello40.gif";
     const rejectIcon = "/assets/icons/stepback40.gif";
     const cancelIcon = "/assets/icons/stop60.gif";
-    const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
     const awardIcon = "/assets/icons/award60oro.gif";
     const complainIcon = "/assets/icons/ticket80g.gif";
 
@@ -1081,9 +1076,6 @@
         : ""
       }
 
-      <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
-        <img src="${exitIcon}" alt="Salir" />
-      </button>
     </div>
   `;
   }
@@ -1586,7 +1578,6 @@
     const cancelBtn = document.getElementById("lienzo-cancel-btn");
     const awardBtn = document.getElementById("lienzo-award-btn");
     const complainBtn = document.getElementById("lienzo-complain-btn");
-    const exitBtn = document.getElementById("lienzo-exit-btn");
 
     if (sendBtn) {
       sendBtn.addEventListener("click", () => {
@@ -1624,11 +1615,6 @@
       });
     }
 
-    if (exitBtn) {
-      exitBtn.addEventListener("click", () => {
-        handleExitPlay(play);
-      });
-    }
   }
 
   function renderSourcePlayerPanel(play) {
