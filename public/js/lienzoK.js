@@ -240,7 +240,16 @@
         if (!placardHost) return;
         if (typeof window.renderPlacard !== "function") return;
 
+        const playId = Number(new URLSearchParams(window.location.search).get("playId") || 0);
+        const currentPlay = getPlayById(playId);
+
         window.renderPlacard(placardHost, {
+            page: "lienzo-k",
+            mode: "K",
+            play: currentPlay,
+            currentUserId: Number(getCurrentUser()?.id || 0),
+            plays: getAllPlays(),
+
             photoUrl: placardHost.dataset.photoUrl || "",
             rank: placardHost.dataset.rank || "A",
             suit: placardHost.dataset.suit || "HEART",

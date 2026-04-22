@@ -224,60 +224,167 @@
 
   function getQpicaHeadline(config) {
     const play = config?.play || null;
-    const currentUserId = Number(config?.currentUserId || 0);
-    const now = config?.now instanceof Date ? config.now : new Date();
-
-    if (!play) return "";
+    if (!play) return "Nueva jugada Q";
 
     const status = String(play?.play_status || "").trim().toUpperCase();
-    const createdByUserId = Number(play?.created_by_user_id || 0);
-    const targetUserId = Number(play?.target_user_id || 0);
-
-    const isSource =
-      currentUserId && createdByUserId && currentUserId === createdByUserId;
-    const isTarget =
-      currentUserId && targetUserId && currentUserId === targetUserId;
-
-    const targetNickname =
-      String(play?.target_user_nickname || "").trim() || "invitado";
-
-    const referenceDate =
-      config?.referenceDate instanceof Date ? config.referenceDate : null;
-
-    const isExpired =
-      referenceDate instanceof Date &&
-      !Number.isNaN(referenceDate.getTime()) &&
-      referenceDate.getTime() < now.getTime();
+    const targetNickname = getNickname(play?.target_user_nickname, "invitado");
+    const resolution = getInvitationResolutionLabel(status);
 
     if (status === "ACTIVE") {
-      return `Invitación a ${targetNickname} pendiente`;
+      return `Invitación a ${targetNickname}. Pendiente de envío`;
     }
 
     if (status === "SENT" || status === "PENDING") {
-      if (isSource) return "Invitación enviada";
-      if (isTarget) return "Invitación recibida";
-      return "Invitación pendiente";
+      return `Invitación a ${targetNickname}. Enviada`;
+    }
+
+    if (resolution) {
+      return `Invitación a ${targetNickname} ${resolution}`;
+    }
+
+    return "Nueva jugada Q";
+  }
+
+  function getQQpicaHeadline(config) {
+    const play = config?.play || null;
+    if (!play) return "Nueva jugada Q";
+
+    const status = String(play?.play_status || "").trim().toUpperCase();
+    const targetNickname = getNickname(play?.target_user_nickname, "invitado");
+    const resolution = getInvitationResolutionLabel(status);
+    const settlementStatus = getSettlementStatus(config);
+
+    if (status === "ACTIVE") {
+      return `Invitación a ${targetNickname}. Pendiente de envío`;
+    }
+
+    if (status === "SENT" || status === "PENDING") {
+      return `Invitación a ${targetNickname}. Enviada`;
     }
 
     if (status === "APPROVED" || status === "ACKNOWLEDGED") {
-      if (isExpired) return "Actividad concluida";
-      return "Invitación aceptada";
+      if (settlementStatus === "PAID") {
+        return `Invitación a ${targetNickname} aceptada. Pago confirmado`;
+      }
+
+      return `Invitación a ${targetNickname} aceptada. Pago sin confirmar`;
+    }
+
+    if (resolution) {
+      return `Invitación a ${targetNickname} ${resolution}`;
+    }
+
+    return "Nueva jugada Q";
+  }
+
+  function getKHeadline(config) {
+    const play = config?.play || null;
+    if (!play) return "Nueva jugada K";
+
+    const status = String(play?.play_status || "").trim().toUpperCase();
+    const targetNickname = getNickname(play?.target_user_nickname, "invitado");
+
+    if (status === "ACTIVE") {
+      return `Invitación a ${targetNickname}. Pendiente de envío`;
+    }
+
+    if (status === "SENT" || status === "PENDING") {
+      return `Invitación a ${targetNickname}. Enviada`;
+    }
+
+    if (status === "APPROVED" || status === "ACKNOWLEDGED") {
+      return `Invitación a ${targetNickname} aceptada`;
     }
 
     if (status === "REJECTED") {
-      return "Invitación rechazada";
+      return `Invitación a ${targetNickname} rechazada`;
     }
 
     if (status === "CANCELLED") {
-      return "Actividad cancelada";
+      return `Invitación a ${targetNickname} despedido`;
     }
+
+    return "Nueva jugada K";
+  }
+
+  function getAHeadline(config) {
+    const play = config?.play || null;
+    const suitLabel = getSuitLabelEs(play?.card_suit || config?.suit || "HEART");
+
+    if (!play) {
+      return `Transferir el As de ${suitLabel}`;
+    }
+
+    const status = String(play?.play_status || "").trim().toUpperCase();
+    const sourceNickname = getNickname(play?.created_by_nickname, "anfitrión");
+    const targetNickname = getNickname(play?.target_user_nickname, "invitado");
+
+    if (status === "ACTIVE") {
+      return `Transferencia del as de ${suitLabel} de ${sourceNickname} a ${targetNickname}. Pendiente de envío`;
+    }
+
+    if (status === "SENT" || status === "PENDING") {
+      return `Transferencia del as de ${suitLabel} de ${sourceNickname} a ${targetNickname}. Enviado`;
+    }
+
+    if (status === "REJECTED") {
+      return `Transferencia del as de ${suitLabel} de ${sourceNickname} a ${targetNickname}. Rechazada`;
+    }
+
+    if (status === "APPROVED" || status === "ACKNOWLEDGED") {
+      return `As de ${suitLabel} transferido de ${sourceNickname} a ${targetNickname}`;
+    }
+
+    if (status === "CANCELLED") {
+      return "Transferencia invalidada";
+    }
+
+    return `Transferir el As de ${suitLabel}`;
+  }
+
+  function getNickname(value, fallback = "invitado") {
+    const text = String(value || "").trim();
+    return text || fallback;
+  }
+
+  function getSuitLabelEs(suit) {
+    const s = normalizeSuit(suit);
+
+    if (s === "HEART") return "corazón";
+    if (s === "SPADE") return "picas";
+    if (s === "DIAMOND") return "diamantes";
+    if (s === "CLUB") return "trébol";
+    return "palo";
+  }
+
+  function getSettlementStatus(config) {
+    const settlement = config?.settlement || null;
+    const play = config?.play || null;
+    const playCode = String(play?.play_code || "").toUpperCase();
+
+    if (settlement?.status) {
+      return String(settlement.status).trim().toUpperCase();
+    }
+
+    if (playCode.includes("SETTLEMENT:PAID")) return "PAID";
+    if (playCode.includes("SETTLEMENT:COMPLAINED")) return "COMPLAINED";
+    if (playCode.includes("SETTLEMENT:MOUSTACHE")) return "MOUSTACHE";
+
+    return "";
+  }
+
+  function getInvitationResolutionLabel(status) {
+    const s = String(status || "").trim().toUpperCase();
+
+    if (s === "APPROVED" || s === "ACKNOWLEDGED") return "aceptada";
+    if (s === "REJECTED") return "rechazada";
+    if (s === "CANCELLED") return "cancelada";
 
     return "";
   }
 
   function getPlacardHeadline(config) {
     const page = String(config?.page || "").trim().toLowerCase();
-    const play = config?.play || null;
 
     if (page === "lienzo-new") {
       return "Nueva jugada";
@@ -288,25 +395,15 @@
     }
 
     if (page === "lienzo-qqpica") {
-      if (!play) return "";
+      return getQQpicaHeadline(config);
+    }
 
-      const status = String(play?.play_status || "").trim().toUpperCase();
-      const settlement = config?.settlement || null;
+    if (page === "lienzo-k") {
+      return getKHeadline(config);
+    }
 
-      if (status === "CANCELLED") {
-        return "Actividad cancelada";
-      }
-
-      if (status === "APPROVED" || status === "ACKNOWLEDGED") {
-        if (settlement?.status === "PAID") {
-          return "Actividad concluida";
-        }
-
-        return "Actividad pendiente de confirmación de pago";
-      }
-
-      // antes de aceptación: mismo comportamiento que qpica
-      return getQpicaHeadline(config);
+    if (page === "lienzo-a") {
+      return getAHeadline(config);
     }
 
     return "";
