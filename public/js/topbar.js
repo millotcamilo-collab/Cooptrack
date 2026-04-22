@@ -28,6 +28,35 @@
     }
   }
 
+  function getReadOnlyDismissedIds() {
+    try {
+      const raw = localStorage.getItem("cooptrackReadOnlyDismissedIds");
+      const parsed = JSON.parse(raw || "[]");
+      return Array.isArray(parsed) ? parsed.map((id) => Number(id)).filter(Boolean) : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function saveReadOnlyDismissedIds(ids) {
+    try {
+      const unique = [...new Set((ids || []).map((id) => Number(id)).filter(Boolean))];
+      localStorage.setItem("cooptrackReadOnlyDismissedIds", JSON.stringify(unique));
+    } catch (error) {
+      console.warn("No se pudo guardar dismissedIds", error);
+    }
+  }
+
+  function markReadOnlyDismissed(playId) {
+    const current = getReadOnlyDismissedIds();
+    current.push(Number(playId || 0));
+    saveReadOnlyDismissedIds(current);
+  }
+
+  function isReadOnlyDismissed(playId) {
+    return getReadOnlyDismissedIds().includes(Number(playId || 0));
+  }
+
   function normalizeText(value) {
     return String(value || "").trim().toUpperCase();
   }
@@ -59,6 +88,9 @@
 
     // 2) Notificación solo lectura para el anfitrión
     if (isSource && (status === "APPROVED" || status === "REJECTED")) {
+      if (isReadOnlyDismissed(play?.id)) {
+        return null;
+      }
       return "READ_ONLY";
     }
 
@@ -616,7 +648,7 @@
       reedBtn.addEventListener("click", async () => {
         const play = latestReadOnly;
 
-        // solo ocultar visualmente
+        markReadOnlyDismissed(play?.id);
         reedBtn.remove();
 
         goToPlayNotification(play);
