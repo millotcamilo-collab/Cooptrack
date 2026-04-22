@@ -834,11 +834,19 @@
             isVirtual: true
         };
 
-        const visibleCards =
-            userIsSource && !isCardCurrentlyDropped(qHeartCard, selection)
-                ? [qHeartCard]
-                : [];
+        const playStatus = String(currentPlay?.play_status || "").trim().toUpperCase();
 
+        const canShowQHeartInPlacard =
+            userIsSource &&
+            playStatus !== "SENT" &&
+            playStatus !== "APPROVED" &&
+            playStatus !== "REJECTED" &&
+            playStatus !== "CANCELLED" &&
+            playStatus !== "ACKNOWLEDGED" &&
+            !isCardCurrentlyDropped(qHeartCard, selection);
+
+        const visibleCards = canShowQHeartInPlacard ? [qHeartCard] : [];
+        
         const currentUser = getCurrentUser();
         const parentPlay = currentPlay ? getPlayById(currentPlay.parent_play_id) : null;
         const referenceDate = parentPlay
