@@ -613,6 +613,20 @@
   `;
   }
 
+  function canUserPlay(plays) {
+    return plays.some((p) => {
+      const action = String(p.action || "").trim();
+      const status = String(p.status || "").toUpperCase();
+      const flow = String(p.parsed?.flow || "").trim().toLowerCase();
+
+      return (
+        action === "puedeJugar" &&
+        flow === "acl" &&
+        status === "ACTIVE"
+      );
+    });
+  }
+
   function buildCommandButtonsHTML(plays) {
     const pageType = getCurrentPageType();
     const isMazoPage = pageType === "mazo";
@@ -675,7 +689,7 @@
       : "";
 
     return `
-    ${isMazoPage && window.__canPlay ? `
+    ${isMazoPage && canUserPlay(plays) ? `
   <button
     id="btnAddJ"
     type="button"
