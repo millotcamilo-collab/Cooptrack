@@ -1210,28 +1210,34 @@ async function listMazosHandler(req, res) {
     const membershipResult = wantsArchived
       ? await pool.query(
         `
-          SELECT
-            d.*,
-            false AS is_active_member
-          FROM decks d
-          INNER JOIN ex_deck_members edm
-            ON edm.deck_id = d.id
-          WHERE edm.user_id = $1
-          ORDER BY d.id DESC
-          `,
+      SELECT
+        d.*,
+        false AS is_active_member
+      FROM decks d
+      INNER JOIN ex_deck_members edm
+        ON edm.deck_id = d.id
+      WHERE edm.user_id = $1
+        AND NOT EXISTS (
+          SELECT 1
+          FROM deck_members dm
+          WHERE dm.deck_id = d.id
+            AND dm.user_id = $1
+        )
+      ORDER BY d.id DESC
+      `,
         [userId]
       )
       : await pool.query(
         `
-          SELECT
-            d.*,
-            true AS is_active_member
-          FROM decks d
-          INNER JOIN deck_members dm
-            ON dm.deck_id = d.id
-          WHERE dm.user_id = $1
-          ORDER BY d.id DESC
-          `,
+      SELECT
+        d.*,
+        true AS is_active_member
+      FROM decks d
+      INNER JOIN deck_members dm
+        ON dm.deck_id = d.id
+      WHERE dm.user_id = $1
+      ORDER BY d.id DESC
+      `,
         [userId]
       );
 
@@ -2303,6 +2309,16 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         `,
         [updatedPlay.deck_id, invitedUserId]
       );
+
+      await client.query(
+        `
+  DELETE FROM ex_deck_members
+  WHERE deck_id = $1
+    AND user_id = $2
+  `,
+        [updatedPlay.deck_id, invitedUserId]
+      );
+
     }
 
     if (isSendingQSpadeNow) {
@@ -2345,6 +2361,15 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         `,
         [deckId, invitedUserId]
       );
+
+      await client.query(
+        `
+  DELETE FROM ex_deck_members
+  WHERE deck_id = $1
+    AND user_id = $2
+  `,
+        [deckId, invitedUserId]
+      );
     }
 
     const isApprovingKNow =
@@ -2370,6 +2395,15 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     VALUES ($1, $2)
     ON CONFLICT DO NOTHING
     `,
+        [deckId, invitedUserId]
+      );
+
+      await client.query(
+        `
+  DELETE FROM ex_deck_members
+  WHERE deck_id = $1
+    AND user_id = $2
+  `,
         [deckId, invitedUserId]
       );
 
