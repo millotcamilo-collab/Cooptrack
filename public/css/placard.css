@@ -276,3 +276,30 @@
   padding: 3px 0;         /* 👈 altura mínima controlada */
 }
 
+.placard__headline {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.placard__headline-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+}
+
+.placard__headline-exit {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.placard__headline-exit img {
+  height: 24px;
+  width: auto;
+  display: block;
+}

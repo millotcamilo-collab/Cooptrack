@@ -500,15 +500,35 @@
 
   ${headline
         ? `
-      <section class="placard placard--headline">
-        <div class="placard__headline">
+    <section class="placard placard--headline">
+      <div class="placard__headline">
+        <span class="placard__headline-text">
           ${escapeHtml(headline)}
-        </div>
-      </section>
-    `
+        </span>
+
+        <button
+          id="placard-exit-btn"
+          class="placard__headline-exit"
+          type="button"
+          title="Salir"
+          aria-label="Salir"
+        >
+          <img src="/assets/icons/exit40.gif" alt="Salir" />
+        </button>
+      </div>
+    </section>
+  `
         : ""
       }
 `;
+    exitBtn.addEventListener("click", () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "/mazos.html";
+      }
+    });
+
     bindPlacardDrag(container);
   }
 
