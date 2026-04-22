@@ -614,7 +614,29 @@
     const reedBtn = document.getElementById("reedBtn");
     if (reedBtn && latestReadOnly) {
       reedBtn.addEventListener("click", async () => {
-        goToPlayNotification(latestReadOnly);
+        const play = latestReadOnly;
+        const token = localStorage.getItem("cooptrackToken");
+
+        try {
+          // 👉 marcar como leído ANTES de navegar
+          if (token && play?.id) {
+            await fetch(`${API_BASE_URL}/plays/${play.id}`, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                play_status: "ACKNOWLEDGED"
+              })
+            });
+          }
+        } catch (error) {
+          console.error("Error marcando como leído:", error);
+        }
+
+        // 👉 navegar igual aunque falle el ACK
+        goToPlayNotification(play);
       });
     }
   }
