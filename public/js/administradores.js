@@ -161,7 +161,12 @@
     }
 
     // Reyes escritos en el libro desde la línea 15 en adelante
-    if (rank === "K" && playId >= 15) {
+    // Reyes reales del libro: mostrar cualquier K que no sea una ACL inicial
+    if (rank === "K") {
+      if (action === "puedejugar" && flow === "acl") {
+        return false;
+      }
+
       return mode === "AK";
     }
 
