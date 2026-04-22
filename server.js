@@ -2034,10 +2034,13 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         currentRank === 'Q' &&
         currentSuit === 'SPADE';
 
-      if (!isQSpadeAck) {
+      const isKAck =
+        currentRank === 'K';
+
+      if (!isQSpadeAck && !isKAck) {
         return res.status(400).json({
           ok: false,
-          error: 'Solo una Q♠ puede marcarse como leída'
+          error: 'Solo una Q♠ o una K pueden marcarse como leídas'
         });
       }
 
@@ -2050,11 +2053,22 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         });
       }
 
-      if (currentStatus !== 'APPROVED') {
-        return res.status(400).json({
-          ok: false,
-          error: 'Solo una Q♠ aprobada puede marcarse como leída'
-        });
+      if (isQSpadeAck) {
+        if (currentStatus !== 'APPROVED' && currentStatus !== 'REJECTED') {
+          return res.status(400).json({
+            ok: false,
+            error: 'Solo una Q♠ aprobada o rechazada puede marcarse como leída'
+          });
+        }
+      }
+
+      if (isKAck) {
+        if (currentStatus !== 'APPROVED' && currentStatus !== 'REJECTED') {
+          return res.status(400).json({
+            ok: false,
+            error: 'Solo una K aprobada o rechazada puede marcarse como leída'
+          });
+        }
       }
     }
 
