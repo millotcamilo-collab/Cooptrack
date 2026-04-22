@@ -615,45 +615,14 @@
     if (reedBtn && latestReadOnly) {
       reedBtn.addEventListener("click", async () => {
         const play = latestReadOnly;
-        const token = localStorage.getItem("cooptrackToken");
 
-        try {
-          if (token && play?.id) {
-            const rank = String(play?.card_rank || "").trim().toUpperCase();
-            const suit = String(play?.card_suit || "").trim().toUpperCase();
-
-            // Solo Q♠ usa ACKNOWLEDGED
-            if (rank === "Q" && suit === "SPADE") {
-              const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
-                method: "PATCH",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                  play_status: "ACKNOWLEDGED"
-                })
-              });
-
-              const data = await response.json().catch(() => ({}));
-
-              if (!response.ok || data?.ok === false) {
-                console.error("No se pudo marcar ACKNOWLEDGED:", data);
-              } else {
-                reedBtn.remove();
-              }
-            } else {
-              // Para K y A → solo ocultar visualmente
-              reedBtn.remove();
-            }
-          }
-        } catch (error) {
-          console.error("Error marcando como leído:", error);
-        }
+        // solo ocultar visualmente
+        reedBtn.remove();
 
         goToPlayNotification(play);
       });
     }
+
   }
 
   document.addEventListener("DOMContentLoaded", renderTopbar);
