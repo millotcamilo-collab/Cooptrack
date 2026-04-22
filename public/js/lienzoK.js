@@ -552,11 +552,19 @@
                 });
 
                 if (result.ok) {
-                    window.location.reload();
+                    const deckId =
+                        Number(play?.deck_id || 0) ||
+                        Number(getCurrentDeck()?.id || 0);
+
+                    if (deckId) {
+                        window.location.href = `/mazoAdministradores.html?id=${deckId}`;
+                        return;
+                    }
+
+                    window.location.href = "/mazoAdministradores.html";
                 }
             });
         }
-
         if (dismissBtn) {
             dismissBtn.addEventListener("click", async () => {
                 const confirmed = window.confirm("¿Despedir esta K?");
