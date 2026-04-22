@@ -9,15 +9,11 @@
 
   function bindActionButtons() {
     const saveBtn = document.getElementById("lienzo-save-btn");
-    const exitBtn = document.getElementById("lienzo-exit-btn");
 
     if (saveBtn) {
       saveBtn.addEventListener("click", handleSavePlay);
     }
 
-    if (exitBtn) {
-      exitBtn.addEventListener("click", handleExit);
-    }
   }
 
   function getJSpadeText(play) {
@@ -145,17 +141,6 @@
       console.error("Error en SAVE", error);
       alert("No se pudo guardar la jugada");
     }
-  }
-  function handleExit() {
-    const draft = window.__lienzoNewDraft;
-    const deckId = draft?.deckId;
-
-    if (!deckId) {
-      window.location.href = "/mazos.html";
-      return;
-    }
-
-    window.location.href = `/mazo.html?id=${deckId}`;
   }
 
   function getCurrentUserCorporateCards() {
@@ -382,7 +367,6 @@
 
   function renderActionButtons() {
     const saveIcon = window.ICONS?.actions?.save || "/assets/icons/salvar40.gif";
-    const exitIcon = window.ICONS?.actions?.exit || "/assets/icons/exit40.gif";
 
     return `
     <div class="lienzo-actions">
@@ -390,9 +374,6 @@
         <img src="${saveIcon}" alt="Salvar" />
       </button>
 
-      <button id="lienzo-exit-btn" class="icon-btn" title="Exit">
-        <img src="${exitIcon}" alt="Exit" />
-      </button>
     </div>
   `;
   }
@@ -604,23 +585,6 @@
       currencyCode: placardHost.dataset.currencyCode || "",
       currencyName: placardHost.dataset.currencyName || "",
       showCurrency: false
-    });
-  }
-
-  function bindDeckHeaderExit() {
-    const btn = document.getElementById("lienzo-exit-btn");
-    if (!btn) return;
-
-    const deck = getCurrentDeck();
-    const deckId = Number(deck?.id || getCurrentState()?.deckId || 0);
-
-    btn.addEventListener("click", () => {
-      if (deckId) {
-        window.location.href = `/mazo.html?id=${deckId}`;
-        return;
-      }
-
-      window.history.back();
     });
   }
 
