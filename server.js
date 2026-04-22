@@ -2400,13 +2400,14 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
 
       await client.query(
         `
-  DELETE FROM ex_deck_members
-  WHERE deck_id = $1
-    AND user_id = $2
-  `,
+    DELETE FROM ex_deck_members
+    WHERE deck_id = $1
+      AND user_id = $2
+    `,
         [deckId, invitedUserId]
       );
 
+      await expandReadersForKSend(client, updatedPlay);
       await addUserToAclLines(client, deckId, invitedUserId);
     }
 
