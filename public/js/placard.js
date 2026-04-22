@@ -521,13 +521,16 @@
         : ""
       }
 `;
-    exitBtn.addEventListener("click", () => {
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        window.location.href = "/mazos.html";
-      }
-    });
+    const exitBtn = container.querySelector("#placard-exit-btn");
+    if (exitBtn) {
+      exitBtn.addEventListener("click", () => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = "/mazos.html";
+        }
+      });
+    }
 
     bindPlacardDrag(container);
   }
