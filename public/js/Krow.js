@@ -181,6 +181,20 @@
       });
   }
 
+  function getKStatusLabel(play) {
+    const status = String(play?.play_status || "")
+      .trim()
+      .toUpperCase();
+
+    if (status === "SENT") return "Enviada";
+    if (status === "APPROVED") return "Aceptada";
+    if (status === "ACKNOWLEDGED") return "Aceptada";
+    if (status === "REJECTED") return "Rechazada";
+    if (status === "CANCELLED") return "Despedido";
+
+    return "Pendiente";
+  }
+
   function renderKrow(play, context = {}) {
     const helpers = context.helpers || {};
     const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
@@ -197,6 +211,7 @@
     const ownerPhoto = escapeHtml(getOwnerPhoto(play));
     const suitName = getSuitName(suit);
     const centerTitle = escapeHtml(`Rey de ${suitName}`);
+    const statusLabel = escapeHtml(getKStatusLabel(play));
     const deleteButtonHtml = getDeleteButtonHtml(play, escapeHtml);
 
     setTimeout(() => {
@@ -260,13 +275,16 @@
           </div>
 
           <div class="admin-row__owner">
-            <img
-              src="${ownerPhoto}"
-              alt="${ownerNickname}"
-              class="admin-row__owner-photo"
-              onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
-            />
-            <span class="admin-row__owner-name">${ownerNickname}</span>
+          <img
+            src="${ownerPhoto}"
+            alt="${ownerNickname}"
+            class="admin-row__owner-photo"
+            onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
+          />
+        <div class="admin-row__owner-text">
+            <div class="admin-row__owner-name">${ownerNickname}</div>
+            <div class="admin-row__owner-meta">${statusLabel}</div>
+            </div>
           </div>
         </div>
 
