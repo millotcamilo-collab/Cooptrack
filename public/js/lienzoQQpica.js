@@ -973,7 +973,6 @@
     const sendIcon = "/assets/icons/buzon60.gif";
     const awardIcon = "/assets/icons/award60oro.gif";
     const complainIcon = "/assets/icons/ticket80g.gif";
-    const readIcon = "/assets/icons/ReleidoB80.gif";
 
     const showSend =
       rank === "Q" &&
@@ -985,9 +984,6 @@
       status !== "ACKNOWLEDGED";
 
     const showSettlementActions = canShowSettlementActions(play, "COLOMBES");
-    const shouldShowRead =
-      isCurrentUserSource(play) &&
-      (status === "APPROVED" || status === "REJECTED");
 
     return `
     <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
@@ -1008,15 +1004,6 @@
 
           <button id="lienzo-complain-btn" class="icon-btn" title="Registrar queja">
             <img src="${complainIcon}" alt="Queja" />
-          </button>
-        `
-        : ""
-      }
-
-      ${shouldShowRead
-        ? `
-          <button id="lienzo-read-btn" class="icon-btn" title="Marcar como leído">
-            <img src="${readIcon}" alt="Leído" />
           </button>
         `
         : ""
@@ -1642,13 +1629,6 @@
     const awardBtn = document.getElementById("lienzo-award-btn");
     const complainBtn = document.getElementById("lienzo-complain-btn");
     const exitBtn = document.getElementById("lienzo-exit-btn");
-    const readBtn = document.getElementById("lienzo-read-btn");
-
-    if (readBtn) {
-      readBtn.addEventListener("click", () => {
-        handleMarkAsRead(play);
-      });
-    }
 
     if (sendBtn) {
       sendBtn.addEventListener("click", () => {

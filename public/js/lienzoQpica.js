@@ -973,6 +973,7 @@
       </div>
     `;
     }
+
     function renderSourceActions(play) {
         const status = String(play?.play_status || "").trim().toUpperCase();
         const rank = normalizeRank(play?.card_rank || play?.rank);
@@ -991,23 +992,9 @@
             status !== "CANCELLED" &&
             status !== "ACKNOWLEDGED";
 
-        const readIcon = "/assets/icons/ReleidoB80.gif";
-        const shouldShowRead =
-            isCurrentUserSource(play) &&
-            (status === "APPROVED" || status === "REJECTED");
-
         if (!canOperate) {
             return `
         <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-          ${shouldShowRead
-                    ? `
-              <button id="lienzo-read-btn" class="icon-btn" title="Marcar como leído">
-                <img src="${readIcon}" alt="Leído" />
-              </button>
-            `
-                    : ""
-                }
-
           <button id="lienzo-exit-btn" class="icon-btn" title="Salir">
             <img src="${exitIcon}" alt="Salir" />
           </button>
@@ -1038,6 +1025,7 @@
       </div>
     `;
     }
+
 
     function canCancelTargetPlay(play) {
         const status = String(play?.play_status || "").trim().toUpperCase();
@@ -1631,14 +1619,7 @@
         const rejectBtn = document.getElementById("lienzo-reject-btn");
         const cancelBtn = document.getElementById("lienzo-cancel-btn");
         const exitBtn = document.getElementById("lienzo-exit-btn");
-        const readBtn = document.getElementById("lienzo-read-btn");
 
-        if (readBtn) {
-            readBtn.addEventListener("click", () => {
-                handleMarkAsRead(play);
-            });
-        }
-        
         if (saveBtn) {
             saveBtn.addEventListener("click", () => {
                 handleSaveQHeartDraft(play);

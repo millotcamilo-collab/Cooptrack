@@ -75,10 +75,15 @@
     return null;
   }
 
-  async function getLatestPendingForTopbar(currentUserId) {
+  async function getTopbarNotifications(currentUserId) {
     try {
       const token = localStorage.getItem("cooptrackToken");
-      if (!token) return null;
+      if (!token) {
+        return {
+          latestActionRequired: null,
+          latestReadOnly: null
+        };
+      }
 
       const response = await fetch(`${API_BASE_URL}/plays/pending`, {
         method: "GET",
@@ -87,7 +92,12 @@
         }
       });
 
-      if (!response.ok) return null;
+      if (!response.ok) {
+        return {
+          latestActionRequired: null,
+          latestReadOnly: null
+        };
+      }
 
       const data = await response.json();
       const plays = Array.isArray(data?.plays) ? data.plays : [];
@@ -100,30 +110,25 @@
         })
         .filter(Boolean);
 
-      if (!candidates.length) return null;
+      const actionRequired = candidates
+        .filter((play) => play.pendingKind === "ACTION_REQUIRED")
+        .sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
 
-      const priority = {
-        ACTION_REQUIRED: 1,
-        READ_ONLY: 2
+      const readOnly = candidates
+        .filter((play) => play.pendingKind === "READ_ONLY")
+        .sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+
+      return {
+        latestActionRequired: actionRequired[0] || null,
+        latestReadOnly: readOnly[0] || null
       };
-
-      candidates.sort((a, b) => {
-        const pa = priority[a.pendingKind] || 99;
-        const pb = priority[b.pendingKind] || 99;
-
-        if (pa !== pb) return pa - pb;
-        return Number(b.id || 0) - Number(a.id || 0);
-      });
-
-      return candidates[0];
     } catch (error) {
       console.error("Error leyendo pendientes para topbar:", error);
-      return null;
+      return {
+        latestActionRequired: null,
+        latestReadOnly: null
+      };
     }
-  }
-
-  function normalizeText(value) {
-    return String(value || "").trim().toUpperCase();
   }
 
   function parsePlayCode(code) {
@@ -291,38 +296,6 @@
     }
   }
 
-  async function getLatestIncomingCard() {
-    try {
-      const token = localStorage.getItem("cooptrackToken");
-      if (!token) return null;
-
-      const response = await fetch(`${API_BASE_URL}/plays/pending`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) return null;
-
-      const data = await response.json();
-      const plays = Array.isArray(data?.plays) ? data.plays : [];
-
-      const incoming = plays.filter((p) => {
-        const rank = normalizeText(p.card_rank || p.rank);
-        return rank === "Q" || rank === "K" || rank === "A";
-      });
-
-      if (!incoming.length) return null;
-
-      incoming.sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
-      return incoming[0];
-    } catch (error) {
-      console.error("Error leyendo carta recibida:", error);
-      return null;
-    }
-  }
-
   function isMazosPage() {
     return (
       window.location.pathname.endsWith("/mazos.html") ||
@@ -357,6 +330,40 @@
     }
   }
 
+  async function goToPlayNotification(play) {
+    if (!play) return;
+
+    const deckId = play.deck_id;
+    const playId = play.id;
+    const token = localStorage.getItem("cooptrackToken");
+
+    try {
+      let playForRouting = play;
+
+      if (token && playId) {
+        const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (response.ok && data?.ok && data.play) {
+          playForRouting = data.play;
+        }
+      }
+
+      const nextPage = resolveLienzoPageForPlay(playForRouting);
+      window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
+    } catch (error) {
+      console.error("Error resolviendo notificación:", error);
+      const nextPage = resolveLienzoPageForPlay(play);
+      window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
+    }
+  }
+
   async function renderTopbar() {
     const user = await getLoggedUser();
     const userHasDecks = await hasDecks();
@@ -364,11 +371,16 @@
 
     const onMazosPage = isMazosPage();
     const userHasArchivedDecks = await hasArchivedDecks();
-    const latestIncomingCard = user
-      ? await getLatestPendingForTopbar(user.id)
-      : null;
 
-    const userHasPendingApprovals = !!latestIncomingCard;
+    const notifications = user
+      ? await getTopbarNotifications(user.id)
+      : { latestActionRequired: null, latestReadOnly: null };
+
+    const latestActionRequired = notifications.latestActionRequired;
+    const latestReadOnly = notifications.latestReadOnly;
+
+    const userHasPendingApprovals = !!latestActionRequired;
+    const userHasReadNotifications = !!latestReadOnly;
 
     let topbarHTML = "";
 
@@ -400,10 +412,19 @@
 
               ${userHasPendingApprovals
           ? `
-                    <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
-                      <img src="/assets/icons/Dorso70.gif" class="topbar__icon-img" />
-                    </button>
-                  `
+                <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
+                <img src="/assets/icons/Dorso70.gif" class="topbar__icon-img" />
+                </button>
+                `
+          : ""
+        }
+
+        ${userHasReadNotifications
+          ? `
+          <button class="topbar__icon-btn" id="reedBtn" title="Lecturas pendientes">
+            <img src="/assets/icons/DorsoRojo70.gif" class="topbar__icon-img" />
+          </button>
+          `
           : ""
         }
 
@@ -584,37 +605,16 @@
     }
 
     const pendingBtn = document.getElementById("pendingBtn");
-    if (pendingBtn && latestIncomingCard) {
+    if (pendingBtn && latestActionRequired) {
       pendingBtn.addEventListener("click", async () => {
-        const deckId = latestIncomingCard.deck_id;
-        const playId = latestIncomingCard.id;
-        const token = localStorage.getItem("cooptrackToken");
+        goToPlayNotification(latestActionRequired);
+      });
+    }
 
-        try {
-          let playForRouting = latestIncomingCard;
-
-          if (token && playId) {
-            const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            });
-
-            const data = await response.json().catch(() => null);
-
-            if (response.ok && data?.ok && data.play) {
-              playForRouting = data.play;
-            }
-          }
-
-          const nextPage = resolveLienzoPageForPlay(playForRouting);
-          window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
-        } catch (error) {
-          console.error("Error resolviendo pendiente:", error);
-          const nextPage = resolveLienzoPageForPlay(latestIncomingCard);
-          window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
-        }
+    const reedBtn = document.getElementById("reedBtn");
+    if (reedBtn && latestReadOnly) {
+      reedBtn.addEventListener("click", async () => {
+        goToPlayNotification(latestReadOnly);
       });
     }
   }
