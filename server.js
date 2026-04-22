@@ -1783,6 +1783,118 @@ app.patch('/decks/:id', requireAuth, async (req, res) => {
   }
 });
 
+function parseAclAuthorizedList(value) {
+  return String(value || '')
+    .split(',')
+    .map((item) => String(item || '').trim())
+    .filter(Boolean);
+}
+
+function stringifyAclAuthorizedList(entries) {
+  return [...new Set(
+    (Array.isArray(entries) ? entries : [])
+      .map((item) => String(item || '').trim())
+      .filter(Boolean)
+  )].join(',');
+}
+
+function rebuildPlayCodeWithAuthorized(playCode, nextAuthorized) {
+  const parts = String(playCode || '').split('§');
+
+  while (parts.length < 9) {
+    parts.push('');
+  }
+
+  parts[6] = stringifyAclAuthorizedList(nextAuthorized);
+  return parts.join('§');
+}
+
+async function addUserToAclLines(client, deckId, userId) {
+  const normalizedUser = `U:${Number(userId || 0)}`;
+  if (!Number(deckId || 0) || !Number(userId || 0)) return;
+
+  const result = await client.query(
+    `
+    SELECT id, play_code
+    FROM plays
+    WHERE deck_id = $1
+      AND UPPER(COALESCE(card_rank, '')) IN ('K', 'Q')
+      AND UPPER(COALESCE(card_suit, '')) IN ('HEART', 'SPADE', 'DIAMOND', 'CLUB')
+      AND UPPER(COALESCE(play_status, '')) = 'ACTIVE'
+    ORDER BY id ASC
+    `,
+    [deckId]
+  );
+
+  for (const row of result.rows) {
+    const parts = String(row.play_code || '').split('§');
+    const action = String(parts[5] || '').trim();
+    const flow = String(parts[7] || '').trim().toLowerCase();
+
+    if (action !== 'puedeJugar') continue;
+    if (flow !== 'acl') continue;
+
+    const currentAuthorized = parseAclAuthorizedList(parts[6] || '');
+    const nextAuthorized = stringifyAclAuthorizedList([
+      ...currentAuthorized,
+      normalizedUser
+    ]);
+
+    const nextPlayCode = rebuildPlayCodeWithAuthorized(row.play_code, nextAuthorized);
+
+    await client.query(
+      `
+      UPDATE plays
+      SET play_code = $1,
+          updated_at = NOW()
+      WHERE id = $2
+      `,
+      [nextPlayCode, row.id]
+    );
+  }
+}
+
+async function removeUserFromAclLines(client, deckId, userId) {
+  const normalizedUser = `U:${Number(userId || 0)}`;
+  if (!Number(deckId || 0) || !Number(userId || 0)) return;
+
+  const result = await client.query(
+    `
+    SELECT id, play_code
+    FROM plays
+    WHERE deck_id = $1
+      AND UPPER(COALESCE(card_rank, '')) IN ('K', 'Q')
+      AND UPPER(COALESCE(card_suit, '')) IN ('HEART', 'SPADE', 'DIAMOND', 'CLUB')
+      AND UPPER(COALESCE(play_status, '')) = 'ACTIVE'
+    ORDER BY id ASC
+    `,
+    [deckId]
+  );
+
+  for (const row of result.rows) {
+    const parts = String(row.play_code || '').split('§');
+    const action = String(parts[5] || '').trim();
+    const flow = String(parts[7] || '').trim().toLowerCase();
+
+    if (action !== 'puedeJugar') continue;
+    if (flow !== 'acl') continue;
+
+    const currentAuthorized = parseAclAuthorizedList(parts[6] || '');
+    const nextAuthorized = currentAuthorized.filter((entry) => entry !== normalizedUser);
+    const nextPlayCode = rebuildPlayCodeWithAuthorized(row.play_code, nextAuthorized);
+
+    await client.query(
+      `
+      UPDATE plays
+      SET play_code = $1,
+          updated_at = NOW()
+      WHERE id = $2
+      `,
+      [nextPlayCode, row.id]
+    );
+  }
+}
+
 app.patch('/plays/:id', requireAuth, async (req, res) => {
   const client = await pool.connect();
 
@@ -2034,13 +2146,10 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         currentRank === 'Q' &&
         currentSuit === 'SPADE';
 
-      const isKAck =
-        currentRank === 'K';
-
-      if (!isQSpadeAck && !isKAck) {
+      if (!isQSpadeAck) {
         return res.status(400).json({
           ok: false,
-          error: 'Solo una Q♠ o una K pueden marcarse como leídas'
+          error: 'Solo una Q♠ puede marcarse como leída'
         });
       }
 
@@ -2053,22 +2162,11 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         });
       }
 
-      if (isQSpadeAck) {
-        if (currentStatus !== 'APPROVED' && currentStatus !== 'REJECTED') {
-          return res.status(400).json({
-            ok: false,
-            error: 'Solo una Q♠ aprobada o rechazada puede marcarse como leída'
-          });
-        }
-      }
-
-      if (isKAck) {
-        if (currentStatus !== 'APPROVED' && currentStatus !== 'REJECTED') {
-          return res.status(400).json({
-            ok: false,
-            error: 'Solo una K aprobada o rechazada puede marcarse como leída'
-          });
-        }
+      if (currentStatus !== 'APPROVED' && currentStatus !== 'REJECTED') {
+        return res.status(400).json({
+          ok: false,
+          error: 'Solo una Q♠ aprobada o rechazada puede marcarse como leída'
+        });
       }
     }
 
@@ -2249,6 +2347,35 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       );
     }
 
+    const isApprovingKNow =
+      currentRank === 'K' &&
+      currentStatus !== 'APPROVED' &&
+      nextStatus === 'APPROVED';
+
+    if (isApprovingKNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+      const deckId = Number(updatedPlay.deck_id || 0);
+
+      if (!invitedUserId || !deckId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La K aprobada debe tener target_user_id y deck_id válidos'
+        });
+      }
+
+      await client.query(
+        `
+    INSERT INTO deck_members (deck_id, user_id)
+    VALUES ($1, $2)
+    ON CONFLICT DO NOTHING
+    `,
+        [deckId, invitedUserId]
+      );
+
+      await addUserToAclLines(client, deckId, invitedUserId);
+    }
+
     const isRejectingQSpadeNow =
       currentRank === 'Q' &&
       currentSuit === 'SPADE' &&
@@ -2326,7 +2453,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
           error: 'La K rechazada debe tener target_user_id y deck_id válidos'
         });
       }
-
+      await removeUserFromAclLines(client, deckId, invitedUserId);
       const tieCheck = await client.query(
         `
     SELECT 1
@@ -2366,6 +2493,68 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       ON CONFLICT DO NOTHING
       `,
           [deckId, invitedUserId, 'K_REJECTED', updatedPlay.id]
+        );
+      }
+    }
+
+    const isCancellingKNow =
+      currentRank === 'K' &&
+      currentStatus !== 'CANCELLED' &&
+      nextStatus === 'CANCELLED';
+
+    if (isCancellingKNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+      const deckId = Number(updatedPlay.deck_id || 0);
+
+      if (!invitedUserId || !deckId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La K cancelada debe tener target_user_id y deck_id válidos'
+        });
+      }
+
+      await removeUserFromAclLines(client, deckId, invitedUserId);
+
+      const tieCheck = await client.query(
+        `
+    SELECT 1
+    FROM plays
+    WHERE deck_id = $1
+      AND target_user_id = $2
+      AND id <> $3
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'BLOCKED')
+      AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
+    LIMIT 1
+    `,
+        [deckId, invitedUserId, updatedPlay.id]
+      );
+
+      const hasAnotherTie = tieCheck.rows.length > 0;
+
+      if (!hasAnotherTie) {
+        await client.query(
+          `
+      DELETE FROM deck_members
+      WHERE deck_id = $1
+        AND user_id = $2
+      `,
+          [deckId, invitedUserId]
+        );
+
+        await client.query(
+          `
+      INSERT INTO ex_deck_members (
+        deck_id,
+        user_id,
+        reason,
+        source_play_id,
+        created_at
+      )
+      VALUES ($1, $2, $3, $4, NOW())
+      ON CONFLICT DO NOTHING
+      `,
+          [deckId, invitedUserId, 'K_CANCELLED', updatedPlay.id]
         );
       }
     }
