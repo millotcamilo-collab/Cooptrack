@@ -198,6 +198,15 @@ async function expandReadersForKSend(client, play) {
     normalizeReaderEntries([play?.created_by_user_id, invitedUserId])
   );
 
+  // Todas las jugadas A del mazo deben quedar legibles para quien recibe una K
+  const acePlays = await getDeckPlaysByKinds(client, deckId, {
+    rank: "A"
+  });
+
+  for (const targetPlay of acePlays) {
+    await addReadersToPlay(client, targetPlay.id, invitedReaders);
+  }
+
   // K♥ -> todas las J♥
   if (kSuit === "HEART") {
     const heartJs = await getDeckPlaysByKinds(client, deckId, {

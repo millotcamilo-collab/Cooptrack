@@ -553,31 +553,46 @@
                 });
 
                 if (result.ok) {
-                    window.location.reload();
+                    const deckId =
+                        Number(play?.deck_id || 0) ||
+                        Number(getCurrentDeck()?.id || 0);
+
+                    if (deckId) {
+                        window.location.href = `/mazo.html?id=${deckId}`;
+                        return;
+                    }
+
+                    window.history.back();
                 }
             });
         }
 
         if (rejectBtn) {
             rejectBtn.addEventListener("click", async () => {
+                const confirmed = window.confirm("¿Querés rechazar esta K?");
+                if (!confirmed) return;
+
                 const result = await patchPlay(play.id, {
                     play_status: "REJECTED"
                 });
 
                 if (result.ok) {
-                    goBackToDeck(play);
+                    window.location.href = "/archivo.html";
                 }
             });
         }
 
         if (quitBtn) {
             quitBtn.addEventListener("click", async () => {
+                const confirmed = window.confirm("¿Querés renunciar a esta K?");
+                if (!confirmed) return;
+
                 const result = await patchPlay(play.id, {
                     play_status: "REJECTED"
                 });
 
                 if (result.ok) {
-                    goBackToDeck(play);
+                    window.location.href = "/archivo.html";
                 }
             });
         }

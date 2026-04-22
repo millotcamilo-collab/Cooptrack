@@ -1998,6 +1998,27 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       // -----------------------------------------
+      // CASO 2b: K = incorporación / permiso
+      // -----------------------------------------
+      else if (currentRank === 'K') {
+        const targetUserId = Number(current.target_user_id || 0);
+
+        if (!targetUserId || Number(userId) !== targetUserId) {
+          return res.status(403).json({
+            ok: false,
+            error: 'Solo el destinatario puede aceptar esta K'
+          });
+        }
+
+        if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
+          return res.status(400).json({
+            ok: false,
+            error: 'Solo una K enviada puede aprobarse'
+          });
+        }
+      }
+
+      // -----------------------------------------
       // OTROS CASOS
       // -----------------------------------------
       else {
@@ -2234,15 +2255,15 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
 
       const tieCheck = await client.query(
         `
-        SELECT 1
-        FROM plays
-        WHERE deck_id = $1
-          AND target_user_id = $2
-          AND id <> $3
-          AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'BLOCKED')
-          AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
-        LIMIT 1
-        `,
+    SELECT 1
+    FROM plays
+    WHERE deck_id = $1
+      AND target_user_id = $2
+      AND id <> $3
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'BLOCKED')
+      AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
+    LIMIT 1
+    `,
         [deckId, invitedUserId, updatedPlay.id]
       );
 
@@ -2251,30 +2272,89 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       if (!hasAnotherTie) {
         await client.query(
           `
-          DELETE FROM deck_members
-          WHERE deck_id = $1
-            AND user_id = $2
-          `,
+      DELETE FROM deck_members
+      WHERE deck_id = $1
+        AND user_id = $2
+      `,
           [deckId, invitedUserId]
         );
 
         await client.query(
           `
-          INSERT INTO ex_deck_members (
-            deck_id,
-            user_id,
-            reason,
-            source_play_id,
-            created_at
-          )
-          VALUES ($1, $2, $3, $4, NOW())
-          ON CONFLICT DO NOTHING
-          `,
+      INSERT INTO ex_deck_members (
+        deck_id,
+        user_id,
+        reason,
+        source_play_id,
+        created_at
+      )
+      VALUES ($1, $2, $3, $4, NOW())
+      ON CONFLICT DO NOTHING
+      `,
           [deckId, invitedUserId, 'Q_SPADE_REJECTED', updatedPlay.id]
         );
       }
     }
 
+    const isRejectingKNow =
+      currentRank === 'K' &&
+      currentStatus !== 'REJECTED' &&
+      nextStatus === 'REJECTED';
+
+    if (isRejectingKNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+      const deckId = Number(updatedPlay.deck_id || 0);
+
+      if (!invitedUserId || !deckId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La K rechazada debe tener target_user_id y deck_id válidos'
+        });
+      }
+
+      const tieCheck = await client.query(
+        `
+    SELECT 1
+    FROM plays
+    WHERE deck_id = $1
+      AND target_user_id = $2
+      AND id <> $3
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'BLOCKED')
+      AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
+    LIMIT 1
+    `,
+        [deckId, invitedUserId, updatedPlay.id]
+      );
+
+      const hasAnotherTie = tieCheck.rows.length > 0;
+
+      if (!hasAnotherTie) {
+        await client.query(
+          `
+      DELETE FROM deck_members
+      WHERE deck_id = $1
+        AND user_id = $2
+      `,
+          [deckId, invitedUserId]
+        );
+
+        await client.query(
+          `
+      INSERT INTO ex_deck_members (
+        deck_id,
+        user_id,
+        reason,
+        source_play_id,
+        created_at
+      )
+      VALUES ($1, $2, $3, $4, NOW())
+      ON CONFLICT DO NOTHING
+      `,
+          [deckId, invitedUserId, 'K_REJECTED', updatedPlay.id]
+        );
+      }
+    }
 
     await client.query('COMMIT');
 
