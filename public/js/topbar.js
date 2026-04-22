@@ -618,9 +618,8 @@
         const token = localStorage.getItem("cooptrackToken");
 
         try {
-          // 👉 marcar como leído ANTES de navegar
           if (token && play?.id) {
-            await fetch(`${API_BASE_URL}/plays/${play.id}`, {
+            const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
               method: "PATCH",
               headers: {
                 "Content-Type": "application/json",
@@ -630,12 +629,20 @@
                 play_status: "ACKNOWLEDGED"
               })
             });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok || data?.ok === false) {
+              console.error("No se pudo marcar ACKNOWLEDGED:", data);
+            } else {
+              // ocultar de inmediato en esta pantalla
+              reedBtn.remove();
+            }
           }
         } catch (error) {
           console.error("Error marcando como leído:", error);
         }
 
-        // 👉 navegar igual aunque falle el ACK
         goToPlayNotification(play);
       });
     }
