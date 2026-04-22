@@ -653,9 +653,8 @@
         const play = latestReadOnly;
 
         markReadOnlyDismissed(play?.id);
-        reedBtn.remove();
-
         goToPlayNotification(play);
+
       });
     }
 
