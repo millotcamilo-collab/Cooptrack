@@ -129,23 +129,23 @@ function qSpadeHasAttachedQHeart(play) {
 async function getDeckPlaysByKinds(client, deckId, filters = {}) {
   const result = await client.query(
     `
-    SELECT
-      id,
-      deck_id,
-      parent_play_id,
-      created_by_user_id,
-      target_user_id,
-      card_rank,
-      card_suit,
-      play_status,
-      play_text,
-      play_code,
-      reader_user_ids
-    FROM plays
-    WHERE deck_id = $1
-      AND UPPER(COALESCE(play_status, '')) NOT IN ('BLOCKED', 'REJECTED', 'CANCELLED')
-    ORDER BY id ASC
-    `,
+  SELECT
+    id,
+    deck_id,
+    parent_play_id,
+    created_by_user_id,
+    target_user_id,
+    card_rank,
+    card_suit,
+    play_status,
+    play_text,
+    play_code,
+    reader_user_ids
+  FROM plays
+  WHERE deck_id = $1
+    AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED')
+  ORDER BY id ASC
+  `,
     [deckId]
   );
 
