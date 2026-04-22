@@ -616,12 +616,9 @@
       reedBtn.addEventListener("click", async () => {
         const play = latestReadOnly;
         const token = localStorage.getItem("cooptrackToken");
-        const rank = String(play?.card_rank || "").trim().toUpperCase();
-        const suit = String(play?.card_suit || "").trim().toUpperCase();
 
         try {
-          // Solo Q♠ se marca ACKNOWLEDGED
-          if (token && play?.id && rank === "Q" && suit === "SPADE") {
+          if (token && play?.id) {
             const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
               method: "PATCH",
               headers: {
@@ -638,11 +635,9 @@
             if (!response.ok || data?.ok === false) {
               console.error("No se pudo marcar ACKNOWLEDGED:", data);
             } else {
+              // ocultar de inmediato en esta pantalla
               reedBtn.remove();
             }
-          } else {
-            // Para K solo ocultar visualmente y navegar
-            reedBtn.remove();
           }
         } catch (error) {
           console.error("Error marcando como leído:", error);
@@ -651,6 +646,7 @@
         goToPlayNotification(play);
       });
     }
+  }
 
-    document.addEventListener("DOMContentLoaded", renderTopbar);
-  }) ();
+  document.addEventListener("DOMContentLoaded", renderTopbar);
+})();
