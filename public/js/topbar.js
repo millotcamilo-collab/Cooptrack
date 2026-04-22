@@ -81,9 +81,13 @@
       return "ACTION_REQUIRED";
     }
 
-    // 1b) Settlement confirmado sobre la misma QQ♠ para el pagador
+    // 1b) Settlement registrado sobre la misma QQ♠ para el pagador:
+    // no requiere acción, solo lectura
     if (isTarget && status === "APPROVED" && playHasSettlement(play)) {
-      return "ACTION_REQUIRED";
+      if (isReadOnlyDismissed(play?.id)) {
+        return null;
+      }
+      return "READ_ONLY";
     }
 
     // 2) Notificación solo lectura para el anfitrión
