@@ -619,23 +619,31 @@
 
         try {
           if (token && play?.id) {
-            const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-              },
-              body: JSON.stringify({
-                play_status: "ACKNOWLEDGED"
-              })
-            });
+            const rank = String(play?.card_rank || "").trim().toUpperCase();
+            const suit = String(play?.card_suit || "").trim().toUpperCase();
 
-            const data = await response.json().catch(() => ({}));
+            // Solo Q♠ usa ACKNOWLEDGED
+            if (rank === "Q" && suit === "SPADE") {
+              const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  play_status: "ACKNOWLEDGED"
+                })
+              });
 
-            if (!response.ok || data?.ok === false) {
-              console.error("No se pudo marcar ACKNOWLEDGED:", data);
+              const data = await response.json().catch(() => ({}));
+
+              if (!response.ok || data?.ok === false) {
+                console.error("No se pudo marcar ACKNOWLEDGED:", data);
+              } else {
+                reedBtn.remove();
+              }
             } else {
-              // ocultar de inmediato en esta pantalla
+              // Para K y A → solo ocultar visualmente
               reedBtn.remove();
             }
           }
