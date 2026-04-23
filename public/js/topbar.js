@@ -122,6 +122,18 @@
       return null;
     }
 
+console.log("PENDING KIND DEBUG", {
+  id: play?.id,
+  rank,
+  status,
+  currentUserId,
+  sourceUserId,
+  targetUserId,
+  isSource,
+  isTarget,
+  dismissed: isReadOnlyDismissed(play?.id)
+});
+
     return null;
   }
 
