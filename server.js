@@ -2849,30 +2849,19 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
       WHERE
 
         (
-          -- =========================
-          -- Q♠
-          -- =========================
           p.card_rank = 'Q'
           AND p.card_suit = 'SPADE'
           AND (
-
-            -- acción del invitado
             (
               p.target_user_id = $1
               AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
             )
-
             OR
-
-            -- notificación al anfitrión (aceptó / rechazó)
             (
               p.created_by_user_id = $1
               AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED')
             )
-
             OR
-
-            -- settlement para el pagador
             (
               p.target_user_id = $1
               AND COALESCE(p.play_status, '') = 'APPROVED'
@@ -2887,9 +2876,6 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
         OR
 
         (
-          -- =========================
-          -- K (destinatario)
-          -- =========================
           p.card_rank = 'K'
           AND p.target_user_id = $1
           AND COALESCE(p.play_status, '') IN (
@@ -2903,15 +2889,12 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
         OR
 
         (
-          -- =========================
-          -- K (anfitrión)
-          -- =========================
           p.card_rank = 'K'
           AND p.created_by_user_id = $1
           AND COALESCE(p.play_status, '') IN (
             'APPROVED',
             'QUIT',
-            'FIRED',
+            'FIRED'
           )
         )
 
