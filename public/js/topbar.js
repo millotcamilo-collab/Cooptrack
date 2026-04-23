@@ -70,6 +70,8 @@
     if (!play || !currentUserId) return null;
 
     const status = normalizeText(play?.play_status || play?.status);
+    const rank = normalizeText(play?.card_rank || play?.rank);
+
     const sourceUserId = Number(play?.created_by_user_id || 0);
     const targetUserId = Number(play?.target_user_id || 0);
 
@@ -81,16 +83,15 @@
       return "ACTION_REQUIRED";
     }
 
-    // 1c) K/A cancelada para el destinatario: solo lectura
-    if (isTarget && status === "CANCELLED") {
+    // 2) K finalizada para el destinatario: solo lectura
+    if (rank === "K" && isTarget && (status === "CANCELLED" || status === "REJECTED")) {
       if (isReadOnlyDismissed(play?.id)) {
         return null;
       }
       return "READ_ONLY";
     }
 
-    // 1b) Settlement registrado sobre la misma QQ♠ para el pagador:
-    // no requiere acción, solo lectura
+    // 3) Settlement registrado sobre la misma QQ♠ para el pagador
     if (isTarget && status === "APPROVED" && playHasSettlement(play)) {
       if (isReadOnlyDismissed(play?.id)) {
         return null;
@@ -98,20 +99,20 @@
       return "READ_ONLY";
     }
 
-    // 2) Notificación solo lectura para el anfitrión
-    if (isSource && (status === "APPROVED" || status === "REJECTED")) {
+    // 4) Notificación solo lectura para el anfitrión
+    if (isSource && (status === "APPROVED" || status === "REJECTED" || status === "CANCELLED")) {
       if (isReadOnlyDismissed(play?.id)) {
         return null;
       }
       return "READ_ONLY";
     }
 
-    // 3) Ya enterado: no debe aparecer más
+    // 5) Ya enterado
     if (isSource && status === "ACKNOWLEDGED") {
       return null;
     }
 
-    // 4) Enviada pero esperando al otro: no es pendiente del anfitrión
+    // 6) Enviada pero esperando al otro
     if (isSource && status === "SENT") {
       return null;
     }
@@ -257,6 +258,7 @@
   function resolveLienzoPageForPlay(play) {
     const rank = normalizeText(play?.card_rank || play?.rank);
     const suit = normalizeText(play?.card_suit || play?.suit);
+    const status = normalizeText(play?.play_status || play?.status);
 
     if (rank === "Q" && suit === "SPADE") {
       return playHasQHeartAttachment(play)
@@ -265,6 +267,9 @@
     }
 
     if (rank === "K") {
+      if (status === "REJECTED" || status === "CANCELLED") {
+        return "/lienzoRQF.html";
+      }
       return "/lienzoK.html";
     }
 
