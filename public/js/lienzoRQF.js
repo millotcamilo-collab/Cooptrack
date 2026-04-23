@@ -158,28 +158,28 @@
         const sourceUser = resolveSourceUser(play);
         const targetUser = resolveTargetUser(play);
 
-        if (status === "CANCELLED") {
+        if (status === "FIRED") {
             if (isTargetViewer(play)) {
                 return {
                     title: "Fuiste despedido",
-                    body: `${sourceUser.nickname} canceló esta K.`
+                    body: `${sourceUser.nickname} te despidió de esta K.`
                 };
             }
 
             if (isSourceViewer(play)) {
                 return {
                     title: "Despediste al destinatario",
-                    body: `La K de ${targetUser.nickname} quedó cancelada.`
+                    body: `La K de ${targetUser.nickname} quedó finalizada por despido.`
                 };
             }
 
             return {
-                title: "K cancelada",
-                body: "Esta jugada fue cancelada."
+                title: "K finalizada por despido",
+                body: "Esta K fue finalizada por despido."
             };
         }
 
-        if (status === "REJECTED") {
+        if (status === "QUIT") {
             if (isTargetViewer(play)) {
                 return {
                     title: "Renunciaste a esta K",
@@ -190,13 +190,13 @@
             if (isSourceViewer(play)) {
                 return {
                     title: "El destinatario renunció",
-                    body: `${targetUser.nickname} rechazó o abandonó esta K.`
+                    body: `${targetUser.nickname} renunció a esta K.`
                 };
             }
 
             return {
-                title: "K rechazada",
-                body: "Esta jugada fue rechazada."
+                title: "K finalizada por renuncia",
+                body: "Esta K fue finalizada por renuncia."
             };
         }
 
@@ -293,10 +293,10 @@
         });
     }
 
-function renderRQFSourcePanel(play) {
-  const sourceUser = resolveSourceUser(play);
+    function renderRQFSourcePanel(play) {
+        const sourceUser = resolveSourceUser(play);
 
-  return `
+        return `
     <section class="lienzo-panel lienzo-panel--source panel--split-top">
       <div class="panel-topbar">
         <div class="panel-topbar__col panel-topbar__col--identity">
@@ -317,12 +317,12 @@ function renderRQFSourcePanel(play) {
       </div>
     </section>
   `;
-}
+    }
 
-function renderRQFTargetPanel(play) {
-  const targetUser = resolveTargetUser(play);
+    function renderRQFTargetPanel(play) {
+        const targetUser = resolveTargetUser(play);
 
-  return `
+        return `
     <section class="lienzo-panel lienzo-panel--target panel--split-top">
       <div class="panel-topbar">
         <div class="panel-topbar__col panel-topbar__col--identity">
@@ -347,12 +347,12 @@ function renderRQFTargetPanel(play) {
       </div>
     </section>
   `;
-}
+    }
 
-function renderRQFBanner(play) {
-  const message = getRQFMessage(play);
+    function renderRQFBanner(play) {
+        const message = getRQFMessage(play);
 
-  return `
+        return `
     <section class="lienzo-panel panel--split-top">
       <div class="panel-topbar">
         <div class="panel-topbar__col panel-topbar__col--identity">
@@ -379,7 +379,7 @@ function renderRQFBanner(play) {
       </div>
     </section>
   `;
-}
+    }
 
     function renderLienzoRQF(play) {
         const container = getLienzoContainer();
