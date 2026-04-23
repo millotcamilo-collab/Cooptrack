@@ -99,19 +99,16 @@
       return "READ_ONLY";
     }
 
-    // 4) Notificación solo lectura para el anfitrión de una Q
-    if (rank === "Q" && isSource && (status === "APPROVED" || status === "REJECTED")) {
-      if (isReadOnlyDismissed(play?.id)) {
-        return null;
-      }
+    const FINAL_STATES_Q = ["APPROVED", "REJECTED", "CANCELLED"];
+    const FINAL_STATES_K = ["APPROVED", "REJECTED", "QUIT", "FIRED"];
+
+    if (rank === "Q" && isSource && FINAL_STATES_Q.includes(status)) {
+      if (isReadOnlyDismissed(play?.id)) return null;
       return "READ_ONLY";
     }
 
-    // 5) Notificación solo lectura para el anfitrión de una K
-    if (rank === "K" && isSource && (status === "APPROVED" || status === "QUIT" || status === "FIRED")) {
-      if (isReadOnlyDismissed(play?.id)) {
-        return null;
-      }
+    if (rank === "K" && isSource && FINAL_STATES_K.includes(status)) {
+      if (isReadOnlyDismissed(play?.id)) return null;
       return "READ_ONLY";
     }
 
