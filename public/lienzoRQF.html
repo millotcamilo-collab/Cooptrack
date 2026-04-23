@@ -87,6 +87,94 @@
         await window.renderTopbar();
       }
 
+function renderRQFSourcePanel(play) {
+  const sourceUser = resolveSourceUser(play);
+
+  return `
+    <section class="lienzo-panel lienzo-panel--source panel--split-top">
+      <div class="panel-topbar">
+        <div class="panel-topbar__col panel-topbar__col--identity">
+          <div class="lienzo-target-header lienzo-target-header--top">
+            <div class="lienzo-target-header__name">${escapeHtml(sourceUser.nickname)}</div>
+            <img
+              class="lienzo-target-header__photo"
+              src="${escapeHtml(sourceUser.profile_photo_url)}"
+              alt="${escapeHtml(sourceUser.nickname)}"
+            />
+          </div>
+        </div>
+        <div class="panel-topbar__col panel-topbar__col--actions"></div>
+      </div>
+
+      <div class="lienzo-source-cards">
+        <div class="lienzo-source-stack"></div>
+      </div>
+    </section>
+  `;
+}
+
+function renderRQFTargetPanel(play) {
+  const targetUser = resolveTargetUser(play);
+
+  return `
+    <section class="lienzo-panel lienzo-panel--target panel--split-top">
+      <div class="panel-topbar">
+        <div class="panel-topbar__col panel-topbar__col--identity">
+          <div class="lienzo-target-header lienzo-target-header--top">
+            <div class="lienzo-target-header__name">${escapeHtml(targetUser.nickname)}</div>
+            <img
+              class="lienzo-target-header__photo"
+              src="${escapeHtml(targetUser.profile_photo_url)}"
+              alt="${escapeHtml(targetUser.nickname)}"
+            />
+          </div>
+        </div>
+        <div class="panel-topbar__col panel-topbar__col--actions"></div>
+      </div>
+
+      <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+        <img
+          class="lienzo-card-image"
+          src="${escapeHtml(getCardImageSrc(play?.card_rank, play?.card_suit))}"
+          alt="${escapeHtml(`K${getSuitSymbol(play?.card_suit)}`)}"
+        />
+      </div>
+    </section>
+  `;
+}
+
+function renderRQFBanner(play) {
+  const message = getRQFMessage(play);
+
+  return `
+    <section class="lienzo-panel panel--split-top">
+      <div class="panel-topbar">
+        <div class="panel-topbar__col panel-topbar__col--identity">
+          <div class="lienzo-target-header__name">
+            ${escapeHtml(message.title)}
+          </div>
+        </div>
+
+        <div class="panel-topbar__col panel-topbar__col--actions">
+          <button
+            id="lienzo-rqf-exit-btn"
+            class="icon-btn"
+            type="button"
+            title="Salir"
+            aria-label="Salir"
+          >
+            <img src="/assets/icons/exit80.gif" alt="Salir" />
+          </button>
+        </div>
+      </div>
+
+      <div style="padding: 14px 20px; text-align: center; font-size: 18px; line-height: 1.5;">
+        ${escapeHtml(message.body)}
+      </div>
+    </section>
+  `;
+}
+
       async function bootstrapLienzoRQFPage() {
         try {
           await initTopbar();
