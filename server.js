@@ -1440,6 +1440,13 @@ async function getMazoStateHandler(req, res) {
     let mazo = await getMazoByIdForUser(pool, mazoId, userId);
     let allowReadOnlyFormerTarget = false;
 
+    console.log('DEBUG state 1', {
+      userId,
+      mazoId,
+      playId,
+      foundMazoAsMember: !!mazo
+    });
+
     if (!mazo && playId) {
       const playResult = await pool.query(
         `
@@ -1458,6 +1465,8 @@ async function getMazoStateHandler(req, res) {
         [playId, mazoId, userId]
       );
 
+      console.log('DEBUG state 2 playResult.rows', playResult.rows);
+
       if (playResult.rows.length) {
         const deckResult = await pool.query(
           `
@@ -1469,10 +1478,15 @@ async function getMazoStateHandler(req, res) {
           [mazoId]
         );
 
+        console.log('DEBUG state 3 deckResult.rows', deckResult.rows);
+
         mazo = deckResult.rows[0] || null;
         allowReadOnlyFormerTarget = !!mazo;
       }
     }
+
+    console.log('DEBUG state 4 mazo final', mazo);
+    console.log('DEBUG state 5 allowReadOnlyFormerTarget', allowReadOnlyFormerTarget);
 
     if (!mazo) {
       return res.status(404).json({
@@ -1483,7 +1497,7 @@ async function getMazoStateHandler(req, res) {
 
     const visibilityWhere = buildReadersVisibilityWhereClause({
       readersColumn: 'p.reader_user_ids',
-      userIdParamIndex: 3,
+      userIdParamIndex: 4,
     });
 
     let result;
@@ -1509,7 +1523,10 @@ async function getMazoStateHandler(req, res) {
           ON target.id = p.target_user_id
         WHERE p.id = $1
           AND p.deck_id = $2
-          AND p.target_user_id = $3
+          AND (
+            p.target_user_id = $3
+            OR p.created_by_user_id = $3
+          )
           AND UPPER(COALESCE(p.card_rank, '')) = 'K'
           AND UPPER(COALESCE(p.play_status, '')) IN ('CANCELLED', 'REJECTED')
           AND ${visibilityWhere}
