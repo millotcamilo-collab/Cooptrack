@@ -1901,74 +1901,6 @@ async function removeUserFromAclLines(client, deckId, userId) {
   }
 }
 
-app.get('/plays/:id', requireAuth, async (req, res) => {
-  try {
-    const playId = Number(req.params.id);
-    const userId = req.auth.userId;
-
-    if (!Number.isInteger(playId) || playId <= 0) {
-      return res.status(400).json({
-        ok: false,
-        error: 'playId inválido',
-      });
-    }
-
-    const visibilityWhere = buildReadersVisibilityWhereClause({
-      readersColumn: 'p.reader_user_ids',
-      userIdParamIndex: 2,
-    });
-
-    const result = await pool.query(
-      `
-      SELECT
-        p.*,
-        creator.nickname AS created_by_nickname,
-        creator.profile_photo_url AS created_by_profile_photo_url,
-        target.nickname AS target_user_nickname,
-        target.profile_photo_url AS target_user_profile_photo_url,
-        d.name AS deck_name,
-        d.deck_image_url,
-        d.currency_symbol,
-        d.currency_name,
-        EXISTS (
-          SELECT 1
-          FROM play_recurrences pr
-          WHERE pr.play_id = p.id
-        ) AS has_recurrence
-      FROM plays p
-      LEFT JOIN users creator
-        ON creator.id = p.created_by_user_id
-      LEFT JOIN users target
-        ON target.id = p.target_user_id
-      LEFT JOIN decks d
-        ON d.id = p.deck_id
-      WHERE p.id = $1
-        AND ${visibilityWhere}
-      LIMIT 1
-      `,
-      [playId, String(userId), `U:${userId}`]
-    );
-
-    if (!result.rows.length) {
-      return res.status(404).json({
-        ok: false,
-        error: 'Jugada no encontrada',
-      });
-    }
-
-    return res.json({
-      ok: true,
-      play: result.rows[0],
-    });
-  } catch (error) {
-    console.error('Error en GET /plays/:id', error);
-    return res.status(500).json({
-      ok: false,
-      error: 'Error obteniendo jugada',
-    });
-  }
-});
-
 app.patch('/plays/:id', requireAuth, async (req, res) => {
   const client = await pool.connect();
 
@@ -2988,6 +2920,74 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
     return res.status(500).json({
       ok: false,
       error: 'Error obteniendo pendientes',
+    });
+  }
+});
+
+app.get('/plays/:id', requireAuth, async (req, res) => {
+  try {
+    const playId = Number(req.params.id);
+    const userId = req.auth.userId;
+
+    if (!Number.isInteger(playId) || playId <= 0) {
+      return res.status(400).json({
+        ok: false,
+        error: 'playId inválido',
+      });
+    }
+
+    const visibilityWhere = buildReadersVisibilityWhereClause({
+      readersColumn: 'p.reader_user_ids',
+      userIdParamIndex: 2,
+    });
+
+    const result = await pool.query(
+      `
+      SELECT
+        p.*,
+        creator.nickname AS created_by_nickname,
+        creator.profile_photo_url AS created_by_profile_photo_url,
+        target.nickname AS target_user_nickname,
+        target.profile_photo_url AS target_user_profile_photo_url,
+        d.name AS deck_name,
+        d.deck_image_url,
+        d.currency_symbol,
+        d.currency_name,
+        EXISTS (
+          SELECT 1
+          FROM play_recurrences pr
+          WHERE pr.play_id = p.id
+        ) AS has_recurrence
+      FROM plays p
+      LEFT JOIN users creator
+        ON creator.id = p.created_by_user_id
+      LEFT JOIN users target
+        ON target.id = p.target_user_id
+      LEFT JOIN decks d
+        ON d.id = p.deck_id
+      WHERE p.id = $1
+        AND ${visibilityWhere}
+      LIMIT 1
+      `,
+      [playId, String(userId), `U:${userId}`]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Jugada no encontrada',
+      });
+    }
+
+    return res.json({
+      ok: true,
+      play: result.rows[0],
+    });
+  } catch (error) {
+    console.error('Error en GET /plays/:id', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'Error obteniendo jugada',
     });
   }
 });
