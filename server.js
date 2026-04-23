@@ -2859,7 +2859,7 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
             OR
             (
               p.created_by_user_id = $1
-              AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED')
+              AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'CANCELLED')
             )
             OR
             (
@@ -2893,6 +2893,7 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
           AND p.created_by_user_id = $1
           AND COALESCE(p.play_status, '') IN (
             'APPROVED',
+            'REJECTED',
             'QUIT',
             'FIRED'
           )
