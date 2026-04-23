@@ -515,7 +515,7 @@
             Number(getCurrentDeck()?.id || 0);
 
         if (deckId) {
-            window.location.href = `/mazo.html?id=${deckId}`;
+            window.location.href = `/mazoAdministradores.html?id=${deckId}`;
             return;
         }
 
