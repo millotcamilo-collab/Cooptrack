@@ -99,8 +99,16 @@
       return "READ_ONLY";
     }
 
-    // 4) Notificación solo lectura para el anfitrión
-    if (isSource && (status === "APPROVED" || status === "QUIT" || status === "FIRED")) {
+    // 4) Notificación solo lectura para el anfitrión de una Q
+    if (rank === "Q" && isSource && (status === "APPROVED" || status === "REJECTED")) {
+      if (isReadOnlyDismissed(play?.id)) {
+        return null;
+      }
+      return "READ_ONLY";
+    }
+
+    // 5) Notificación solo lectura para el anfitrión de una K
+    if (rank === "K" && isSource && (status === "APPROVED" || status === "QUIT" || status === "FIRED")) {
       if (isReadOnlyDismissed(play?.id)) {
         return null;
       }
