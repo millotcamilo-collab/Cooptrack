@@ -147,6 +147,13 @@
       const data = await response.json();
       const plays = Array.isArray(data?.plays) ? data.plays : [];
 
+      console.log("TOPBAR pending response", {
+        ok: response.ok,
+        status: response.status,
+        data,
+        plays
+      });
+
       const candidates = plays
         .filter(isCorporateIncomingPlay)
         .map((play) => {
@@ -154,6 +161,8 @@
           return pendingKind ? { ...play, pendingKind } : null;
         })
         .filter(Boolean);
+
+console.log("TOPBAR candidates", candidates);
 
       const actionRequired = candidates
         .filter((play) => play.pendingKind === "ACTION_REQUIRED")
