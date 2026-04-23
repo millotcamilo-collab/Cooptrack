@@ -2812,73 +2812,100 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
     const userId = req.auth.userId;
 
     const result = await pool.query(
-      `SELECT
-         p.id,
-         p.deck_id,
-         p.parent_play_id,
-         p.created_by_user_id,
-         p.target_user_id,
-         p.card_rank,
-         p.card_suit,
-         p.play_status,
-         p.play_text,
-         p.play_code,
-         p.created_at,
-         p.updated_at,
-         parent.play_text AS parent_play_text,
-         author.nickname AS author_nickname,
-         deck.name AS deck_name
-       FROM plays p
-       LEFT JOIN plays parent
-         ON parent.id = p.parent_play_id
-       LEFT JOIN users author
-         ON author.id = p.created_by_user_id
-       LEFT JOIN decks deck
-         ON deck.id = p.deck_id
-       WHERE
-         (
-           (
-             p.card_rank = 'Q'
-             AND p.card_suit = 'SPADE'
-             AND (
-               (
-                 p.target_user_id = $1
-                 AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
-               )
-               OR
-               (
-                 p.created_by_user_id = $1
-                 AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED')
-               )
-               OR
-               (
-                 p.target_user_id = $1
-                 AND COALESCE(p.play_status, '') = 'APPROVED'
-                 AND (
-                   p.play_code LIKE '%settlement:PAID%'
-                   OR p.play_code LIKE '%settlement:COMPLAINED%'
-                 )
-               )
-             )
-           )
+      `
+      SELECT
+        p.id,
+        p.deck_id,
+        p.parent_play_id,
+        p.created_by_user_id,
+        p.target_user_id,
+        p.card_rank,
+        p.card_suit,
+        p.play_status,
+        p.play_text,
+        p.play_code,
+        p.created_at,
+        p.updated_at,
+        parent.play_text AS parent_play_text,
+        author.nickname AS author_nickname,
+        deck.name AS deck_name
+      FROM plays p
+      LEFT JOIN plays parent
+        ON parent.id = p.parent_play_id
+      LEFT JOIN users author
+        ON author.id = p.created_by_user_id
+      LEFT JOIN decks deck
+        ON deck.id = p.deck_id
+      WHERE
 
-           OR
+        (
+          -- =========================
+          -- Q♠
+          -- =========================
+          p.card_rank = 'Q'
+          AND p.card_suit = 'SPADE'
+          AND (
 
-           (
-             p.card_rank = 'K'
-             AND p.target_user_id = $1
-             AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
-           )
+            -- acción del invitado
+            (
+              p.target_user_id = $1
+              AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+            )
 
-           OR
+            OR
 
-           (
-             p.card_rank = 'K'
-             AND p.created_by_user_id = $1
-             AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED')
-           )
-         )
-       ORDER BY p.created_at DESC`,
+            -- notificación al anfitrión (aceptó / rechazó)
+            (
+              p.created_by_user_id = $1
+              AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED')
+            )
+
+            OR
+
+            -- settlement para el pagador
+            (
+              p.target_user_id = $1
+              AND COALESCE(p.play_status, '') = 'APPROVED'
+              AND (
+                p.play_code LIKE '%settlement:PAID%'
+                OR p.play_code LIKE '%settlement:COMPLAINED%'
+              )
+            )
+          )
+        )
+
+        OR
+
+        (
+          -- =========================
+          -- K (destinatario)
+          -- =========================
+          p.card_rank = 'K'
+          AND p.target_user_id = $1
+          AND COALESCE(p.play_status, '') IN (
+            'SENT',
+            'PENDING',
+            'CANCELLED'
+          )
+        )
+
+        OR
+
+        (
+          -- =========================
+          -- K (anfitrión)
+          -- =========================
+          p.card_rank = 'K'
+          AND p.created_by_user_id = $1
+          AND COALESCE(p.play_status, '') IN (
+            'APPROVED',
+            'REJECTED',
+            'CANCELLED'
+          )
+        )
+
+      ORDER BY p.created_at DESC
+      `,
       [userId]
     );
 
@@ -2886,8 +2913,10 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
       ok: true,
       plays: result.rows,
     });
+
   } catch (error) {
     console.error('Error en GET /plays/pending', error);
+
     return res.status(500).json({
       ok: false,
       error: 'Error obteniendo pendientes',
