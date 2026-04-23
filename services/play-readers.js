@@ -320,6 +320,7 @@ async function handleReadersOnPlayCreate(client, play) {
     id,
     deck_id,
     created_by_user_id,
+    target_user_id,
     card_rank,
     card_suit
   } = play;
@@ -334,6 +335,17 @@ async function handleReadersOnPlayCreate(client, play) {
     return;
   }
 
+  // --- K recién creada ---
+  if (rank === 'K') {
+    const readers = normalizeReaderEntries([
+      created_by_user_id,
+      target_user_id
+    ]);
+
+    await setPlayReaders(client, id, readers);
+    return;
+  }
+
   // --- J♠ actividad ---
   if (rank === 'J' && suit === 'SPADE') {
     const readers = await computeReadersForJSpade(client, play);
@@ -341,7 +353,7 @@ async function handleReadersOnPlayCreate(client, play) {
     return;
   }
 
-  // --- J♣ bien ---
+  // --- J♣ ---
   if (rank === 'J' && suit === 'CLUB') {
     const readers = await computeReadersForJClub(client, play);
     await setPlayReaders(client, id, readers);
