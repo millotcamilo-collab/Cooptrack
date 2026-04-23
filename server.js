@@ -1279,7 +1279,13 @@ async function listMazosHandler(req, res) {
           const joker_type = hasActiveBlueJoker ? 'BLUE' : 'RED';
 
           const activeStatuses = ['ACTIVE', 'APPROVED', 'SENT', 'ACKNOWLEDGED'];
-          const archivedVisibleStatuses = [...activeStatuses, 'REJECTED'];
+          const archivedVisibleStatuses = [
+            ...activeStatuses,
+            'REJECTED', // Q
+            'CANCELLED', // Q
+            'QUIT',     // K/A
+            'FIRED'     // K/A
+          ];
 
           const corporateCards = plays
             .filter((play) => {
