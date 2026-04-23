@@ -81,6 +81,14 @@
       return "ACTION_REQUIRED";
     }
 
+    // 1c) K/A cancelada para el destinatario: solo lectura
+    if (isTarget && status === "CANCELLED") {
+      if (isReadOnlyDismissed(play?.id)) {
+        return null;
+      }
+      return "READ_ONLY";
+    }
+
     // 1b) Settlement registrado sobre la misma QQ♠ para el pagador:
     // no requiere acción, solo lectura
     if (isTarget && status === "APPROVED" && playHasSettlement(play)) {
