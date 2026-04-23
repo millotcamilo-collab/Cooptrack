@@ -1435,7 +1435,41 @@ async function getMazoStateHandler(req, res) {
       });
     }
 
-    const mazo = await getMazoByIdForUser(pool, mazoId, userId);
+    const playId = Number(req.query.playId || 0);
+
+    let mazo = await getMazoByIdForUser(pool, mazoId, userId);
+    let allowReadOnlyFormerTarget = false;
+
+    if (!mazo && playId) {
+      const playResult = await pool.query(
+        `
+        SELECT p.*
+        FROM plays p
+        WHERE p.id = $1
+          AND p.deck_id = $2
+          AND p.target_user_id = $3
+          AND UPPER(COALESCE(p.card_rank, '')) = 'K'
+          AND UPPER(COALESCE(p.play_status, '')) IN ('CANCELLED', 'REJECTED')
+        LIMIT 1
+        `,
+        [playId, mazoId, userId]
+      );
+
+      if (playResult.rows.length) {
+        const deckResult = await pool.query(
+          `
+          SELECT *
+          FROM decks
+          WHERE id = $1
+          LIMIT 1
+          `,
+          [mazoId]
+        );
+
+        mazo = deckResult.rows[0] || null;
+        allowReadOnlyFormerTarget = !!mazo;
+      }
+    }
 
     if (!mazo) {
       return res.status(404).json({
@@ -1449,33 +1483,66 @@ async function getMazoStateHandler(req, res) {
       userIdParamIndex: 3,
     });
 
-    const result = await pool.query(
-      `
-      SELECT
-        p.*,
-        creator.nickname AS created_by_nickname,
-        creator.profile_photo_url AS created_by_profile_photo_url,
-        target.nickname AS target_user_nickname,
-        target.profile_photo_url AS target_user_profile_photo_url,
-        EXISTS (
-          SELECT 1
-          FROM play_recurrences pr
-          WHERE pr.play_id = p.id
-        ) AS has_recurrence
-      FROM plays p
-      INNER JOIN deck_members dm
-        ON dm.deck_id = p.deck_id
-      LEFT JOIN users creator
-        ON creator.id = p.created_by_user_id
-      LEFT JOIN users target
-        ON target.id = p.target_user_id
-      WHERE p.deck_id = $1
-        AND dm.user_id = $2
-        AND ${visibilityWhere}
-      ORDER BY p.id ASC
-      `,
-      [mazoId, userId, String(userId), `U:${userId}`]
-    );
+    let result;
+
+    if (allowReadOnlyFormerTarget) {
+      result = await pool.query(
+        `
+        SELECT
+          p.*,
+          creator.nickname AS created_by_nickname,
+          creator.profile_photo_url AS created_by_profile_photo_url,
+          target.nickname AS target_user_nickname,
+          target.profile_photo_url AS target_user_profile_photo_url,
+          EXISTS (
+            SELECT 1
+            FROM play_recurrences pr
+            WHERE pr.play_id = p.id
+          ) AS has_recurrence
+        FROM plays p
+        LEFT JOIN users creator
+          ON creator.id = p.created_by_user_id
+        LEFT JOIN users target
+          ON target.id = p.target_user_id
+        WHERE p.id = $1
+          AND p.deck_id = $2
+          AND p.target_user_id = $3
+          AND UPPER(COALESCE(p.card_rank, '')) = 'K'
+          AND UPPER(COALESCE(p.play_status, '')) IN ('CANCELLED', 'REJECTED')
+          AND ${visibilityWhere}
+        ORDER BY p.id ASC
+        `,
+        [playId, mazoId, userId, String(userId), `U:${userId}`]
+      );
+    } else {
+      result = await pool.query(
+        `
+        SELECT
+          p.*,
+          creator.nickname AS created_by_nickname,
+          creator.profile_photo_url AS created_by_profile_photo_url,
+          target.nickname AS target_user_nickname,
+          target.profile_photo_url AS target_user_profile_photo_url,
+          EXISTS (
+            SELECT 1
+            FROM play_recurrences pr
+            WHERE pr.play_id = p.id
+          ) AS has_recurrence
+        FROM plays p
+        INNER JOIN deck_members dm
+          ON dm.deck_id = p.deck_id
+        LEFT JOIN users creator
+          ON creator.id = p.created_by_user_id
+        LEFT JOIN users target
+          ON target.id = p.target_user_id
+        WHERE p.deck_id = $1
+          AND dm.user_id = $2
+          AND ${visibilityWhere}
+        ORDER BY p.id ASC
+        `,
+        [mazoId, userId, String(userId), `U:${userId}`]
+      );
+    }
 
     const plays = result.rows;
 
@@ -1525,6 +1592,7 @@ async function getMazoStateHandler(req, res) {
       deck: mazo,
       plays,
       corporateCards,
+      read_only_former_target: allowReadOnlyFormerTarget,
     });
 
   } catch (error) {
