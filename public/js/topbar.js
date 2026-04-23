@@ -28,35 +28,6 @@
     }
   }
 
-  function getReadOnlyDismissedIds() {
-    try {
-      const raw = localStorage.getItem("cooptrackReadOnlyDismissedIds");
-      const parsed = JSON.parse(raw || "[]");
-      return Array.isArray(parsed) ? parsed.map((id) => Number(id)).filter(Boolean) : [];
-    } catch (error) {
-      return [];
-    }
-  }
-
-  function saveReadOnlyDismissedIds(ids) {
-    try {
-      const unique = [...new Set((ids || []).map((id) => Number(id)).filter(Boolean))];
-      localStorage.setItem("cooptrackReadOnlyDismissedIds", JSON.stringify(unique));
-    } catch (error) {
-      console.warn("No se pudo guardar dismissedIds", error);
-    }
-  }
-
-  function markReadOnlyDismissed(playId) {
-    const current = getReadOnlyDismissedIds();
-    current.push(Number(playId || 0));
-    saveReadOnlyDismissedIds(current);
-  }
-
-  function isReadOnlyDismissed(playId) {
-    return getReadOnlyDismissedIds().includes(Number(playId || 0));
-  }
-
   function normalizeText(value) {
     return String(value || "").trim().toUpperCase();
   }
@@ -83,32 +54,22 @@
       return "ACTION_REQUIRED";
     }
 
-    // 2) K finalizada para el destinatario: solo lectura
-    if (rank === "K" && isTarget && (status === "FIRED" || status === "QUIT")) {
-      if (isReadOnlyDismissed(play?.id)) {
-        return null;
-      }
-      return "READ_ONLY";
-    }
-
-    // 3) Settlement registrado sobre la misma QQ♠ para el pagador
-    if (isTarget && status === "APPROVED" && playHasSettlement(play)) {
-      if (isReadOnlyDismissed(play?.id)) {
-        return null;
-      }
-      return "READ_ONLY";
-    }
-
     const FINAL_STATES_Q = ["APPROVED", "REJECTED", "CANCELLED"];
     const FINAL_STATES_K = ["APPROVED", "REJECTED", "QUIT", "FIRED"];
 
+    if (rank === "K" && isTarget && (status === "FIRED" || status === "QUIT")) {
+      return "READ_ONLY";
+    }
+
+    if (isTarget && status === "APPROVED" && playHasSettlement(play)) {
+      return "READ_ONLY";
+    }
+
     if (rank === "Q" && isSource && FINAL_STATES_Q.includes(status)) {
-      if (isReadOnlyDismissed(play?.id)) return null;
       return "READ_ONLY";
     }
 
     if (rank === "K" && isSource && FINAL_STATES_K.includes(status)) {
-      if (isReadOnlyDismissed(play?.id)) return null;
       return "READ_ONLY";
     }
 
@@ -121,18 +82,6 @@
     if (isSource && status === "SENT") {
       return null;
     }
-
-console.log("PENDING KIND DEBUG", {
-  id: play?.id,
-  rank,
-  status,
-  currentUserId,
-  sourceUserId,
-  targetUserId,
-  isSource,
-  isTarget,
-  dismissed: isReadOnlyDismissed(play?.id)
-});
 
     return null;
   }
@@ -439,6 +388,36 @@ console.log("PENDING KIND DEBUG", {
     }
   }
 
+  async function acknowledgePlay(playId) {
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token || !playId) return false;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_status: "ACKNOWLEDGED"
+        })
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        console.error("No se pudo marcar como leída:", data || response.status);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error marcando notificación como leída:", error);
+      return false;
+    }
+  }
+
   async function renderTopbar() {
     const user = await getLoggedUser();
     const userHasDecks = await hasDecks();
@@ -691,9 +670,8 @@ console.log("PENDING KIND DEBUG", {
       reedBtn.addEventListener("click", async () => {
         const play = latestReadOnly;
 
-        markReadOnlyDismissed(play?.id);
+        await acknowledgePlay(play?.id);
         goToPlayNotification(play);
-
       });
     }
 
