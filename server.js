@@ -2016,6 +2016,8 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         currentStatus === 'APPROVED' ||
         currentStatus === 'REJECTED' ||
         currentStatus === 'CANCELLED' ||
+        currentStatus === 'QUIT' ||
+        currentStatus === 'FIRED' ||
         currentStatus === 'ACKNOWLEDGED'
       ) {
         return res.status(400).json({
@@ -2436,7 +2438,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     WHERE deck_id = $1
       AND target_user_id = $2
       AND id <> $3
-      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'BLOCKED')
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'BLOCKED','QUIT', 'FIRED')
       AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
     LIMIT 1
     `,
@@ -2472,12 +2474,12 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
     }
 
-    const isRejectingKNow =
+    const isQuittingKNow =
       currentRank === 'K' &&
-      currentStatus !== 'REJECTED' &&
-      nextStatus === 'REJECTED';
+      currentStatus !== 'QUIT' &&
+      nextStatus === 'QUIT';
 
-    if (isRejectingKNow) {
+    if (isQuittingKNow) {
       const invitedUserId = Number(updatedPlay.target_user_id || 0);
       const deckId = Number(updatedPlay.deck_id || 0);
 
@@ -2485,10 +2487,12 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         await client.query('ROLLBACK');
         return res.status(400).json({
           ok: false,
-          error: 'La K rechazada debe tener target_user_id y deck_id válidos'
+          error: 'La K renunciada debe tener target_user_id y deck_id válidos'
         });
       }
+
       await removeUserFromAclLines(client, deckId, invitedUserId);
+
       const tieCheck = await client.query(
         `
     SELECT 1
@@ -2496,7 +2500,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     WHERE deck_id = $1
       AND target_user_id = $2
       AND id <> $3
-      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'BLOCKED')
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'QUIT', 'FIRED', 'BLOCKED')
       AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
     LIMIT 1
     `,
@@ -2527,17 +2531,17 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       VALUES ($1, $2, $3, $4, NOW())
       ON CONFLICT DO NOTHING
       `,
-          [deckId, invitedUserId, 'K_REJECTED', updatedPlay.id]
+          [deckId, invitedUserId, 'K_QUIT', updatedPlay.id]
         );
       }
     }
 
-    const isCancellingKNow =
+    const isFiringKNow =
       currentRank === 'K' &&
-      currentStatus !== 'CANCELLED' &&
-      nextStatus === 'CANCELLED';
+      currentStatus !== 'FIRED' &&
+      nextStatus === 'FIRED';
 
-    if (isCancellingKNow) {
+    if (isFiringKNow) {
       const invitedUserId = Number(updatedPlay.target_user_id || 0);
       const deckId = Number(updatedPlay.deck_id || 0);
 
@@ -2545,7 +2549,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         await client.query('ROLLBACK');
         return res.status(400).json({
           ok: false,
-          error: 'La K cancelada debe tener target_user_id y deck_id válidos'
+          error: 'La K despedida debe tener target_user_id y deck_id válidos'
         });
       }
 
@@ -2558,7 +2562,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     WHERE deck_id = $1
       AND target_user_id = $2
       AND id <> $3
-      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'BLOCKED')
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'QUIT', 'FIRED', 'BLOCKED')
       AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
     LIMIT 1
     `,
@@ -2589,7 +2593,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       VALUES ($1, $2, $3, $4, NOW())
       ON CONFLICT DO NOTHING
       `,
-          [deckId, invitedUserId, 'K_CANCELLED', updatedPlay.id]
+          [deckId, invitedUserId, 'K_FIRED', updatedPlay.id]
         );
       }
     }
@@ -2885,7 +2889,8 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
           AND COALESCE(p.play_status, '') IN (
             'SENT',
             'PENDING',
-            'CANCELLED'
+            'FIRED',
+            'QUIT'
           )
         )
 
@@ -2899,8 +2904,8 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
           AND p.created_by_user_id = $1
           AND COALESCE(p.play_status, '') IN (
             'APPROVED',
-            'REJECTED',
-            'CANCELLED'
+            'QUIT',
+            'FIRED',
           )
         )
 

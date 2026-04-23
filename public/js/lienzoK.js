@@ -305,8 +305,8 @@
             return "APPROVED";
         }
 
-        if (status === "REJECTED") return "REJECTED";
-        if (status === "CANCELLED") return "CANCELLED";
+        if (status === "QUIT") return "QUIT";
+        if (status === "FIRED") return "FIRED";
 
         return "ACTIVE";
     }
@@ -550,13 +550,14 @@
                 }
             });
         }
+
         if (dismissBtn) {
             dismissBtn.addEventListener("click", async () => {
                 const confirmed = window.confirm("¿Despedir esta K?");
                 if (!confirmed) return;
 
                 const result = await patchPlay(play.id, {
-                    play_status: "CANCELLED"
+                    play_status: "FIRED"
                 });
 
                 if (result.ok) {
@@ -592,7 +593,7 @@
                 if (!confirmed) return;
 
                 const result = await patchPlay(play.id, {
-                    play_status: "REJECTED"
+                    play_status: "QUIT"
                 });
 
                 if (result.ok) {
@@ -607,7 +608,7 @@
                 if (!confirmed) return;
 
                 const result = await patchPlay(play.id, {
-                    play_status: "REJECTED"
+                    play_status: "QUIT"
                 });
 
                 if (result.ok) {

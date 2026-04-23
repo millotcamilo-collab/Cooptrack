@@ -84,7 +84,7 @@
     }
 
     // 2) K finalizada para el destinatario: solo lectura
-    if (rank === "K" && isTarget && (status === "CANCELLED" || status === "REJECTED")) {
+    if (rank === "K" && isTarget && (status === "FIRED" || status === "QUIT")) {
       if (isReadOnlyDismissed(play?.id)) {
         return null;
       }
@@ -100,7 +100,7 @@
     }
 
     // 4) Notificación solo lectura para el anfitrión
-    if (isSource && (status === "APPROVED" || status === "REJECTED" || status === "CANCELLED")) {
+    if (isSource && (status === "APPROVED" || status === "QUIT" || status === "FIRED")) {
       if (isReadOnlyDismissed(play?.id)) {
         return null;
       }
@@ -162,7 +162,7 @@
         })
         .filter(Boolean);
 
-console.log("TOPBAR candidates", candidates);
+      console.log("TOPBAR candidates", candidates);
 
       const actionRequired = candidates
         .filter((play) => play.pendingKind === "ACTION_REQUIRED")
@@ -276,7 +276,7 @@ console.log("TOPBAR candidates", candidates);
     }
 
     if (rank === "K") {
-      if (status === "REJECTED" || status === "CANCELLED") {
+      if (status === "QUIT" || status === "FIRED") {
         return "/lienzoRQF.html";
       }
       return "/lienzoK.html";

@@ -15,7 +15,11 @@ function getDeckMembershipStatusFromPlays(plays, userId) {
     const authorId = String(play.created_by_user_id || '');
     const targetId = String(play.target_user_id || '');
 
-    const isActive = status !== 'REJECTED' && status !== 'CANCELLED';
+    const isActive =
+      status !== 'REJECTED' &&
+      status !== 'CANCELLED' &&
+      status !== 'QUIT' &&
+      status !== 'FIRED';
 
     if (isActive && (rank === 'A' || rank === 'K')) {
       if (authorId === userIdStr || targetId === userIdStr) {
