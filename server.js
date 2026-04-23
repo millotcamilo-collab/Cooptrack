@@ -1495,7 +1495,12 @@ async function getMazoStateHandler(req, res) {
       });
     }
 
-    const visibilityWhere = buildReadersVisibilityWhereClause({
+    const visibilityWhereNormal = buildReadersVisibilityWhereClause({
+      readersColumn: 'p.reader_user_ids',
+      userIdParamIndex: 3,
+    });
+
+    const visibilityWhereFormerTarget = buildReadersVisibilityWhereClause({
       readersColumn: 'p.reader_user_ids',
       userIdParamIndex: 4,
     });
@@ -1529,7 +1534,7 @@ async function getMazoStateHandler(req, res) {
           )
           AND UPPER(COALESCE(p.card_rank, '')) = 'K'
           AND UPPER(COALESCE(p.play_status, '')) IN ('CANCELLED', 'REJECTED')
-          AND ${visibilityWhere}
+          AND ${visibilityWhereFormerTarget}
         ORDER BY p.id ASC
         `,
         [playId, mazoId, userId, String(userId), `U:${userId}`]
@@ -1557,7 +1562,7 @@ async function getMazoStateHandler(req, res) {
           ON target.id = p.target_user_id
         WHERE p.deck_id = $1
           AND dm.user_id = $2
-          AND ${visibilityWhere}
+          AND ${visibilityWhereNormal}
         ORDER BY p.id ASC
         `,
         [mazoId, userId, String(userId), `U:${userId}`]
