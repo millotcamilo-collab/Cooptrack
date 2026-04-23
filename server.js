@@ -1447,7 +1447,10 @@ async function getMazoStateHandler(req, res) {
         FROM plays p
         WHERE p.id = $1
           AND p.deck_id = $2
-          AND p.target_user_id = $3
+          AND (
+            p.target_user_id = $3
+            OR p.created_by_user_id = $3
+          )
           AND UPPER(COALESCE(p.card_rank, '')) = 'K'
           AND UPPER(COALESCE(p.play_status, '')) IN ('CANCELLED', 'REJECTED')
         LIMIT 1
