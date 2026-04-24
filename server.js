@@ -2409,6 +2409,24 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
           updatedPlay.id,
           [updatedPlay.created_by_user_id, invitedUserId]
         );
+
+        await client.query(
+          `
+    INSERT INTO deck_members (deck_id, user_id)
+    VALUES ($1, $2)
+    ON CONFLICT DO NOTHING
+    `,
+          [updatedPlay.deck_id, invitedUserId]
+        );
+
+        await client.query(
+          `
+    DELETE FROM ex_deck_members
+    WHERE deck_id = $1
+      AND user_id = $2
+    `,
+          [updatedPlay.deck_id, invitedUserId]
+        );
       }
 
 

@@ -19,7 +19,8 @@ function getDeckMembershipStatusFromPlays(plays, userId) {
       status !== 'REJECTED' &&
       status !== 'CANCELLED' &&
       status !== 'QUIT' &&
-      status !== 'FIRED';
+      status !== 'FIRED' &&
+      status !== 'BLOCKED';
 
     if (isActive && (rank === 'A' || rank === 'K')) {
       if (authorId === userIdStr || targetId === userIdStr) {
