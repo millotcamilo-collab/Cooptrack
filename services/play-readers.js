@@ -346,6 +346,17 @@ async function handleReadersOnPlayCreate(client, play) {
     return;
   }
 
+    // --- A transferencia recién creada ---
+  if (rank === 'A') {
+    const readers = normalizeReaderEntries([
+      created_by_user_id,
+      target_user_id
+    ]);
+
+    await setPlayReaders(client, id, readers);
+    return;
+  }
+
   // --- J♠ actividad ---
   if (rank === 'J' && suit === 'SPADE') {
     const readers = await computeReadersForJSpade(client, play);

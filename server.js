@@ -2007,8 +2007,10 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     if (play_status === 'SENT') {
       const isQSpade = currentRank === 'Q' && currentSuit === 'SPADE';
       const isKCard = currentRank === 'K';
+      const isACard = currentRank === 'A';
 
-      if (!isQSpade && !isKCard) {
+      if (!isQSpade && !isKCard && !isACard) {
+
         return res.status(400).json({
           ok: false,
           error: 'Solo una Q♠ o una K pueden enviarse'
@@ -2039,7 +2041,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         });
       }
 
-      if (isKCard && !Number(current.target_user_id || 0)) {
+      if ((isKCard || isACard) && !Number(current.target_user_id || 0)) {
         return res.status(400).json({
           ok: false,
           error: 'La K enviada debe tener target_user_id'
@@ -2147,6 +2149,24 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
           return res.status(400).json({
             ok: false,
             error: 'Solo una K enviada puede aprobarse'
+          });
+        }
+      }
+
+      else if (currentRank === 'A') {
+        const targetUserId = Number(current.target_user_id || 0);
+
+        if (!targetUserId || Number(userId) !== targetUserId) {
+          return res.status(403).json({
+            ok: false,
+            error: 'Solo el destinatario puede aceptar esta transferencia de A'
+          });
+        }
+
+        if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
+          return res.status(400).json({
+            ok: false,
+            error: 'Solo una A enviada puede aprobarse'
           });
         }
       }
