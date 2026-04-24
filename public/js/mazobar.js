@@ -1,6 +1,7 @@
 (function () {
   let mazobarPhotoEditorOpen = false;
   let mazobarDraftPhotoUrl = "";
+  let mazobarAdminMode = "active";
 
   function parsePlayCode(code) {
     const parts = String(code || "").split("§");
@@ -424,18 +425,22 @@
   }
 
   function buildAdminBadgeHTML() {
+    const isArchiveMode = mazobarAdminMode === "archive";
+
     return `
-    <div
-      class="mazobar__admin-badge"
-      title="Administradores"
-      aria-label="Administradores"
+    <button
+      id="btnAdminActive"
+      type="button"
+      class="mazobar__admin-badge ${isArchiveMode ? "is-small" : "is-large"}"
+      title="Administradores activos"
+      aria-label="Administradores activos"
     >
       <img
         src="/assets/icons/team80.gif"
         alt="Administradores"
         class="mazobar__admin-badge-icon"
       />
-    </div>
+    </button>
   `;
   }
 
@@ -637,7 +642,7 @@
     <button
       id="btnAdminArchive"
       type="button"
-      class="mazobar__cmd-btn"
+      class="mazobar__cmd-btn mazobar__cmd-btn--archive ${mazobarAdminMode === "archive" ? "is-large" : "is-small"}"
       title="Jugadas archivadas"
       aria-label="Jugadas archivadas"
     >
@@ -796,8 +801,26 @@
 
     if (btnAdminArchive) {
       btnAdminArchive.addEventListener("click", () => {
+        mazobarAdminMode = "archive";
+        renderMazobar(deck, plays, currentUserId);
+
         document.dispatchEvent(
           new CustomEvent("mazobar:showArchivePlays")
+        );
+      });
+    }
+
+    const btnAdminActive = document.getElementById("btnAdminActive");
+
+    if (btnAdminActive) {
+      btnAdminActive.addEventListener("click", () => {
+        mazobarAdminMode = "active";
+        renderMazobar(deck, plays, currentUserId);
+
+        document.dispatchEvent(
+          new CustomEvent("mazobar:showAutoridades", {
+            detail: { mode: "AK" }
+          })
         );
       });
     }

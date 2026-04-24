@@ -387,3 +387,28 @@
   }
 }
 
+.mazobar__admin-badge {
+  appearance: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 8px;
+}
+
+.mazobar__admin-badge-icon {
+  width: auto;
+  display: block;
+}
+
+.mazobar__admin-badge.is-large .mazobar__admin-badge-icon,
+.mazobar__cmd-btn--archive.is-large .mazobar__cmd-icon {
+  height: 32px;
+}
+
+.mazobar__admin-badge.is-small .mazobar__admin-badge-icon,
+.mazobar__cmd-btn--archive.is-small .mazobar__cmd-icon {
+  height: 22px;
+}
