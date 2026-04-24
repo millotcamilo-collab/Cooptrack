@@ -188,9 +188,11 @@
 
     if (status === "SENT") return "Enviada";
     if (status === "APPROVED") return "Aceptada";
-    if (status === "ACKNOWLEDGED") return "Aceptada";
+    if (status === "ACKNOWLEDGED") return "Leída";
     if (status === "REJECTED") return "Rechazada";
-    if (status === "CANCELLED") return "Despedido";
+    if (status === "QUIT") return "Renunciada";
+    if (status === "FIRED") return "Despedido";
+    if (status === "CANCELLED") return "Cancelada";
 
     return "Pendiente";
   }
