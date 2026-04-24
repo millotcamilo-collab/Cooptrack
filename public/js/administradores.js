@@ -50,26 +50,38 @@
       const status = normalizeRank(play.play_status || play.status);
       const flow = safeTrim(play.flow).toLowerCase();
 
-      const isArchivedStatus =
-        status === "REJECTED" ||
-        status === "QUIT" ||
-        status === "FIRED" ||
-        status === "CANCELLED" ||
-        status === "APPROVED";
-
-      // A: mostrar transferencias históricas, no As foundation vivos
+      // A: transferencias históricas cerradas
       if (rank === "A") {
-        return flow !== "foundation" && isArchivedStatus;
+        return (
+          flow !== "foundation" &&
+          (
+            status === "APPROVED" ||
+            status === "REJECTED" ||
+            status === "QUIT" ||
+            status === "FIRED" ||
+            status === "CANCELLED"
+          )
+        );
       }
 
-      // K: mostrar K cerradas
+      // K: solo las que salieron del activo
       if (rank === "K") {
-        return isArchivedStatus;
+        return (
+          status === "REJECTED" ||
+          status === "QUIT" ||
+          status === "FIRED" ||
+          status === "CANCELLED"
+        );
       }
 
-      // Q: mostrar Q cerradas
+      // Q: cerradas
       if (rank === "Q") {
-        return isArchivedStatus;
+        return (
+          status === "REJECTED" ||
+          status === "QUIT" ||
+          status === "FIRED" ||
+          status === "CANCELLED"
+        );
       }
 
       return false;
@@ -240,7 +252,14 @@
         return false;
       }
 
-      return mode === "AK";
+      const status = normalizeRank(play?.play_status || play?.status);
+
+      const isActiveK =
+        status === "ACTIVE" ||
+        status === "SENT" ||
+        status === "APPROVED";
+
+      return mode === "AK" && isActiveK;
     }
 
     return false;
