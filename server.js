@@ -2206,7 +2206,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
 
       const canAcknowledge =
         (isQSpadeAck && creatorUserId && Number(userId) === creatorUserId) ||
-        (isKAck && (
+        ((isKAck || isAAck) && (
           (creatorUserId && Number(userId) === creatorUserId) ||
           (targetUserId && Number(userId) === targetUserId)
         ));
@@ -2438,7 +2438,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         [updatedPlay.deck_id, invitedUserId]
       );
     }
-    
+
     if (isSendingQSpadeNow) {
       const invitedUserId = Number(updatedPlay.target_user_id || 0);
 
@@ -2527,6 +2527,54 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
 
       await expandReadersForKSend(client, updatedPlay);
       await addUserToAclLines(client, deckId, invitedUserId);
+    }
+
+    const isApprovingANow =
+      currentRank === 'A' &&
+      currentStatus !== 'APPROVED' &&
+      nextStatus === 'APPROVED';
+
+    if (isApprovingANow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+      const deckId = Number(updatedPlay.deck_id || 0);
+      const parentAceId = Number(updatedPlay.parent_play_id || 0);
+
+      if (!invitedUserId || !deckId || !parentAceId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La A aprobada debe tener target_user_id, deck_id y parent_play_id válidos'
+        });
+      }
+
+      await client.query(
+        `
+    UPDATE plays
+    SET target_user_id = $1,
+        updated_at = NOW()
+    WHERE id = $2
+      AND deck_id = $3
+      AND card_rank = 'A'
+      AND card_suit = $4
+      AND split_part(play_code, '§', 8) = 'foundation'
+    `,
+        [invitedUserId, parentAceId, deckId, currentSuit]
+      );
+
+      await addReadersToPlay(
+        client,
+        parentAceId,
+        [updatedPlay.created_by_user_id, invitedUserId]
+      );
+
+      await client.query(
+        `
+    INSERT INTO deck_members (deck_id, user_id)
+    VALUES ($1, $2)
+    ON CONFLICT DO NOTHING
+    `,
+        [deckId, invitedUserId]
+      );
     }
 
     const isRejectingQSpadeNow =
