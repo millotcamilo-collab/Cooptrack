@@ -2913,8 +2913,7 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
           AND COALESCE(p.play_status, '') IN (
             'APPROVED',
             'REJECTED',
-            'QUIT',
-            'FIRED'
+            'QUIT'
           )
         )
 

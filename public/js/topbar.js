@@ -55,7 +55,7 @@
     }
 
     const FINAL_STATES_Q = ["APPROVED", "REJECTED", "CANCELLED"];
-    const FINAL_STATES_K = ["APPROVED", "REJECTED", "QUIT", "FIRED"];
+    const FINAL_STATES_K = ["APPROVED", "REJECTED", "QUIT"];
 
     if (rank === "K" && isTarget && (status === "FIRED" || status === "QUIT")) {
       return "READ_ONLY";
@@ -69,7 +69,7 @@
       return "READ_ONLY";
     }
 
-    if (rank === "K" && isSource && FINAL_STATES_K.includes(status)) {
+    if (rank === "K" && isSource && FINAL_STATES_K_SOURCE.includes(status)) {
       return "READ_ONLY";
     }
 
