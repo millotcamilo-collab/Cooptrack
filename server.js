@@ -19,6 +19,7 @@ const {
   handleReadersOnPlayCreate,
   expandReadersForQSpadeSend,
   expandReadersForKSend,
+  expandReadersForASend,
 } = require('./services/play-readers');
 
 const {
@@ -2386,6 +2387,30 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         `,
         [updatedPlay.deck_id, invitedUserId]
       );
+
+      const isSendingANow =
+        currentRank === 'A' &&
+        currentStatus !== 'SENT' &&
+        nextStatus === 'SENT';
+
+      if (isSendingANow) {
+        const invitedUserId = Number(updatedPlay.target_user_id || 0);
+
+        if (!invitedUserId) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({
+            ok: false,
+            error: 'La A enviada debe tener target_user_id'
+          });
+        }
+
+        await addReadersToPlay(
+          client,
+          updatedPlay.id,
+          [updatedPlay.created_by_user_id, invitedUserId]
+        );
+      }
+
 
       await client.query(
         `
