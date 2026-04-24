@@ -2171,11 +2171,19 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       const creatorUserId = Number(current.created_by_user_id || 0);
+      const targetUserId = Number(current.target_user_id || 0);
 
-      if (!creatorUserId || Number(userId) !== creatorUserId) {
+      const canAcknowledge =
+        (isQSpadeAck && creatorUserId && Number(userId) === creatorUserId) ||
+        (isKAck && (
+          (creatorUserId && Number(userId) === creatorUserId) ||
+          (targetUserId && Number(userId) === targetUserId)
+        ));
+
+      if (!canAcknowledge) {
         return res.status(403).json({
           ok: false,
-          error: 'Solo el anfitrión puede marcar esta notificación como leída'
+          error: 'No podés marcar esta notificación como leída'
         });
       }
 
