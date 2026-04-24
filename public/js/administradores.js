@@ -46,16 +46,33 @@
     const normalized = administradoresPlays.map(normalizePlay);
 
     const archived = normalized.filter((play) => {
-      const status = normalizeRank(play.status);
+      const rank = normalizeRank(play.rank);
+      const status = normalizeRank(play.play_status || play.status);
+      const flow = safeTrim(play.flow).toLowerCase();
 
-      return (
-        play.rank === "A" ||
-        play.rank === "Q"
-      ) && (
-          status === "REJECTED" ||
-          status === "QUIT" ||
-          status === "FIRED"
-        );
+      const isArchivedStatus =
+        status === "REJECTED" ||
+        status === "QUIT" ||
+        status === "FIRED" ||
+        status === "CANCELLED" ||
+        status === "APPROVED";
+
+      // A: mostrar transferencias históricas, no As foundation vivos
+      if (rank === "A") {
+        return flow !== "foundation" && isArchivedStatus;
+      }
+
+      // K: mostrar K cerradas
+      if (rank === "K") {
+        return isArchivedStatus;
+      }
+
+      // Q: mostrar Q cerradas
+      if (rank === "Q") {
+        return isArchivedStatus;
+      }
+
+      return false;
     });
 
     if (!archived.length) {
@@ -67,10 +84,10 @@
       return;
     }
 
-    const context = buildContext(
-      administradoresDeck,
-      administradoresState
-    );
+    const context = {
+      ...buildContext(administradoresDeck, administradoresState),
+      archiveMode: true
+    };
 
     const rowsHtml = archived
       .map((play) => {
