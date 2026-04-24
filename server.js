@@ -1980,9 +1980,16 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       parsedPatchedPlayCode = parsed;
     }
 
+    const wantsAcknowledged =
+      String(play_status || '').trim().toUpperCase() === 'ACKNOWLEDGED';
+
+    const isDirectParticipant =
+      Number(current.created_by_user_id || 0) === Number(userId) ||
+      Number(current.target_user_id || 0) === Number(userId);
+
     const mazo = await getMazoByIdForUser(client, current.deck_id, userId);
 
-    if (!mazo) {
+    if (!mazo && !(wantsAcknowledged && isDirectParticipant)) {
       return res.status(403).json({
         ok: false,
         error: 'Sin acceso a esta jugada'
