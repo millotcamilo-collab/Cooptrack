@@ -2992,6 +2992,30 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
           )
         )
 
+                OR
+
+        (
+          p.card_rank = 'A'
+          AND p.target_user_id = $1
+          AND COALESCE(p.play_status, '') IN (
+            'SENT',
+            'PENDING'
+          )
+        )
+
+        OR
+
+        (
+          p.card_rank = 'A'
+          AND p.created_by_user_id = $1
+          AND COALESCE(p.play_status, '') IN (
+            'APPROVED',
+            'REJECTED',
+            'QUIT',
+            'FIRED'
+          )
+        )
+
       ORDER BY p.created_at DESC
       `,
       [userId]

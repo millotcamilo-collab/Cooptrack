@@ -273,7 +273,7 @@
     }
 
     if (rank === "A") {
-      return "/lienzoA.html";
+      return "/lienzo.html";
     }
 
     return "/lienzo.html";
