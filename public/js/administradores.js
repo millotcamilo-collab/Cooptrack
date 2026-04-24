@@ -39,6 +39,62 @@
       .filter(Boolean);
   }
 
+  function renderArchivePlaysView() {
+    const container = getContainer();
+    if (!container) return;
+
+    const normalized = administradoresPlays.map(normalizePlay);
+
+    const archived = normalized.filter((play) => {
+      const status = normalizeRank(play.status);
+
+      return (
+        play.rank === "A" ||
+        play.rank === "Q"
+      ) && (
+          status === "REJECTED" ||
+          status === "QUIT" ||
+          status === "FIRED"
+        );
+    });
+
+    if (!archived.length) {
+      container.innerHTML = `
+      <section class="tablero-empty">
+        <p>No hay jugadas archivadas.</p>
+      </section>
+    `;
+      return;
+    }
+
+    const context = buildContext(
+      administradoresDeck,
+      administradoresState
+    );
+
+    const rowsHtml = archived
+      .map((play) => {
+        const componentName = getComponentName(play);
+        const renderer = getRenderer(componentName);
+
+        if (!renderer) return "";
+
+        try {
+          return renderer(play, context);
+        } catch (e) {
+          console.error(e);
+          return "";
+        }
+      })
+      .join("");
+
+    container.innerHTML = `
+    <section class="tablero administradores-archive">
+      ${rowsHtml}
+    </section>
+  `;
+  }
+
   function escapeHtml(value) {
     return String(value ?? "")
       .replace(/&/g, "&amp;")
@@ -499,6 +555,10 @@
     const mode = String(event?.detail?.mode || "A").toUpperCase();
     showAdministradoresContainer();
     renderAdministradoresView(mode);
+  });
+
+  document.addEventListener("mazobar:showArchivePlays", () => {
+    renderArchivePlaysView();
   });
 
   window.renderAdministradores = renderAdministradores;

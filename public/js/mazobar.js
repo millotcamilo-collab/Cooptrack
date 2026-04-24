@@ -632,6 +632,24 @@
     const isMazoPage = pageType === "mazo";
     const isAdminPage = pageType === "administradores";
 
+    const adminArchiveButton = isAdminPage
+      ? `
+    <button
+      id="btnAdminArchive"
+      type="button"
+      class="mazobar__cmd-btn"
+      title="Jugadas archivadas"
+      aria-label="Jugadas archivadas"
+    >
+      <img
+        src="/assets/icons/archivo80.gif"
+        alt="Archivo"
+        class="mazobar__cmd-icon"
+      />
+    </button>
+  `
+      : "";
+
     // -------------------------
     // BOTONES DE PALOS (mazo)
     // -------------------------
@@ -738,6 +756,7 @@
     ` : ""}
 
     ${adminBadge}
+    ${adminArchiveButton}
     ${adminSuitButtons}
     ${suitButtons}
     ${alertButtons}
@@ -770,6 +789,16 @@
     if (btnBackToTablero) {
       btnBackToTablero.addEventListener("click", () => {
         goToMazoPage();
+      });
+    }
+
+    const btnAdminArchive = document.getElementById("btnAdminArchive");
+
+    if (btnAdminArchive) {
+      btnAdminArchive.addEventListener("click", () => {
+        document.dispatchEvent(
+          new CustomEvent("mazobar:showArchivePlays")
+        );
       });
     }
 
