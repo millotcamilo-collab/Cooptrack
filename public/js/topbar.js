@@ -56,6 +56,7 @@
 
     const FINAL_STATES_Q = ["APPROVED", "REJECTED", "CANCELLED"];
     const FINAL_STATES_K_SOURCE = ["APPROVED", "REJECTED", "QUIT"];
+    const FINAL_STATES_A_SOURCE = ["APPROVED", "REJECTED", "QUIT", "FIRED"];
 
     // =========================
     // K — target (invitado)
@@ -87,6 +88,10 @@
       return "READ_ONLY";
     }
 
+    if (rank === "A" && isSource && FINAL_STATES_A_SOURCE.includes(status)) {
+      return "READ_ONLY";
+    }
+    
     // =========================
     // Ya leído
     // =========================
@@ -99,6 +104,10 @@
     // =========================
     if (isSource && status === "SENT") {
       return null;
+    }
+
+    if (rank === "A" && isSource && FINAL_STATES_A_SOURCE.includes(status)) {
+      return "READ_ONLY";
     }
 
     return null;
