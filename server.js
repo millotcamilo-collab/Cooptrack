@@ -2366,6 +2366,11 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       currentStatus !== 'SENT' &&
       nextStatus === 'SENT';
 
+    const isSendingANow =
+      currentRank === 'A' &&
+      currentStatus !== 'SENT' &&
+      nextStatus === 'SENT';
+
     if (isSendingKNow) {
       const invitedUserId = Number(updatedPlay.target_user_id || 0);
 
@@ -2381,66 +2386,59 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
 
       await client.query(
         `
-        INSERT INTO deck_members (deck_id, user_id)
-        VALUES ($1, $2)
-        ON CONFLICT DO NOTHING
-        `,
-        [updatedPlay.deck_id, invitedUserId]
-      );
-
-      const isSendingANow =
-        currentRank === 'A' &&
-        currentStatus !== 'SENT' &&
-        nextStatus === 'SENT';
-
-      if (isSendingANow) {
-        const invitedUserId = Number(updatedPlay.target_user_id || 0);
-
-        if (!invitedUserId) {
-          await client.query('ROLLBACK');
-          return res.status(400).json({
-            ok: false,
-            error: 'La A enviada debe tener target_user_id'
-          });
-        }
-
-        await addReadersToPlay(
-          client,
-          updatedPlay.id,
-          [updatedPlay.created_by_user_id, invitedUserId]
-        );
-
-        await client.query(
-          `
     INSERT INTO deck_members (deck_id, user_id)
     VALUES ($1, $2)
     ON CONFLICT DO NOTHING
     `,
-          [updatedPlay.deck_id, invitedUserId]
-        );
+        [updatedPlay.deck_id, invitedUserId]
+      );
 
-        await client.query(
-          `
+      await client.query(
+        `
     DELETE FROM ex_deck_members
     WHERE deck_id = $1
       AND user_id = $2
     `,
-          [updatedPlay.deck_id, invitedUserId]
-        );
+        [updatedPlay.deck_id, invitedUserId]
+      );
+    }
+
+    if (isSendingANow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+
+      if (!invitedUserId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La A enviada debe tener target_user_id'
+        });
       }
 
+      await addReadersToPlay(
+        client,
+        updatedPlay.id,
+        [updatedPlay.created_by_user_id, invitedUserId]
+      );
 
       await client.query(
         `
-  DELETE FROM ex_deck_members
-  WHERE deck_id = $1
-    AND user_id = $2
-  `,
+    INSERT INTO deck_members (deck_id, user_id)
+    VALUES ($1, $2)
+    ON CONFLICT DO NOTHING
+    `,
         [updatedPlay.deck_id, invitedUserId]
       );
 
+      await client.query(
+        `
+    DELETE FROM ex_deck_members
+    WHERE deck_id = $1
+      AND user_id = $2
+    `,
+        [updatedPlay.deck_id, invitedUserId]
+      );
     }
-
+    
     if (isSendingQSpadeNow) {
       const invitedUserId = Number(updatedPlay.target_user_id || 0);
 
