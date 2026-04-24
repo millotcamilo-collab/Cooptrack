@@ -2170,7 +2170,10 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       const isKAck =
         currentRank === 'K';
 
-      if (!isQSpadeAck && !isKAck) {
+      const isAAck =
+        currentRank === 'A';
+
+      if (!isQSpadeAck && !isKAck && !isAAck) {
         return res.status(400).json({
           ok: false,
           error: 'Solo una Q♠ o una K pueden marcarse como leídas'
@@ -2195,7 +2198,11 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       if (isQSpadeAck) {
-        if (currentStatus !== 'APPROVED' && currentStatus !== 'REJECTED' && currentStatus !== 'CANCELLED') {
+        if (
+          currentStatus !== 'APPROVED' &&
+          currentStatus !== 'REJECTED' &&
+          currentStatus !== 'CANCELLED'
+        ) {
           return res.status(400).json({
             ok: false,
             error: 'Solo una Q♠ finalizada puede marcarse como leída'
@@ -2203,7 +2210,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         }
       }
 
-      if (isKAck) {
+      if (isKAck || isAAck) {
         if (
           currentStatus !== 'APPROVED' &&
           currentStatus !== 'REJECTED' &&
@@ -2212,11 +2219,19 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         ) {
           return res.status(400).json({
             ok: false,
-            error: 'Solo una K finalizada puede marcarse como leída'
+            error: 'Solo una K o A finalizada puede marcarse como leída'
           });
         }
+
+        // 👇 NO tocar play_status
+        return res.json({
+          ok: true,
+          acknowledged: true,
+          play: current
+        });
       }
     }
+
 
     // ---------------------------------------------------
     // NORMALIZACIÓN DE CAMPOS

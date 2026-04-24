@@ -410,6 +410,8 @@
     const token = localStorage.getItem("cooptrackToken");
     if (!token || !playId) return false;
 
+    sessionStorage.setItem(`cooptrack_seen_play_${playId}`, "1");
+
     try {
       const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
         method: "PATCH",
