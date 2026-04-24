@@ -55,30 +55,48 @@
     }
 
     const FINAL_STATES_Q = ["APPROVED", "REJECTED", "CANCELLED"];
-    const FINAL_STATES_K = ["APPROVED", "REJECTED"];
+    const FINAL_STATES_K_SOURCE = ["APPROVED", "REJECTED", "QUIT"];
 
-    if (rank === "K" && isTarget && (status === "FIRED" || status === "QUIT")) {
+    // =========================
+    // K — target (invitado)
+    // =========================
+    // Solo debe recibir notificación cuando es despedido
+    if (rank === "K" && isTarget && status === "FIRED") {
       return "READ_ONLY";
     }
 
+    // =========================
+    // Q — target con settlement
+    // =========================
     if (isTarget && status === "APPROVED" && playHasSettlement(play)) {
       return "READ_ONLY";
     }
 
+    // =========================
+    // Q — source (anfitrión)
+    // =========================
     if (rank === "Q" && isSource && FINAL_STATES_Q.includes(status)) {
       return "READ_ONLY";
     }
 
+    // =========================
+    // K — source (anfitrión)
+    // =========================
+    // Se entera de aceptación, rechazo o renuncia
     if (rank === "K" && isSource && FINAL_STATES_K_SOURCE.includes(status)) {
       return "READ_ONLY";
     }
 
-    // 5) Ya enterado
+    // =========================
+    // Ya leído
+    // =========================
     if (isSource && status === "ACKNOWLEDGED") {
       return null;
     }
 
-    // 6) Enviada pero esperando al otro
+    // =========================
+    // Enviada (sin acción)
+    // =========================
     if (isSource && status === "SENT") {
       return null;
     }
