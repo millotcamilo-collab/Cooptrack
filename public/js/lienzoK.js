@@ -298,13 +298,8 @@
         const status = getPlayStatus(play);
 
         if (status === "SENT") return "SENT";
-
-        // Una K aprobada y luego "leída" por el anfitrión
-        // debe seguir comportándose visualmente como aprobada
-        if (status === "APPROVED" || status === "ACKNOWLEDGED") {
-            return "APPROVED";
-        }
-
+        if (status === "APPROVED") return "APPROVED";
+        if (status === "ACKNOWLEDGED") return "ACKNOWLEDGED";
         if (status === "QUIT") return "QUIT";
         if (status === "FIRED") return "FIRED";
 
