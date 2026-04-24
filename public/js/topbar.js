@@ -140,6 +140,12 @@
 
       const candidates = plays
         .filter(isCorporateIncomingPlay)
+        .filter((play) => {
+          const playId = Number(play?.id || 0);
+          if (!playId) return false;
+
+          return !sessionStorage.getItem(`cooptrack_seen_play_${playId}`);
+        })
         .map((play) => {
           const pendingKind = getPendingKindForUser(play, currentUserId);
           return pendingKind ? { ...play, pendingKind } : null;
