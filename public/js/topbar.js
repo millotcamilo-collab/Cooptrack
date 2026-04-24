@@ -55,7 +55,7 @@
     }
 
     const FINAL_STATES_Q = ["APPROVED", "REJECTED", "CANCELLED"];
-    const FINAL_STATES_K = ["APPROVED", "REJECTED", "QUIT"];
+    const FINAL_STATES_K = ["APPROVED", "REJECTED"];
 
     if (rank === "K" && isTarget && (status === "FIRED" || status === "QUIT")) {
       return "READ_ONLY";
