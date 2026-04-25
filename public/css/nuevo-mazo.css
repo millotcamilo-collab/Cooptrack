@@ -18,15 +18,15 @@
       /* 🔥 elimina aire externo */
     }
 
-    .panel {
-      background: rgba(0, 0, 0, 0.25);
-      border-radius: 0;
-      /* opcional, más "cancha" */
-      padding: 16px;
-      height: 420px;
-      display: flex;
-      flex-direction: column;
-    }
+.panel {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0;
+  padding: 16px;
+  height: 420px;
+  display: flex;
+  flex-direction: column;
+}
 
     .header {
       display: flex;
@@ -351,7 +351,7 @@
       opacity: 0;
       transform: translateY(-8px);
       transition: opacity 0.35s ease, transform 0.35s ease;
-      padding: 5px 20px 0 20px;
+      padding: 0;
       box-sizing: border-box;
     }
 
