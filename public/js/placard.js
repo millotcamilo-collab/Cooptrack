@@ -46,8 +46,8 @@
     `;
   }
 
-  function buildPhotoHTML(photoUrl) {
-    return `
+function buildPhotoHTML(photoUrl) {
+  return `
     <button
       type="button"
       class="placard__photo-button"
@@ -63,7 +63,7 @@
       />
     </button>
   `;
-  }
+}
 
   function buildTopCardImageHTML(card) {
     const rank = String(card?.rank || card?.card_rank || "")
@@ -392,28 +392,34 @@
       config?.leftCardsHtml || buildTopCardsHTML(config?.leftCards || [])
     );
 
-    function getApprovedJHeartTexts(plays) {
-      if (!Array.isArray(plays)) return [];
+function getApprovedJHeartTexts(plays) {
+  if (!Array.isArray(plays)) return [];
 
-      return plays
-        .filter((p) => {
-          const rank = String(p?.card_rank || "").toUpperCase();
-          const suit = String(p?.card_suit || "").toUpperCase();
-          const status = String(p?.play_status || "").toUpperCase();
+  return plays
+    .filter((p) => {
+      const rank = String(p?.card_rank || "").toUpperCase();
+      const suit = String(p?.card_suit || "").toUpperCase();
+      const status = String(p?.play_status || "").toUpperCase();
 
-          return rank === "J" && suit === "HEART" && status === "APPROVED";
-        })
-        .map((p) => String(p?.play_text || "").trim())
-        .filter(Boolean);
-    }
+      return rank === "J" && suit === "HEART" && status === "APPROVED";
+    })
+    .map((p) => String(p?.play_text || "").trim())
+    .filter(Boolean);
+}
 
-    const jHeartTexts = getApprovedJHeartTexts(config?.plays || []);
+   const jHeartTexts = getApprovedJHeartTexts(config?.plays || []);
 
-    let subtitleHtml = "";
+let subtitleHtml = "";
 
-    if (jHeartTexts.length) {
-      subtitleHtml = `
-    <div class="placard__subtitle placard__subtitle--ticker">
+if (jHeartTexts.length) {
+  subtitleHtml = `
+    <button
+  type="button"
+  class="placard__subtitle placard__subtitle--ticker placard__ticker-btn"
+  id="placardTickerBtn"
+  title="Ver jugadas de corazón"
+  aria-label="Ver jugadas de corazón"
+>
       <div class="placard__ticker-track">
         ${jHeartTexts
           .map((text) => `<span class="placard__ticker-item">${escapeHtml(text)}</span>`)
@@ -421,7 +427,7 @@
       </div>
     </div>
   `;
-    }
+}
 
     container.innerHTML = `
   <section class="placard">
@@ -453,9 +459,9 @@
   <div class="placard__titleline">
     <span class="placard__name">${escapeHtml(title)}</span>
     ${showCurrency
-        ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
-        : ""
-      }
+      ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
+      : ""
+    }
   </div>
 
   ${subtitleHtml}
@@ -475,27 +481,38 @@
   </section>
 
 `;
-    // 👉 ir a administradores (A♥)
-    const adminBtn = container.querySelector("#placardAdminBtn");
-    if (adminBtn) {
-      adminBtn.addEventListener("click", () => {
-        const deckId = config?.deckId;
-        if (!deckId) return;
+  // 👉 ir a administradores (A♥)
+const adminBtn = container.querySelector("#placardAdminBtn");
+if (adminBtn) {
+  adminBtn.addEventListener("click", () => {
+    const deckId = config?.deckId;
+    if (!deckId) return;
 
-        window.location.href = `/mazoAdministradores.html?deckId=${deckId}`;
-      });
-    }
+    window.location.href = `/mazoAdministradores.html?deckId=${deckId}`;
+  });
+}
 
-    // 👉 ir a mazo (foto)
-    const photoBtn = container.querySelector("#placardPhotoBtn");
-    if (photoBtn) {
-      photoBtn.addEventListener("click", () => {
-        const deckId = config?.deckId;
-        if (!deckId) return;
+// 👉 ir a mazo (foto)
+const photoBtn = container.querySelector("#placardPhotoBtn");
+if (photoBtn) {
+  photoBtn.addEventListener("click", () => {
+    const deckId = config?.deckId;
+    if (!deckId) return;
 
-        window.location.href = `/mazo.html?deckId=${deckId}`;
-      });
-    }
+    window.location.href = `/mazo.html?deckId=${deckId}`;
+  });
+}
+const tickerBtn = container.querySelector("#placardTickerBtn");
+
+if (tickerBtn) {
+  tickerBtn.addEventListener("click", () => {
+    const deckId = config?.deckId;
+    if (!deckId) return;
+
+    // 👉 navegamos al mazo
+    window.location.href = `/mazo.html?id=${deckId}&suit=HEART`;
+  });
+}
 
     bindPlacardDrag(container);
   }
