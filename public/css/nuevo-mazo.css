@@ -12,13 +12,16 @@
     .lienzo-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 5px;
-      padding: 20px;
+      gap: 0;
+      /* 🔥 elimina espacio entre tribunas */
+      padding: 0;
+      /* 🔥 elimina aire externo */
     }
 
     .panel {
       background: rgba(0, 0, 0, 0.25);
-      border-radius: 12px;
+      border-radius: 0;
+      /* opcional, más "cancha" */
       padding: 16px;
       height: 420px;
       display: flex;
@@ -469,4 +472,32 @@
       left: 18px;
       top: 0;
       z-index: 2;
+    }
+
+    /* 🔥 elimina todo espacio entre bloques */
+    #topbar-container,
+    #placard-container,
+    .lienzo-grid {
+      margin: 0;
+    }
+
+    /* 🔥 elimina separación visual */
+    #placard-container {
+      margin-bottom: 0;
+      padding: 0;
+    }
+
+    /* 🔥 elimina separación entre tribunas */
+    .lienzo-grid {
+      gap: 0 !important;
+    }
+
+    /* 🔥 clave: elimina aire interno superior */
+    .panel {
+      margin-top: 0 !important;
+    }
+
+    /* 🔥 asegura continuidad */
+    .lienzo-page {
+      gap: 0;
     }
