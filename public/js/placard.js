@@ -65,16 +65,6 @@ function buildPhotoHTML(photoUrl) {
   `;
 }
 
-    return `
-      <img
-        src="${escapeHtml(photoUrl)}"
-        alt="Foto del mazo"
-        class="placard__photo"
-        onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
-      />
-    `;
-  }
-
   function buildTopCardImageHTML(card) {
     const rank = String(card?.rank || card?.card_rank || "")
       .trim()
