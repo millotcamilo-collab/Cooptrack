@@ -385,6 +385,14 @@
     const mode = String(config?.mode || "DEFAULT").trim().toUpperCase();
     const headline = getPlacardHeadline(config);
 
+    const deckId =
+      config?.deckId ||
+      config?.deck?.id ||
+      config?.mazo?.id ||
+      config?.id ||
+      new URLSearchParams(window.location.search).get("deckId") ||
+      new URLSearchParams(window.location.search).get("id");
+
     const photoHtml = buildPhotoHTML(photoUrl);
 
 
@@ -483,33 +491,28 @@
 `;
     // 👉 ir a administradores (A♥)
     const adminBtn = container.querySelector("#placardAdminBtn");
+
     if (adminBtn) {
       adminBtn.addEventListener("click", () => {
-        const deckId = config?.deckId;
         if (!deckId) return;
-
-        window.location.href = `/mazoAdministradores.html?deckId=${deckId}`;
+        window.location.href = `/mazoAdministradores.html?id=${deckId}`;
       });
     }
 
     // 👉 ir a mazo (foto)
+
     const photoBtn = container.querySelector("#placardPhotoBtn");
     if (photoBtn) {
       photoBtn.addEventListener("click", () => {
-        const deckId = config?.deckId;
         if (!deckId) return;
-
-        window.location.href = `/mazo.html?deckId=${deckId}`;
+        window.location.href = `/mazo.html?id=${deckId}`;
       });
     }
-    const tickerBtn = container.querySelector("#placardTickerBtn");
 
+    const tickerBtn = container.querySelector("#placardTickerBtn");
     if (tickerBtn) {
       tickerBtn.addEventListener("click", () => {
-        const deckId = config?.deckId;
         if (!deckId) return;
-
-        // 👉 navegamos al mazo
         window.location.href = `/mazo.html?id=${deckId}&suit=HEART`;
       });
     }
