@@ -319,6 +319,17 @@
 .placard__ticker-item {
   display: inline-block;
 }
+.placard__ticker-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  display: block;
+  color: inherit;
+  font-family: inherit;
+}
 
 @keyframes placardTicker {
   from {

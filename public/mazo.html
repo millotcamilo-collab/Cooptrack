@@ -177,12 +177,12 @@
       const currentUserId = Number(state?.userId || 0);
 
       const hasCorporateAccess = plays.some((play) => {
-      const playCode = String(play?.play_code || "");
-      const parts = playCode.split("§");
+        const playCode = String(play?.play_code || "");
+        const parts = playCode.split("§");
 
-      const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
-      const status = String(play?.play_status || "").toUpperCase();
-      const ownerUserId = Number(parts[1] || 0);
+        const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
+        const status = String(play?.play_status || "").toUpperCase();
+        const ownerUserId = Number(parts[1] || 0);
 
         if (status !== "ACTIVE") return false;
         if (ownerUserId !== currentUserId) return false;
@@ -206,46 +206,46 @@
       }
 
       const tableroEl = document.getElementById("tablero-container");
-const playformEl = document.getElementById("playform-container");
-const mazobarEl = document.getElementById("mazobar-container");
+      const playformEl = document.getElementById("playform-container");
+      const mazobarEl = document.getElementById("mazobar-container");
 
-// el mazobar siempre visible para quien pudo entrar al mazo
-if (mazobarEl) mazobarEl.style.display = "";
+      // el mazobar siempre visible para quien pudo entrar al mazo
+      if (mazobarEl) mazobarEl.style.display = "";
 
-// el tablero también debe quedar visible por defecto
-if (tableroEl) tableroEl.style.display = "";
+      // el tablero también debe quedar visible por defecto
+      if (tableroEl) tableroEl.style.display = "";
 
-// el playform solo existe si renderPlayform lo permitió;
-// acá no forzamos nada raro, solo dejamos visible el container
-if (playformEl) playformEl.style.display = "";
+      // el playform solo existe si renderPlayform lo permitió;
+      // acá no forzamos nada raro, solo dejamos visible el container
+      if (playformEl) playformEl.style.display = "";
 
-const hasVisibleGamePlays = plays.some((play) => {
-  const playCode = String(play?.play_code || "");
-  const parts = playCode.split("§");
+      const hasVisibleGamePlays = plays.some((play) => {
+        const playCode = String(play?.play_code || "");
+        const parts = playCode.split("§");
 
-  const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
-  const status = String(play?.play_status || "").toUpperCase();
-  const action = String(parts[5] || "").toLowerCase();
+        const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
+        const status = String(play?.play_status || "").toUpperCase();
+        const action = String(parts[5] || "").toLowerCase();
 
-  if (
-    status === "CANCELLED" ||
-    status === "DELETED" ||
-    status === "REJECTED"
-  ) {
-    return false;
-  }
+        if (
+          status === "CANCELLED" ||
+          status === "DELETED" ||
+          status === "REJECTED"
+        ) {
+          return false;
+        }
 
-  if (action === "init_ace" || action === "puedejugar") return false;
+        if (action === "init_ace" || action === "puedejugar") return false;
 
-  return rank === "J" || rank === "Q";
-});
+        return rank === "J" || rank === "Q";
+      });
 
-// solo para usuarios con A/K y sin jugadas visibles:
-// ocultamos tablero y abrimos playform automáticamente
-if (hasCorporateAccess && !hasVisibleGamePlays) {
-  if (tableroEl) tableroEl.style.display = "none";
-  document.dispatchEvent(new CustomEvent("mazobar:addJ"));
-}
+      // solo para usuarios con A/K y sin jugadas visibles:
+      // ocultamos tablero y abrimos playform automáticamente
+      if (hasCorporateAccess && !hasVisibleGamePlays) {
+        if (tableroEl) tableroEl.style.display = "none";
+        document.dispatchEvent(new CustomEvent("mazobar:addJ"));
+      }
 
       if (typeof bindLienzoDropZone === "function") {
         bindLienzoDropZone(deck.id);
@@ -256,8 +256,25 @@ if (hasCorporateAccess && !hasVisibleGamePlays) {
       const params = new URLSearchParams(window.location.search);
       const deckId = params.get("id");
 
+      function getSuitFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return String(params.get("suit") || "").toUpperCase();
+      }
+
       clearDeckView();
       await loadMazoPage(deckId);
+
+      const suitFromUrl = getSuitFromUrl();
+
+      if (suitFromUrl) {
+        setTimeout(() => {
+          document.dispatchEvent(
+            new CustomEvent("mazobar:filterSuit", {
+              detail: { suit: suitFromUrl }
+            })
+          );
+        }, 50); // 👈 clave
+      }
     }
 
     document.addEventListener("plays:changed", async (event) => {
