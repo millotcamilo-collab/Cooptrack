@@ -46,25 +46,24 @@
     `;
   }
 
-  function buildPhotoHTML(photoUrl, canEditPhoto) {
-    if (canEditPhoto) {
-      return `
-        <button
-          type="button"
-          class="placard__photo-button"
-          id="placardPhotoBtn"
-          title="Editar foto del mazo"
-          aria-label="Editar foto del mazo"
-        >
-          <img
-            src="${escapeHtml(photoUrl)}"
-            alt="Foto del mazo"
-            class="placard__photo"
-            onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
-          />
-        </button>
-      `;
-    }
+function buildPhotoHTML(photoUrl) {
+  return `
+    <button
+      type="button"
+      class="placard__photo-button"
+      id="placardPhotoBtn"
+      title="Ir al mazo"
+      aria-label="Ir al mazo"
+    >
+      <img
+        src="${escapeHtml(photoUrl)}"
+        alt="Foto del mazo"
+        class="placard__photo"
+        onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
+      />
+    </button>
+  `;
+}
 
     return `
       <img
@@ -73,43 +72,6 @@
         class="placard__photo"
         onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
       />
-    `;
-  }
-
-  function buildPhotoEditorHTML(config) {
-    if (!(config?.canEditPhoto && config?.isEditingPhoto)) return "";
-
-    return `
-      <div class="placard__photo-editor" id="placardPhotoEditor">
-        <input
-          id="placardPhotoUrlInput"
-          class="placard__photo-input"
-          type="text"
-          placeholder="URL picture"
-          value="${escapeHtml(config?.draftPhotoUrl || "")}"
-          autocomplete="off"
-        />
-
-        <button
-          id="placardPhotoSaveBtn"
-          class="placard__photo-action"
-          type="button"
-          title="Guardar"
-          aria-label="Guardar"
-        >
-          <img src="/assets/icons/salvar40.gif" alt="Guardar" />
-        </button>
-
-        <button
-          id="placardPhotoCancelBtn"
-          class="placard__photo-action"
-          type="button"
-          title="Salir"
-          aria-label="Salir"
-        >
-          <img src="/assets/icons/exit80.gif" alt="Salir" />
-        </button>
-      </div>
     `;
   }
 
@@ -429,12 +391,12 @@
     const currencyCode = String(config?.currencyCode || "").trim();
     const currencyName = String(config?.currencyName || "").trim();
     const showCurrency = Boolean(config?.showCurrency);
-    const canEditPhoto = Boolean(config?.canEditPhoto);
+
     const mode = String(config?.mode || "DEFAULT").trim().toUpperCase();
     const headline = getPlacardHeadline(config);
 
-    const photoHtml = buildPhotoHTML(photoUrl, canEditPhoto);
-    const photoEditorHtml = buildPhotoEditorHTML(config);
+    const photoHtml = buildPhotoHTML(photoUrl);
+
 
     const leftCardsHtml = buildLeftCardsHTML(
       config?.leftCardsHtml || buildTopCardsHTML(config?.leftCards || [])
@@ -475,13 +437,21 @@
         </div>
       </div>
 
-      <div class="placard__maincard">
-        <img
-          src="/assets/icons/Acorazon.gif"
-          alt="A♥"
-          class="placard__maincard-image"
-        />
-      </div>
+<div class="placard__maincard">
+  <button
+    type="button"
+    class="placard__maincard-btn"
+    id="placardAdminBtn"
+    title="Ir a administradores"
+    aria-label="Ir a administradores"
+  >
+    <img
+      src="/assets/icons/Acorazon.gif"
+      alt="A♥"
+      class="placard__maincard-image"
+    />
+  </button>
+</div>
 
       <div class="placard__text">
   <div class="placard__titleline">
@@ -500,34 +470,36 @@
         ${escapeHtml(headline)}
       </span>
 
-      <button
-        id="placard-exit-btn"
-        class="placard__headline-exit"
-        type="button"
-        title="Salir"
-        aria-label="Salir"
-      >
-        <img src="/assets/icons/exit40.gif" alt="Salir" />
-      </button>
     </div>
   ` : ""}
 
-  ${photoEditorHtml}
+
 </div>
     </div>
   </section>
 
 `;
-    const exitBtn = container.querySelector("#placard-exit-btn");
-    if (exitBtn) {
-      exitBtn.addEventListener("click", () => {
-        if (window.history.length > 1) {
-          window.history.back();
-        } else {
-          window.location.href = "/mazos.html";
-        }
-      });
-    }
+  // 👉 ir a administradores (A♥)
+const adminBtn = container.querySelector("#placardAdminBtn");
+if (adminBtn) {
+  adminBtn.addEventListener("click", () => {
+    const deckId = config?.deckId;
+    if (!deckId) return;
+
+    window.location.href = `/mazoAdministradores.html?deckId=${deckId}`;
+  });
+}
+
+// 👉 ir a mazo (foto)
+const photoBtn = container.querySelector("#placardPhotoBtn");
+if (photoBtn) {
+  photoBtn.addEventListener("click", () => {
+    const deckId = config?.deckId;
+    if (!deckId) return;
+
+    window.location.href = `/mazo.html?deckId=${deckId}`;
+  });
+}
 
     bindPlacardDrag(container);
   }
