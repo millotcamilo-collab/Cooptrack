@@ -46,8 +46,8 @@
     `;
   }
 
-function buildPhotoHTML(photoUrl) {
-  return `
+  function buildPhotoHTML(photoUrl) {
+    return `
     <button
       type="button"
       class="placard__photo-button"
@@ -63,7 +63,7 @@ function buildPhotoHTML(photoUrl) {
       />
     </button>
   `;
-}
+  }
 
   function buildTopCardImageHTML(card) {
     const rank = String(card?.rank || card?.card_rank || "")
@@ -392,27 +392,33 @@ function buildPhotoHTML(photoUrl) {
       config?.leftCardsHtml || buildTopCardsHTML(config?.leftCards || [])
     );
 
-    function getFirstApprovedJHeartText(plays) {
-      if (!Array.isArray(plays)) return "";
+    function getApprovedJHeartTexts(plays) {
+      if (!Array.isArray(plays)) return [];
 
-      const j = plays.find((p) => {
-        const rank = String(p?.card_rank || "").toUpperCase();
-        const suit = String(p?.card_suit || "").toUpperCase();
-        const status = String(p?.play_status || "").toUpperCase();
+      return plays
+        .filter((p) => {
+          const rank = String(p?.card_rank || "").toUpperCase();
+          const suit = String(p?.card_suit || "").toUpperCase();
+          const status = String(p?.play_status || "").toUpperCase();
 
-        return rank === "J" && suit === "HEART" && status === "APPROVED";
-      });
-
-      return j?.play_text || "";
+          return rank === "J" && suit === "HEART" && status === "APPROVED";
+        })
+        .map((p) => String(p?.play_text || "").trim())
+        .filter(Boolean);
     }
-    const jHeartText = getFirstApprovedJHeartText(config?.plays || []);
+
+    const jHeartTexts = getApprovedJHeartTexts(config?.plays || []);
 
     let subtitleHtml = "";
 
-    if (jHeartText) {
+    if (jHeartTexts.length) {
       subtitleHtml = `
-    <div class="placard__subtitle">
-      ${escapeHtml(jHeartText)}
+    <div class="placard__subtitle placard__subtitle--ticker">
+      <div class="placard__ticker-track">
+        ${jHeartTexts
+          .map((text) => `<span class="placard__ticker-item">${escapeHtml(text)}</span>`)
+          .join("")}
+      </div>
     </div>
   `;
     }
@@ -447,9 +453,9 @@ function buildPhotoHTML(photoUrl) {
   <div class="placard__titleline">
     <span class="placard__name">${escapeHtml(title)}</span>
     ${showCurrency
-      ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
-      : ""
-    }
+        ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
+        : ""
+      }
   </div>
 
   ${subtitleHtml}
@@ -469,27 +475,27 @@ function buildPhotoHTML(photoUrl) {
   </section>
 
 `;
-  // 👉 ir a administradores (A♥)
-const adminBtn = container.querySelector("#placardAdminBtn");
-if (adminBtn) {
-  adminBtn.addEventListener("click", () => {
-    const deckId = config?.deckId;
-    if (!deckId) return;
+    // 👉 ir a administradores (A♥)
+    const adminBtn = container.querySelector("#placardAdminBtn");
+    if (adminBtn) {
+      adminBtn.addEventListener("click", () => {
+        const deckId = config?.deckId;
+        if (!deckId) return;
 
-    window.location.href = `/mazoAdministradores.html?deckId=${deckId}`;
-  });
-}
+        window.location.href = `/mazoAdministradores.html?deckId=${deckId}`;
+      });
+    }
 
-// 👉 ir a mazo (foto)
-const photoBtn = container.querySelector("#placardPhotoBtn");
-if (photoBtn) {
-  photoBtn.addEventListener("click", () => {
-    const deckId = config?.deckId;
-    if (!deckId) return;
+    // 👉 ir a mazo (foto)
+    const photoBtn = container.querySelector("#placardPhotoBtn");
+    if (photoBtn) {
+      photoBtn.addEventListener("click", () => {
+        const deckId = config?.deckId;
+        if (!deckId) return;
 
-    window.location.href = `/mazo.html?deckId=${deckId}`;
-  });
-}
+        window.location.href = `/mazo.html?deckId=${deckId}`;
+      });
+    }
 
     bindPlacardDrag(container);
   }

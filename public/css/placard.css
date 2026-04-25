@@ -302,4 +302,31 @@
   min-width: 0;
 }
 
+/* titulos animados */
+.placard__subtitle--ticker {
+  width: 100%;
+  max-width: 520px;
+  overflow: hidden;
+  white-space: nowrap;
+}
 
+.placard__ticker-track {
+  display: inline-flex;
+  gap: 40px;
+  animation: placardTicker 18s linear infinite;
+}
+
+.placard__ticker-item {
+  display: inline-block;
+}
+
+@keyframes placardTicker {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
+/* titulos animados */
