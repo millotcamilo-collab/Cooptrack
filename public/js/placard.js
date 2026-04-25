@@ -484,42 +484,26 @@
       </div>
 
       <div class="placard__text">
-        <div class="placard__titleline">
-          <span class="placard__name">${escapeHtml(title)}</span>
-          ${showCurrency
+  <div class="placard__titleline">
+  <span class="placard__name">${escapeHtml(title)}</span>
+  ${showCurrency
         ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
         : ""
       }
-        </div>
+</div>
 
-        ${subtitleHtml}
-        ${photoEditorHtml}
-      </div>
+${headline ? `
+  <div class="placard__headline-inline">
+    ${escapeHtml(headline)}
+  </div>
+` : ""}
+
+  ${subtitleHtml}
+  ${photoEditorHtml}
+</div>
     </div>
   </section>
 
-  ${headline
-        ? `
-    <section class="placard placard--headline">
-      <div class="placard__headline">
-        <span class="placard__headline-text">
-          ${escapeHtml(headline)}
-        </span>
-
-        <button
-          id="placard-exit-btn"
-          class="placard__headline-exit"
-          type="button"
-          title="Salir"
-          aria-label="Salir"
-        >
-          <img src="/assets/icons/exit40.gif" alt="Salir" />
-        </button>
-      </div>
-    </section>
-  `
-        : ""
-      }
 `;
     const exitBtn = container.querySelector("#placard-exit-btn");
     if (exitBtn) {

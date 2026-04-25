@@ -303,3 +303,9 @@
   width: auto;
   display: block;
 }
+
+.placard__headline-inline {
+  margin-top: 2px;
+  font-size: 0.9rem;
+  color: #ccc;
+}
