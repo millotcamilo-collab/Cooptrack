@@ -490,10 +490,10 @@
     }
 
     /* 🔥 elimina separación visual */
-    #placard-container {
-      margin-bottom: 0;
-      padding: 0;
-    }
+#placard-container {
+  padding-top: 0;
+  padding-bottom: 0;
+}
 
     /* 🔥 elimina separación entre tribunas */
     .lienzo-grid {
