@@ -725,6 +725,15 @@
 
       applyPageMode();
 
+      if (mode !== "jokerblue") {
+        renderDeckPlacard();
+
+        const placardEl = document.getElementById("placard-container");
+        if (placardEl) {
+          placardEl.classList.add("is-visible");
+        }
+      }
+
       if (mode === "jokerblue") {
         renderDeckPlacard();
 
@@ -733,7 +742,6 @@
           placardEl.classList.add("is-visible");
         }
 
-        // renderJokerBlueCardInColombes();
         renderFinalJokers();
         updateServerNextLabels();
         enableServerNextPanel();
