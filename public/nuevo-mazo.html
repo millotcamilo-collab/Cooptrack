@@ -22,152 +22,153 @@
 </head>
 
 <body>
-  <div id="topbar-container"></div>
-  <div id="placard-container"></div>
-  <div class="lienzo-grid">
+  <div class="lienzo-page">
+    <div id="topbar-container"></div>
+    <div id="placard-container"></div>
+    <div class="lienzo-grid">
 
-    <!-- COLOMBES -->
-    <div class="panel panel--split-top" id="colombes-panel">
-      <div class="panel-topbar">
-        <div class="panel-topbar__col panel-topbar__col--identity">
-          <div class="lienzo-target-header lienzo-target-header--top">
-            <span id="userNickname" class="lienzo-target-header__name">Usuario</span>
-            <img id="userPhoto" class="lienzo-target-header__photo" src="/assets/icons/singeta120.gif" alt="Usuario">
+      <!-- COLOMBES -->
+      <div class="panel panel--split-top" id="colombes-panel">
+        <div class="panel-topbar">
+          <div class="panel-topbar__col panel-topbar__col--identity">
+            <div class="lienzo-target-header lienzo-target-header--top">
+              <span id="userNickname" class="lienzo-target-header__name">Usuario</span>
+              <img id="userPhoto" class="lienzo-target-header__photo" src="/assets/icons/singeta120.gif" alt="Usuario">
+            </div>
+          </div>
+
+          <div class="panel-topbar__col panel-topbar__col--actions">
+            <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
+              <button id="helpBtn" class="icon-btn" type="button" title="Ayuda" aria-label="Ayuda">
+                <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda">
+              </button>
+
+              <button id="saveAllBtn" class="icon-btn" type="button" title="Guardar datos" aria-label="Guardar datos">
+                <img src="/assets/icons/salvar40.gif" alt="Guardar datos">
+              </button>
+
+              <button id="createDeckBtn" class="icon-btn is-hidden" type="button" title="Aprobar" aria-label="Aprobar">
+                <img src="/assets/icons/Sello40.gif" alt="Aprobar">
+              </button>
+
+              <button id="sendJokerBlueBtn" class="icon-btn is-hidden" type="button" title="Solicitar Joker azul"
+                aria-label="Solicitar Joker azul">
+                <img src="/assets/icons/buzon60.gif" alt="Solicitar Joker azul">
+              </button>
+
+              <button id="cancelBtn" class="icon-btn" type="button" title="Salir" aria-label="Salir">
+                <img src="/assets/icons/exit80.gif" alt="Salir">
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="panel-topbar__col panel-topbar__col--actions">
-          <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-            <button id="helpBtn" class="icon-btn" type="button" title="Ayuda" aria-label="Ayuda">
-              <img src="/assets/icons/bastonRecortado80.gif" alt="Ayuda">
-            </button>
+        <div class="content colombes-content">
+          <div class="colombes-editor">
+            <div id="colombesCardZone" class="colombes-editor__card-wrap">
+              <img src="/assets/icons/Acorazon.gif" class="card" alt="As de corazón">
+            </div>
 
-            <button id="saveAllBtn" class="icon-btn" type="button" title="Guardar datos" aria-label="Guardar datos">
-              <img src="/assets/icons/salvar40.gif" alt="Guardar datos">
-            </button>
+            <div id="colombesForm" class="colombes-editor__form">
+              <div class="colombes-editor__line colombes-editor__line--top">
+                <span class="colombes-editor__rank">A</span>
+                <img src="/assets/icons/cor40.gif" class="colombes-editor__suit" alt="♥">
 
-            <button id="createDeckBtn" class="icon-btn is-hidden" type="button" title="Aprobar" aria-label="Aprobar">
-              <img src="/assets/icons/Sello40.gif" alt="Aprobar">
-            </button>
+                <input id="deckName" class="colombes-editor__input colombes-editor__input--title" type="text"
+                  placeholder="Título del mazo" autocomplete="off">
+              </div>
 
-            <button id="sendJokerBlueBtn" class="icon-btn is-hidden" type="button" title="Solicitar Joker azul"
-              aria-label="Solicitar Joker azul">
-              <img src="/assets/icons/buzon60.gif" alt="Solicitar Joker azul">
-            </button>
+              <div class="colombes-editor__line colombes-editor__line--bottom">
+                <span aria-hidden="true"></span>
 
-            <button id="cancelBtn" class="icon-btn" type="button" title="Salir" aria-label="Salir">
-              <img src="/assets/icons/exit80.gif" alt="Salir">
-            </button>
+                <img src="/assets/icons/dia40.gif" class="colombes-editor__suit" alt="♦">
+
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <select id="deckCurrencyCode" class="colombes-editor__input colombes-editor__input--code">
+                    <option value="">---</option>
+                    <option value="UYU">UYU</option>
+                    <option value="ARS">ARS</option>
+                    <option value="CLP">CLP</option>
+                    <option value="BRL">BRL</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                  </select>
+
+                  <input id="deckCurrencyName" class="colombes-editor__input colombes-editor__input--currency"
+                    type="text" placeholder="Peso uruguayo" autocomplete="off">
+                </div>
+              </div>
+
+              <div id="statusMsg" class="colombes-editor__status"></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="content colombes-content">
-        <div class="colombes-editor">
-          <div id="colombesCardZone" class="colombes-editor__card-wrap">
-            <img src="/assets/icons/Acorazon.gif" class="card" alt="As de corazón">
-          </div>
-
-          <div id="colombesForm" class="colombes-editor__form">
-            <div class="colombes-editor__line colombes-editor__line--top">
-              <span class="colombes-editor__rank">A</span>
-              <img src="/assets/icons/cor40.gif" class="colombes-editor__suit" alt="♥">
-
-              <input id="deckName" class="colombes-editor__input colombes-editor__input--title" type="text"
-                placeholder="Título del mazo" autocomplete="off">
+      <!-- AMSTERDAM -->
+      <div class="panel panel--split-top" id="amsterdam-panel">
+        <!-- TOPBAR (solo identidad, sin acciones) -->
+        <div class="panel-topbar panel-topbar--single">
+          <div class="panel-topbar__col panel-topbar__col--identity">
+            <div class="lienzo-source-header lienzo-source-header--top">
+              <span class="lienzo-source-header__name">Cooptrack server</span>
+              <img src="/assets/icons/Compila60.gif" class="lienzo-source-header__photo" alt="Cooptrack server">
             </div>
+          </div>
+        </div>
 
-            <div class="colombes-editor__line colombes-editor__line--bottom">
-              <span aria-hidden="true"></span>
+        <!-- CONTENIDO ORIGINAL (se mantiene) -->
+        <div class="content">
+          <div class="amsterdam-stage">
 
-              <img src="/assets/icons/dia40.gif" class="colombes-editor__suit" alt="♦">
-
-              <div style="display:flex; align-items:center; gap:8px;">
-                <select id="deckCurrencyCode" class="colombes-editor__input colombes-editor__input--code">
-                  <option value="">---</option>
-                  <option value="UYU">UYU</option>
-                  <option value="ARS">ARS</option>
-                  <option value="CLP">CLP</option>
-                  <option value="BRL">BRL</option>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                </select>
-
-                <input id="deckCurrencyName" class="colombes-editor__input colombes-editor__input--currency" type="text"
-                  placeholder="Peso uruguayo" autocomplete="off">
+            <!-- IZQUIERDA: mazo -->
+            <div class="amsterdam-stage__left">
+              <div class="amsterdam-pack-wrap">
+                <div id="pack" class="pack">
+                  <img src="/assets/icons/joker_blue.gif" class="joker-blue">
+                  <img src="/assets/icons/Joker.gif" class="joker-red">
+                  <img src="/assets/icons/Apike.gif" class="spade">
+                  <img src="/assets/icons/Adiamante.gif" class="diamond">
+                  <img src="/assets/icons/Atrebol.gif" class="club">
+                </div>
               </div>
             </div>
 
-            <div id="statusMsg" class="colombes-editor__status"></div>
+            <!-- DERECHA: checklist (SE QUEDA ACÁ) -->
+            <div class="amsterdam-stage__right">
+              <div id="serverNextPanel" class="server-next server-next--readonly">
+
+                <label class="server-next__item">
+                  <span class="server-next__fake-checkbox"></span>
+                  <img src="/assets/icons/Sello40.gif" class="server-next__icon">
+                  <span class="server-next__label">Aprobar J ♠ ♥ ♦ ♣</span>
+                </label>
+
+                <label class="server-next__item">
+                  <span class="server-next__fake-checkbox"></span>
+                  <img src="/assets/icons/buzon60.gif" class="server-next__icon">
+                  <span class="server-next__label">Enviar Q ♠</span>
+                </label>
+
+                <label class="server-next__item">
+                  <span class="server-next__fake-checkbox"></span>
+                  <img src="/assets/icons/pistola60.gif" class="server-next__icon">
+                  <span class="server-next__label">Despedir Q ♠</span>
+                </label>
+
+                <label class="server-next__item">
+                  <span class="server-next__fake-checkbox"></span>
+                  <img src="/assets/icons/Extra60.gif" class="server-next__icon">
+                  <span class="server-next__label">Publicar A♥ J♥♠</span>
+                </label>
+
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
     </div>
-
-    <!-- AMSTERDAM -->
-    <div class="panel panel--split-top" id="amsterdam-panel">
-      <!-- TOPBAR (solo identidad, sin acciones) -->
-      <div class="panel-topbar panel-topbar--single">
-        <div class="panel-topbar__col panel-topbar__col--identity">
-          <div class="lienzo-source-header lienzo-source-header--top">
-            <span class="lienzo-source-header__name">Cooptrack server</span>
-            <img src="/assets/icons/Compila60.gif" class="lienzo-source-header__photo" alt="Cooptrack server">
-          </div>
-        </div>
-      </div>
-
-      <!-- CONTENIDO ORIGINAL (se mantiene) -->
-      <div class="content">
-        <div class="amsterdam-stage">
-
-          <!-- IZQUIERDA: mazo -->
-          <div class="amsterdam-stage__left">
-            <div class="amsterdam-pack-wrap">
-              <div id="pack" class="pack">
-                <img src="/assets/icons/joker_blue.gif" class="joker-blue">
-                <img src="/assets/icons/Joker.gif" class="joker-red">
-                <img src="/assets/icons/Apike.gif" class="spade">
-                <img src="/assets/icons/Adiamante.gif" class="diamond">
-                <img src="/assets/icons/Atrebol.gif" class="club">
-              </div>
-            </div>
-          </div>
-
-          <!-- DERECHA: checklist (SE QUEDA ACÁ) -->
-          <div class="amsterdam-stage__right">
-            <div id="serverNextPanel" class="server-next server-next--readonly">
-
-              <label class="server-next__item">
-                <span class="server-next__fake-checkbox"></span>
-                <img src="/assets/icons/Sello40.gif" class="server-next__icon">
-                <span class="server-next__label">Aprobar J ♠ ♥ ♦ ♣</span>
-              </label>
-
-              <label class="server-next__item">
-                <span class="server-next__fake-checkbox"></span>
-                <img src="/assets/icons/buzon60.gif" class="server-next__icon">
-                <span class="server-next__label">Enviar Q ♠</span>
-              </label>
-
-              <label class="server-next__item">
-                <span class="server-next__fake-checkbox"></span>
-                <img src="/assets/icons/pistola60.gif" class="server-next__icon">
-                <span class="server-next__label">Despedir Q ♠</span>
-              </label>
-
-              <label class="server-next__item">
-                <span class="server-next__fake-checkbox"></span>
-                <img src="/assets/icons/Extra60.gif" class="server-next__icon">
-                <span class="server-next__label">Publicar A♥ J♥♠</span>
-              </label>
-
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </div>
 
   </div>
 

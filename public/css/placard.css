@@ -313,7 +313,7 @@
 .placard__ticker-track {
   display: inline-flex;
   gap: 40px;
-  animation: placardTicker 12s linear infinite;
+  animation: placardTicker 10s linear infinite;
 }
 
 .placard__ticker-item {
