@@ -21,18 +21,16 @@
         return String(play?.status || play?.play_status || "").toUpperCase();
     }
 
-    function getOwnerUserId(play) {
-        const rank = getRank(play);
+    function getUsersFromPlay(play) {
+        const users = [];
 
-        if (rank === "A") {
-            return Number(play?.target_user_id || play?.created_by_user_id || 0);
-        }
+        const created = Number(play?.created_by_user_id || 0);
+        const target = Number(play?.target_user_id || 0);
 
-        if (rank === "K" || rank === "Q") {
-            return Number(play?.target_user_id || 0);
-        }
+        if (created) users.push(created);
+        if (target && target !== created) users.push(target);
 
-        return 0;
+        return users;
     }
 
     function getOwnerName(play, userId, usersMap) {
@@ -82,40 +80,40 @@
             if (!["A", "K", "Q"].includes(rank)) return;
             if (!["ACTIVE", "APPROVED", "SENT"].includes(status)) return;
 
-            const userId = getOwnerUserId(p);
-            if (!userId) return;
+            const userIds = getUsersFromPlay(p);
 
-            if (!rows[userId]) {
-                rows[userId] = {
-                    userId,
-                    name: getOwnerName(p, userId, usersMap),
-                    photo: getOwnerPhoto(p, userId, usersMap),
-                    cards: []
-                };
-            }
+            userIds.forEach((userId) => {
+                if (!rows[userId]) {
+                    rows[userId] = {
+                        userId,
+                        name: getOwnerName(p, userId, usersMap),
+                        photo: getOwnerPhoto(p, userId, usersMap),
+                        cards: []
+                    };
+                }
 
-            rows[userId].cards.push(`${rank}${getSuitSymbol(suit)}`);
-        });
-
-        Object.values(rows).forEach((row) => {
-            if (row.name !== `U${row.userId}`) return;
-
-            const play = (Array.isArray(plays) ? plays : []).find((p) => {
-                return Number(p.created_by_user_id || 0) === Number(row.userId) ||
-                    Number(p.target_user_id || 0) === Number(row.userId);
+                rows[userId].cards.push(`${rank}${getSuitSymbol(suit)}`);
             });
 
-            if (play) {
-                row.name = getOwnerName(play, row.userId, usersMap);
-                row.photo = getOwnerPhoto(play, row.userId, usersMap);
-            }
-        });
+            Object.values(rows).forEach((row) => {
+                if (row.name !== `U${row.userId}`) return;
 
-        return Object.values(rows);
-    }
+                const play = (Array.isArray(plays) ? plays : []).find((p) => {
+                    return Number(p.created_by_user_id || 0) === Number(row.userId) ||
+                        Number(p.target_user_id || 0) === Number(row.userId);
+                });
+
+                if (play) {
+                    row.name = getOwnerName(play, row.userId, usersMap);
+                    row.photo = getOwnerPhoto(play, row.userId, usersMap);
+                }
+            });
+
+            return Object.values(rows);
+        }
 
     function renderUsersByDeck(container, model) {
-        container.innerHTML = `
+                container.innerHTML = `
       <section class="users-deck tablero">
         ${model.map(row => `
           <article class="tablero-row tablero-row--ak users-deck__row">
@@ -133,20 +131,20 @@
         `).join("")}
       </section>
     `;
-    }
+            }
 
     document.addEventListener("mazobar:showUsersByDeck", () => {
-        const container = document.getElementById("administradores-container");
-        if (!container) return;
+                const container = document.getElementById("administradores-container");
+                if (!container) return;
 
-        const state = window.__currentState || {};
-        const plays = state.plays || [];
-        const usersMap = state.usersMap || {};
+                const state = window.__currentState || {};
+                const plays = state.plays || [];
+                const usersMap = state.usersMap || {};
 
-        const model = buildUsersByDeckModel(plays, usersMap, state);
-        renderUsersByDeck(container, model);
-    });
+                const model = buildUsersByDeckModel(plays, usersMap, state);
+                renderUsersByDeck(container, model);
+            });
 
-    window.buildUsersByDeckModel = buildUsersByDeckModel;
-    window.renderUsersByDeck = renderUsersByDeck;
-})();
+        window.buildUsersByDeckModel = buildUsersByDeckModel;
+        window.renderUsersByDeck = renderUsersByDeck;
+    }) ();
