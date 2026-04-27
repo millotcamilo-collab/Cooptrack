@@ -85,14 +85,30 @@
             const userId = getOwnerUserId(p);
             if (!userId) return;
 
-            rows[userId] = {
-                userId,
-                name: getOwnerName(p, userId, usersMap),
-                photo: getOwnerPhoto(p, userId, usersMap),
-                cards: []
-            };
+            if (!rows[userId]) {
+                rows[userId] = {
+                    userId,
+                    name: getOwnerName(p, userId, usersMap),
+                    photo: getOwnerPhoto(p, userId, usersMap),
+                    cards: []
+                };
+            }
 
             rows[userId].cards.push(`${rank}${getSuitSymbol(suit)}`);
+        });
+
+        Object.values(rows).forEach((row) => {
+            if (row.name !== `U${row.userId}`) return;
+
+            const play = (Array.isArray(plays) ? plays : []).find((p) => {
+                return Number(p.created_by_user_id || 0) === Number(row.userId) ||
+                    Number(p.target_user_id || 0) === Number(row.userId);
+            });
+
+            if (play) {
+                row.name = getOwnerName(play, row.userId, usersMap);
+                row.photo = getOwnerPhoto(play, row.userId, usersMap);
+            }
         });
 
         return Object.values(rows);
