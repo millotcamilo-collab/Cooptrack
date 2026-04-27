@@ -2414,6 +2414,8 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         });
       }
 
+      await expandReadersForASend(client, updatedPlay);
+
       await addReadersToPlay(
         client,
         updatedPlay.id,

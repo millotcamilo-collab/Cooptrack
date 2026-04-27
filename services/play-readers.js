@@ -107,6 +107,29 @@ function parsePlayCodeRaw(code) {
   };
 }
 
+async function expandReadersForAdminCardHolder(client, play) {
+  const holderUserId = Number(play?.target_user_id || play?.created_by_user_id || 0);
+  const deckId = Number(play?.deck_id || 0);
+
+  if (!holderUserId || !deckId) return;
+
+  const holderReaders = normalizeReaderEntries([holderUserId]);
+
+  const adminPlays = await getDeckPlaysByKinds(client, deckId, {
+    ranks: ["A", "K", "JOKER"]
+  });
+
+  for (const targetPlay of adminPlays) {
+    await addReadersToPlay(client, targetPlay.id, holderReaders);
+  }
+
+  await addReadersToPlay(
+    client,
+    play.id,
+    normalizeReaderEntries([play?.created_by_user_id, holderUserId])
+  );
+}
+
 function qSpadeHasAttachedQHeart(play) {
   const rank = String(play?.card_rank || "").trim().toUpperCase();
   const suit = String(play?.card_suit || "").trim().toUpperCase();
@@ -179,7 +202,12 @@ async function getDeckPlaysByKinds(client, deckId, filters = {}) {
   });
 }
 
+async function expandReadersForASend(client, play) {
+  await expandReadersForAdminCardHolder(client, play);
+}
+
 async function expandReadersForKSend(client, play) {
+  await expandReadersForAdminCardHolder(client, play);
   const invitedUserId = Number(play?.target_user_id || 0);
   const deckId = Number(play?.deck_id || 0);
   const kSuit = String(play?.card_suit || "").toUpperCase();
@@ -444,5 +472,6 @@ module.exports = {
   handleApproveJHeart,
   computeReadersForQSpadeDraft,
   expandReadersForQSpadeSend,
-  expandReadersForKSend
+  expandReadersForKSend,
+  expandReadersForASend
 };
