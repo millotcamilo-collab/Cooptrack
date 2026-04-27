@@ -783,6 +783,22 @@
       </button>
     ` : ""}
 
+${isAdminPage ? `
+  <button
+    id="btnUsersByDeck"
+    type="button"
+    class="mazobar__cmd-btn"
+    title="Usuarios del mazo"
+    aria-label="Usuarios del mazo"
+  >
+    <img
+      src="/assets/icons/gente80.gif"
+      alt="Usuarios"
+      class="mazobar__cmd-icon"
+    />
+  </button>
+` : ""}
+
     ${adminBadge}
     ${adminArchiveButton}
     ${adminSuitButtons}
@@ -817,6 +833,16 @@
     if (btnBackToTablero) {
       btnBackToTablero.addEventListener("click", () => {
         goToMazoPage();
+      });
+    }
+
+    const btnUsersByDeck = document.getElementById("btnUsersByDeck");
+
+    if (btnUsersByDeck) {
+      btnUsersByDeck.addEventListener("click", () => {
+        document.dispatchEvent(
+          new CustomEvent("mazobar:showUsersByDeck")
+        );
       });
     }
 
