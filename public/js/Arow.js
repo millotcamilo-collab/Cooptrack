@@ -132,23 +132,26 @@
 
     if (!viewerId || !ownerId) return null;
 
-    // Sin Joker azul, las A no se transfieren
-    if (!hasBlueJoker) {
-      return "view";
+    // A♥ es el derecho de autor del mazo:
+    // no se transfiere, no se despide.
+    if (suit === "HEART") {
+      return viewerId === ownerId ? "view" : null;
     }
 
-    // Si soy el dueño actual de esta A, puedo transferir
+    // Si soy dueño actual de esta A, puedo transferir.
+    // Más adelante lienzoA decide si además puede renunciar.
     if (viewerId === ownerId) {
+      if (!hasBlueJoker) return "view";
       return "transfer";
     }
 
-    // Si no soy el dueño de esta A, pero sí del A♥,
-    // tengo autoridad para despedir, salvo sobre el A♥.
-    if (suit !== "HEART" && viewerOwnsHeartAce(context)) {
+    // Si no soy dueño de esta A, solo A♥ puede despedir.
+    if (viewerOwnsHeartAce(context)) {
       return "dismiss";
     }
 
-    return "view";
+    // K/Q u otros A no propietarios: no hacen nada.
+    return null;
   }
 
   function deckHasActiveBlueJoker(context) {
@@ -197,12 +200,16 @@
         );
       }
 
-      return (
-        `/lienzo.html` +
-        `?deckId=${deckId}` +
-        `&playId=${playId}` +
-        `&action=view`
-      );
+      if (action === "view") {
+        return (
+          `/lienzo.html` +
+          `?deckId=${deckId}` +
+          `&playId=${playId}` +
+          `&action=view`
+        );
+      }
+
+      return "";
     }
 
     return `/lienzo.html?deckId=${deckId}&playId=${playId}`;
