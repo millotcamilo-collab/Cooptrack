@@ -45,6 +45,10 @@
       action: parsed.action || "",
       status: play.play_status || "",
       amount: Number(play.amount || 0),
+
+      created_by_user_id: play.created_by_user_id || null,
+      target_user_id: play.target_user_id || null,
+
       parsed,
       raw: play.play_code || ""
     };
@@ -618,27 +622,38 @@
   `;
   }
 
-function canUserCreateJ(plays, currentUserId) {
-  const viewerId = Number(currentUserId || 0);
+  function canUserCreateJ(plays, currentUserId) {
+    const viewerId = Number(currentUserId || 0);
 
-  return plays.some((p) => {
-    const rank = String(p.rank || "").toUpperCase();
-    const status = String(p.status || "").toUpperCase();
+    return plays.some((p) => {
+      const rank = String(p.rank || "").toUpperCase();
+      const status = String(p.status || "").toUpperCase();
 
-    const ownerId = Number(
-      p.parsed?.userId ||
-      p.created_by_user_id ||
-      p.createdByUserId ||
-      0
-    );
+      const createdById = Number(
+        p.created_by_user_id ||
+        p.parsed?.userId ||
+        0
+      );
 
-    return (
-      ownerId === viewerId &&
-      (rank === "A" || rank === "K") &&
-      (status === "ACTIVE" || status === "APPROVED")
-    );
-  });
-}
+      const targetId = Number(p.target_user_id || 0);
+
+      if (rank === "A") {
+        return (
+          createdById === viewerId &&
+          status === "ACTIVE"
+        );
+      }
+
+      if (rank === "K") {
+        return (
+          targetId === viewerId &&
+          (status === "APPROVED" || status === "ACTIVE")
+        );
+      }
+
+      return false;
+    });
+  }
 
   function buildCommandButtonsHTML(plays, currentUserId) {
     const pageType = getCurrentPageType();
