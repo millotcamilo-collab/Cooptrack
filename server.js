@@ -2579,6 +2579,32 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       );
     }
 
+    const previousAceOwnerId = Number(current.target_user_id || current.created_by_user_id || 0);
+
+    const fallbackKingPlayCode = buildPlayCode({
+      mazoId: deckId,
+      userId: previousAceOwnerId,
+      rank: 'K',
+      suit: currentSuit,
+      action: 'ace_transfer_fallback_king',
+      authorized: `U:${previousAceOwnerId}`,
+      flow: 'ownership',
+      recipients: `U:${previousAceOwnerId}`,
+    });
+
+    const createdFallbackKing = await insertInstitutionalPlay(client, {
+      mazoId: deckId,
+      createdByUserId: previousAceOwnerId,
+      parentPlayId: parentAceId,
+      targetUserId: previousAceOwnerId,
+      playCode: fallbackKingPlayCode,
+      playText: 'K conservada por transferencia de A',
+      playStatus: 'APPROVED',
+    });
+
+    await expandReadersForKSend(client, createdFallbackKing.row);
+    await addUserToAclLines(client, deckId, previousAceOwnerId);
+
     const isRejectingQSpadeNow =
       currentRank === 'Q' &&
       currentSuit === 'SPADE' &&
