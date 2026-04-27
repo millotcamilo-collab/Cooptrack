@@ -2541,6 +2541,12 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       const deckId = Number(updatedPlay.deck_id || 0);
       const parentAceId = Number(updatedPlay.parent_play_id || 0);
 
+      const previousAceOwnerId = Number(
+        current.target_user_id ||
+        current.created_by_user_id ||
+        0
+      );
+
       if (!invitedUserId || !deckId || !parentAceId) {
         await client.query('ROLLBACK');
         return res.status(400).json({
@@ -2577,30 +2583,33 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     `,
         [deckId, invitedUserId]
       );
+
+      if (currentSuit !== 'HEART' && previousAceOwnerId) {
+        const fallbackKingPlayCode = buildPlayCode({
+          mazoId: deckId,
+          userId: previousAceOwnerId,
+          rank: 'K',
+          suit: currentSuit,
+          action: 'ace_transfer_fallback_king',
+          authorized: `U:${previousAceOwnerId}`,
+          flow: 'ownership',
+          recipients: `U:${previousAceOwnerId}`,
+        });
+
+        const createdFallbackKing = await insertInstitutionalPlay(client, {
+          mazoId: deckId,
+          createdByUserId: previousAceOwnerId,
+          parentPlayId: parentAceId,
+          targetUserId: previousAceOwnerId,
+          playCode: fallbackKingPlayCode,
+          playText: 'K conservada por transferencia de A',
+          playStatus: 'APPROVED',
+        });
+
+        await expandReadersForKSend(client, createdFallbackKing.row);
+        await addUserToAclLines(client, deckId, previousAceOwnerId);
+      }
     }
-
-    const previousAceOwnerId = Number(current.target_user_id || current.created_by_user_id || 0);
-
-    const fallbackKingPlayCode = buildPlayCode({
-      mazoId: deckId,
-      userId: previousAceOwnerId,
-      rank: 'K',
-      suit: currentSuit,
-      action: 'ace_transfer_fallback_king',
-      authorized: `U:${previousAceOwnerId}`,
-      flow: 'ownership',
-      recipients: `U:${previousAceOwnerId}`,
-    });
-
-    const createdFallbackKing = await insertInstitutionalPlay(client, {
-      mazoId: deckId,
-      createdByUserId: previousAceOwnerId,
-      parentPlayId: parentAceId,
-      targetUserId: previousAceOwnerId,
-      playCode: fallbackKingPlayCode,
-      playText: 'K conservada por transferencia de A',
-      playStatus: 'APPROVED',
-    });
 
     await expandReadersForKSend(client, createdFallbackKing.row);
     await addUserToAclLines(client, deckId, previousAceOwnerId);
