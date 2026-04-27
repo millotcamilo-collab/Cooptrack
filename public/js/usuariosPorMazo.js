@@ -21,15 +21,9 @@
         return String(play?.status || play?.play_status || "").toUpperCase();
     }
 
-    function getUsersFromPlay(play) {
-        const users = [];
-        const created = Number(play?.created_by_user_id || 0);
-        const target = Number(play?.target_user_id || 0);
-
-        if (created) users.push(created);
-        if (target && target !== created) users.push(target);
-
-        return users;
+    function getOwnerUserId(play) {
+        const parts = String(play?.play_code || "").split("§");
+        return Number(parts[1] || 0);
     }
 
     function getOwnerName(play, userId, usersMap) {
@@ -86,35 +80,35 @@
                 return;
             }
 
-            const userIds = getUsersFromPlay(p);
+            const userId = getOwnerUserId(p);
+            if (!userId) return;
 
-            userIds.forEach((userId) => {
-                if (!rows[userId]) {
-                    rows[userId] = {
-                        userId,
-                        name: getOwnerName(p, userId, usersMap),
-                        photo: getOwnerPhoto(p, userId, usersMap),
-                        cards: []
-                    };
-                }
+            if (!rows[userId]) {
+                rows[userId] = {
+                    userId,
+                    name: getOwnerName(p, userId, usersMap),
+                    photo: getOwnerPhoto(p, userId, usersMap),
+                    cards: []
+                };
+            }
 
-                rows[userId].cards.push(`${rank}${getSuitSymbol(suit)}`);
-            });
+            rows[userId].cards.push(`${rank}${getSuitSymbol(suit)}`);
         });
+    });
 
-        return Object.values(rows);
-    }
+    return Object.values(rows);
+}
 
     function isAclLine(play) {
-        const parts = String(play?.play_code || "").split("§");
-        const action = String(play?.action || parts[5] || "").trim().toLowerCase();
-        const flow = String(play?.flow || parts[7] || "").trim().toLowerCase();
+    const parts = String(play?.play_code || "").split("§");
+    const action = String(play?.action || parts[5] || "").trim().toLowerCase();
+    const flow = String(play?.flow || parts[7] || "").trim().toLowerCase();
 
-        return action === "puedejugar" && flow === "acl";
-    }
+    return action === "puedejugar" && flow === "acl";
+}
 
-    function renderUsersByDeck(container, model) {
-        container.innerHTML = `
+function renderUsersByDeck(container, model) {
+    container.innerHTML = `
       <section class="users-deck tablero">
         ${model.map(row => `
           <article class="tablero-row tablero-row--ak users-deck__row">
@@ -135,20 +129,20 @@
         `).join("")}
       </section>
     `;
-    }
+}
 
-    document.addEventListener("mazobar:showUsersByDeck", () => {
-        const container = document.getElementById("administradores-container");
-        if (!container) return;
+document.addEventListener("mazobar:showUsersByDeck", () => {
+    const container = document.getElementById("administradores-container");
+    if (!container) return;
 
-        const state = window.__currentState || {};
-        const plays = state.plays || [];
-        const usersMap = state.usersMap || {};
+    const state = window.__currentState || {};
+    const plays = state.plays || [];
+    const usersMap = state.usersMap || {};
 
-        const model = buildUsersByDeckModel(plays, usersMap, state);
-        renderUsersByDeck(container, model);
-    });
+    const model = buildUsersByDeckModel(plays, usersMap, state);
+    renderUsersByDeck(container, model);
+});
 
-    window.buildUsersByDeckModel = buildUsersByDeckModel;
-    window.renderUsersByDeck = renderUsersByDeck;
-})();
+window.buildUsersByDeckModel = buildUsersByDeckModel;
+window.renderUsersByDeck = renderUsersByDeck;
+}) ();
