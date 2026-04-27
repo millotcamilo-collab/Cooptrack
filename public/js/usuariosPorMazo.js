@@ -94,21 +94,20 @@
 
             rows[userId].cards.push(`${rank}${getSuitSymbol(suit)}`);
         });
-    });
 
-    return Object.values(rows);
-}
+        return Object.values(rows);
+    }
 
     function isAclLine(play) {
-    const parts = String(play?.play_code || "").split("§");
-    const action = String(play?.action || parts[5] || "").trim().toLowerCase();
-    const flow = String(play?.flow || parts[7] || "").trim().toLowerCase();
+        const parts = String(play?.play_code || "").split("§");
+        const action = String(play?.action || parts[5] || "").trim().toLowerCase();
+        const flow = String(play?.flow || parts[7] || "").trim().toLowerCase();
 
-    return action === "puedejugar" && flow === "acl";
-}
+        return action === "puedejugar" && flow === "acl";
+    }
 
-function renderUsersByDeck(container, model) {
-    container.innerHTML = `
+    function renderUsersByDeck(container, model) {
+        container.innerHTML = `
       <section class="users-deck tablero">
         ${model.map(row => `
           <article class="tablero-row tablero-row--ak users-deck__row">
@@ -129,20 +128,20 @@ function renderUsersByDeck(container, model) {
         `).join("")}
       </section>
     `;
-}
+    }
 
-document.addEventListener("mazobar:showUsersByDeck", () => {
-    const container = document.getElementById("administradores-container");
-    if (!container) return;
+    document.addEventListener("mazobar:showUsersByDeck", () => {
+        const container = document.getElementById("administradores-container");
+        if (!container) return;
 
-    const state = window.__currentState || {};
-    const plays = state.plays || [];
-    const usersMap = state.usersMap || {};
+        const state = window.__currentState || {};
+        const plays = state.plays || [];
+        const usersMap = state.usersMap || {};
 
-    const model = buildUsersByDeckModel(plays, usersMap, state);
-    renderUsersByDeck(container, model);
-});
+        const model = buildUsersByDeckModel(plays, usersMap, state);
+        renderUsersByDeck(container, model);
+    });
 
-window.buildUsersByDeckModel = buildUsersByDeckModel;
-window.renderUsersByDeck = renderUsersByDeck;
-}) ();
+    window.buildUsersByDeckModel = buildUsersByDeckModel;
+    window.renderUsersByDeck = renderUsersByDeck;
+})();
