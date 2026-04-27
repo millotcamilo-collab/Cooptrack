@@ -28,6 +28,11 @@
     return window.__currentUser || window.__currentState?.currentUser || null;
   }
 
+  function getLienzoAction() {
+    const params = new URLSearchParams(window.location.search);
+    return String(params.get("action") || "").toLowerCase();
+  }
+
   function parsePlayCode(code) {
     const parts = String(code || "").split("§");
 
@@ -43,7 +48,6 @@
       recipients: parts[8] || null
     };
   }
-
 
   function compareCorporateCards(a, b) {
     const order = {
@@ -327,10 +331,11 @@
 
   function renderSourceActions(play) {
     const uiState = getKUiState(play);
+    const action = getLienzoAction();
 
     const buttons = [];
 
-    if (uiState === "ACTIVE" && isSourceViewer(play)) {
+    if (uiState === "ACTIVE" && isSourceViewer(play) && action === "transfer") {
       buttons.push(
         renderIconButton({
           id: "lienzo-send-btn",
@@ -341,11 +346,22 @@
       );
     }
 
+    if (action === "dismiss") {
+      buttons.push(
+        renderIconButton({
+          id: "lienzo-dismiss-btn",
+          action: "dismiss-a",
+          icon: getActionIcon("reject") || "/assets/icons/stepback40.gif",
+          title: "Despedir"
+        })
+      );
+    }
+
     return `
-      <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-        ${buttons.join("")}
-      </div>
-    `;
+    <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
+      ${buttons.join("")}
+    </div>
+  `;
   }
 
   function renderSourcePlayerPanel(play) {
@@ -395,7 +411,7 @@
       buttons.push(
         renderIconButton({
           id: "lienzo-approve-btn",
-          action: "approve-k",
+          action: "approve-a",
           icon: getActionIcon("approve") || "/assets/icons/Sello40.gif",
           title: "Aceptar"
         })
@@ -404,7 +420,7 @@
       buttons.push(
         renderIconButton({
           id: "lienzo-reject-btn",
-          action: "reject-k",
+          action: "reject-a",
           icon: getActionIcon("reject") || "/assets/icons/stepback40.gif",
           title: "Rechazar"
         })
@@ -415,7 +431,7 @@
       buttons.push(
         renderIconButton({
           id: "lienzo-quit-btn",
-          action: "quit-k",
+          action: "quit-a",
           icon: getActionIcon("quit") || "/assets/icons/step60.gif",
           title: "Renunciar"
         })
@@ -537,7 +553,7 @@
 
     if (dismissBtn) {
       dismissBtn.addEventListener("click", async () => {
-        const confirmed = window.confirm("¿Despedir esta K?");
+        const confirmed = window.confirm("¿Despedir este As?");
         if (!confirmed) return;
 
         const result = await patchPlay(play.id, {
@@ -573,7 +589,7 @@
 
     if (rejectBtn) {
       rejectBtn.addEventListener("click", async () => {
-        const confirmed = window.confirm("¿Querés rechazar esta K?");
+        const confirmed = window.confirm("¿Querés rechazar este As?");
         if (!confirmed) return;
 
         const result = await patchPlay(play.id, {
@@ -588,7 +604,7 @@
 
     if (quitBtn) {
       quitBtn.addEventListener("click", async () => {
-        const confirmed = window.confirm("¿Querés renunciar a esta K?");
+        const confirmed = window.confirm("¿Querés renunciar a este As?");
         if (!confirmed) return;
 
         const result = await patchPlay(play.id, {
