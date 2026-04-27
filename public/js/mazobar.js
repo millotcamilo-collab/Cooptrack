@@ -601,7 +601,7 @@
               </div>
 
               <div class="mazobar__commands">
-                ${buildCommandButtonsHTML(normalizedPlays)}
+                ${buildCommandButtonsHTML(normalizedPlays, currentUserId)}
               </div>
 
               ${buildDeckPhotoEditorHTML(deck, normalizedPlays, currentUserId)}
@@ -618,21 +618,29 @@
   `;
   }
 
-  function canUserPlay(plays) {
-    return plays.some((p) => {
-      const action = String(p.action || "").trim();
-      const status = String(p.status || "").toUpperCase();
-      const flow = String(p.parsed?.flow || "").trim().toLowerCase();
+function canUserCreateJ(plays, currentUserId) {
+  const viewerId = Number(currentUserId || 0);
 
-      return (
-        action === "puedeJugar" &&
-        flow === "acl" &&
-        status === "ACTIVE"
-      );
-    });
-  }
+  return plays.some((p) => {
+    const rank = String(p.rank || "").toUpperCase();
+    const status = String(p.status || "").toUpperCase();
 
-  function buildCommandButtonsHTML(plays) {
+    const ownerId = Number(
+      p.parsed?.userId ||
+      p.created_by_user_id ||
+      p.createdByUserId ||
+      0
+    );
+
+    return (
+      ownerId === viewerId &&
+      (rank === "A" || rank === "K") &&
+      (status === "ACTIVE" || status === "APPROVED")
+    );
+  });
+}
+
+  function buildCommandButtonsHTML(plays, currentUserId) {
     const pageType = getCurrentPageType();
     const isMazoPage = pageType === "mazo";
     const isAdminPage = pageType === "administradores";
@@ -712,7 +720,7 @@
       : "";
 
     return `
-    ${isMazoPage && canUserPlay(plays) ? `
+    ${isMazoPage && canUserCreateJ(plays, currentUserId) ? `
   <button
     id="btnAddJ"
     type="button"
