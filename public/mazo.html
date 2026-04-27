@@ -182,16 +182,23 @@
 
         const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
         const status = String(play?.play_status || "").toUpperCase();
-        const ownerUserId = Number(parts[1] || 0);
 
-        if (status !== "ACTIVE") return false;
-        if (ownerUserId !== currentUserId) return false;
+        const codeUserId = Number(parts[1] || 0);
+        const createdById = Number(play?.created_by_user_id || 0);
+        const targetId = Number(play?.target_user_id || 0);
 
-        return rank === "A" || rank === "K";
+        if (rank !== "A" && rank !== "K") return false;
+
+        if (status !== "ACTIVE" && status !== "APPROVED") return false;
+
+        return (
+          codeUserId === currentUserId ||
+          createdById === currentUserId ||
+          targetId === currentUserId
+        );
       });
 
       window.__canPlay = hasCorporateAccess;
-
 
       if (typeof renderMazobar === "function") {
         renderMazobar(deck, state.plays || [], state.userId);
