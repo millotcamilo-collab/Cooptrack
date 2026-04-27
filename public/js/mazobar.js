@@ -646,7 +646,7 @@
 
       if (rank === "K") {
         return (
-          targetId === viewerId &&
+          (createdById === viewerId || targetId === viewerId) &&
           (status === "APPROVED" || status === "ACTIVE")
         );
       }
@@ -792,7 +792,7 @@ ${isAdminPage ? `
     aria-label="Usuarios del mazo"
   >
     <img
-      src="/assets/icons/gente80.gif"
+      src="/assets/icons/Gente60.gif"
       alt="Usuarios"
       class="mazobar__cmd-icon"
     />
