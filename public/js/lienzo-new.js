@@ -854,7 +854,7 @@
       window.__lienzoAnimationState?.sourceCardDelivered === true;
 
     const parentPlay = draft?.parentPlay || null;
-    const sessionDiaHtml = renderSourceSessionDia(parentPlay);
+    const sessionDiaHtml = "";
 
     const topbar = buildPanelTopbar({
       identityHtml: `
@@ -906,7 +906,6 @@
         </div>
       </div>
 
-      ${sessionDiaHtml}
     </section>
   `;
   }
