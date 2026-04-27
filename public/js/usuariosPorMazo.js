@@ -1,67 +1,102 @@
-function buildUsersByDeckModel(plays, usersMap) {
-  const rows = {};
+(function () {
+  function getSuitSymbol(suit) {
+    switch (String(suit || "").toUpperCase()) {
+      case "HEART": return "♥";
+      case "SPADE": return "♠";
+      case "DIAMOND": return "♦";
+      case "CLUB": return "♣";
+      default: return "";
+    }
+  }
 
-  plays.forEach((p) => {
-    const rank = String(p.rank || "").toUpperCase();
-    const suit = String(p.suit || "").toUpperCase();
-    const status = String(p.status || "").toUpperCase();
+  function getRank(play) {
+    return String(play?.rank || play?.card_rank || "").toUpperCase();
+  }
 
-    if (status !== "ACTIVE" && status !== "APPROVED") return;
+  function getSuit(play) {
+    return String(play?.suit || play?.card_suit || "").toUpperCase();
+  }
 
-    let userId = null;
+  function getStatus(play) {
+    return String(play?.status || play?.play_status || "").toUpperCase();
+  }
+
+  function getOwnerUserId(play) {
+    const rank = getRank(play);
 
     if (rank === "A") {
-      userId = Number(p.created_by_user_id || 0);
+      return Number(play?.target_user_id || play?.created_by_user_id || 0);
     }
 
     if (rank === "K" || rank === "Q") {
-      userId = Number(p.target_user_id || 0);
+      return Number(play?.target_user_id || 0);
     }
 
-    if (!userId) return;
+    return 0;
+  }
 
-    if (!rows[userId]) {
-      rows[userId] = {
-        userId,
-        name: usersMap[userId]?.nickname || `U${userId}`,
-        cards: []
-      };
-    }
+  function getOwnerName(play, userId, usersMap) {
+    return (
+      usersMap?.[userId]?.nickname ||
+      play?.target_user_nickname ||
+      play?.created_by_nickname ||
+      `U${userId}`
+    );
+  }
 
-    rows[userId].cards.push(`${rank}${getSuitSymbol(suit)}`);
+  function buildUsersByDeckModel(plays, usersMap = {}) {
+    const rows = {};
+
+    (Array.isArray(plays) ? plays : []).forEach((p) => {
+      const rank = getRank(p);
+      const suit = getSuit(p);
+      const status = getStatus(p);
+
+      if (!["A", "K", "Q"].includes(rank)) return;
+      if (!["ACTIVE", "APPROVED", "SENT"].includes(status)) return;
+
+      const userId = getOwnerUserId(p);
+      if (!userId) return;
+
+      if (!rows[userId]) {
+        rows[userId] = {
+          userId,
+          name: getOwnerName(p, userId, usersMap),
+          cards: []
+        };
+      }
+
+      rows[userId].cards.push(`${rank}${getSuitSymbol(suit)}`);
+    });
+
+    return Object.values(rows);
+  }
+
+  function renderUsersByDeck(container, model) {
+    container.innerHTML = `
+      <section class="users-deck tablero">
+        ${model.map(row => `
+          <article class="tablero-row tablero-row--ak users-deck__row">
+            <div class="users-deck__name">${row.name}</div>
+            <div class="users-deck__cards">${row.cards.join(" ")}</div>
+          </article>
+        `).join("")}
+      </section>
+    `;
+  }
+
+  document.addEventListener("mazobar:showUsersByDeck", () => {
+    const container = document.getElementById("administradores-container");
+    if (!container) return;
+
+    const state = window.__currentState || {};
+    const plays = state.plays || [];
+    const usersMap = state.usersMap || {};
+
+    const model = buildUsersByDeckModel(plays, usersMap);
+    renderUsersByDeck(container, model);
   });
 
-  return Object.values(rows);
-}
-
-function renderUsersByDeck(container, model) {
-  container.innerHTML = `
-    <div class="users-deck">
-      ${model.map(row => `
-        <div class="users-deck__row">
-          <div class="users-deck__name">${row.name}</div>
-          <div class="users-deck__cards">${row.cards.join(" ")}</div>
-        </div>
-      `).join("")}
-    </div>
-  `;
-}
-
-document.addEventListener("mazobar:showUsersByDeck", () => {
-  const container = document.getElementById("administradores-container");
-
-  if (!container) return;
-
-  const state = window.__currentState;
-  if (!state) return;
-
-  const plays = state.plays || [];
-  const usersMap = state.usersMap || {}; // por ahora puede estar vacío
-
-  const model = buildUsersByDeckModel(plays, usersMap);
-
-  renderUsersByDeck(container, model);
-});
-
-window.buildUsersByDeckModel = buildUsersByDeckModel;
-window.renderUsersByDeck = renderUsersByDeck;
+  window.buildUsersByDeckModel = buildUsersByDeckModel;
+  window.renderUsersByDeck = renderUsersByDeck;
+})();
