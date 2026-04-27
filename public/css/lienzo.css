@@ -1086,30 +1086,29 @@ body {
 }
 
 
-/* ===== AMSTERDAM (lienzo-new FIX) ===== */
+/* ===== AMSTERDAM inicial: destinatario + users.js arriba ===== */
 
 .lienzo-panel--target-empty {
-  display: grid;
-  grid-template-rows: 56px 150px 1fr;
-  row-gap: 12px;
-  align-items: start;
-}
-
-/* fila 1 → destinatario */
-.lienzo-panel--target-empty .lienzo-target-empty {
-  grid-row: 1;
-  justify-content: center;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
+  gap: 18px;
 }
 
-/* fila 2 → (vacía o futura carta) */
-.lienzo-panel--target-empty .lienzo-target-mainrow {
-  grid-row: 2;
-}
-
-/* fila 3 → users picker */
-.lienzo-panel--target-empty .lienzo-users-picker {
-  grid-row: 2;   /* 👈 PROBÁ ESTO primero */
-  align-self: start;
+.lienzo-panel--target-empty .lienzo-target-empty {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   margin-top: 0;
+}
+
+.lienzo-panel--target-empty .lienzo-users-picker {
+  flex: 0 0 auto;
+  align-self: center;
+  margin-top: 0;
+  min-height: 0;
 }
