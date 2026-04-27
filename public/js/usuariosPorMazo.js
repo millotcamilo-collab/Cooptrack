@@ -44,9 +44,22 @@
     );
   }
 
-  function buildUsersByDeckModel(plays, usersMap = {}) {
+  function buildUsersByDeckModel(plays, usersMap = {}, state = {}) {
     const rows = {};
+const deck = window.__currentDeck || state?.deck || state?.mazo || {};
+const authorId = Number(deck.created_by_user_id || deck.owner_user_id || 0);
 
+if (authorId) {
+  rows[authorId] = {
+    userId: authorId,
+    name:
+      deck.created_by_nickname ||
+      deck.owner_nickname ||
+      usersMap?.[authorId]?.nickname ||
+      `U${authorId}`,
+    cards: []
+  };
+}
     (Array.isArray(plays) ? plays : []).forEach((p) => {
       const rank = getRank(p);
       const suit = getSuit(p);
@@ -93,7 +106,7 @@
     const plays = state.plays || [];
     const usersMap = state.usersMap || {};
 
-    const model = buildUsersByDeckModel(plays, usersMap);
+    const model = buildUsersByDeckModel(plays, usersMap, state);
     renderUsersByDeck(container, model);
   });
 
