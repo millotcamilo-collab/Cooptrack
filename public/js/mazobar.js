@@ -43,7 +43,7 @@
       rank: parsed.rank || play.card_rank || "",
       suit: parsed.suit || play.card_suit || "",
       action: parsed.action || "",
-      status: play.play_status || "",
+      status: play.play_status || play.status || "",
       amount: Number(play.amount || 0),
 
       created_by_user_id: play.created_by_user_id || null,
@@ -622,6 +622,27 @@
   `;
   }
 
+  function playMentionsUser(play, userId) {
+    const needle = `U:${Number(userId || 0)}`;
+
+    return [
+      play.parsed?.userId,
+      play.parsed?.autorizados,
+      play.parsed?.recipients,
+      play.created_by_user_id,
+      play.target_user_id
+    ].some((value) => {
+      if (value === null || value === undefined) return false;
+
+      const text = String(value);
+
+      return (
+        Number(text) === Number(userId) ||
+        text.includes(needle)
+      );
+    });
+  }
+
   function canUserCreateJ(plays, currentUserId) {
     const viewerId = Number(currentUserId || 0);
 
@@ -629,29 +650,15 @@
       const rank = String(p.rank || "").toUpperCase();
       const status = String(p.status || "").toUpperCase();
 
-      const createdById = Number(
-        p.created_by_user_id ||
-        p.parsed?.userId ||
-        0
-      );
-
-      const targetId = Number(p.target_user_id || 0);
-
-      if (rank === "A") {
-        return (
-          createdById === viewerId &&
-          status === "ACTIVE"
-        );
+      if (status !== "ACTIVE" && status !== "APPROVED") {
+        return false;
       }
 
-      if (rank === "K") {
-        return (
-          (createdById === viewerId || targetId === viewerId) &&
-          (status === "APPROVED" || status === "ACTIVE")
-        );
+      if (rank !== "A" && rank !== "K") {
+        return false;
       }
 
-      return false;
+      return playMentionsUser(p, viewerId);
     });
   }
 
