@@ -34,6 +34,10 @@
 
   function isCorporateIncomingPlay(play) {
     const rank = normalizeText(play?.card_rank || play?.rank);
+    const suit = normalizeText(play?.card_suit || play?.suit);
+
+    if (rank === "J" && suit === "HEART") return true;
+
     return rank === "Q" || rank === "K" || rank === "A";
   }
 
@@ -91,7 +95,7 @@
     if (rank === "A" && isSource && FINAL_STATES_A_SOURCE.includes(status)) {
       return "READ_ONLY";
     }
-    
+
     // =========================
     // Ya leído
     // =========================
@@ -267,6 +271,10 @@
     const rank = normalizeText(play?.card_rank || play?.rank);
     const suit = normalizeText(play?.card_suit || play?.suit);
     const status = normalizeText(play?.play_status || play?.status);
+
+    if (rank === "J" && suit === "HEART") {
+      return "/lienzoJcorazon.html";
+    }
 
     if (rank === "Q" && suit === "SPADE") {
       return playHasQHeartAttachment(play)
