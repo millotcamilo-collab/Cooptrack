@@ -1115,24 +1115,40 @@ body {
 
 /*Jorazon*/
 
-.lienzo-jheart-text {
+.lienzo-jheart-envelope {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
   margin-top: 10px;
-  padding: 8px 10px;
-  max-width: 320px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.55);
+  padding: 10px 12px;
+
+  max-width: 360px;
+  min-height: 74px;
+
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+
   color: #fff;
-  font-size: 15px;
-  line-height: 1.25;
-  text-align: center;
+  box-sizing: border-box;
 }
 
-.lienzo-drop-hint {
-  color: #fff;
-  opacity: 0.8;
-  font-size: 14px;
-  padding: 8px;
-  text-align: center;
+.lienzo-jheart-envelope__card {
+  width: 46px;
+  height: auto;
+  flex: 0 0 auto;
+}
+
+.lienzo-jheart-envelope__text {
+  flex: 1;
+  font-size: 15px;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.lienzo-jheart-envelope--received {
+  margin: 0 auto;
 }
 
 #jheart-draggable-card {
@@ -1141,6 +1157,14 @@ body {
 
 #jheart-draggable-card:active {
   cursor: grabbing;
+}
+
+.lienzo-drop-hint {
+  color: #fff;
+  opacity: 0.8;
+  font-size: 14px;
+  padding: 8px;
+  text-align: center;
 }
 
 #lienzo-jheart-target-dropzone.is-drag-valid {
