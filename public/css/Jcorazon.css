@@ -128,3 +128,18 @@
     flex-wrap: wrap;
   }
 }
+
+.tablero-row--jcorazon .tablero-row__inline-input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+
+  box-sizing: border-box;
+}

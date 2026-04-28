@@ -126,8 +126,6 @@
 
       const textView = row.querySelector('[data-role="text-view"]');
       const textInput = row.querySelector('[data-role="text-input"]');
-      const btnSpade = row.querySelector('[data-action="change-to-spade"]');
-      const btnClub = row.querySelector('[data-action="change-to-club"]');
       const btnHelp = row.querySelector('[data-action="show-help"]');
       const btnEdit = row.querySelector('[data-action="edit-play"]');
       const btnSave = row.querySelector('[data-action="save-play"]');
@@ -163,8 +161,6 @@
         if (textInput) textInput.style.display = isEditMode ? "block" : "none";
 
         if (isCancelled) {
-          hideButton(btnSpade);
-          hideButton(btnClub);
           hideButton(btnHelp);
           hideButton(btnEdit);
           hideButton(btnSave);
@@ -181,8 +177,6 @@
         }
 
 if (!userCanEdit) {
-  hideButton(btnSpade);
-  hideButton(btnClub);
   hideButton(btnEdit);
   hideButton(btnSave);
   hideButton(btnApprove);
@@ -199,13 +193,6 @@ if (!userCanEdit) {
   return;
 }
 
-        if (isApproved || isEditMode) {
-          hideButton(btnSpade);
-          hideButton(btnClub);
-        } else {
-          showButton(btnSpade);
-          showButton(btnClub);
-        }
 
         showButton(btnHelp);
 
@@ -258,22 +245,6 @@ if (!userCanEdit) {
           textInput.select();
         }
       }
-
-      btnSpade?.addEventListener("click", () => {
-        dispatch("tablero:change-suit", {
-          playId,
-          nextSuit: "SPADE",
-          currentSuit: "HEART"
-        });
-      });
-
-      btnClub?.addEventListener("click", () => {
-        dispatch("tablero:change-suit", {
-          playId,
-          nextSuit: "CLUB",
-          currentSuit: "HEART"
-        });
-      });
 
       btnHelp?.addEventListener("click", () => {
         if (typeof window.openPlayHelp === "function") {
@@ -373,13 +344,6 @@ if (!userCanEdit) {
         </div>
 
         <div class="tablero-row__right">
-          <button type="button" data-action="change-to-spade" title="Cambiar a J♠">
-            <img src="${spadeIcon}" alt="J♠" />
-          </button>
-
-          <button type="button" data-action="change-to-club" title="Cambiar a J♣">
-            <img src="${clubIcon}" alt="J♣" />
-          </button>
 
           <button type="button" data-action="open-private-readers" title="Abrir lectura" style="display:none;">
             <img src="${privedIcon}" alt="Privado" />
