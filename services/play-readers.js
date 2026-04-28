@@ -374,7 +374,7 @@ async function handleReadersOnPlayCreate(client, play) {
     return;
   }
 
-    // --- A transferencia recién creada ---
+  // --- A transferencia recién creada ---
   if (rank === 'A') {
     const readers = normalizeReaderEntries([
       created_by_user_id,
@@ -407,7 +407,7 @@ async function handleReadersOnPlayCreate(client, play) {
       created_by_user_id
     );
 
-    await addReadersToPlay(client, id, readers);
+    await setPlayReaders(client, id, readers);
     return;
   }
 }

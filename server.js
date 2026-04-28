@@ -18,6 +18,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const {
   handleReadersOnPlayCreate,
   expandReadersForQSpadeSend,
+  handleApproveJHeart,
   expandReadersForKSend,
   expandReadersForASend,
 } = require('./services/play-readers');
@@ -2453,6 +2454,16 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       await expandReadersForQSpadeSend(client, updatedPlay);
+    }
+
+    const isApprovingJHeartNow =
+      currentRank === 'J' &&
+      currentSuit === 'HEART' &&
+      currentStatus !== 'APPROVED' &&
+      nextStatus === 'APPROVED';
+
+    if (isApprovingJHeartNow) {
+      await handleApproveJHeart(client, updatedPlay);
     }
 
     const isApprovingQSpadeNow =

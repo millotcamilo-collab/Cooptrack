@@ -145,10 +145,28 @@ async function getCurrentCardHolderUserIds(client, deckId, rank, suit) {
  * Por ahora la dejamos como stub.
  */
 async function getActiveDeckMemberUserIds(client, deckId) {
-  void client;
-  void deckId;
+  const result = await client.query(
+    `
+    SELECT DISTINCT
+      COALESCE(target_user_id, created_by_user_id) AS user_id
+    FROM plays
+    WHERE deck_id = $1
+      AND COALESCE(target_user_id, created_by_user_id) IS NOT NULL
+      AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
+      AND UPPER(COALESCE(play_status, '')) NOT IN (
+        'REJECTED',
+        'CANCELLED',
+        'QUIT',
+        'FIRED',
+        'BLOCKED'
+      )
+    `,
+    [deckId]
+  );
 
-  return [];
+  return result.rows
+    .map((row) => Number(row.user_id))
+    .filter((id) => Number.isInteger(id) && id > 0);
 }
 
 /**
