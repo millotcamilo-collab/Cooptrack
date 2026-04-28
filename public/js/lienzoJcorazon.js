@@ -398,6 +398,10 @@
     <div class="lienzo-jheart-envelope__text">
       ${escapeHtml(String(play?.play_text || "").trim() || "Sin texto")}
     </div>
+
+    <button id="jheart-send-btn" class="lienzo-jheart-envelope__send" title="Enviar a A♥">
+      <img src="/assets/icons/buzon60.gif" alt="Enviar" />
+    </button>
   </div>
 ` : `
   <div class="lienzo-drop-hint">
@@ -529,18 +533,11 @@
     }
 
     function bindActions(play) {
-        const sendBtn = document.getElementById("lienzo-send-btn");
-
-        if (sendBtn) {
-            sendBtn.addEventListener("click", () => {
-                handleSendPlay(play);
-            });
-        }
         const sendBtn = document.getElementById("jheart-send-btn");
 
         if (sendBtn) {
-            sendBtn.addEventListener("click", (e) => {
-                e.stopPropagation(); // evita conflictos con drag
+            sendBtn.addEventListener("click", (event) => {
+                event.stopPropagation();
                 handleSendPlay(play);
             });
         }
