@@ -2611,9 +2611,6 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
     }
 
-    await expandReadersForKSend(client, createdFallbackKing.row);
-    await addUserToAclLines(client, deckId, previousAceOwnerId);
-
     const isRejectingQSpadeNow =
       currentRank === 'Q' &&
       currentSuit === 'SPADE' &&
