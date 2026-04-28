@@ -144,16 +144,35 @@
                 const rank = normalizeRank(card.rank);
                 const suit = normalizeSuit(card.suit);
                 const status = normalizeRank(card.status);
+                const action = String(card.action || "").trim().toLowerCase();
+                const flow = String(card.flow || "").trim().toLowerCase();
 
                 if (!["A", "K"].includes(rank)) return false;
                 if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
-                if (["REJECTED", "CANCELLED", "QUIT", "FIRED", "BLOCKED"].includes(status)) return false;
+
+                if (["REJECTED", "CANCELLED", "QUIT", "FIRED"].includes(status)) {
+                    return false;
+                }
 
                 const actualOwner =
                     Number(card.targetUserId || 0) ||
                     Number(card.createdByUserId || 0);
 
-                return actualOwner === ownerId;
+                if (actualOwner !== ownerId) return false;
+
+                // A reales: solo desde línea 10 del libro, flow foundation
+                if (rank === "A") {
+                    return flow === "foundation";
+                }
+
+                // K reales: nunca mostrar las ACL iniciales puedeJugar
+                if (rank === "K") {
+                    if (flow === "acl") return false;
+                    if (action === "puedejugar") return false;
+                    return status === "ACTIVE" || status === "APPROVED";
+                }
+
+                return false;
             })
             .sort(compareCorporateCards);
     }

@@ -2010,12 +2010,13 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       const isQSpade = currentRank === 'Q' && currentSuit === 'SPADE';
       const isKCard = currentRank === 'K';
       const isACard = currentRank === 'A';
+      const isJHeart = currentRank === 'J' && currentSuit === 'HEART';
 
-      if (!isQSpade && !isKCard && !isACard) {
+      if (!isQSpade && !isKCard && !isACard && !isJHeart) {
 
         return res.status(400).json({
           ok: false,
-          error: 'Solo una Q♠ o una K pueden enviarse'
+          error: 'Solo una Q♠ o una K, A o una J♥ pueden enviarse'
         });
       }
 
@@ -2356,6 +2357,12 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       await applySettlementToUserProfile(client, updatedPlay, nextSettlement);
     }
 
+    const isSendingJHeartNow =
+      currentRank === 'J' &&
+      currentSuit === 'HEART' &&
+      currentStatus !== 'SENT' &&
+      nextStatus === 'SENT';
+
     const isSendingQSpadeNow =
       currentRank === 'Q' &&
       currentSuit === 'SPADE' &&
@@ -2454,6 +2461,52 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       await expandReadersForQSpadeSend(client, updatedPlay);
+    }
+
+    if (isSendingJHeartNow) {
+      const deckId = Number(updatedPlay.deck_id || 0);
+
+      const aceResult = await client.query(
+        `
+    SELECT
+      COALESCE(target_user_id, created_by_user_id) AS owner_user_id
+    FROM plays
+    WHERE deck_id = $1
+      AND card_rank = 'A'
+      AND card_suit = 'HEART'
+      AND split_part(play_code, '§', 8) = 'foundation'
+    ORDER BY id ASC
+    LIMIT 1
+    `,
+        [deckId]
+      );
+
+      const aceHeartOwnerId = Number(aceResult.rows[0]?.owner_user_id || 0);
+
+      if (!aceHeartOwnerId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'No se encontró dueño de A♥ para enviar la J♥'
+        });
+      }
+
+      await client.query(
+        `
+    UPDATE plays
+    SET target_user_id = $1,
+        updated_at = NOW()
+    WHERE id = $2
+    `,
+        [aceHeartOwnerId, updatedPlay.id]
+      );
+
+      updatedPlay.target_user_id = aceHeartOwnerId;
+
+      await addReadersToPlay(client, updatedPlay.id, [
+        updatedPlay.created_by_user_id,
+        aceHeartOwnerId
+      ]);
     }
 
     const isApprovingJHeartNow =
@@ -3124,6 +3177,14 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
             'FIRED'
           )
         )
+
+        OR
+(
+  p.card_rank = 'J'
+  AND p.card_suit = 'HEART'
+  AND p.target_user_id = $1
+  AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+)
 
       ORDER BY p.created_at DESC
       `,
