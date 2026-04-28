@@ -159,8 +159,9 @@
 
       function renderMode() {
         const isEditMode = row.dataset.mode === "edit";
+        const isSent = statusRaw === "SENT";
 
-        if (!isApproved && !isEditMode && userCanEdit && !userIsHeartAceHolder) {
+        if (!isApproved && !isEditMode && userCanEdit && !userIsHeartAceHolder && !isSent) {
           showButton(btnSend);
         } else {
           hideButton(btnSend);
@@ -206,7 +207,7 @@
 
         showButton(btnHelp);
 
-        if (!isApproved && !isEditMode && userCanEdit) {
+        if (!isApproved && !isSent && !isEditMode && userCanEdit) {
           showButton(btnEdit);
         } else {
           hideButton(btnEdit);
@@ -226,7 +227,7 @@
           hideButton(btnApprove);
         }
 
-        if (!isApproved) {
+        if (!isApproved && !isSent) {
           showButton(btnDelete);
         } else {
           hideButton(btnDelete);
