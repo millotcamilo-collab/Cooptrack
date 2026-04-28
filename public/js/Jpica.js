@@ -1062,9 +1062,13 @@
       <div class="tablero-row__card">J♠</div>
     </div>
 
-    <div class="tablero-row__center">
-      <div class="tablero-row__mode-choose" data-role="mode-choose"></div>
+<div class="tablero-row__center">
+  <div class="tablero-row__mode-choose" data-role="mode-choose">
+    <div class="tablero-row__field-inline tablero-row__field-inline--title">
+      <span>${safeText || "Sin texto"}</span>
     </div>
+  </div>
+</div>
 
     <div class="tablero-row__right">
       <button type="button" data-action="choose-appointment" title="Cita">
