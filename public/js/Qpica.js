@@ -43,6 +43,9 @@
       play.target_nickname ||
       `Usuario ${play.target_user_id || "—"}`;
 
+
+      console.log("QPICA STATUS DEBUG", play.id, play.play_status, play.status);
+      
     const status = String(play.play_status || play.status || "").toUpperCase();
 
     let statusLabel = "Pendiente";
