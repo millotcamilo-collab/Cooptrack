@@ -303,7 +303,6 @@
     }
 
     function renderSourceActions(play) {
-        const sendIcon = "/assets/icons/buzon60.gif";
         const status = normalizeRank(play?.play_status || play?.status);
 
         if (status === "SENT" || status === "APPROVED" || status === "REJECTED" || status === "CANCELLED") {
@@ -314,9 +313,7 @@
 
         return `
       <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-        <button id="lienzo-send-btn" class="icon-btn" title="Enviar a A♥">
-          <img src="${sendIcon}" alt="Enviar" />
-        </button>
+       
       </div>
     `;
     }
@@ -329,39 +326,39 @@
         const jText = String(play?.play_text || "").trim();
 
         return `
-      <section class="lienzo-panel lienzo-panel--source panel--split-top">
-        ${buildPanelTopbar({
+    <section class="lienzo-panel lienzo-panel--source panel--split-top">
+      ${buildPanelTopbar({
             user: sourceUser,
             actionsHtml: renderSourceActions(play)
         })}
 
-        <div class="lienzo-source-cards">
-          ${renderCardStack(sourceCards)}
+      <div class="lienzo-source-cards">
+        ${renderCardStack(sourceCards)}
 
-          ${!hasDroppedJHeart() ? `
-  <div
-    id="jheart-draggable-card"
-    class="lienzo-jheart-envelope"
-    draggable="true"
-    data-rank="J"
-    data-suit="HEART"
-    data-play-id="${Number(play?.id || 0)}"
-    title="Arrastrar J♥ hacia A♥"
-  >
-    <img
-      class="lienzo-jheart-envelope__card"
-      src="${escapeHtml(jHeartImage)}"
-      alt="J♥"
-    />
+        ${!hasDroppedJHeart() ? `
+          <div
+            id="jheart-draggable-card"
+            class="lienzo-jheart-envelope"
+            draggable="true"
+            data-rank="J"
+            data-suit="HEART"
+            data-play-id="${Number(play?.id || 0)}"
+            title="Arrastrar J♥ hacia A♥"
+          >
+            <img
+              class="lienzo-jheart-envelope__card"
+              src="${escapeHtml(jHeartImage)}"
+              alt="J♥"
+            />
 
-    <div class="lienzo-jheart-envelope__text">
-      ${escapeHtml(jText || "Sin texto")}
-    </div>
-  </div>
-` : ""}
-        </div>
-      </section>
-    `;
+            <div class="lienzo-jheart-envelope__text">
+              ${escapeHtml(jText || "Sin texto")}
+            </div>
+          </div>
+        ` : ""}
+      </div>
+    </section>
+  `;
     }
 
     function renderTargetPanel(play) {
@@ -536,6 +533,14 @@
 
         if (sendBtn) {
             sendBtn.addEventListener("click", () => {
+                handleSendPlay(play);
+            });
+        }
+        const sendBtn = document.getElementById("jheart-send-btn");
+
+        if (sendBtn) {
+            sendBtn.addEventListener("click", (e) => {
+                e.stopPropagation(); // evita conflictos con drag
                 handleSendPlay(play);
             });
         }

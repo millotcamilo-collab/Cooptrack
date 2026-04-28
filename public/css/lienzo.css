@@ -443,12 +443,6 @@ body {
   text-align: center;
 }
 
-/* Alinear cartas a la izquierda en ambos paneles */
-.lienzo-grid__left .lienzo-panel__content,
-.lienzo-grid__right .lienzo-panel__content {
-  justify-content: flex-start;
-}
-
 /* Jcontent */
 .jcontent-card {
   margin-top: 14px;
@@ -858,7 +852,7 @@ body {
   flex: 1 1 auto;
   display: flex;
   align-items: flex-start;
-  justify-content: flex-start;
+   justify-content: center;
 }
 
 .lienzo-panel__actions {
@@ -1135,8 +1129,8 @@ body {
 }
 
 .lienzo-jheart-envelope__card {
-  width: 46px;
-  height: auto;
+  width: auto;
+  height: 120px;
   flex: 0 0 auto;
 }
 
@@ -1174,4 +1168,37 @@ body {
 
 #lienzo-jheart-target-dropzone.is-drop-complete {
   outline: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.lienzo-jheart-envelope {
+  position: relative;
+}
+
+.lienzo-jheart-envelope__send {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+
+  width: 34px;
+  height: 34px;
+
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.lienzo-jheart-envelope__send img {
+  width: 22px;
+  height: 22px;
+}
+
+/*centrando las cartas*/
+/* 🔥 CENTRAR CARTAS EN TODOS LOS LIENZOS */
+.lienzo-source-cards,
+.lienzo-target-mainrow {
+  justify-content: center;
+  align-items: center;
 }
