@@ -43,8 +43,6 @@
       play.target_nickname ||
       `Usuario ${play.target_user_id || "—"}`;
 
-    const status = String(play.play_status || "").toUpperCase();
-
     const status = String(play.play_status || play.status || "").toUpperCase();
 
     let statusLabel = "Pendiente";
