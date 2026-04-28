@@ -729,7 +729,7 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   min-height: 190px;
 }
 
@@ -1201,4 +1201,38 @@ body {
 .lienzo-target-mainrow {
   justify-content: center;
   align-items: center;
+}
+
+/* Cartas en una sola línea horizontal dentro de Amsterdam */
+#lienzo-jheart-target-dropzone {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 16px;
+  width: auto;
+  min-width: 420px;
+}
+
+/* La pila de cartas no debe ocupar toda la fila */
+#lienzo-jheart-target-dropzone .lienzo-source-stack {
+  flex: 0 0 240px;
+}
+
+/* El recuadro J♥ viaja como una carta más, al mismo nivel */
+#lienzo-jheart-target-dropzone .lienzo-jheart-envelope {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+/* Colombes también mantiene cartas + J♥ en la misma línea */
+.lienzo-panel--source .lienzo-source-cards {
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+/* Todas las cartas del sobre al mismo alto que A/K */
+.lienzo-jheart-envelope__card {
+  height: 120px;
+  width: auto;
 }
