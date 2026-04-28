@@ -594,6 +594,10 @@
         normalized.filter((play) => {
           if (!belongsToTablero(play)) return false;
           if (!matchesTableroFilter(play, activeTableroFilter)) return false;
+
+          const status = normalizeStatus(play?.play_status || play?.status);
+          if (!activeTableroStatusFilter && status === "CANCELLED") return false;
+
           if (!matchesStatusFilter(play, activeTableroStatusFilter)) return false;
           return true;
         })

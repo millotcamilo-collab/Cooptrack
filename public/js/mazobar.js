@@ -667,6 +667,24 @@
     const isMazoPage = pageType === "mazo";
     const isAdminPage = pageType === "administradores";
 
+    const mazoArchiveButton = isMazoPage
+      ? `
+    <button
+      id="btnMazoArchive"
+      type="button"
+      class="mazobar__cmd-btn mazobar__cmd-btn--archive"
+      title="J♥ canceladas"
+      aria-label="J♥ canceladas"
+    >
+      <img
+        src="/assets/icons/archivo80.gif"
+        alt="Archivo"
+        class="mazobar__cmd-icon"
+      />
+    </button>
+  `
+      : "";
+
     const adminArchiveButton = isAdminPage
       ? `
     <button
@@ -809,6 +827,7 @@ ${isAdminPage ? `
     ${adminBadge}
     ${adminArchiveButton}
     ${adminSuitButtons}
+    ${mazoArchiveButton}
     ${suitButtons}
     ${alertButtons}
   `;
@@ -816,6 +835,14 @@ ${isAdminPage ? `
 
 
   function bindMazobarEvents(deck, plays, currentUserId) {
+
+    const btnMazoArchive = document.getElementById("btnMazoArchive");
+
+    if (btnMazoArchive) {
+      btnMazoArchive.addEventListener("click", () => {
+        document.dispatchEvent(new CustomEvent("mazobar:showCancelled"));
+      });
+    }
 
     document.querySelectorAll("[data-admin-suit]").forEach((button) => {
       button.addEventListener("click", () => {
