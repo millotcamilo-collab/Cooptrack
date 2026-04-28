@@ -45,12 +45,13 @@
 
 
       console.log("QPICA STATUS DEBUG", play.id, play.play_status, play.status);
-      
+
     const status = String(play.play_status || play.status || "").toUpperCase();
 
     let statusLabel = "Pendiente";
     if (status === "SENT") statusLabel = "Enviada";
     if (status === "APPROVED") statusLabel = "Aceptada";
+    if (status === "ACKNOWLEDGED") statusLabel = "Aceptada";
     if (status === "REJECTED") statusLabel = "Rechazada";
     if (status === "CANCELLED") statusLabel = "Cancelada";
 
@@ -109,7 +110,7 @@
 
     if (payment) {
       const qSuit =
-        status === "APPROVED"
+        status === "APPROVED" || status === "ACKNOWLEDGED"
           ? "♦"
           : "♥";
 
