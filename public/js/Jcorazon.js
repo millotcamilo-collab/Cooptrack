@@ -277,11 +277,21 @@
       });
 
       btnSend?.addEventListener("click", () => {
-        dispatch("tablero:send-jheart-approval", {
-          playId
-        });
+        const deckId =
+          context?.deck?.id ||
+          context?.state?.deck?.id ||
+          play?.deck_id ||
+          window.__currentDeck?.id ||
+          null;
+
+        if (!deckId || !playId) {
+          alert("No se pudo abrir el lienzo J♥");
+          return;
+        }
+
+        window.location.href = `/lienzoJcorazon.html?deckId=${deckId}&playId=${playId}`;
       });
-      
+
       btnApprove?.addEventListener("click", () => {
         dispatch("tablero:approve-play", {
           playId
