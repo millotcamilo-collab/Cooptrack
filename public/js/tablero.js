@@ -233,20 +233,20 @@
     const rank = String(play?.card_rank || play?.rank || "").trim().toUpperCase();
     const suit = String(play?.card_suit || play?.suit || "").trim().toUpperCase();
 
-if (rank === "Q" && suit === "SPADE") {
-  const parsed = parsePlayCode(play?.play_code || "");
-  const meta = parseFlowMetadata(parsed?.flow);
+    if (rank === "Q" && suit === "SPADE") {
+      const parsed = parsePlayCode(play?.play_code || "");
+      const meta = parseFlowMetadata(parsed?.flow);
 
-  const amount = String(meta?.payment?.amount || "").trim();
-  const payDate = String(meta?.payment?.payDate || "").trim();
-  const concept = String(meta?.payment?.concept || "").trim();
+      const amount = String(meta?.payment?.amount || "").trim();
+      const payDate = String(meta?.payment?.payDate || "").trim();
+      const concept = String(meta?.payment?.concept || "").trim();
 
-  if (amount && payDate && concept) {
-    return "/lienzoQQpica.html";
-  }
+      if (amount && payDate && concept) {
+        return "/lienzoQQpica.html";
+      }
 
-  return "/lienzoQpica.html";
-}
+      return "/lienzoQpica.html";
+    }
 
     if (rank === "K") {
       return "/lienzoK.html";
@@ -329,42 +329,42 @@ if (rank === "Q" && suit === "SPADE") {
   }
 
   function matchesTableroFilter(play, filterSuit) {
-  const rank = normalizeRank(play?.rank);
-  const suit = normalizeSuit(play?.suit);
-  const filter = normalizeSuit(filterSuit);
+    const rank = normalizeRank(play?.rank);
+    const suit = normalizeSuit(play?.suit);
+    const filter = normalizeSuit(filterSuit);
 
-  if (!filter) {
-    return belongsToTablero(play);
-  }
+    if (!filter) {
+      return belongsToTablero(play);
+    }
 
-  if (!belongsToTablero(play)) {
-    return false;
-  }
-
-  if (activeTableroViewMode === "J") {
-    return suit === filter;
-  }
-
-  if (activeTableroViewMode === "A" || activeTableroViewMode === "AK") {
-    if (filter === "HEART") {
+    if (!belongsToTablero(play)) {
       return false;
     }
 
-    if (filter === "SPADE") {
-      return suit === "SPADE";
+    if (activeTableroViewMode === "J") {
+      return suit === filter;
     }
 
-    if (filter === "DIAMOND") {
-      return suit === "DIAMOND";
+    if (activeTableroViewMode === "A" || activeTableroViewMode === "AK") {
+      if (filter === "HEART") {
+        return false;
+      }
+
+      if (filter === "SPADE") {
+        return suit === "SPADE";
+      }
+
+      if (filter === "DIAMOND") {
+        return suit === "DIAMOND";
+      }
+
+      if (filter === "CLUB") {
+        return suit === "CLUB";
+      }
     }
 
-    if (filter === "CLUB") {
-      return suit === "CLUB";
-    }
+    return belongsToTablero(play);
   }
-
-  return belongsToTablero(play);
-}
 
   function getComponentName(play) {
     const rank = normalizeRank(play?.rank);
@@ -674,6 +674,51 @@ if (rank === "Q" && suit === "SPADE") {
     const plays = Array.isArray(state?.plays) ? state.plays : [];
 
     renderTablero(deck, plays, state);
+  });
+
+  document.addEventListener("tablero:delete-play", async (event) => {
+    try {
+      const playId = Number(event?.detail?.playId || 0);
+      if (!playId) return;
+
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) {
+        alert("No estás logueado");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          play_status: "DELETED"
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error("Error borrando jugada:", data);
+        alert("No se pudo borrar la jugada");
+        return;
+      }
+
+      const deckId =
+        data.deckId ||
+        window.__currentDeck?.id ||
+        window.__currentState?.deck?.id ||
+        null;
+
+      document.dispatchEvent(new CustomEvent("plays:changed", {
+        detail: { deckId }
+      }));
+    } catch (error) {
+      console.error("Error en tablero:delete-play", error);
+      alert("Error borrando la jugada");
+    }
   });
 
   document.addEventListener("mazobar:filter-rank", (event) => {
