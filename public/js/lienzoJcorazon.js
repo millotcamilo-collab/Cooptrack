@@ -316,7 +316,11 @@
     `;
     }
 
-    function hasDroppedJHeart() {
+    function hasDroppedJHeart(play) {
+        const status = normalizeRank(play?.play_status || play?.status);
+
+        if (status === "SENT") return true;
+
         const selection = window.__jheartDropSelection || null;
         return selection && selection.rank === "J" && selection.suit === "HEART";
     }
@@ -354,7 +358,7 @@
       <div class="lienzo-source-cards">
         ${renderCardStack(sourceCards)}
 
-        ${!hasDroppedJHeart() ? `
+        ${!hasDroppedJHeart(play) ? `
           <div
             id="jheart-draggable-card"
             class="lienzo-jheart-envelope"
@@ -389,7 +393,7 @@
         };
 
         const targetCards = getCardsOwnedByUser(targetUser.id);
-        const dropped = hasDroppedJHeart();
+        const dropped = hasDroppedJHeart(play);
 
         return `
       <section class="lienzo-panel lienzo-panel--target panel--split-top">
