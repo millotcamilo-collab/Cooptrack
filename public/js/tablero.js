@@ -688,14 +688,10 @@
       }
 
       const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-        method: "PATCH",
+        method: "DELETE",
         headers: {
-          "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          play_status: "DELETED"
-        })
+        }
       });
 
       const data = await response.json();
@@ -706,15 +702,22 @@
         return;
       }
 
-      const deckId =
-        data.deckId ||
-        window.__currentDeck?.id ||
-        window.__currentState?.deck?.id ||
-        null;
+      const deck = window.__currentDeck || null;
+      const state = window.__currentState || {};
+      const currentPlays = Array.isArray(state.plays) ? state.plays : [];
 
-      document.dispatchEvent(new CustomEvent("plays:changed", {
-        detail: { deckId }
-      }));
+      const nextPlays = currentPlays.filter(
+        (play) => Number(play.id) !== playId
+      );
+
+      const nextState = {
+        ...state,
+        plays: nextPlays
+      };
+
+      window.__currentState = nextState;
+      renderTablero(deck, nextPlays, nextState);
+
     } catch (error) {
       console.error("Error en tablero:delete-play", error);
       alert("Error borrando la jugada");
