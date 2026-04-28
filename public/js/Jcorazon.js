@@ -6,12 +6,14 @@
       typeof context.dispatch === "function"
         ? context.dispatch
         : function (eventName, detail) {
-            document.dispatchEvent(new CustomEvent(eventName, { detail }));
-          };
+          document.dispatchEvent(new CustomEvent(eventName, { detail }));
+        };
 
     const ICONS = window.ICONS || {};
     const SUITS = ICONS.suits || {};
     const ACTIONS = ICONS.actions || {};
+
+    const sendIcon = escapeHtml(ACTIONS.send || "/assets/icons/buzon60.gif");
 
     const state = context.state || {};
     const allPlays = Array.isArray(state.plays) ? state.plays : [];
@@ -135,6 +137,7 @@
       const btnExit = row.querySelector('[data-action="exit-edit"]');
       const btnPrived = row.querySelector('[data-action="open-private-readers"]');
       const btnReaders = row.querySelector('[data-action="show-readers"]');
+      const btnSend = row.querySelector('[data-action="send-play"]');
 
       function getCurrentText() {
         return String(textInput?.value || "").trim();
@@ -157,6 +160,12 @@
       function renderMode() {
         const isEditMode = row.dataset.mode === "edit";
 
+        if (!isApproved && !isEditMode && userCanEdit && !userIsHeartAceHolder) {
+          showButton(btnSend);
+        } else {
+          hideButton(btnSend);
+        }
+
         if (textView) textView.style.display = isEditMode ? "none" : "";
         if (textInput) textInput.style.display = isEditMode ? "block" : "none";
 
@@ -170,28 +179,29 @@
           hideButton(btnExit);
           hideButton(btnPrived);
           hideButton(btnReaders);
+          hideButton(btnSend);
 
           if (textView) textView.style.display = "";
           if (textInput) textInput.style.display = "none";
           return;
         }
 
-if (!userCanEdit) {
-  hideButton(btnEdit);
-  hideButton(btnSave);
-  hideButton(btnApprove);
-  hideButton(btnDelete);
-  hideButton(btnCancel);
-  hideButton(btnExit);
-  hideButton(btnPrived);
-  hideButton(btnReaders);
+        if (!userCanEdit) {
+          hideButton(btnEdit);
+          hideButton(btnSave);
+          hideButton(btnApprove);
+          hideButton(btnDelete);
+          hideButton(btnCancel);
+          hideButton(btnExit);
+          hideButton(btnPrived);
+          hideButton(btnReaders);
 
-  showButton(btnHelp);
+          showButton(btnHelp);
 
-  if (textView) textView.style.display = "";
-  if (textInput) textInput.style.display = "none";
-  return;
-}
+          if (textView) textView.style.display = "";
+          if (textInput) textInput.style.display = "none";
+          return;
+        }
 
 
         showButton(btnHelp);
@@ -266,6 +276,12 @@ if (!userCanEdit) {
         });
       });
 
+      btnSend?.addEventListener("click", () => {
+        dispatch("tablero:send-jheart-approval", {
+          playId
+        });
+      });
+      
       btnApprove?.addEventListener("click", () => {
         dispatch("tablero:approve-play", {
           playId
@@ -348,6 +364,10 @@ if (!userCanEdit) {
           <button type="button" data-action="open-private-readers" title="Abrir lectura" style="display:none;">
             <img src="${privedIcon}" alt="Privado" />
           </button>
+
+<button type="button" data-action="send-play" title="Enviar a A♥" style="display:none;">
+  <img src="${sendIcon}" alt="Enviar" />
+</button>
 
           <button type="button" data-action="show-readers" title="Lectores" style="display:none;">
             <img src="${readersIcon}" alt="Lectores" />

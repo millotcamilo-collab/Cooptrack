@@ -309,15 +309,6 @@
   function getAlertButtonsConfig(plays) {
     const buttons = [];
 
-    if (hasPlayWithStatus(plays, ["CANCELLED", "CANCELED"])) {
-      buttons.push({
-        id: "btnCancelled",
-        label: "Canceladas",
-        title: "Jugadas canceladas",
-        eventName: "mazobar:showCancelled",
-        type: "cancelled"
-      });
-    }
 
     if (hasPlayWithStatus(plays, ["DISMISSED"])) {
       buttons.push({
