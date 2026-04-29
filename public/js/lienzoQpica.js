@@ -1192,8 +1192,6 @@
         const showActionsHere = isCurrentUserSource(play);
         const parentJSpadeText = getParentJSpadeText(play);
 
-        const sessionDiaHtml = renderSourceSessionDia(play);
-
         const selection = getLienzoDropSelection();
         const droppedInColombes = selection?.targetZone === "COLOMBES";
         const showQHeartBox = isSelectedQHeartInZone("COLOMBES");
@@ -1271,7 +1269,6 @@
           ${qHeartBoxHtml}
         </div>
 
-        ${sessionDiaHtml}
       </section>
     `;
     }
@@ -1324,7 +1321,6 @@
             : "";
 
         const showActionsHere = isCurrentUserTarget(play);
-        const showWeekHere = isCurrentUserTarget(play);
 
         const topbar = buildPanelTopbar({
             identityHtml: `
@@ -1361,7 +1357,6 @@
           ${qHeartBoxHtml}
         </div>
 
-        ${showWeekHere ? renderWeekRow(parsePlayReferenceDate(play)) : ""}
       </section>
     `;
     }
