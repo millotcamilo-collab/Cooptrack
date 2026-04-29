@@ -360,21 +360,9 @@
         return selection && selection.rank === "J" && selection.suit === "HEART";
     }
 
-    function renderSourceActions(play) {
-        const status = normalizeRank(play?.play_status || play?.status);
-
-        if (status === "SENT" || status === "APPROVED" || status === "REJECTED" || status === "CANCELLED") {
-            return "";
-        }
-
-        if (!hasDroppedJHeart()) return "";
-
-        return `
-      <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-       
-      </div>
-    `;
-    }
+function renderSourceActions(play) {
+    return "";
+}
 
     function renderSourcePanel(play) {
         const sourceUser = resolveSourceUser(play);
@@ -457,7 +445,11 @@
       ${escapeHtml(String(play?.play_text || "").trim() || "Sin texto")}
     </div>
 
-    ${normalizeRank(play?.play_status || play?.status) !== "SENT" ? "" : ""}
+    ${normalizeRank(play?.play_status || play?.status) !== "SENT" ? `
+  <button id="jheart-send-btn" class="icon-btn lienzo-jheart-envelope__send" title="Enviar a A♥">
+    <img src="/assets/icons/buzon60.gif" alt="Enviar" />
+  </button>
+` : ""}
   </div>
 ` : `
   <div class="lienzo-drop-hint">
