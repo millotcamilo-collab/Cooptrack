@@ -1070,9 +1070,14 @@ ${isAdminPage ? `
         return;
       }
 
-      document.dispatchEvent(new CustomEvent("plays:changed", {
-        detail: { deckId }
-      }));
+      const newPlayId = Number(data?.play?.id || 0);
+
+      if (newPlayId) {
+        window.location.href = `/mazo.html?id=${deckId}&focusPlayId=${newPlayId}`;
+        return;
+      }
+
+      window.location.href = `/mazo.html?id=${deckId}`;
     } catch (error) {
       console.error("Error creando play:", error);
     }
