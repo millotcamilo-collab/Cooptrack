@@ -482,40 +482,6 @@ body {
   gap: 14px;
 }
 
-.lienzo-week-row-wrap {
-  width: 100%;
-  max-width: 560px;
-}
-
-.lienzo-week-row {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.lienzo-weekday {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-}
-
-.lienzo-weekday .dia__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  min-height: 54px;
-  padding-top: 6px;
-  text-align: center;
-  font-weight: 700;
-  white-space: nowrap;
-  box-sizing: border-box;
-}
-
-.lienzo-weekday .dia__body {
-  display: none;
-}
-
 
 @media (max-width: 900px) {
   .lienzo-grid {
@@ -882,19 +848,7 @@ body {
   gap: 14px;
 }
 
-.lienzo-week-row {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-}
 
-.lienzo-weekday .dia__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 6px;
-  font-weight: 700;
-}
 
 /* ===== DROPZONE ===== */
 
@@ -934,13 +888,6 @@ body {
   align-self: start;
 }
 
-/* renglón 3 */
-.lienzo-panel--source .lienzo-session-dia-wrap,
-.lienzo-panel--target .lienzo-week-row-wrap {
-  grid-row: 3;
-  align-self: start;
-  margin-top: 0;
-}
 
 /* Colombes: cartas compactas */
 .lienzo-panel--source .lienzo-source-cards {
@@ -955,36 +902,7 @@ body {
   height: 110px;
 }
 
-/* Amsterdam: semana arranca arriba del tercer renglón */
-.lienzo-panel--target .lienzo-week-row-wrap {
-  width: 100%;
-  max-width: 560px;
-}
 
-.lienzo-panel--target .lienzo-week-row {
-  align-items: start;
-}
-
-.lienzo-panel--target .lienzo-weekday {
-  align-items: stretch;
-}
-
-/* Ajuste fino: subir un poco la semana */
-.lienzo-panel--target .lienzo-week-row-wrap {
-  margin-top: -10px;
-}
-
-/* Opcional: sacar aire extra del panel derecho */
-#amsterdam .lienzo-panel--target {
-  gap: 8px;
-}
-
-
-.lienzo-weekday .dia__body {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
 
 /* recuperar la cancha central y los recuadros */
 .lienzo-grid {
