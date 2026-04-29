@@ -1154,3 +1154,12 @@ body {
   height: 120px;
   width: auto;
 }
+
+.lienzo-parent-j-text {
+  max-width: 260px;
+  padding: 10px 12px;
+  color: #fff;
+  font-size: 16px;
+  line-height: 1.25;
+  align-self: center;
+}

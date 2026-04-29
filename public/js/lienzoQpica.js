@@ -1190,6 +1190,7 @@
 
         const scene = buildSourceCardsScene(play);
         const showActionsHere = isCurrentUserSource(play);
+        const parentJSpadeText = getParentJSpadeText(play);
 
         const sessionDiaHtml = renderSourceSessionDia(play);
 
@@ -1257,6 +1258,14 @@
           <div class="lienzo-source-stack">
             ${scene.backgroundCards.map(renderBackgroundCard).join("")}
           </div>
+          ${parentJSpadeText
+                ? `
+      <div class="lienzo-parent-j-text">
+        ${escapeHtml(parentJSpadeText)}
+      </div>
+    `
+                : ""
+            }
 
           ${droppedCardHtml}
           ${qHeartBoxHtml}
