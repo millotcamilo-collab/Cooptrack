@@ -483,17 +483,9 @@
         row.dataset.mode = mode;
       }
 
-      function canLaunchQspade(play) {
-        const parentPlay = play; // estamos en la J♠
-
-        const referenceDate =
-          parseLocalDateTime(parentPlay?.start_date) ||
-          parseLocalDateTime(parentPlay?.end_date);
-
-        if (!referenceDate) return true;
-
-        return referenceDate.getTime() > Date.now();
-      }
+function canLaunchQspade(play) {
+  return isFutureDate(play?.start_date || play?.end_date);
+}
 
       function renderMode() {
         const visualMode = row.dataset.mode || "read";
@@ -584,8 +576,11 @@
         if (btnAddQspade) {
           const canLaunch = canLaunchQspade(play);
 
-          btnAddQspade.style.display =
-            showApprovedExtras && canLaunch ? "inline-flex" : "none";
+          btnAddQspade.style.display = showApprovedExtras ? "inline-flex" : "none";
+
+          btnAddQspade.disabled = !canLaunch;
+          btnAddQspade.style.opacity = canLaunch ? "1" : "0.4";
+          btnAddQspade.style.pointerEvents = canLaunch ? "auto" : "none";
         }
 
         if (isEdit && textInput) {
