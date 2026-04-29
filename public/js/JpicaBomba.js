@@ -416,6 +416,10 @@
         row.dataset.mode = mode;
       }
 
+      function canLaunchQspade(play) {
+        return isFutureDate(play?.end_date);
+      }
+
       function renderMode() {
         const visualMode = row.dataset.mode || "read";
         const isEdit = visualMode === "edit";
@@ -502,7 +506,13 @@
         }
 
         if (btnAddQspade) {
+          const canLaunch = canLaunchQspade(play);
+
           btnAddQspade.style.display = showApprovedExtras ? "inline-flex" : "none";
+
+          btnAddQspade.disabled = !canLaunch;
+          btnAddQspade.style.opacity = canLaunch ? "1" : "0.4";
+          btnAddQspade.style.pointerEvents = canLaunch ? "auto" : "none";
         }
 
         if (isEdit && textInput) {
