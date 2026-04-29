@@ -728,6 +728,7 @@
         const play = latestReadOnly;
 
         await acknowledgePlay(play?.id);
+        await renderTopbar();
         goToPlayNotification(play);
       });
     }
