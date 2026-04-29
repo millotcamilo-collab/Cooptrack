@@ -35,7 +35,7 @@
 
 .almanaque__months {
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  margin-top: 10px; /* ← ajustá a gusto */
+  margin-top: 0px; /* ← ajustá a gusto */
 }
 
 .almanaque__days {
