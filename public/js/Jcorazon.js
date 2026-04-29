@@ -101,7 +101,7 @@
 
     const userCanEdit = userIsCreator || userIsHeartAceHolder;
     const isApproved = statusRaw === "APPROVED";
-    const isCancelled = statusRaw === "CANCELLED";
+    const isArchived = statusRaw === "CANCELLED" || statusRaw === "REJECTED";
 
     const readers = normalizeReaders(play?.reader_user_ids);
     const showPrivedButton = isPrivateForCurrentUser(readers, currentUserId);
@@ -170,7 +170,7 @@
         if (textView) textView.style.display = isEditMode ? "none" : "";
         if (textInput) textInput.style.display = isEditMode ? "block" : "none";
 
-        if (isCancelled) {
+        if (isArchived) {
           hideButton(btnHelp);
           hideButton(btnEdit);
           hideButton(btnSave);

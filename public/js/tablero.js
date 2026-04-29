@@ -7,6 +7,11 @@
 
   const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
+  function isArchivedJHeartStatus(status) {
+    const value = normalizeStatus(status);
+    return value === "CANCELLED" || value === "REJECTED";
+  }
+
   function normalizeStatus(value) {
     return String(value || "").trim().toUpperCase();
   }
@@ -92,6 +97,10 @@
     const currentStatus = normalizeStatus(play?.play_status || play?.status);
 
     if (!statusFilter) return true;
+
+    if (statusFilter === "ARCHIVED_JHEART") {
+      return isArchivedJHeartStatus(currentStatus);
+    }
 
     return currentStatus === normalizeStatus(statusFilter);
   }
@@ -596,7 +605,7 @@
           if (!matchesTableroFilter(play, activeTableroFilter)) return false;
 
           const status = normalizeStatus(play?.play_status || play?.status);
-          if (!activeTableroStatusFilter && status === "CANCELLED") return false;
+          if (!activeTableroStatusFilter && isArchivedJHeartStatus(status)) return false;
 
           if (!matchesStatusFilter(play, activeTableroStatusFilter)) return false;
           return true;
@@ -863,10 +872,10 @@
   });
 
   document.addEventListener("mazobar:showCancelled", () => {
-    if (activeTableroStatusFilter === "CANCELLED") {
+    if (activeTableroStatusFilter === "ARCHIVED_JHEART") {
       activeTableroStatusFilter = null;
     } else {
-      activeTableroStatusFilter = "CANCELLED";
+      activeTableroStatusFilter = "ARCHIVED_JHEART";
     }
 
     activeTableroFilter = null;
