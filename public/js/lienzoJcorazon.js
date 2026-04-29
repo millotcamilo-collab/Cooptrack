@@ -351,14 +351,22 @@
     `;
     }
 
-    function hasDroppedJHeart(play) {
-        const status = normalizeRank(play?.play_status || play?.status);
+function hasDroppedJHeart(play) {
+    const status = normalizeRank(play?.play_status || play?.status);
 
-        if (status === "SENT") return true;
-
-        const selection = window.__jheartDropSelection || null;
-        return selection && selection.rank === "J" && selection.suit === "HEART";
+    if (
+        status === "SENT" ||
+        status === "APPROVED" ||
+        status === "REJECTED" ||
+        status === "CANCELLED" ||
+        status === "ACKNOWLEDGED"
+    ) {
+        return true;
     }
+
+    const selection = window.__jheartDropSelection || null;
+    return selection && selection.rank === "J" && selection.suit === "HEART";
+}
 
 function renderSourceActions(play) {
     return "";
@@ -445,7 +453,7 @@ function renderSourceActions(play) {
       ${escapeHtml(String(play?.play_text || "").trim() || "Sin texto")}
     </div>
 
-    ${normalizeRank(play?.play_status || play?.status) !== "SENT" ? `
+${window.__jheartDropSelection && normalizeRank(play?.play_status || play?.status) !== "SENT" ? `
   <button id="jheart-send-btn" class="icon-btn lienzo-jheart-envelope__send" title="Enviar a A♥">
     <img src="/assets/icons/buzon60.gif" alt="Enviar" />
   </button>
