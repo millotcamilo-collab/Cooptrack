@@ -445,7 +445,7 @@
                         isCurrent: isSameDay(currentDate, referenceDate),
                         isToday: isSameDay(currentDate, today),
                         isOutsideMonth: currentDate.getMonth() !== referenceDate.getMonth(),
-                        extraClass: "lienzo-weekday lienzo-weekday--compact"
+                        extraClass: "lienzo-weekday"
                     });
                 }
 
@@ -458,13 +458,13 @@
             })
             .join("");
 
-        return `
-      <section class="lienzo-week-row-wrap">
-        <div class="lienzo-week-row">
-          ${daysHtml}
-        </div>
-      </section>
-    `;
+       return `
+  <section class="lienzo-week-row-wrap almanaque__weeks">
+    <div class="semana">
+      ${daysHtml}
+    </div>
+  </section>
+`;
     }
 
     function formatDateForInput(value) {

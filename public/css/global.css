@@ -3,6 +3,14 @@
   /* fuente para texto general y para las cartas, respectivamente */
   --font-text: Garamond, "Times New Roman", serif;
   --font-card: "Times New Roman", Georgia, serif;
+    --page-padding-x: 20px;
+      --page-padding-top: 10px;
+}
+
+.ct-page {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--page-padding-top) var(--page-padding-x) 0 var(--page-padding-x);
 }
 
 html {
