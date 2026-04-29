@@ -1687,19 +1687,21 @@
 
         if (!container || !play) return;
 
-        container.innerHTML = `
-      ${renderDeckHeader(deck)}
+container.innerHTML = `
+  ${renderDeckHeader(deck)}
 
-      <div class="lienzo-grid">
-        <div id="colombes" class="lienzo-grid__left">
-          ${renderSourcePlayerPanel(play)}
-        </div>
+  <div class="lienzo-grid">
+    <div id="colombes" class="lienzo-grid__left">
+      ${renderSourcePlayerPanel(play)}
+    </div>
 
-        <div id="amsterdam" class="lienzo-grid__right">
-          ${renderTargetPlayerPanel(play)}
-        </div>
-      </div>
-    `;
+    <div id="amsterdam" class="lienzo-grid__right">
+      ${renderTargetPlayerPanel(play)}
+    </div>
+  </div>
+
+  ${renderWeekRow(parsePlayReferenceDate(play))}
+`;
 
         mountPlacardFromDataset();
         bindLienzoActions(play);
