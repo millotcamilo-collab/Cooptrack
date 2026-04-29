@@ -61,12 +61,26 @@
     const FINAL_STATES_Q = ["APPROVED", "REJECTED", "CANCELLED"];
     const FINAL_STATES_K_SOURCE = ["APPROVED", "REJECTED", "QUIT"];
     const FINAL_STATES_A_SOURCE = ["APPROVED", "REJECTED", "QUIT", "FIRED"];
+    const FINAL_STATES_J_HEART_SOURCE = ["APPROVED", "REJECTED"];
 
     // =========================
     // K — target (invitado)
     // =========================
     // Solo debe recibir notificación cuando es despedido
     if (rank === "K" && isTarget && status === "FIRED") {
+      return "READ_ONLY";
+    }
+
+    // =========================
+    // J♥ — source / K creador
+    // =========================
+    // Se entera de aprobación o rechazo del A♥
+    if (
+      rank === "J" &&
+      normalizeText(play?.card_suit || play?.suit) === "HEART" &&
+      isSource &&
+      FINAL_STATES_J_HEART_SOURCE.includes(status)
+    ) {
       return "READ_ONLY";
     }
 
