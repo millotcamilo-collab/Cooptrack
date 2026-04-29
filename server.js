@@ -3178,12 +3178,21 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
           )
         )
 
-        OR
+OR
 (
   p.card_rank = 'J'
   AND p.card_suit = 'HEART'
-  AND p.target_user_id = $1
-  AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+  AND (
+    (
+      p.target_user_id = $1
+      AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+    )
+    OR
+    (
+      p.created_by_user_id = $1
+      AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED')
+    )
+  )
 )
 
       ORDER BY p.created_at DESC
