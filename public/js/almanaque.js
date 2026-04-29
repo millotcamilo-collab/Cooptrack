@@ -153,13 +153,8 @@
     }
 
     function getVisibleRange() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-
-        const firstDay = new Date(year, month, 1);
-        const firstMonday = getMondayOfWeek(firstDay);
-
-        const lastDay = addDays(firstMonday, 6 * 7 - 1); // 6 semanas
+        const firstMonday = getDisplayStartMonday();
+        const lastDay = addDays(firstMonday, 6 * 7 - 1);
 
         return {
             from: toYmd(firstMonday),
@@ -210,8 +205,7 @@
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
 
-        const firstDayOfMonth = new Date(year, month, 1);
-        const firstMonday = getMondayOfWeek(firstDayOfMonth);
+        const firstMonday = getDisplayStartMonday();
 
         const weeksHtml = [];
         const totalWeeks = 6;
@@ -288,6 +282,26 @@
         });
     }
 
+    function getDisplayStartMonday() {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
+        const firstDayOfMonth = new Date(year, month, 1);
+        const firstMondayOfMonth = getMondayOfWeek(firstDayOfMonth);
+
+        const isCurrentMonth =
+            currentDate.getFullYear() === today.getFullYear() &&
+            currentDate.getMonth() === today.getMonth();
+
+        if (!isCurrentMonth) {
+            return firstMondayOfMonth;
+        }
+
+        const currentWeekMonday = getMondayOfWeek(today);
+
+        return addDays(currentWeekMonday, -7);
+    }
+
     function getFirstChronologicalMatch(plays) {
         if (!plays.length) return null;
 
@@ -304,7 +318,7 @@
         let filteredPlays = applyFilters(allPlays);
 
         if (activeSearchQuery && filteredPlays.length) {
-             const firstMatchDate = getPlayCalendarDate(firstMatch);
+            const firstMatchDate = getPlayCalendarDate(firstMatch);
 
             if (firstMatch?.created_at) {
                 currentDate = new Date(firstMatchDate);
