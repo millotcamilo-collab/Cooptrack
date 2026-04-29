@@ -258,11 +258,11 @@
 
         return `
       <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-        <button id="jheart-approve-btn" class="lienzo-action-btn" title="Aprobar propuesta">
+        <button id="jheart-approve-btn" class="icon-btn" title="Aprobar propuesta">
           <img src="/assets/icons/Sello40.gif" alt="Aprobar" />
         </button>
 
-        <button id="jheart-reject-btn" class="lienzo-action-btn" title="Rechazar propuesta">
+        <button id="jheart-reject-btn" class="icon-btn" title="Rechazar propuesta">
           <img src="/assets/icons/stepback40.gif" alt="Rechazar" />
         </button>
       </div>
