@@ -910,7 +910,7 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 0;
   align-items: stretch;
-  height: 520px;
+  height: 320px;
 }
 
 .lienzo-grid__left,
