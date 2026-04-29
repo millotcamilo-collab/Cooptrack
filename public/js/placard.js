@@ -259,6 +259,35 @@
     return "Nueva jugada K";
   }
 
+  function getJHeartHeadline(config) {
+    const play = config?.play || null;
+    if (!play) return "Solicitud de aprobación";
+
+    const status = String(play?.play_status || "").trim().toUpperCase();
+
+    if (status === "ACTIVE") {
+      return "Solicitud de aprobación";
+    }
+
+    if (status === "SENT" || status === "PENDING") {
+      return "Solicitud de aprobación enviada";
+    }
+
+    if (status === "APPROVED" || status === "ACKNOWLEDGED") {
+      return "Solicitud de aprobación aceptada";
+    }
+
+    if (status === "REJECTED") {
+      return "Solicitud de aprobación rechazada";
+    }
+
+    if (status === "CANCELLED") {
+      return "Solicitud de aprobación cancelada";
+    }
+
+    return "Solicitud de aprobación";
+  }
+
   function getAHeadline(config) {
     const play = config?.play || null;
     const suitLabel = getSuitLabelEs(play?.card_suit || config?.suit || "HEART");
@@ -356,6 +385,10 @@
 
     if (page === "lienzo-a") {
       return getAHeadline(config);
+    }
+
+    if (page === "lienzo-jcorazon") {
+      return getJHeartHeadline(config);
     }
 
     return "";
