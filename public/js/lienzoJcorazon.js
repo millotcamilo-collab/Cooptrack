@@ -234,6 +234,41 @@
         return resolveUser(userId, `A♥ ${userId}`);
     }
 
+    function getCurrentUserId() {
+        const state = getCurrentState();
+        return Number(
+            state?.currentUser?.id ||
+            state?.user?.id ||
+            state?.me?.id ||
+            window.__currentUser?.id ||
+            0
+        );
+    }
+
+    function isCurrentUserHeartAceHolder() {
+        const aceHolder = resolveHeartAceHolder();
+        return Number(aceHolder?.id || 0) === getCurrentUserId();
+    }
+
+    function renderApprovalActions(play) {
+        const status = normalizeRank(play?.play_status || play?.status);
+
+        if (status !== "SENT") return "";
+        if (!isCurrentUserHeartAceHolder()) return "";
+
+        return `
+      <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
+        <button id="jheart-approve-btn" class="lienzo-action-btn" title="Aprobar propuesta">
+          <img src="/assets/icons/ok80.gif" alt="Aprobar" />
+        </button>
+
+        <button id="jheart-reject-btn" class="lienzo-action-btn" title="Rechazar propuesta">
+          <img src="/assets/icons/cancel80.gif" alt="Rechazar" />
+        </button>
+      </div>
+    `;
+    }
+
     function resolveSourceUser(play) {
         const userId = Number(play?.created_by_user_id || 0);
         return resolveUser(userId, `Usuario ${userId || ""}`);
@@ -399,7 +434,7 @@
       <section class="lienzo-panel lienzo-panel--target panel--split-top">
         ${buildPanelTopbar({
             user: targetUser,
-            actionsHtml: ""
+            actionsHtml: renderApprovalActions(play)
         })}
 
         <div class="lienzo-target-mainrow">
@@ -422,9 +457,7 @@
       ${escapeHtml(String(play?.play_text || "").trim() || "Sin texto")}
     </div>
 
-    <button id="jheart-send-btn" class="lienzo-jheart-envelope__send" title="Enviar a A♥">
-      <img src="/assets/icons/buzon60.gif" alt="Enviar" />
-    </button>
+    ${normalizeRank(play?.play_status || play?.status) !== "SENT" ? "" : ""}
   </div>
 ` : `
   <div class="lienzo-drop-hint">
@@ -486,6 +519,62 @@
         } catch (error) {
             console.error("Error en handleSendPlay J♥", error);
             alert("No se pudo enviar la J♥");
+        }
+    }
+
+    async function handleApproveRejectPlay(play, nextStatus) {
+        try {
+            const playId = Number(play?.id || 0);
+            const token = localStorage.getItem("cooptrackToken");
+
+            if (!playId) {
+                alert("playId inválido");
+                return;
+            }
+
+            if (!token) {
+                alert("No estás logueado");
+                return;
+            }
+
+            const response = await fetch(`/plays/${playId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    play_status: nextStatus
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                console.error("Error resolviendo J♥:", data);
+                alert(data?.error || "No se pudo resolver la J♥");
+                return;
+            }
+
+            const msg = nextStatus === "APPROVED"
+                ? "J♥ aprobada"
+                : "J♥ rechazada";
+
+            alert(msg);
+
+            const deckId =
+                Number(play?.deck_id || 0) ||
+                Number(getCurrentDeck()?.id || 0);
+
+            if (deckId) {
+                window.location.href = `/mazo.html?id=${deckId}`;
+                return;
+            }
+
+            window.history.back();
+        } catch (error) {
+            console.error("Error en handleApproveRejectPlay J♥", error);
+            alert("No se pudo resolver la J♥");
         }
     }
 
@@ -557,11 +646,27 @@
 
     function bindActions(play) {
         const sendBtn = document.getElementById("jheart-send-btn");
+        const approveBtn = document.getElementById("jheart-approve-btn");
+        const rejectBtn = document.getElementById("jheart-reject-btn");
 
         if (sendBtn) {
             sendBtn.addEventListener("click", (event) => {
                 event.stopPropagation();
                 handleSendPlay(play);
+            });
+        }
+
+        if (approveBtn) {
+            approveBtn.addEventListener("click", (event) => {
+                event.stopPropagation();
+                handleApproveRejectPlay(play, "APPROVED");
+            });
+        }
+
+        if (rejectBtn) {
+            rejectBtn.addEventListener("click", (event) => {
+                event.stopPropagation();
+                handleApproveRejectPlay(play, "REJECTED");
             });
         }
     }
