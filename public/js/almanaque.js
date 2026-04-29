@@ -114,6 +114,20 @@
         return date ? date.getTime() : Number.POSITIVE_INFINITY;
     }
 
+    function isVisibleCalendarPlay(play) {
+        const rank = String(play.card_rank || "").toUpperCase();
+        const suit = String(play.card_suit || "").toUpperCase();
+        const text = String(play.play_text || "").trim();
+
+        // Solo queremos J y Q reales
+        if (!["J", "Q"].includes(rank)) return false;
+
+        // Evitar basura sin contenido
+        if (!text) return false;
+
+        return true;
+    }
+
     function groupByYmd(plays) {
         const map = {};
 
@@ -330,7 +344,9 @@
             }
         }
 
-        const jotasByDate = groupByYmd(filteredPlays);
+        const cleanPlays = filteredPlays.filter(isVisibleCalendarPlay);
+
+        const jotasByDate = groupByYmd(cleanPlays);
 
         const monthsHtml = MONTHS.map((monthName, index) => {
             return `
