@@ -204,6 +204,48 @@
         return cards;
     }
 
+    function getUserHeartPlaysByDate(date) {
+        const plays = getAllPlays();
+        const currentUser = getCurrentUser();
+        const userId = Number(currentUser?.id || 0);
+
+        if (!userId) return [];
+
+        return plays.filter((p) => {
+            const rank = normalizeRank(p.card_rank || p.rank);
+            const suit = normalizeSuit(p.card_suit || p.suit);
+
+            if (!["J", "Q"].includes(rank)) return false;
+            if (suit !== "HEART") return false;
+
+            const ownerId =
+                Number(p.created_by_user_id || 0) ||
+                Number(p.target_user_id || 0);
+
+            if (ownerId !== userId) return false;
+
+            const playDate = resolveCalendarDateFromPlay(p);
+            if (!playDate) return false;
+
+            return isSameDay(playDate, date);
+        });
+    }
+
+    function renderHeartPlaysBody(plays) {
+        if (!plays.length) return "";
+
+        return plays.map((p) => {
+            const rank = normalizeRank(p.card_rank || p.rank);
+            const suit = normalizeSuit(p.card_suit || p.suit);
+
+            return `
+            <span class="dia__item-link dia__item-link--compact">
+                ${getSuitSymbol(suit)}
+            </span>
+        `;
+        }).join("");
+    }
+
     function deriveOwnedCorporateCards(plays, currentUserId) {
         if (!Array.isArray(plays) || !currentUserId) return [];
 
@@ -425,7 +467,7 @@
         );
     }
 
-    function renderWeekRow(referenceDate) {
+    function renderWeekRow(referenceDate, play) {
         const start = startOfWeek(referenceDate);
         const labels = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
         const today = new Date();
@@ -436,7 +478,13 @@
                 const currentDate = new Date(start);
                 currentDate.setDate(start.getDate() + index);
 
-                const bodyHtml = "";
+                const heartPlays = getUserHeartPlaysByDate(currentDate);
+
+                let bodyHtml = renderHeartPlaysBody(heartPlays);
+
+                if (isSameDay(currentDate, referenceDate)) {
+                    bodyHtml += buildSessionDiaBody(play);
+                }
 
                 if (typeof window.renderDia === "function") {
                     return window.renderDia({
@@ -458,7 +506,7 @@
             })
             .join("");
 
-       return `
+        return `
   <section class="lienzo-week-row-wrap almanaque__weeks">
     <div class="semana">
       ${daysHtml}
@@ -589,6 +637,60 @@
         }
 
         return "";
+    }
+
+    function buildSessionDiaBody(play) {
+        const parentPlay = getPlayById(play?.parent_play_id);
+        const sessionPlay = parentPlay || play;
+
+        const suit = normalizeSuit(sessionPlay?.card_suit || sessionPlay?.suit);
+        if (suit !== "SPADE") return "";
+
+        const spadeMode = String(sessionPlay?.spade_mode || "").trim().toUpperCase();
+
+        const clockIcon = "/assets/icons/reloj60.gif";
+        const bellIcon = "/assets/icons/Campana80.gif";
+        const bombIcon = "/assets/icons/bombaRedonda60.gif";
+
+        if (spadeMode === "DEADLINE") {
+            const endLabel = formatTimeLabel(sessionPlay?.end_date);
+
+            return `
+            <div class="lienzo-session-dia__row">
+              <img class="lienzo-session-dia__icon" src="${bombIcon}" alt="Deadline" />
+              <span class="lienzo-session-dia__time">${escapeHtml(endLabel || "—")}</span>
+            </div>
+        `;
+        }
+
+        const startLabel = formatTimeLabel(sessionPlay?.start_date);
+        const endLabel = formatTimeLabel(sessionPlay?.end_date);
+        const location = String(sessionPlay?.location || "").trim();
+
+        return `
+        <div class="lienzo-session-dia__row">
+          <img class="lienzo-session-dia__icon" src="${clockIcon}" alt="Inicio" />
+          <span class="lienzo-session-dia__time">${escapeHtml(startLabel || "—")}</span>
+
+          ${endLabel
+                ? `
+              <img class="lienzo-session-dia__icon" src="${bellIcon}" alt="Fin" />
+              <span class="lienzo-session-dia__time">${escapeHtml(endLabel)}</span>
+            `
+                : ""
+            }
+        </div>
+
+        ${location
+                ? `
+              <div class="lienzo-session-dia__row">
+                <img class="lienzo-session-dia__icon" src="/assets/icons/LocGlobito.gif" alt="Lugar" />
+                <span class="lienzo-session-dia__location">${escapeHtml(location)}</span>
+              </div>
+            `
+                : ""
+            }
+    `;
     }
 
     function renderSourceSessionDia(play) {
@@ -1687,7 +1789,7 @@
 
         if (!container || !play) return;
 
-container.innerHTML = `
+        container.innerHTML = `
   ${renderDeckHeader(deck)}
 
   <div class="lienzo-grid">
@@ -1700,7 +1802,7 @@ container.innerHTML = `
     </div>
   </div>
 
-  ${renderWeekRow(parsePlayReferenceDate(play))}
+  ${renderWeekRow(parsePlayReferenceDate(play), play)}
 `;
 
         mountPlacardFromDataset();
