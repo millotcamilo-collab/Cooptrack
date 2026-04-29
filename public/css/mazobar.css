@@ -294,6 +294,12 @@
   cursor: pointer;
 }
 
+.mazobar__photo-action img {
+  height: 24px;
+  width: auto;
+  display: block;
+}
+
 .mazobar__photo-editor {
   display: flex;
   align-items: center;
