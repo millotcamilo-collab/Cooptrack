@@ -3203,18 +3203,34 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
         )
 
         OR
+(
+  p.card_rank = 'K'
+  AND (
+    -- 👉 Invitaciones directas o vía A♣
+    (
+      p.target_user_id = $1
+      AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+    )
 
-        (
-          p.card_rank = 'K'
-          AND p.target_user_id = $1
-          AND COALESCE(p.play_status, '') IN (
-            'SENT',
-            'PENDING',
-            'FIRED',
-            'QUIT'
-          )
-        )
+    -- 👉 Caso especial: soy destinatario final guardado en flow
+    OR (
+      p.play_code LIKE ('%finalTarget:U:' || $1 || '%')
+      AND COALESCE(p.play_status, '') = 'PENDING'
+    )
 
+    -- 👉 Notificaciones al creador
+    OR (
+      p.created_by_user_id = $1
+      AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'QUIT')
+    )
+
+    -- 👉 Fired sigue como estaba
+    OR (
+      p.target_user_id = $1
+      AND COALESCE(p.play_status, '') = 'FIRED'
+    )
+  )
+)
         OR
 
         (
