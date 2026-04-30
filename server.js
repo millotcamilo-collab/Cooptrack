@@ -2329,10 +2329,29 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         ? String(play_code).trim()
         : current.play_code;
 
-    const nextTargetUserId =
+    let nextTargetUserId =
       target_user_id !== undefined
         ? Number(target_user_id || 0) || null
         : current.target_user_id;
+
+    if (
+      currentRank === 'K' &&
+      nextStatus === 'SENT' &&
+      finalTargetUserId
+    ) {
+      nextTargetUserId = finalTargetUserId;
+    }
+
+    const patchedFinalTargetUserId =
+      parsedPatchedPlayCode?.finalTargetUserId || null;
+
+    const currentParsedPlayCode = parseAndValidatePlayCode(current.play_code || '');
+
+    const currentFinalTargetUserId =
+      currentParsedPlayCode?.finalTargetUserId || null;
+
+    const finalTargetUserId =
+      patchedFinalTargetUserId || currentFinalTargetUserId || null;
 
     await client.query('BEGIN');
 

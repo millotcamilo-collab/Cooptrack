@@ -23,31 +23,60 @@ function normalizeSuit(suit) {
 function parseList(value) {
   const raw = normalizeEmpty(value);
   if (!raw) return [];
+  return raw.split(',').map((item) => item.trim()).filter(Boolean);
+}
+
+function parseFlowChunks(flowValue) {
+  const raw = normalizeEmpty(flowValue);
+  if (!raw) return [];
+
   return raw
-    .split(',')
+    .split(';')
     .map((item) => item.trim())
     .filter(Boolean);
 }
 
+function parseFlowMetadata(flowValue) {
+  const chunks = parseFlowChunks(flowValue);
+
+  const meta = {
+    chunks,
+    baseFlow: '',
+    finalTargetUserId: null,
+  };
+
+  chunks.forEach((chunk) => {
+    if (chunk.startsWith('finalTarget:U:')) {
+      const userId = Number(chunk.replace('finalTarget:U:', ''));
+
+      if (Number.isInteger(userId) && userId > 0) {
+        meta.finalTargetUserId = userId;
+      }
+
+      return;
+    }
+
+    if (!meta.baseFlow) {
+      meta.baseFlow = chunk;
+    }
+  });
+
+  return meta;
+}
+
 function getCardFamily(rank) {
   switch (rank) {
-    case 'A':
-      return 'ACE';
-    case 'K':
-      return 'KING';
-    case 'J':
-      return 'JACK';
-    case 'Q':
-      return 'QUEEN';
-    case 'JOKER':
-      return 'JOKER';
-    default:
-      return null;
+    case 'A': return 'ACE';
+    case 'K': return 'KING';
+    case 'J': return 'JACK';
+    case 'Q': return 'QUEEN';
+    case 'JOKER': return 'JOKER';
+    default: return null;
   }
 }
 
 function isValidDateString(value) {
-  if (!value) return true; // si no viene fecha, no falla acá
+  if (!value) return true;
   const date = new Date(value);
   return !Number.isNaN(date.getTime());
 }
@@ -75,8 +104,6 @@ function parsePlayCode(playCode) {
 
   const parsed = {
     raw: playCode,
-
-    // Campos base
     deckId: normalizeEmpty(parts[0]),
     userId: normalizeEmpty(parts[1]),
     date: normalizeEmpty(parts[2]),
@@ -88,28 +115,45 @@ function parsePlayCode(playCode) {
     recipients: normalizeEmpty(parts[8]),
   };
 
-  // Metadatos derivados
+  parsed.flowMeta = parseFlowMetadata(parsed.flow);
+  parsed.finalTargetUserId = parsed.flowMeta.finalTargetUserId;
+
   parsed.family = getCardFamily(parsed.rank);
   parsed.cardKey = parsed.rank && parsed.suit ? `${parsed.rank}${parsed.suit}` : null;
 
-  // Flags prácticos
   parsed.isAce = parsed.rank === 'A';
   parsed.isKing = parsed.rank === 'K';
   parsed.isJack = parsed.rank === 'J';
   parsed.isQueen = parsed.rank === 'Q';
   parsed.isJoker = parsed.rank === 'JOKER';
 
-  // Según el modelo actual:
-  // A, J y K pueden actuar como líneas madre
-  // Q es jugada hija
   parsed.isMother = ['A', 'J', 'K'].includes(parsed.rank);
   parsed.isChild = parsed.rank === 'Q';
 
-  // Listas parseadas para usar más fácil en el engine
   parsed.authorizedList = parseList(parsed.authorized);
   parsed.recipientList = parseList(parsed.recipients);
 
   return parsed;
+}
+
+function validateFlowMetadata(parsed, errors) {
+  const chunks = parsed.flowMeta?.chunks || [];
+
+  chunks.forEach((chunk) => {
+    if (chunk.startsWith('finalTarget:U:')) {
+      const rawId = chunk.replace('finalTarget:U:', '');
+      const userId = Number(rawId);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+        errors.push(`finalTarget inválido: ${chunk}`);
+      }
+
+      return;
+    }
+
+    // dejamos pasar flows existentes:
+    // acl, foundation, admin, pay:QHEART..., settlement:...
+  });
 }
 
 function validateParsedPlay(parsed) {
@@ -118,12 +162,10 @@ function validateParsedPlay(parsed) {
   const validRanks = new Set(['A', 'J', 'Q', 'K', 'JOKER']);
   const validSuits = new Set(['HEART', 'SPADE', 'DIAMOND', 'CLUB', 'RED', 'BLUE']);
 
-  // Validaciones obligatorias mínimas
   if (!parsed.deckId) errors.push('Falta deckId');
   if (!parsed.rank) errors.push('Falta rank');
   if (!parsed.suit) errors.push('Falta suit');
 
-  // Validación de valores permitidos
   if (parsed.rank && !validRanks.has(parsed.rank)) {
     errors.push(`Rank inválido: ${parsed.rank}`);
   }
@@ -132,12 +174,10 @@ function validateParsedPlay(parsed) {
     errors.push(`Suit inválido: ${parsed.suit}`);
   }
 
-  // Regla: JOKER solo puede usar RED o BLUE
   if (parsed.rank === 'JOKER' && parsed.suit && !['RED', 'BLUE'].includes(parsed.suit)) {
     errors.push(`JOKER solo admite suit RED o BLUE, llegó: ${parsed.suit}`);
   }
 
-  // Regla: A, J, K, Q no pueden usar RED o BLUE
   if (
     parsed.rank &&
     parsed.rank !== 'JOKER' &&
@@ -147,14 +187,12 @@ function validateParsedPlay(parsed) {
     errors.push(`${parsed.rank} no admite suit ${parsed.suit}`);
   }
 
-  // Validación básica de fecha
   if (parsed.date && !isValidDateString(parsed.date)) {
     errors.push(`Fecha inválida: ${parsed.date}`);
   }
 
-  // Regla mínima: si es Q, debería tener al menos alguna señal de relación
-  // con terceros o flujo. No reemplaza la validación institucional del engine,
-  // pero evita Q totalmente vacías de sentido operativo.
+  validateFlowMetadata(parsed, errors);
+
   if (parsed.rank === 'Q') {
     const hasSomeRelation =
       parsed.recipientList.length > 0 ||

@@ -621,7 +621,6 @@
                     payload = {
                         play_status: "PENDING",
                         target_user_id: aceClubOwnerId,
-                        play_code: buildPendingAceClubPlayCode(play)
                     };
                 }
 
