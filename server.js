@@ -3184,12 +3184,16 @@ OR
   AND p.card_suit = 'HEART'
   AND (
     (
+      -- 👉 Caso: yo soy destinatario → me llega para aprobar
       p.target_user_id = $1
       AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
     )
     OR
     (
+      -- 👉 Caso: yo soy autor PERO hubo otro actor (flujo real)
       p.created_by_user_id = $1
+      AND p.target_user_id IS NOT NULL
+      AND p.target_user_id <> p.created_by_user_id
       AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED')
     )
   )
