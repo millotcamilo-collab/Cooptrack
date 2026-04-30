@@ -2013,7 +2013,6 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       const isJHeart = currentRank === 'J' && currentSuit === 'HEART';
 
       if (!isQSpade && !isKCard && !isACard && !isJHeart) {
-
         return res.status(400).json({
           ok: false,
           error: 'Solo una Q♠ o una K, A o una J♥ pueden enviarse'
@@ -2047,7 +2046,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       if ((isKCard || isACard) && !Number(current.target_user_id || 0)) {
         return res.status(400).json({
           ok: false,
-          error: 'La K enviada debe tener target_user_id'
+          error: 'La K o A enviada debe tener target_user_id'
         });
       }
     }
