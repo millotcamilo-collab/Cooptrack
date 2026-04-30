@@ -2350,6 +2350,15 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         ? String(play_code).trim()
         : current.play_code;
 
+    const patchedFinalTargetUserId =
+      play_code ? getFinalTargetFromPlayCode(play_code) : null;
+
+    const currentFinalTargetUserId =
+      getFinalTargetFromPlayCode(current.play_code || '');
+
+    const finalTargetUserId =
+      patchedFinalTargetUserId || currentFinalTargetUserId || null;    
+
     let nextTargetUserId =
       target_user_id !== undefined
         ? Number(target_user_id || 0) || null
@@ -2362,15 +2371,6 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     ) {
       nextTargetUserId = finalTargetUserId;
     }
-
-    const patchedFinalTargetUserId =
-      play_code ? getFinalTargetFromPlayCode(play_code) : null;
-
-    const currentFinalTargetUserId =
-      getFinalTargetFromPlayCode(current.play_code || '');
-
-    const finalTargetUserId =
-      patchedFinalTargetUserId || currentFinalTargetUserId || null;
 
     await client.query('BEGIN');
 
