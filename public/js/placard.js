@@ -252,8 +252,16 @@
       return `Invitación a ${targetNickname} rechazada`;
     }
 
+    if (status === "QUIT") {
+      return `Invitación a ${targetNickname}. Renunció`;
+    }
+
+    if (status === "FIRED") {
+      return `Invitación a ${targetNickname}. Despedido`;
+    }
+
     if (status === "CANCELLED") {
-      return `Invitación a ${targetNickname} despedido`;
+      return `Invitación a ${targetNickname}. Cancelada`;
     }
 
     return "Nueva jugada K";
@@ -389,6 +397,10 @@
 
     if (page === "lienzo-jcorazon") {
       return getJHeartHeadline(config);
+    }
+
+    if (page === "lienzo-k" || page === "lienzo-rqf") {
+      return getKHeadline(config);
     }
 
     return "";
