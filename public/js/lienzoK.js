@@ -325,8 +325,30 @@
     `;
     }
 
+    function getCardOwnerUserId(play) {
+        return Number(play?.target_user_id || 0) || Number(play?.created_by_user_id || 0);
+    }
+
+    function userOwnsAceClub(userId) {
+        return getAllPlays().some((p) => {
+            const rank = normalizeRank(p?.card_rank || p?.rank);
+            const suit = normalizeSuit(p?.card_suit || p?.suit);
+            const ownerId = getCardOwnerUserId(p);
+            const flow = String(p?.play_code || "").split("§")[7] || "";
+
+            return (
+                rank === "A" &&
+                suit === "CLUB" &&
+                ownerId === Number(userId) &&
+                String(flow).toLowerCase() === "foundation"
+            );
+        });
+    }
+
     function renderSourceActions(play) {
         const uiState = getKUiState(play);
+        const currentUserId = getCurrentUserId();
+        const currentUserIsAceClub = userOwnsAceClub(currentUserId);
 
         const buttons = [];
 
@@ -353,10 +375,10 @@
         }
 
         return `
-      <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-        ${buttons.join("")}
-      </div>
-    `;
+    <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
+      ${buttons.join("")}
+    </div>
+  `;
     }
 
     function renderSourcePlayerPanel(play) {
@@ -517,6 +539,63 @@
         window.history.back();
     }
 
+    function getAceClubOwnerUserId() {
+        const plays = getAllPlays();
+
+        const aceClub = plays.find((p) => {
+            const rank = normalizeRank(p?.card_rank);
+            const suit = normalizeSuit(p?.card_suit);
+            const flow = String(p?.play_code || "").split("§")[7] || "";
+
+            return (
+                rank === "A" &&
+                suit === "CLUB" &&
+                String(flow).toLowerCase() === "foundation"
+            );
+        });
+
+        if (!aceClub) return 0;
+
+        return Number(
+            aceClub.target_user_id ||
+            aceClub.created_by_user_id ||
+            0
+        );
+    }
+
+    function appendFlowChunkToPlayCode(playCode, chunk) {
+        const parts = String(playCode || "").split("§");
+
+        while (parts.length < 9) {
+            parts.push("");
+        }
+
+        const flow = String(parts[7] || "").trim();
+
+        if (flow.includes(chunk)) {
+            return parts.join("§");
+        }
+
+        parts[7] = flow
+            ? `${flow};${chunk}`
+            : chunk;
+
+        return parts.join("§");
+    }
+
+    function buildPendingAceClubPlayCode(play) {
+        const finalTargetId = Number(play?.target_user_id || 0);
+
+        if (!finalTargetId) {
+            return play?.play_code || "";
+        }
+
+        return appendFlowChunkToPlayCode(
+            play?.play_code || "",
+            `finalTarget:U:${finalTargetId}`
+        );
+    }
+
     function bindLienzoActions(play) {
         const sendBtn = document.getElementById("lienzo-send-btn");
         const dismissBtn = document.getElementById("lienzo-dismiss-btn");
@@ -527,21 +606,35 @@
 
         if (sendBtn) {
             sendBtn.addEventListener("click", async () => {
-                const result = await patchPlay(play.id, {
-                    play_status: "SENT"
-                });
+                const currentUserId = getCurrentUserId();
+                const isAceClub = userOwnsAceClub(currentUserId);
+
+                let payload;
+
+                if (isAceClub) {
+                    payload = {
+                        play_status: "SENT"
+                    };
+                } else {
+                    const aceClubOwnerId = getAceClubOwnerUserId();
+
+                    payload = {
+                        play_status: "PENDING",
+                        target_user_id: aceClubOwnerId,
+                        play_code: buildPendingAceClubPlayCode(play)
+                    };
+                }
+
+                const result = await patchPlay(play.id, payload);
 
                 if (result.ok) {
                     const deckId =
                         Number(play?.deck_id || 0) ||
                         Number(getCurrentDeck()?.id || 0);
 
-                    if (deckId) {
-                        window.location.href = `/mazoAdministradores.html?id=${deckId}`;
-                        return;
-                    }
-
-                    window.location.href = "/mazoAdministradores.html";
+                    window.location.href = deckId
+                        ? `/mazoAdministradores.html?id=${deckId}`
+                        : "/mazoAdministradores.html";
                 }
             });
         }

@@ -1943,7 +1943,8 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       amount,
       play_status,
       card_suit,
-      play_code
+      play_code,
+      target_user_id
     } = req.body || {};
 
     if (!playId) {
@@ -2328,6 +2329,11 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         ? String(play_code).trim()
         : current.play_code;
 
+    const nextTargetUserId =
+      target_user_id !== undefined
+        ? Number(target_user_id || 0) || null
+        : current.target_user_id;
+
     await client.query('BEGIN');
 
     const updateResult = await client.query(
@@ -2343,9 +2349,10 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     amount = $7,
     spade_mode = $8,
     play_code = $9,
-    updated_at = NOW()
-  WHERE id = $10
-  RETURNING *
+    target_user_id = $10,
+updated_at = NOW()
+WHERE id = $11
+RETURNING *
   `,
       [
         nextText || null,
@@ -2357,6 +2364,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         nextAmount,
         nextSpadeMode,
         nextPlayCode,
+        nextTargetUserId,
         playId
       ]
     );
