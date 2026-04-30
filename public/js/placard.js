@@ -282,7 +282,7 @@
     }
 
     if (status === "CANCELLED") {
-      return "Solicitud de aprobación cancelada";
+      return "Solicitud de aprobación rechazada";
     }
 
     return "Solicitud de aprobación";
