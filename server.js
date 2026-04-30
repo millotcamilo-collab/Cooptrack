@@ -122,6 +122,24 @@ function buildReadersVisibilityWhereClause({
 // HELPERS DE MAZO
 // =====================================================
 
+async function getAceClubOwnerUserId(client, deckId) {
+  const result = await client.query(
+    `
+    SELECT COALESCE(target_user_id, created_by_user_id) AS owner_user_id
+    FROM plays
+    WHERE deck_id = $1
+      AND card_rank = 'A'
+      AND card_suit = 'CLUB'
+      AND split_part(play_code, '§', 8) = 'foundation'
+    ORDER BY id ASC
+    LIMIT 1
+    `,
+    [deckId]
+  );
+
+  return Number(result.rows[0]?.owner_user_id || 0);
+}
+
 async function userIsMazoMember(client, mazoId, userId) {
   const result = await client.query(
     `SELECT 1
@@ -2024,7 +2042,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       if (!creatorUserId || Number(userId) !== creatorUserId) {
         return res.status(403).json({
           ok: false,
-          error: 'Solo el anfitrión puede enviar esta jugada'
+          error: 'Solo el creador puede iniciar el envío de esta jugada'
         });
       }
 
@@ -2043,10 +2061,20 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         });
       }
 
-      if ((isKCard || isACard) && !Number(current.target_user_id || 0)) {
+      if ((isKCard || isACard || isQSpade) && !Number(current.target_user_id || 0)) {
         return res.status(400).json({
           ok: false,
-          error: 'La K o A enviada debe tener target_user_id'
+          error: 'La invitación debe tener target_user_id'
+        });
+      }
+
+      const needsAceClubFinalSend = isKCard || isQSpade;
+      const aceClubOwnerUserId = await getAceClubOwnerUserId(client, current.deck_id);
+
+      if (needsAceClubFinalSend && Number(userId) !== aceClubOwnerUserId) {
+        return res.status(403).json({
+          ok: false,
+          error: 'Solo el A♣ puede enviar esta invitación al destinatario final'
         });
       }
     }
