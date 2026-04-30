@@ -158,6 +158,8 @@
       const data = await response.json();
       const plays = Array.isArray(data?.plays) ? data.plays : [];
 
+      console.log("PENDING RAW PLAYS", plays);
+
       console.log("TOPBAR pending response", {
         ok: response.ok,
         status: response.status,
@@ -167,12 +169,12 @@
 
       const candidates = plays
         .filter(isCorporateIncomingPlay)
+        
         .filter((play) => {
           const playId = Number(play?.id || 0);
-          if (!playId) return false;
-
-          return !sessionStorage.getItem(`cooptrack_seen_play_${playId}`);
+          return !!playId;
         })
+
         .map((play) => {
           const pendingKind = getPendingKindForUser(play, currentUserId);
           return pendingKind ? { ...play, pendingKind } : null;
