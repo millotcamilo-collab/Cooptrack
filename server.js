@@ -122,6 +122,27 @@ function buildReadersVisibilityWhereClause({
 // HELPERS DE MAZO
 // =====================================================
 
+function getFinalTargetFromPlayCode(playCode) {
+  const parsed = parsePlayCodeRaw(playCode);
+  const chunks = parseFlowChunks(parsed.flow);
+
+  let finalTargetUserId = null;
+
+  chunks.forEach((chunk) => {
+    if (!chunk.startsWith('finalTarget:')) return;
+
+    const raw = chunk.split(':')[1] || '';
+    const cleaned = raw.replace('U:', '').trim();
+
+    const id = Number(cleaned);
+    if (id) {
+      finalTargetUserId = id;
+    }
+  });
+
+  return finalTargetUserId;
+}
+
 async function getAceClubOwnerUserId(client, deckId) {
   const result = await client.query(
     `
@@ -2343,12 +2364,10 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     }
 
     const patchedFinalTargetUserId =
-      parsedPatchedPlayCode?.finalTargetUserId || null;
-
-    const currentParsedPlayCode = parseAndValidatePlayCode(current.play_code || '');
+      play_code ? getFinalTargetFromPlayCode(play_code) : null;
 
     const currentFinalTargetUserId =
-      currentParsedPlayCode?.finalTargetUserId || null;
+      getFinalTargetFromPlayCode(current.play_code || '');
 
     const finalTargetUserId =
       patchedFinalTargetUserId || currentFinalTargetUserId || null;
