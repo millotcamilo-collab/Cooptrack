@@ -18,18 +18,14 @@
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* esto estaba
-.dia__body {
-  flex: 1;
-  padding: 8px 10px;
-  box-sizing: border-box;
-}
-*/
 .dia__body {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;            /* espacio entre iconitos */
+  gap: 4px;
   align-items: flex-start;
+
+  padding: 3px 3px 0 3px; /* ← lateral + arriba */
+  box-sizing: border-box;
 }
 
 .dia--current .dia__header {
