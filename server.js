@@ -2957,6 +2957,85 @@ RETURNING *
   }
 });
 
+app.get('/plays/archive', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const result = await pool.query(
+      `
+      SELECT
+        p.id,
+        p.deck_id,
+        p.parent_play_id,
+        p.created_by_user_id,
+        p.target_user_id,
+        p.card_rank,
+        p.card_suit,
+        p.play_status,
+        p.play_text,
+        p.play_code,
+        p.created_at,
+        p.updated_at,
+
+        deck.name AS deck_name,
+
+        creator.nickname AS created_by_nickname,
+        creator.profile_photo_url AS created_by_profile_photo_url,
+
+        target.nickname AS target_user_nickname,
+        target.profile_photo_url AS target_user_profile_photo_url
+
+      FROM plays p
+      LEFT JOIN decks deck
+        ON deck.id = p.deck_id
+      LEFT JOIN users creator
+        ON creator.id = p.created_by_user_id
+      LEFT JOIN users target
+        ON target.id = p.target_user_id
+
+      WHERE
+        (
+          p.created_by_user_id = $1
+          OR p.target_user_id = $1
+        )
+        AND (
+          (
+            p.card_rank = 'K'
+            AND COALESCE(p.play_status, '') IN ('REJECTED', 'QUIT', 'FIRED')
+          )
+          OR
+          (
+            p.card_rank = 'A'
+            AND COALESCE(p.play_status, '') IN ('REJECTED', 'QUIT', 'FIRED')
+          )
+          OR
+          (
+            p.card_rank = 'Q'
+            AND p.card_suit = 'SPADE'
+            AND COALESCE(p.play_status, '') IN ('REJECTED', 'CANCELLED')
+          )
+        )
+
+      ORDER BY p.updated_at DESC, p.created_at DESC, p.id DESC
+      `,
+      [userId]
+    );
+
+    return res.json({
+      ok: true,
+      plays: result.rows
+    });
+
+  } catch (error) {
+    console.error('Error en GET /plays/archive', error);
+
+    return res.status(500).json({
+      ok: false,
+      error: 'Error obteniendo archivo'
+    });
+  }
+});
+
 app.delete('/plays/:id', requireAuth, async (req, res) => {
   const playId = Number(req.params.id);
   const userId = req.auth.userId;

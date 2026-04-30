@@ -8,25 +8,21 @@
 
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="stylesheet" href="/css/topbar.css" />
-  <link rel="stylesheet" href="/css/deck-row.css" />
   <link rel="stylesheet" href="/css/tablero-archivado.css" />
 </head>
 
-<body data-decks-mode="archived">
+<body>
 
   <div id="topbar-container"></div>
-  <div id="decks-view-container"></div>
 
-  <script src="/js/deck-view.js"></script>
-  <script src="/js/deck-row.js"></script>
-  <script src="/js/tablero-archivado.js"></script>
+  <main class="page-container">
+    <section id="archivo-container" class="tablero tablero--archivado">
+      <p class="tablero-archivado__empty">Cargando archivo...</p>
+    </section>
+  </main>
+
   <script src="/js/topbar.js"></script>
-
-  <script>
-    if (typeof renderDecksView === "function") {
-      renderDecksView("archived");
-    }
-  </script>
+  <script src="/js/archivo.js"></script>
 
 </body>
 
