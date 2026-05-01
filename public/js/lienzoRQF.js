@@ -349,37 +349,6 @@
   `;
     }
 
-    function renderRQFBanner(play) {
-        const message = getRQFMessage(play);
-
-        return `
-    <section class="lienzo-panel panel--split-top">
-      <div class="panel-topbar">
-        <div class="panel-topbar__col panel-topbar__col--identity">
-          <div class="lienzo-target-header__name">
-            ${escapeHtml(message.title)}
-          </div>
-        </div>
-
-        <div class="panel-topbar__col panel-topbar__col--actions">
-          <button
-            id="lienzo-rqf-exit-btn"
-            class="icon-btn"
-            type="button"
-            title="Salir"
-            aria-label="Salir"
-          >
-            <img src="/assets/icons/exit80.gif" alt="Salir" />
-          </button>
-        </div>
-      </div>
-
-      <div style="padding: 14px 20px; text-align: center; font-size: 18px; line-height: 1.5;">
-        ${escapeHtml(message.body)}
-      </div>
-    </section>
-  `;
-    }
 
     function renderLienzoRQF(play) {
         const container = getLienzoContainer();
@@ -395,23 +364,47 @@
             return;
         }
 
-        container.innerHTML = `
-    ${renderDeckHeader(play)}
+        const message = getRQFMessage(play);
 
-    <div style="margin-bottom: 18px;">
-      ${renderRQFBanner(play)}
+container.innerHTML = `
+  ${renderDeckHeader(play)}
+
+  <div class="lienzo-grid">
+    <div id="colombes" class="lienzo-grid__left">
+      ${renderRQFSourcePanel(play)}
     </div>
 
-    <div class="lienzo-grid">
-      <div id="colombes" class="lienzo-grid__left">
-        ${renderRQFSourcePanel(play)}
+    <div id="amsterdam" class="lienzo-grid__right">
+      ${renderRQFTargetPanel(play)}
+    </div>
+  </div>
+
+  <section class="lienzo-panel panel--split-top" style="margin-top: 18px;">
+    <div class="panel-topbar">
+      <div class="panel-topbar__col panel-topbar__col--identity">
+        <div class="lienzo-target-header__name">
+          ${escapeHtml(message.title)}
+        </div>
       </div>
 
-      <div id="amsterdam" class="lienzo-grid__right">
-        ${renderRQFTargetPanel(play)}
+      <div class="panel-topbar__col panel-topbar__col--actions">
+        <button
+          id="lienzo-rqf-exit-btn"
+          class="icon-btn"
+          type="button"
+          title="Salir"
+          aria-label="Salir"
+        >
+          <img src="/assets/icons/exit80.gif" alt="Salir" />
+        </button>
       </div>
     </div>
-  `;
+
+    <div style="padding: 14px 20px; text-align: center; font-size: 18px; line-height: 1.5;">
+      ${escapeHtml(message.body)}
+    </div>
+  </section>
+`;
 
         mountPlacardFromDataset(play);
         bindRQFActions(play);
