@@ -113,7 +113,7 @@
     // =========================
     // Ya leído
     // =========================
-    if (isSource && status === "ACKNOWLEDGED") {
+    if (isSource) {
       return null;
     }
 
