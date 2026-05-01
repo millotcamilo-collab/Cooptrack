@@ -3260,111 +3260,127 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
         ON author.id = p.created_by_user_id
       LEFT JOIN decks deck
         ON deck.id = p.deck_id
+      LEFT JOIN play_reads pr
+        ON pr.play_id = p.id
+        AND pr.user_id = $1
       WHERE
 
-        (
-          p.card_rank = 'Q'
-          AND p.card_suit = 'SPADE'
-          AND (
-            (
-              p.target_user_id = $1
-              AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
-            )
-            OR
-            (
-              p.created_by_user_id = $1
-              AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'CANCELLED')
-            )
-            OR
-            (
-              p.target_user_id = $1
-              AND COALESCE(p.play_status, '') = 'APPROVED'
-              AND (
-                p.play_code LIKE '%settlement:PAID%'
-                OR p.play_code LIKE '%settlement:COMPLAINED%'
-              )
-            )
-          )
-        )
-
-        OR
 (
-  p.card_rank = 'K'
+  -- =========================
+  -- Q♠
+  -- =========================
+  p.card_rank = 'Q'
+  AND p.card_suit = 'SPADE'
   AND (
-    -- 👉 Invitaciones directas o vía A♣
+    -- Invitación pendiente para mí
     (
       p.target_user_id = $1
       AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
     )
 
-    -- 👉 Caso especial: soy destinatario final guardado en flow
-    OR (
+    OR
+
+    -- Notificación al creador
+    (
+      p.created_by_user_id = $1
+      AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'CANCELLED')
+    )
+
+    OR
+
+    -- Settlement (soy target y ya se resolvió pago)
+    (
+      p.target_user_id = $1
+      AND COALESCE(p.play_status, '') = 'APPROVED'
+      AND (
+        p.play_code LIKE '%settlement:PAID%'
+        OR p.play_code LIKE '%settlement:COMPLAINED%'
+      )
+    )
+  )
+)
+
+OR
+
+(
+  -- =========================
+  -- K
+  -- =========================
+  p.card_rank = 'K'
+  AND (
+    -- Invitación directa
+    (
+      p.target_user_id = $1
+      AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+    )
+
+    OR
+
+    -- Invitación vía flow (finalTarget)
+    (
       p.play_code LIKE ('%finalTarget:U:' || $1 || '%')
       AND COALESCE(p.play_status, '') = 'PENDING'
     )
 
-    -- 👉 Notificaciones al creador
-    OR (
+    OR
+
+    -- Notificación al creador
+    (
       p.created_by_user_id = $1
       AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'QUIT')
     )
 
-    -- 👉 Fired sigue como estaba
-    OR (
+    OR
+
+    -- Fired al target
+    (
       p.target_user_id = $1
       AND COALESCE(p.play_status, '') = 'FIRED'
     )
   )
 )
-        OR
-
-        (
-          p.card_rank = 'K'
-          AND p.created_by_user_id = $1
-          AND COALESCE(p.play_status, '') IN (
-            'APPROVED',
-            'REJECTED',
-            'QUIT'
-          )
-        )
-
-                OR
-
-        (
-          p.card_rank = 'A'
-          AND p.target_user_id = $1
-          AND COALESCE(p.play_status, '') IN (
-            'SENT',
-            'PENDING'
-          )
-        )
-
-        OR
-
-        (
-          p.card_rank = 'A'
-          AND p.created_by_user_id = $1
-          AND COALESCE(p.play_status, '') IN (
-            'APPROVED',
-            'REJECTED',
-            'QUIT',
-            'FIRED'
-          )
-        )
 
 OR
+
 (
+  -- =========================
+  -- A (target)
+  -- =========================
+  p.card_rank = 'A'
+  AND p.target_user_id = $1
+  AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+)
+
+OR
+
+(
+  -- =========================
+  -- A (creador)
+  -- =========================
+  p.card_rank = 'A'
+  AND p.created_by_user_id = $1
+  AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'QUIT', 'FIRED')
+)
+
+OR
+
+(
+  -- =========================
+  -- J♥
+  -- =========================
   p.card_rank = 'J'
   AND p.card_suit = 'HEART'
   AND (
+    -- Me llega para aprobar
     (
-      -- 👉 Caso: yo soy destinatario → me llega para aprobar
       p.target_user_id = $1
       AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
     )
+
     OR
+
+    -- Notificación al creador (otro actor intervino)
     (
-      -- 👉 Caso: yo soy autor PERO hubo otro actor (flujo real)
       p.created_by_user_id = $1
       AND p.target_user_id IS NOT NULL
       AND p.target_user_id <> p.created_by_user_id
@@ -3372,7 +3388,7 @@ OR
     )
   )
 )
-
+AND pr.id IS NULL
       ORDER BY p.created_at DESC
       `,
       [userId]
