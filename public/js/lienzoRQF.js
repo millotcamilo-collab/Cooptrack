@@ -222,59 +222,6 @@
     `;
     }
 
-    function renderRQFPanel(play) {
-        const sourceUser = resolveSourceUser(play);
-        const targetUser = resolveTargetUser(play);
-        const message = getRQFMessage(play);
-
-        return `
-      <section class="lienzo-panel panel--split-top">
-        <div class="panel-topbar">
-          <div class="panel-topbar__col panel-topbar__col--identity">
-            <div class="lienzo-target-header__name">
-              ${escapeHtml(message.title)}
-            </div>
-          </div>
-
-          <div class="panel-topbar__col panel-topbar__col--actions">
-            <button
-              id="lienzo-rqf-exit-btn"
-              class="icon-btn"
-              type="button"
-              title="Salir"
-              aria-label="Salir"
-            >
-              <img src="/assets/icons/exit80.gif" alt="Salir" />
-            </button>
-          </div>
-        </div>
-
-        <div style="padding: 20px;">
-          <div class="lienzo-grid">
-            <div class="lienzo-grid__left">
-              ${renderUserCard(sourceUser, "Anfitrión")}
-            </div>
-
-            <div class="lienzo-grid__right">
-              ${renderUserCard(targetUser, "Destinatario")}
-            </div>
-          </div>
-
-          <div style="margin: 28px auto 20px; text-align: center;">
-            <img
-              class="lienzo-card-image"
-              src="${escapeHtml(getCardImageSrc(play?.card_rank, play?.card_suit))}"
-              alt="${escapeHtml(`K${getSuitSymbol(play?.card_suit)}`)}"
-            />
-          </div>
-
-          <div style="text-align: center; font-size: 18px; line-height: 1.5; padding: 8px 12px;">
-            ${escapeHtml(message.body)}
-          </div>
-        </div>
-      </section>
-    `;
-    }
 
     function bindRQFActions(play) {
         const exitBtn = document.getElementById("lienzo-rqf-exit-btn");

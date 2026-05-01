@@ -180,7 +180,6 @@
 
     const status = String(play?.play_status || "").trim().toUpperCase();
     const targetNickname = getNickname(play?.target_user_nickname, "invitado");
-    const resolution = getInvitationResolutionLabel(status);
 
     if (status === "ACTIVE") {
       return `Invitación a ${targetNickname}. Pendiente de envío`;
@@ -190,16 +189,16 @@
       return `Invitación a ${targetNickname}. Enviada`;
     }
 
+    if (status === "APPROVED" || status === "ACKNOWLEDGED") {
+      return `Invitación a ${targetNickname} aceptada`;
+    }
+
     if (status === "REJECTED") {
-      return `${targetNickname} rechazó la invitación`;
+      return `Invitación a ${targetNickname} rechazada`;
     }
 
     if (status === "CANCELLED") {
       return `Invitación a ${targetNickname} cancelada`;
-    }
-
-    if (resolution) {
-      return `Invitación a ${targetNickname} ${resolution}`;
     }
 
     return "Nueva jugada Q";
@@ -228,6 +227,14 @@
       }
 
       return `Invitación a ${targetNickname} aceptada. Pago sin confirmar`;
+    }
+
+    if (status === "REJECTED") {
+      return `Invitación a ${targetNickname} rechazada`;
+    }
+
+    if (status === "CANCELLED") {
+      return `Invitación a ${targetNickname} cancelada`;
     }
 
     if (resolution) {
