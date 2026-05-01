@@ -190,6 +190,14 @@
       return `Invitación a ${targetNickname}. Enviada`;
     }
 
+    if (status === "REJECTED") {
+      return `${targetNickname} rechazó la invitación`;
+    }
+
+    if (status === "CANCELLED") {
+      return `Invitación a ${targetNickname} cancelada`;
+    }
+
     if (resolution) {
       return `Invitación a ${targetNickname} ${resolution}`;
     }
@@ -387,6 +395,17 @@
       return getQQpicaHeadline(config);
     }
 
+    // 👇 RQF primero y dinámico por tipo de carta
+    if (page === "lienzo-rqf") {
+      const rank = String(config?.play?.card_rank || "").trim().toUpperCase();
+
+      if (rank === "K") return getKHeadline(config);
+      if (rank === "A") return getAHeadline(config);
+      if (rank === "Q") return getQpicaHeadline(config);
+
+      return "Jugada archivada";
+    }
+
     if (page === "lienzo-k") {
       return getKHeadline(config);
     }
@@ -397,10 +416,6 @@
 
     if (page === "lienzo-jcorazon") {
       return getJHeartHeadline(config);
-    }
-
-    if (page === "lienzo-k" || page === "lienzo-rqf") {
-      return getKHeadline(config);
     }
 
     return "";
