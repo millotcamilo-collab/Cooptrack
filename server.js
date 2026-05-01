@@ -3034,7 +3034,7 @@ app.get('/plays/archive', requireAuth, async (req, res) => {
       error: 'Error obteniendo archivo'
     });
   }
-});list
+});
 
 app.delete('/plays/:id', requireAuth, async (req, res) => {
   const playId = Number(req.params.id);
