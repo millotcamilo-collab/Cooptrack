@@ -446,36 +446,36 @@
   }
 
   async function acknowledgePlay(playId) {
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token || !playId) return false;
+  const token = localStorage.getItem("cooptrackToken");
+  if (!token || !playId) return false;
 
-    sessionStorage.setItem(`cooptrack_seen_play_${playId}`, "1");
+  sessionStorage.setItem(`cooptrack_seen_play_${playId}`, "1");
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          play_status: "ACKNOWLEDGED"
-        })
-      });
+  try {
+    const response = await fetch(`${API_BASE_URL}/plays/${playId}/read`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        reason: "READ_ONLY_NOTIFICATION"
+      })
+    });
 
-      const data = await response.json().catch(() => null);
+    const data = await response.json().catch(() => null);
 
-      if (!response.ok || !data?.ok) {
-        console.error("No se pudo marcar como leída:", data || response.status);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error("Error marcando notificación como leída:", error);
+    if (!response.ok || !data?.ok) {
+      console.error("No se pudo marcar como leída:", data || response.status);
       return false;
     }
+
+    return true;
+  } catch (error) {
+    console.error("Error marcando notificación como leída:", error);
+    return false;
   }
+}
 
   async function renderTopbar() {
     const user = await getLoggedUser();

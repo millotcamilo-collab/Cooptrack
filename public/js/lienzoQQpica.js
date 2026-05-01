@@ -305,7 +305,7 @@
   function canResolveQQPicaSettlement(play) {
     const status = String(play?.play_status || "").trim().toUpperCase();
 
-    if (status !== "APPROVED" && status !== "ACKNOWLEDGED") return false;
+    if (status !== "APPROVED" ) return false;
 
     const parentPlay = getPlayById(play?.parent_play_id);
     const referenceDate = getSessionDateFromPlay(parentPlay || play);
@@ -805,7 +805,7 @@
   function getQQPicaDisplayedSuit(play) {
     const status = String(play?.play_status || "").trim().toUpperCase();
 
-    if (status === "APPROVED" || status === "ACKNOWLEDGED") {
+    if (status === "APPROVED" ) {
       return "DIAMOND";
     }
 
@@ -1080,8 +1080,7 @@
       status !== "SENT" &&
       status !== "APPROVED" &&
       status !== "REJECTED" &&
-      status !== "CANCELLED" &&
-      status !== "ACKNOWLEDGED";
+      status !== "CANCELLED";
 
     const showSettlementActions = canShowSettlementActions(play, "COLOMBES");
 

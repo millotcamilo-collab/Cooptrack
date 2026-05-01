@@ -299,7 +299,6 @@
 
         if (status === "SENT") return "SENT";
         if (status === "APPROVED") return "APPROVED";
-        if (status === "ACKNOWLEDGED") return "ACKNOWLEDGED";
         if (status === "QUIT") return "QUIT";
         if (status === "FIRED") return "FIRED";
 

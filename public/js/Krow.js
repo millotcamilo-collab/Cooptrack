@@ -195,15 +195,6 @@
     if (status === "FIRED") return "Despedido";
     if (status === "CANCELLED") return "Cancelada";
 
-    if (status === "ACKNOWLEDGED") {
-      if (playCode.includes("FIRED")) return "Despedido";
-      if (playCode.includes("QUIT")) return "Renunciada";
-      if (playCode.includes("REJECTED")) return "Rechazada";
-      if (playCode.includes("APPROVED")) return "Aceptada";
-
-      return "Leída";
-    }
-
     return "Pendiente";
   }
 

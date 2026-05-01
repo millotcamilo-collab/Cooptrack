@@ -944,7 +944,6 @@
             playStatus !== "APPROVED" &&
             playStatus !== "REJECTED" &&
             playStatus !== "CANCELLED" &&
-            playStatus !== "ACKNOWLEDGED" &&
             !isCardCurrentlyDropped(qHeartCard, selection);
 
         const visibleCards = canShowQHeartInPlacard ? [qHeartCard] : [];
@@ -1098,8 +1097,7 @@
             status !== "SENT" &&
             status !== "APPROVED" &&
             status !== "REJECTED" &&
-            status !== "CANCELLED" &&
-            status !== "ACKNOWLEDGED";
+            status !== "CANCELLED";
 
         if (!canOperate) {
             return `

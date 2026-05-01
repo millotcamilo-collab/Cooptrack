@@ -1319,7 +1319,7 @@ async function listMazosHandler(req, res) {
 
           const joker_type = hasActiveBlueJoker ? 'BLUE' : 'RED';
 
-          const activeStatuses = ['ACTIVE', 'APPROVED', 'SENT', 'ACKNOWLEDGED'];
+          const activeStatuses = ['ACTIVE', 'APPROVED', 'SENT'];
           const archivedVisibleStatuses = [
             ...activeStatuses,
             'REJECTED', // Q
@@ -2022,21 +2022,15 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       parsedPatchedPlayCode = parsed;
     }
 
-    const wantsAcknowledged =
-      String(play_status || '').trim().toUpperCase() === 'ACKNOWLEDGED';
 
-    const isDirectParticipant =
-      Number(current.created_by_user_id || 0) === Number(userId) ||
-      Number(current.target_user_id || 0) === Number(userId);
+const mazo = await getMazoByIdForUser(client, current.deck_id, userId);
 
-    const mazo = await getMazoByIdForUser(client, current.deck_id, userId);
-
-    if (!mazo && !(wantsAcknowledged && isDirectParticipant)) {
-      return res.status(403).json({
-        ok: false,
-        error: 'Sin acceso a esta jugada'
-      });
-    }
+if (!mazo) {
+  return res.status(403).json({
+    ok: false,
+    error: 'Sin acceso a esta jugada'
+  });
+}
 
     const currentRank = String(current.card_rank || '').trim().toUpperCase();
     const currentSuit = String(current.card_suit || '').trim().toUpperCase();
@@ -2074,8 +2068,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         currentStatus === 'REJECTED' ||
         currentStatus === 'CANCELLED' ||
         currentStatus === 'QUIT' ||
-        currentStatus === 'FIRED' ||
-        currentStatus === 'ACKNOWLEDGED'
+        currentStatus === 'FIRED'
       ) {
         return res.status(400).json({
           ok: false,
@@ -2234,76 +2227,34 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
     }
 
-    if (play_status === 'ACKNOWLEDGED') {
-      const isQSpadeAck =
-        currentRank === 'Q' &&
-        currentSuit === 'SPADE';
+    if (play_status === 'REJECTED') {
+      const isQSpade = currentRank === 'Q' && currentSuit === 'SPADE';
+      const isKCard = currentRank === 'K';
+      const isACard = currentRank === 'A';
 
-      const isKAck =
-        currentRank === 'K';
-
-      const isAAck =
-        currentRank === 'A';
-
-      if (!isQSpadeAck && !isKAck && !isAAck) {
+      if (!isQSpade && !isKCard && !isACard) {
         return res.status(400).json({
           ok: false,
-          error: 'Solo una Q♠ o una K pueden marcarse como leídas'
+          error: 'Esta jugada no admite rechazo'
         });
       }
 
-      const creatorUserId = Number(current.created_by_user_id || 0);
       const targetUserId = Number(current.target_user_id || 0);
 
-      const canAcknowledge =
-        (isQSpadeAck && creatorUserId && Number(userId) === creatorUserId) ||
-        ((isKAck || isAAck) && (
-          (creatorUserId && Number(userId) === creatorUserId) ||
-          (targetUserId && Number(userId) === targetUserId)
-        ));
-
-      if (!canAcknowledge) {
+      if (!targetUserId || Number(userId) !== targetUserId) {
         return res.status(403).json({
           ok: false,
-          error: 'No podés marcar esta notificación como leída'
+          error: 'Solo el destinatario puede rechazar esta invitación'
         });
       }
 
-      if (isQSpadeAck) {
-        if (
-          currentStatus !== 'APPROVED' &&
-          currentStatus !== 'REJECTED' &&
-          currentStatus !== 'CANCELLED'
-        ) {
-          return res.status(400).json({
-            ok: false,
-            error: 'Solo una Q♠ finalizada puede marcarse como leída'
-          });
-        }
-      }
-
-      if (isKAck || isAAck) {
-        if (
-          currentStatus !== 'APPROVED' &&
-          currentStatus !== 'REJECTED' &&
-          currentStatus !== 'QUIT' &&
-          currentStatus !== 'FIRED'
-        ) {
-          return res.status(400).json({
-            ok: false,
-            error: 'Solo una K o A finalizada puede marcarse como leída'
-          });
-        }
-
-        // 👇 NO tocar play_status
-        return res.json({
-          ok: true,
-          acknowledged: true,
-          play: current
+      if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
+        return res.status(400).json({
+          ok: false,
+          error: 'Solo una invitación enviada puede rechazarse'
         });
       }
     }
-
 
     // ---------------------------------------------------
     // NORMALIZACIÓN DE CAMPOS
@@ -2357,7 +2308,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       getFinalTargetFromPlayCode(current.play_code || '');
 
     const finalTargetUserId =
-      patchedFinalTargetUserId || currentFinalTargetUserId || null;    
+      patchedFinalTargetUserId || currentFinalTargetUserId || null;
 
     let nextTargetUserId =
       target_user_id !== undefined
@@ -3033,6 +2984,61 @@ app.get('/plays/archive', requireAuth, async (req, res) => {
       ok: false,
       error: 'Error obteniendo archivo'
     });
+  }
+});
+
+app.post('/plays/:id/read', requireAuth, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const playId = Number(req.params.id);
+    const userId = req.auth.userId;
+    const reason = String(req.body?.reason || 'DEFAULT');
+
+    if (!playId) {
+      return res.status(400).json({
+        ok: false,
+        error: 'playId inválido'
+      });
+    }
+
+    // Validar que la jugada exista
+    const playResult = await client.query(
+      `SELECT id FROM plays WHERE id = $1 LIMIT 1`,
+      [playId]
+    );
+
+    if (!playResult.rows.length) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Jugada no encontrada'
+      });
+    }
+
+    await client.query(
+      `
+      INSERT INTO play_reads (play_id, user_id, reason)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (play_id, user_id, reason)
+      DO UPDATE SET read_at = NOW()
+      `,
+      [playId, userId, reason]
+    );
+
+    return res.json({
+      ok: true
+    });
+
+  } catch (error) {
+    console.error('Error en POST /plays/:id/read', error);
+
+    return res.status(500).json({
+      ok: false,
+      error: 'No se pudo registrar la lectura'
+    });
+
+  } finally {
+    client.release();
   }
 });
 
