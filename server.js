@@ -2023,14 +2023,14 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     }
 
 
-const mazo = await getMazoByIdForUser(client, current.deck_id, userId);
+    const mazo = await getMazoByIdForUser(client, current.deck_id, userId);
 
-if (!mazo) {
-  return res.status(403).json({
-    ok: false,
-    error: 'Sin acceso a esta jugada'
-  });
-}
+    if (!mazo) {
+      return res.status(403).json({
+        ok: false,
+        error: 'Sin acceso a esta jugada'
+      });
+    }
 
     const currentRank = String(current.card_rank || '').trim().toUpperCase();
     const currentSuit = String(current.card_suit || '').trim().toUpperCase();
@@ -2393,10 +2393,32 @@ RETURNING *
       currentStatus !== 'SENT' &&
       nextStatus === 'SENT';
 
+    if (isRoutingKToAceClubNow) {
+      const aceClubUserId = Number(updatedPlay.target_user_id || 0);
+
+      if (!aceClubUserId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La K pendiente debe tener target_user_id'
+        });
+      }
+
+      await addReadersToPlay(client, updatedPlay.id, [
+        updatedPlay.created_by_user_id,
+        aceClubUserId
+      ]);
+    }
+
     const isSendingKNow =
       currentRank === 'K' &&
       currentStatus !== 'SENT' &&
       nextStatus === 'SENT';
+
+    const isRoutingKToAceClubNow =
+      currentRank === 'K' &&
+      currentStatus !== 'PENDING' &&
+      nextStatus === 'PENDING';
 
     const isSendingANow =
       currentRank === 'A' &&
