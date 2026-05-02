@@ -16,79 +16,79 @@
 
   }
 
-function getAceOwnerTribune(suit) {
-  const plays = getAllPlays();
+  function getAceOwnerTribune(suit) {
+    const plays = getAllPlays();
 
-  const ace = plays.find((p) => {
-    const rank = normalizeRank(p?.card_rank || p?.rank);
-    const cardSuit = normalizeSuit(p?.card_suit || p?.suit);
-    const flow = String(p?.play_code || "").split("§")[7] || "";
+    const ace = plays.find((p) => {
+      const rank = normalizeRank(p?.card_rank || p?.rank);
+      const cardSuit = normalizeSuit(p?.card_suit || p?.suit);
+      const flow = String(p?.play_code || "").split("§")[7] || "";
 
-    return (
-      rank === "A" &&
-      cardSuit === suit &&
-      String(flow).toLowerCase() === "foundation"
-    );
-  });
+      return (
+        rank === "A" &&
+        cardSuit === suit &&
+        String(flow).toLowerCase() === "foundation"
+      );
+    });
 
-  if (!ace) return null;
+    if (!ace) return null;
 
-  return {
-    role: `A_${suit}`,
-    userId: Number(ace.target_user_id || ace.created_by_user_id || 0),
-    nickname: ace.target_user_nickname || ace.created_by_nickname || "Usuario",
-    profile_photo_url:
-      ace.target_user_profile_photo_url ||
-      ace.created_by_profile_photo_url ||
-      "/assets/icons/singeta120.gif"
-  };
-}
-
-function getValidatorTribunesForDraft(draft) {
-  const rank = normalizeRank(draft?.card_rank);
-  const suit = normalizeSuit(draft?.card_suit);
-
-  const validators = [];
-
-  // K enviada por usuario que no es A♣
-  if (rank === "K") {
-    validators.push(getAceOwnerTribune("CLUB"));
+    return {
+      role: `A_${suit}`,
+      userId: Number(ace.target_user_id || ace.created_by_user_id || 0),
+      nickname: ace.target_user_nickname || ace.created_by_nickname || "Usuario",
+      profile_photo_url:
+        ace.target_user_profile_photo_url ||
+        ace.created_by_profile_photo_url ||
+        "/assets/icons/singeta120.gif"
+    };
   }
 
-  // QQpica / Q con monto: más adelante A♦ + A♣
-  if (rank === "Q" && suit === "SPADE") {
-    validators.push(getAceOwnerTribune("CLUB"));
+  function getValidatorTribunesForDraft(draft) {
+    const rank = normalizeRank(draft?.card_rank);
+    const suit = normalizeSuit(draft?.card_suit);
+
+    const validators = [];
+
+    // K enviada por usuario que no es A♣
+    if (rank === "K") {
+      validators.push(getAceOwnerTribune("CLUB"));
+    }
+
+    // QQpica / Q con monto: más adelante A♦ + A♣
+    if (rank === "Q" && suit === "SPADE") {
+      validators.push(getAceOwnerTribune("CLUB"));
+    }
+
+    return validators.filter(Boolean);
   }
 
-  return validators.filter(Boolean);
-}
+  function renderColombesTribunes(draft) {
+    const currentUser = getCurrentUser();
 
-function renderColombesTribunes(draft) {
-  const currentUser = getCurrentUser();
+    const authorTribune = renderSourcePlayerPanel(draft);
 
-  const authorTribune = renderSourcePlayerPanel(draft);
+    const validatorTribunes = getValidatorTribunesForDraft(draft)
+      .filter((validator) => Number(validator.userId) !== Number(currentUser?.id || 0))
+      .map((validator) => {
+        const cards = deriveOwnedCorporateCards(getAllPlays(), validator.userId);
+        return renderUserTribune(validator, cards);
+      })
+      .join("");
 
-  const validatorTribunes = getValidatorTribunesForDraft(draft)
-    .filter((validator) => Number(validator.userId) !== Number(currentUser?.id || 0))
-    .map((validator) => {
-      const cards = deriveOwnedCorporateCards(getAllPlays(), validator.userId);
-      return renderUserTribune(validator, cards);
-    })
-    .join("");
-
-  return `
+    return `
     <div class="lienzo-tribunes lienzo-tribunes--colombes">
       ${authorTribune}
       ${validatorTribunes}
     </div>
   `;
-}
+  }
 
-function renderUserTribune(user, cards = []) {
-  const name = user?.nickname || "Usuario";
-  const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+  function renderUserTribune(user, cards = []) {
+    const name = user?.nickname || "Usuario";
+    const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
 
-  return `
+    return `
     <section class="lienzo-panel lienzo-panel--source panel--split-top">
       <div class="panel-topbar panel-topbar--single">
         <div class="panel-topbar__col panel-topbar__col--identity">
@@ -110,7 +110,7 @@ function renderUserTribune(user, cards = []) {
       </div>
     </section>
   `;
-}
+  }
 
   function getJSpadeText(play) {
     if (!play) return "";
@@ -500,18 +500,43 @@ function renderUserTribune(user, cards = []) {
     if (!Array.isArray(plays) || !currentUserId) return [];
 
     return plays
-      .filter((p) => {
-        const rank = String(p.card_rank || p.rank || "").toUpperCase();
-        const suit = String(p.card_suit || p.suit || "").toUpperCase();
+      .filter((p, index) => {
+        // no contar las primeras 10 líneas del libro
+        if (index < 10) return false;
+
+        const rank = normalizeRank(p?.card_rank || p?.rank);
+        const suit = normalizeSuit(p?.card_suit || p?.suit);
+        const flow = String(p?.play_code || "").split("§")[7] || "";
+        const action = String(p?.play_code || "").split("§")[5] || "";
+        const status = normalizeRank(p?.play_status || p?.status);
 
         if (!["A", "K"].includes(rank)) return false;
+        if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
 
-        // 👇 propiedad por "nombre en el libro"
+        // excluir ACL / permisos iniciales
+        if (String(flow).toLowerCase() === "acl") return false;
+        if (String(action).toLowerCase() === "puedejugar") return false;
+
+        // propietario = primero target, si no existe creador
         const ownerId =
-          Number(p.target_user_id || 0) ||
-          Number(p.created_by_user_id || 0);
+          Number(p?.target_user_id || 0) ||
+          Number(p?.created_by_user_id || 0);
 
-        return ownerId === Number(currentUserId);
+        if (ownerId !== Number(currentUserId)) return false;
+
+        if (ownerId !== Number(currentUserId)) return false;
+
+        // K reales activas / en curso
+        if (rank === "K") {
+          return ["ACTIVE", "PENDING", "SENT", "APPROVED"].includes(status);
+        }
+
+        // A reales fundacionales
+        if (rank === "A") {
+          return String(flow).toLowerCase() === "foundation";
+        }
+
+        return false;
       })
       .map((p) => ({
         card_rank: p.card_rank || p.rank,
