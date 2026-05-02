@@ -3265,7 +3265,7 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
         AND pr.user_id = $1
       WHERE
 
-(
+((
   -- =========================
   -- Q♠
   -- =========================
@@ -3388,6 +3388,7 @@ OR
     )
   )
 )
+)  
 AND pr.id IS NULL
       ORDER BY p.created_at DESC
       `,
