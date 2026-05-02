@@ -2393,6 +2393,21 @@ RETURNING *
       currentStatus !== 'SENT' &&
       nextStatus === 'SENT';
 
+    const isSendingKNow =
+      currentRank === 'K' &&
+      currentStatus !== 'SENT' &&
+      nextStatus === 'SENT';
+
+    const isRoutingKToAceClubNow =
+      currentRank === 'K' &&
+      currentStatus !== 'PENDING' &&
+      nextStatus === 'PENDING';
+
+    const isSendingANow =
+      currentRank === 'A' &&
+      currentStatus !== 'SENT' &&
+      nextStatus === 'SENT';
+
     if (isRoutingKToAceClubNow) {
       const aceClubUserId = Number(updatedPlay.target_user_id || 0);
 
@@ -2409,21 +2424,6 @@ RETURNING *
         aceClubUserId
       ]);
     }
-
-    const isSendingKNow =
-      currentRank === 'K' &&
-      currentStatus !== 'SENT' &&
-      nextStatus === 'SENT';
-
-    const isRoutingKToAceClubNow =
-      currentRank === 'K' &&
-      currentStatus !== 'PENDING' &&
-      nextStatus === 'PENDING';
-
-    const isSendingANow =
-      currentRank === 'A' &&
-      currentStatus !== 'SENT' &&
-      nextStatus === 'SENT';
 
     if (isSendingKNow) {
       const invitedUserId = Number(updatedPlay.target_user_id || 0);
