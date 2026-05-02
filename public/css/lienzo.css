@@ -1163,3 +1163,27 @@ body {
   line-height: 1.25;
   align-self: center;
 }
+
+/* ===== Tribunas dinámicas en Colombes ===== */
+
+.lienzo-tribunes--colombes {
+  display: flex;
+  height: 100%;
+  gap: 0;
+}
+
+.lienzo-tribunes--colombes > .lienzo-panel {
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: 0;
+}
+
+.lienzo-tribunes--colombes > .lienzo-panel:first-child {
+  border-top-left-radius: 14px;
+  border-bottom-left-radius: 14px;
+}
+
+.lienzo-tribunes--colombes > .lienzo-panel:last-child {
+  border-top-right-radius: 14px;
+  border-bottom-right-radius: 14px;
+}
