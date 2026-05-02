@@ -20,26 +20,50 @@
     ).toUpperCase();
   }
 
-  function getOwnerNickname(play) {
+function getFinalTargetUserIdFromPlayCode(playCode) {
+  const flow = String(playCode || "").split("§")[7] || "";
+  const match = flow.match(/finalTarget:U:(\d+)/i);
+  return match ? Number(match[1]) : 0;
+}
+
+function getOwnerNickname(play) {
+  const finalTargetUserId = getFinalTargetUserIdFromPlayCode(play?.play_code);
+
+  if (finalTargetUserId) {
     return (
-      play?.targetNickname ||
-      play?.target_user_nickname ||
-      play?.createdByNickname ||
-      play?.created_by_nickname ||
-      "—"
+      play?.final_target_nickname ||
+      `Usuario ${finalTargetUserId}`
     );
   }
 
-  function getOwnerPhoto(play) {
+  return (
+    play?.targetNickname ||
+    play?.target_user_nickname ||
+    play?.createdByNickname ||
+    play?.created_by_nickname ||
+    "—"
+  );
+}
+
+function getOwnerPhoto(play) {
+  const finalTargetUserId = getFinalTargetUserIdFromPlayCode(play?.play_code);
+
+  if (finalTargetUserId) {
     return (
-      play?.targetProfilePhotoUrl ||
-      play?.target_user_profile_photo_url ||
-      play?.target_profile_photo_url ||
-      play?.createdByProfilePhotoUrl ||
-      play?.created_by_profile_photo_url ||
+      play?.final_target_profile_photo_url ||
       "/assets/icons/singeta120.gif"
     );
   }
+
+  return (
+    play?.targetProfilePhotoUrl ||
+    play?.target_user_profile_photo_url ||
+    play?.target_profile_photo_url ||
+    play?.createdByProfilePhotoUrl ||
+    play?.created_by_profile_photo_url ||
+    "/assets/icons/singeta120.gif"
+  );
+}
 
   function getSuitName(suit) {
     switch (String(suit || "").toUpperCase()) {
@@ -194,6 +218,7 @@
     if (status === "QUIT") return "Renunciada";
     if (status === "FIRED") return "Despedido";
     if (status === "CANCELLED") return "Cancelada";
+    if (status === "PENDING") return "Pendiente de validación";
 
     return "Pendiente";
   }
