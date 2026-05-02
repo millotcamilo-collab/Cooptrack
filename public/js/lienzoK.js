@@ -28,6 +28,41 @@
         return window.__currentUser || window.__currentState?.currentUser || null;
     }
 
+function getFinalTargetUserIdFromPlayCode(playCode) {
+    const parsed = parsePlayCode(playCode);
+    const flow = String(parsed?.flow || "");
+
+    const match = flow.match(/finalTarget:U:(\d+)/i);
+    return match ? Number(match[1]) : 0;
+}
+
+function findUserById(userId) {
+    const id = Number(userId || 0);
+    if (!id) return null;
+
+    const plays = getAllPlays();
+
+    for (const play of plays) {
+        if (Number(play?.created_by_user_id || 0) === id) {
+            return {
+                id,
+                nickname: play.created_by_nickname || "Usuario",
+                profile_photo_url: play.created_by_profile_photo_url || "/assets/icons/singeta120.gif"
+            };
+        }
+
+        if (Number(play?.target_user_id || 0) === id) {
+            return {
+                id,
+                nickname: play.target_user_nickname || "Usuario",
+                profile_photo_url: play.target_user_profile_photo_url || "/assets/icons/singeta120.gif"
+            };
+        }
+    }
+
+    return null;
+}
+
     function parsePlayCode(code) {
         const parts = String(code || "").split("§");
 
@@ -269,14 +304,30 @@
         };
     }
 
-    function resolveTargetUser(play) {
+function resolveTargetUser(play) {
+    const finalTargetUserId = getFinalTargetUserIdFromPlayCode(play?.play_code);
+
+    if (finalTargetUserId) {
+        const finalTargetUser = findUserById(finalTargetUserId);
+
+        if (finalTargetUser) {
+            return finalTargetUser;
+        }
+
         return {
-            id: Number(play?.target_user_id || 0),
-            nickname: play?.target_user_nickname || "Destinatario",
-            profile_photo_url:
-                play?.target_user_profile_photo_url || "/assets/icons/singeta120.gif"
+            id: finalTargetUserId,
+            nickname: `Usuario ${finalTargetUserId}`,
+            profile_photo_url: "/assets/icons/singeta120.gif"
         };
     }
+
+    return {
+        id: Number(play?.target_user_id || 0),
+        nickname: play?.target_user_nickname || "Destinatario",
+        profile_photo_url:
+            play?.target_user_profile_photo_url || "/assets/icons/singeta120.gif"
+    };
+}
 
     function getPlayStatus(play) {
         return String(play?.play_status || "").trim().toUpperCase();

@@ -256,6 +256,7 @@
 
       const isActiveK =
         status === "ACTIVE" ||
+        status === "PENDING" ||
         status === "SENT" ||
         status === "APPROVED";
 
