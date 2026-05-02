@@ -496,54 +496,34 @@
     return Array.isArray(state.plays) ? state.plays : [];
   }
 
-  function deriveOwnedCorporateCards(plays, currentUserId) {
-    if (!Array.isArray(plays) || !currentUserId) return [];
+  function deriveOwnedCorporateCards(plays, userId) {
+  if (!Array.isArray(plays) || !userId) return [];
 
-    return plays
-      .filter((p, index) => {
-        // no contar las primeras 10 líneas del libro
-        if (index < 10) return false;
+  return plays
+    .filter((p, index) => {
+      if (index < 10) return false;
 
-        const rank = normalizeRank(p?.card_rank || p?.rank);
-        const suit = normalizeSuit(p?.card_suit || p?.suit);
-        const flow = String(p?.play_code || "").split("§")[7] || "";
-        const action = String(p?.play_code || "").split("§")[5] || "";
-        const status = normalizeRank(p?.play_status || p?.status);
+      const rank = normalizeRank(p?.card_rank || p?.rank);
+      const suit = normalizeSuit(p?.card_suit || p?.suit);
+      const status = normalizeRank(p?.play_status || p?.status);
 
-        if (!["A", "K"].includes(rank)) return false;
-        if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+      if (!["A", "K"].includes(rank)) return false;
+      if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+      if (["QUIT", "FIRED", "REJECTED", "CANCELLED"].includes(status)) return false;
 
-        // excluir ACL / permisos iniciales
-        if (String(flow).toLowerCase() === "acl") return false;
-        if (String(action).toLowerCase() === "puedejugar") return false;
+      const ownerId =
+        Number(p?.target_user_id || 0) ||
+        Number(p?.created_by_user_id || 0);
 
-        // propietario = primero target, si no existe creador
-        const ownerId =
-          Number(p?.target_user_id || 0) ||
-          Number(p?.created_by_user_id || 0);
-
-        if (ownerId !== Number(currentUserId)) return false;
-
-        if (ownerId !== Number(currentUserId)) return false;
-
-        // K reales activas / en curso
-        if (rank === "K") {
-          return ["ACTIVE", "PENDING", "SENT", "APPROVED"].includes(status);
-        }
-
-        // A reales fundacionales
-        if (rank === "A") {
-          return String(flow).toLowerCase() === "foundation";
-        }
-
-        return false;
-      })
-      .map((p) => ({
-        card_rank: p.card_rank || p.rank,
-        card_suit: p.card_suit || p.suit,
-        id: p.id
-      }));
-  }
+      return ownerId === Number(userId);
+    })
+    .map((p) => ({
+      card_rank: p.card_rank || p.rank,
+      card_suit: p.card_suit || p.suit,
+      id: p.id
+    }))
+    .sort(compareCorporateCards);
+}
 
   function getCurrentDeck() {
     const state = getCurrentState();
