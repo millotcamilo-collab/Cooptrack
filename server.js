@@ -1542,16 +1542,19 @@ async function getMazoStateHandler(req, res) {
     const result = await pool.query(
       `
       SELECT
-        p.*,
-        creator.nickname AS created_by_nickname,
-        creator.profile_photo_url AS created_by_profile_photo_url,
-        target.nickname AS target_user_nickname,
-        target.profile_photo_url AS target_user_profile_photo_url,
-        EXISTS (
-          SELECT 1
-          FROM play_recurrences pr
-          WHERE pr.play_id = p.id
-        ) AS has_recurrence
+  p.*,
+  creator.nickname AS created_by_nickname,
+  creator.profile_photo_url AS created_by_profile_photo_url,
+  target.nickname AS target_user_nickname,
+  target.profile_photo_url AS target_user_profile_photo_url,
+  final_target.id AS final_target_user_id,
+  final_target.nickname AS final_target_nickname,
+  final_target.profile_photo_url AS final_target_profile_photo_url,
+  EXISTS (
+    SELECT 1
+    FROM play_recurrences pr
+    WHERE pr.play_id = p.id
+  ) AS has_recurrence
       FROM plays p
       INNER JOIN deck_members dm
         ON dm.deck_id = p.deck_id
@@ -1559,6 +1562,11 @@ async function getMazoStateHandler(req, res) {
         ON creator.id = p.created_by_user_id
       LEFT JOIN users target
         ON target.id = p.target_user_id
+      LEFT JOIN users final_target
+         ON final_target.id = NULLIF(
+           substring(p.play_code from 'finalTarget:U:([0-9]+)'),
+            ''
+         )::int  
       WHERE p.deck_id = $1
         AND dm.user_id = $2
         AND ${visibilityWhere}
