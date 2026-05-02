@@ -28,40 +28,40 @@
         return window.__currentUser || window.__currentState?.currentUser || null;
     }
 
-function getFinalTargetUserIdFromPlayCode(playCode) {
-    const parsed = parsePlayCode(playCode);
-    const flow = String(parsed?.flow || "");
+    function getFinalTargetUserIdFromPlayCode(playCode) {
+        const parsed = parsePlayCode(playCode);
+        const flow = String(parsed?.flow || "");
 
-    const match = flow.match(/finalTarget:U:(\d+)/i);
-    return match ? Number(match[1]) : 0;
-}
-
-function findUserById(userId) {
-    const id = Number(userId || 0);
-    if (!id) return null;
-
-    const plays = getAllPlays();
-
-    for (const play of plays) {
-        if (Number(play?.created_by_user_id || 0) === id) {
-            return {
-                id,
-                nickname: play.created_by_nickname || "Usuario",
-                profile_photo_url: play.created_by_profile_photo_url || "/assets/icons/singeta120.gif"
-            };
-        }
-
-        if (Number(play?.target_user_id || 0) === id) {
-            return {
-                id,
-                nickname: play.target_user_nickname || "Usuario",
-                profile_photo_url: play.target_user_profile_photo_url || "/assets/icons/singeta120.gif"
-            };
-        }
+        const match = flow.match(/finalTarget:U:(\d+)/i);
+        return match ? Number(match[1]) : 0;
     }
 
-    return null;
-}
+    function findUserById(userId) {
+        const id = Number(userId || 0);
+        if (!id) return null;
+
+        const plays = getAllPlays();
+
+        for (const play of plays) {
+            if (Number(play?.created_by_user_id || 0) === id) {
+                return {
+                    id,
+                    nickname: play.created_by_nickname || "Usuario",
+                    profile_photo_url: play.created_by_profile_photo_url || "/assets/icons/singeta120.gif"
+                };
+            }
+
+            if (Number(play?.target_user_id || 0) === id) {
+                return {
+                    id,
+                    nickname: play.target_user_nickname || "Usuario",
+                    profile_photo_url: play.target_user_profile_photo_url || "/assets/icons/singeta120.gif"
+                };
+            }
+        }
+
+        return null;
+    }
 
     function parsePlayCode(code) {
         const parts = String(code || "").split("§");
@@ -304,30 +304,27 @@ function findUserById(userId) {
         };
     }
 
-function resolveTargetUser(play) {
-    const finalTargetUserId = getFinalTargetUserIdFromPlayCode(play?.play_code);
+    function resolveTargetUser(play) {
+        const finalTargetUserId = getFinalTargetUserIdFromPlayCode(play?.play_code);
 
-    if (finalTargetUserId) {
-        const finalTargetUser = findUserById(finalTargetUserId);
-
-        if (finalTargetUser) {
-            return finalTargetUser;
+        // 👉 Caso especial: K en validación por A♣
+        if (finalTargetUserId) {
+            return {
+                id: finalTargetUserId,
+                nickname: play?.final_target_nickname || "Destinatario",
+                profile_photo_url:
+                    play?.final_target_profile_photo_url || "/assets/icons/singeta120.gif"
+            };
         }
 
+        // 👉 Caso normal
         return {
-            id: finalTargetUserId,
-            nickname: `Usuario ${finalTargetUserId}`,
-            profile_photo_url: "/assets/icons/singeta120.gif"
+            id: Number(play?.target_user_id || 0),
+            nickname: play?.target_user_nickname || "Destinatario",
+            profile_photo_url:
+                play?.target_user_profile_photo_url || "/assets/icons/singeta120.gif"
         };
     }
-
-    return {
-        id: Number(play?.target_user_id || 0),
-        nickname: play?.target_user_nickname || "Destinatario",
-        profile_photo_url:
-            play?.target_user_profile_photo_url || "/assets/icons/singeta120.gif"
-    };
-}
 
     function getPlayStatus(play) {
         return String(play?.play_status || "").trim().toUpperCase();
@@ -544,6 +541,32 @@ function resolveTargetUser(play) {
   `;
     }
 
+    async function validatePlay(playId) {
+        const token = localStorage.getItem("cooptrackToken");
+
+        if (!token) {
+            alert("No estás logueado");
+            return { ok: false };
+        }
+
+        const response = await fetch(`/plays/${playId}/validate`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok || data?.ok === false) {
+            alert(data?.error || "No se pudo validar la jugada");
+            return { ok: false, data };
+        }
+
+        return { ok: true, data };
+    }
+
     async function patchPlay(playId, payload) {
         const token = localStorage.getItem("cooptrackToken");
 
@@ -671,6 +694,7 @@ function resolveTargetUser(play) {
                     payload = {
                         play_status: "PENDING",
                         target_user_id: aceClubOwnerId,
+                        play_code: buildPendingAceClubPlayCode(play)
                     };
                 }
 
@@ -705,9 +729,13 @@ function resolveTargetUser(play) {
 
         if (approveBtn) {
             approveBtn.addEventListener("click", async () => {
-                const result = await patchPlay(play.id, {
-                    play_status: "APPROVED"
-                });
+                const status = getPlayStatus(play);
+                const hasFinalTarget = !!getFinalTargetUserIdFromPlayCode(play?.play_code);
+
+                const result =
+                    status === "PENDING" && hasFinalTarget
+                        ? await validatePlay(play.id)
+                        : await patchPlay(play.id, { play_status: "APPROVED" });
 
                 if (result.ok) {
                     const deckId =

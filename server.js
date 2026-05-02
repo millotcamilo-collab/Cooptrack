@@ -122,6 +122,49 @@ function buildReadersVisibilityWhereClause({
 // HELPERS DE MAZO
 // =====================================================
 
+async function createPlayValidation(client, {
+  playId,
+  validatorUserId,
+  validatorRole,
+  validationOrder = 1
+}) {
+  if (!playId || !validatorUserId || !validatorRole) return;
+
+  await client.query(
+    `
+    INSERT INTO play_validations (
+      play_id,
+      validator_user_id,
+      validator_role,
+      validation_order,
+      validation_status
+    )
+    VALUES ($1, $2, $3, $4, 'PENDING')
+    ON CONFLICT (play_id, validator_role)
+    DO NOTHING
+    `,
+    [playId, validatorUserId, validatorRole, validationOrder]
+  );
+}
+
+async function getAceOwnerUserId(client, deckId, suit) {
+  const result = await client.query(
+    `
+    SELECT COALESCE(target_user_id, created_by_user_id) AS owner_user_id
+    FROM plays
+    WHERE deck_id = $1
+      AND card_rank = 'A'
+      AND card_suit = $2
+      AND split_part(play_code, '§', 8) = 'foundation'
+    ORDER BY id ASC
+    LIMIT 1
+    `,
+    [deckId, suit]
+  );
+
+  return Number(result.rows[0]?.owner_user_id || 0);
+}
+
 function getFinalTargetFromPlayCode(playCode) {
   const parsed = parsePlayCodeRaw(playCode);
   const chunks = parseFlowChunks(parsed.flow);
@@ -2403,11 +2446,6 @@ RETURNING *
       currentStatus !== 'PENDING' &&
       nextStatus === 'PENDING';
 
-    const isSendingANow =
-      currentRank === 'A' &&
-      currentStatus !== 'SENT' &&
-      nextStatus === 'SENT';
-
     if (isRoutingKToAceClubNow) {
       const aceClubUserId = Number(updatedPlay.target_user_id || 0);
 
@@ -2419,11 +2457,27 @@ RETURNING *
         });
       }
 
+      // 👉 Readers
       await addReadersToPlay(client, updatedPlay.id, [
         updatedPlay.created_by_user_id,
         aceClubUserId
       ]);
+
+      // 👉 VALIDACIÓN (ACÁ va)
+      await createPlayValidation(client, {
+        playId: updatedPlay.id,
+        validatorUserId: aceClubUserId,
+        validatorRole: 'ACE_CLUB',
+        validationOrder: 1
+      });
     }
+
+
+    const isSendingANow =
+      currentRank === 'A' &&
+      currentStatus !== 'SENT' &&
+      nextStatus === 'SENT';
+
 
     if (isSendingKNow) {
       const invitedUserId = Number(updatedPlay.target_user_id || 0);
@@ -3251,6 +3305,159 @@ app.get('/mazos/:mazoId/plays', requireAuth, async (req, res) => {
 app.get('/decks/:deckId/plays', requireAuth, async (req, res) => {
   req.params.mazoId = req.params.deckId;
   return app._router.handle(req, res, () => { });
+});
+
+app.post('/plays/:id/validate', requireAuth, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const playId = Number(req.params.id);
+    const userId = Number(req.auth.userId);
+
+    if (!playId) {
+      return res.status(400).json({
+        ok: false,
+        error: 'playId inválido'
+      });
+    }
+
+    await client.query('BEGIN');
+
+    const playResult = await client.query(
+      `
+      SELECT *
+      FROM plays
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [playId]
+    );
+
+    if (!playResult.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        ok: false,
+        error: 'Jugada no encontrada'
+      });
+    }
+
+    const play = playResult.rows[0];
+
+    const validationResult = await client.query(
+      `
+      SELECT *
+      FROM play_validations
+      WHERE play_id = $1
+        AND validator_user_id = $2
+        AND validation_status = 'PENDING'
+      ORDER BY validation_order ASC, id ASC
+      LIMIT 1
+      `,
+      [playId, userId]
+    );
+
+    if (!validationResult.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({
+        ok: false,
+        error: 'No tenés validaciones pendientes para esta jugada'
+      });
+    }
+
+    const validation = validationResult.rows[0];
+
+    await client.query(
+      `
+      UPDATE play_validations
+      SET validation_status = 'APPROVED',
+          decided_at = NOW()
+      WHERE id = $1
+      `,
+      [validation.id]
+    );
+
+    const remainingResult = await client.query(
+      `
+      SELECT 1
+      FROM play_validations
+      WHERE play_id = $1
+        AND validation_status = 'PENDING'
+      LIMIT 1
+      `,
+      [playId]
+    );
+
+    let updatedPlay = play;
+
+    if (!remainingResult.rows.length) {
+      const finalTargetUserId = getFinalTargetFromPlayCode(play.play_code);
+
+      if (!finalTargetUserId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'No se encontró destinatario final'
+        });
+      }
+
+      const updatePlayResult = await client.query(
+        `
+        UPDATE plays
+        SET play_status = 'SENT',
+            target_user_id = $1,
+            updated_at = NOW()
+        WHERE id = $2
+        RETURNING *
+        `,
+        [finalTargetUserId, playId]
+      );
+
+      updatedPlay = updatePlayResult.rows[0];
+
+      await expandReadersForKSend(client, updatedPlay);
+
+      await client.query(
+        `
+        INSERT INTO deck_members (deck_id, user_id)
+        VALUES ($1, $2)
+        ON CONFLICT DO NOTHING
+        `,
+        [updatedPlay.deck_id, finalTargetUserId]
+      );
+
+      await client.query(
+        `
+        DELETE FROM ex_deck_members
+        WHERE deck_id = $1
+          AND user_id = $2
+        `,
+        [updatedPlay.deck_id, finalTargetUserId]
+      );
+    }
+
+    await client.query('COMMIT');
+
+    return res.json({
+      ok: true,
+      play: updatedPlay,
+      validation
+    });
+
+  } catch (error) {
+    try {
+      await client.query('ROLLBACK');
+    } catch (_) {}
+
+    console.error('Error en POST /plays/:id/validate', error);
+
+    return res.status(500).json({
+      ok: false,
+      error: 'No se pudo validar la jugada'
+    });
+
+  } finally {
+    client.release();
+  }
 });
 
 app.get('/plays/pending', requireAuth, async (req, res) => {
