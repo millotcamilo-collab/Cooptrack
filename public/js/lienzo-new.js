@@ -71,7 +71,7 @@
     const validatorTribunes = getValidatorTribunesForDraft(draft)
       .filter((validator) => Number(validator.userId) !== Number(currentUser?.id || 0))
       .map((validator) => {
-        const cards = deriveOwnedCorporateCards(getAllPlays(), validator.userId);
+        const cards = getValidatorRoleCards(validator);
         return renderUserTribune(validator, cards);
       })
       .join("");
