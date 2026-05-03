@@ -281,11 +281,9 @@
     const parentRank = normalizeRank(parentPlay?.card_rank || parentPlay?.rank);
     const parentSuit = normalizeSuit(parentPlay?.card_suit || parentPlay?.suit);
 
-    // Caso especial: Q♠
     if (activeRank === "Q" && activeSuit === "SPADE") {
       const stackCards = [];
 
-      // 1) A♣ si lo tiene
       const clubAce = ownedCards.find((card) => {
         return (
           normalizeRank(card?.card_rank) === "A" &&
@@ -301,7 +299,6 @@
         });
       }
 
-      // 2) J♠ madre
       if (parentPlay && parentRank === "J" && parentSuit === "SPADE") {
         stackCards.push({
           card_rank: parentPlay.card_rank || parentPlay.rank,
@@ -319,22 +316,8 @@
       };
     }
 
-    // Caso general: deja detrás las corporativas menos la activa
-    const backgroundCards = ownedCards.filter((card) => {
-      const rank = normalizeRank(card?.card_rank);
-      const suit = normalizeSuit(card?.card_suit);
-
-      return {
-        backgroundCards: ownedCards,
-        activeCard: {
-          card_rank: activeRank,
-          card_suit: activeSuit
-        }
-      };
-    });
-
     return {
-      backgroundCards,
+      backgroundCards: ownedCards,
       activeCard: {
         card_rank: activeRank,
         card_suit: activeSuit
