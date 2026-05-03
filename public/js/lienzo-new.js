@@ -282,22 +282,7 @@
     const parentSuit = normalizeSuit(parentPlay?.card_suit || parentPlay?.suit);
 
     if (activeRank === "Q" && activeSuit === "SPADE") {
-      const stackCards = [];
-
-      const clubAce = ownedCards.find((card) => {
-        return (
-          normalizeRank(card?.card_rank) === "A" &&
-          normalizeSuit(card?.card_suit) === "CLUB"
-        );
-      });
-
-      if (clubAce) {
-        stackCards.push({
-          card_rank: clubAce.card_rank,
-          card_suit: clubAce.card_suit,
-          id: clubAce.id
-        });
-      }
+      const stackCards = [...ownedCards];
 
       if (parentPlay && parentRank === "J" && parentSuit === "SPADE") {
         stackCards.push({
@@ -315,7 +300,6 @@
         }
       };
     }
-
     return {
       backgroundCards: ownedCards,
       activeCard: {
@@ -509,7 +493,20 @@
         if (flow === "acl") return false;
         if (action === "puedejugar") return false;
 
-        const ownerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
+        let ownerId = 0;
+
+        if (rank === "A") {
+          ownerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
+        }
+
+        if (rank === "K") {
+          if (status === "APPROVED") {
+            ownerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
+          } else {
+            ownerId = Number(p?.created_by_user_id || 0);
+          }
+        }
+
         if (ownerId !== Number(userId)) return false;
 
         if (rank === "A") {
