@@ -324,7 +324,13 @@
       const rank = normalizeRank(card?.card_rank);
       const suit = normalizeSuit(card?.card_suit);
 
-      return !(rank === activeRank && suit === activeSuit);
+      return {
+        backgroundCards: ownedCards,
+        activeCard: {
+          card_rank: activeRank,
+          card_suit: activeSuit
+        }
+      };
     });
 
     return {
@@ -499,44 +505,55 @@
   function deriveOwnedCorporateCards(plays, userId) {
     if (!Array.isArray(plays) || !userId) return [];
 
-    return plays
+    const activeStatuses = ["ACTIVE", "APPROVED", "SENT", "PENDING"];
+    const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
+
+    const cards = plays
       .filter((p, index) => {
         if (index < 10) return false;
 
-        const rank = normalizeRank(p?.card_rank || p?.rank);
-        const suit = normalizeSuit(p?.card_suit || p?.suit);
+        const parts = String(p?.play_code || "").split("§");
+        const rank = normalizeRank(p?.card_rank || p?.rank || parts[3]);
+        const suit = normalizeSuit(p?.card_suit || p?.suit || parts[4]);
+        const action = String(parts[5] || "").trim().toLowerCase();
+        const flow = String(parts[7] || "").trim().toLowerCase();
         const status = normalizeRank(p?.play_status || p?.status);
-        const flow = String(p?.play_code || "").split("§")[7] || "";
-        const action = String(p?.play_code || "").split("§")[5] || "";
 
         if (!["A", "K"].includes(rank)) return false;
         if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
-        if (["QUIT", "FIRED", "REJECTED", "CANCELLED"].includes(status)) return false;
 
-        if (flow.toLowerCase() === "acl") return false;
-        if (action.toLowerCase() === "puedejugar") return false;
+        if (finalStatuses.includes(status)) return false;
+        if (flow === "acl") return false;
+        if (action === "puedejugar") return false;
 
-        const ownerId =
-          Number(p?.target_user_id || 0) ||
-          Number(p?.created_by_user_id || 0);
-
+        const ownerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
         if (ownerId !== Number(userId)) return false;
 
-        if (rank === "K") {
-          return ["ACTIVE", "SENT", "APPROVED"].includes(status);
+        if (rank === "A") {
+          return flow === "foundation";
         }
 
-        if (rank === "A") {
-          return flow.toLowerCase() === "foundation";
+        if (rank === "K") {
+          return activeStatuses.includes(status);
         }
 
         return false;
       })
       .map((p) => ({
-        card_rank: p.card_rank || p.rank,
-        card_suit: p.card_suit || p.suit,
-        id: p.id
-      }))
+        id: p.id,
+        card_rank: normalizeRank(p.card_rank || p.rank),
+        card_suit: normalizeSuit(p.card_suit || p.suit)
+      }));
+
+    const seen = new Set();
+
+    return cards
+      .filter((card) => {
+        const key = `${card.card_rank}_${card.card_suit}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
       .sort(compareCorporateCards);
   }
 
