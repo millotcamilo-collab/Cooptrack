@@ -47,11 +47,20 @@
     const status = normalizeText(play?.play_status || play?.status);
     const rank = normalizeText(play?.card_rank || play?.rank);
 
+    const validatorUserId = Number(play?.validator_user_id || 0);
+    const isValidator = validatorUserId === Number(currentUserId);
+
+    if (isValidator && status === "PENDING") {
+      return "ACTION_REQUIRED";
+    }
+
     const sourceUserId = Number(play?.created_by_user_id || 0);
     const targetUserId = Number(play?.target_user_id || 0);
 
     const isSource = sourceUserId === Number(currentUserId);
     const isTarget = targetUserId === Number(currentUserId);
+
+    // sigue igual desde acá...
 
     // 1) Pendiente real de acción del invitado/destinatario
     if (isTarget && (status === "SENT" || status === "PENDING")) {
@@ -162,7 +171,7 @@
 
       const candidates = plays
         .filter(isCorporateIncomingPlay)
-        
+
         .filter((play) => {
           const playId = Number(play?.id || 0);
           return !!playId;
@@ -439,36 +448,36 @@
   }
 
   async function acknowledgePlay(playId) {
-  const token = localStorage.getItem("cooptrackToken");
-  if (!token || !playId) return false;
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token || !playId) return false;
 
-  sessionStorage.setItem(`cooptrack_seen_play_${playId}`, "1");
+    sessionStorage.setItem(`cooptrack_seen_play_${playId}`, "1");
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/plays/${playId}/read`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        reason: "READ_ONLY_NOTIFICATION"
-      })
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/plays/${playId}/read`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          reason: "READ_ONLY_NOTIFICATION"
+        })
+      });
 
-    const data = await response.json().catch(() => null);
+      const data = await response.json().catch(() => null);
 
-    if (!response.ok || !data?.ok) {
-      console.error("No se pudo marcar como leída:", data || response.status);
+      if (!response.ok || !data?.ok) {
+        console.error("No se pudo marcar como leída:", data || response.status);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error marcando notificación como leída:", error);
       return false;
     }
-
-    return true;
-  } catch (error) {
-    console.error("Error marcando notificación como leída:", error);
-    return false;
   }
-}
 
   async function renderTopbar() {
     const user = await getLoggedUser();

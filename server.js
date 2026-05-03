@@ -2409,7 +2409,29 @@ RETURNING *
       ]
     );
 
-    const updatedPlay = updateResult.rows[0];
+const updatedPlay = updateResult.rows[0];
+
+if (
+  currentRank === 'Q' &&
+  currentSuit === 'SPADE' &&
+  nextStatus === 'PENDING'
+) {
+  const aceClubOwnerUserId = await getAceClubOwnerUserId(
+    client,
+    updatedPlay.deck_id
+  );
+
+  if (aceClubOwnerUserId) {
+    await createPlayValidation(client, {
+      playId: updatedPlay.id,
+      validatorUserId: aceClubOwnerUserId,
+      validatorRole: 'A_CLUB',
+      validationOrder: 1
+    });
+
+    await addReadersToPlay(client, updatedPlay.id, [aceClubOwnerUserId]);
+  }
+}
 
     const previousSettlement = getSettlementInfoFromPlayCode(current.play_code);
     const nextSettlement = getSettlementInfoFromPlayCode(updatedPlay.play_code);
@@ -3489,7 +3511,10 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
         p.updated_at,
         parent.play_text AS parent_play_text,
         author.nickname AS author_nickname,
-        deck.name AS deck_name
+        deck.name AS deck_name,
+        pv.validator_user_id,
+        pv.validator_role,
+        pv.validation_status
       FROM plays p
       LEFT JOIN plays parent
         ON parent.id = p.parent_play_id
@@ -3500,9 +3525,12 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
       LEFT JOIN play_reads pr
         ON pr.play_id = p.id
         AND pr.user_id = $1
+      LEFT JOIN play_validations pv
+        ON pv.play_id = p.id
+        AND pv.validator_user_id = $1
+        AND pv.validation_status = 'PENDING'
       WHERE
 
-((
   -- =========================
   -- Q♠
   -- =========================
@@ -3534,6 +3562,18 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
         OR p.play_code LIKE '%settlement:COMPLAINED%'
       )
     )
+
+OR
+
+-- Validación pendiente para A♣
+EXISTS (
+  SELECT 1
+  FROM play_validations pv
+  WHERE pv.play_id = p.id
+    AND pv.validator_user_id = $1
+    AND pv.validation_status = 'PENDING'
+)
+
   )
 )
 
