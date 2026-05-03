@@ -254,7 +254,7 @@
                 const rank = normalizeRank(p.card_rank || p.rank);
                 const suit = normalizeSuit(p.card_suit || p.suit);
 
-                if (rank !== "A") return false;
+                if (!["A", "K"].includes(rank)) return false;
                 if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
 
                 const ownerId =
@@ -1396,6 +1396,28 @@
         };
     }
 
+    function currentUserHasCorporateCard(rank, suit) {
+        const cards = getOwnedCorporateCardsForCurrentUser();
+
+        return cards.some((card) => {
+            return (
+                normalizeRank(card?.card_rank) === normalizeRank(rank) &&
+                normalizeSuit(card?.card_suit) === normalizeSuit(suit)
+            );
+        });
+    }
+
+    function currentUserRequiresValidationForQSpade() {
+        const hasAceClub = currentUserHasCorporateCard("A", "CLUB");
+        const hasAnyK = ["HEART", "SPADE", "DIAMOND", "CLUB"]
+            .some(s => currentUserHasCorporateCard("K", s));
+
+        if (hasAceClub) return false; // manda directo
+        if (hasAnyK) return true;     // necesita validación
+
+        return true; // fallback (sin permisos fuertes)
+    }
+
     async function handleSendPlay(play) {
         try {
             const playId = Number(play?.id || 0);
@@ -1411,6 +1433,10 @@
                 return;
             }
 
+            const nextStatus = currentUserRequiresValidationForQSpade()
+                ? "PENDING"
+                : "SENT";
+
             const response = await fetch(`/plays/${playId}`, {
                 method: "PATCH",
                 headers: {
@@ -1418,7 +1444,7 @@
                     Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    play_status: "SENT"
+                    play_status: nextStatus
                 })
             });
 
@@ -1430,7 +1456,11 @@
                 return;
             }
 
-            alert("Invitación enviada");
+            alert(
+                nextStatus === "PENDING"
+                    ? "Solicitud de validación enviada"
+                    : "Invitación enviada"
+            );
 
             const deckId =
                 Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
