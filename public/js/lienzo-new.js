@@ -44,6 +44,8 @@
     };
   }
 
+
+
   function getValidatorTribunesForDraft(draft) {
     const rank = normalizeRank(draft?.card_rank);
     const suit = normalizeSuit(draft?.card_suit);
@@ -62,6 +64,28 @@
 
     return validators.filter(Boolean);
   }
+
+function getValidatorRoleCards(validator) {
+  const role = String(validator?.role || "").trim().toUpperCase();
+
+  if (role === "A_CLUB") {
+    return [{ card_rank: "A", card_suit: "CLUB" }];
+  }
+
+  if (role === "A_DIAMOND") {
+    return [{ card_rank: "A", card_suit: "DIAMOND" }];
+  }
+
+  if (role === "A_SPADE") {
+    return [{ card_rank: "A", card_suit: "SPADE" }];
+  }
+
+  if (role === "A_HEART") {
+    return [{ card_rank: "A", card_suit: "HEART" }];
+  }
+
+  return [];
+}
 
   function renderColombesTribunes(draft) {
     const currentUser = getCurrentUser();
