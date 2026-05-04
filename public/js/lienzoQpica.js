@@ -1571,9 +1571,11 @@
                 return;
             }
 
-            const nextStatus = currentUserRequiresValidationForQSpade()
-                ? "PENDING"
-                : "SENT";
+            const nextStatus = isCurrentUserValidator(play)
+                ? "SENT"
+                : currentUserRequiresValidationForQSpade()
+                    ? "PENDING"
+                    : "SENT";
 
             const response = await fetch(`/plays/${playId}`, {
                 method: "PATCH",
@@ -1830,6 +1832,14 @@
         const acceptBtn = document.getElementById("lienzo-accept-btn");
         const rejectBtn = document.getElementById("lienzo-reject-btn");
         const cancelBtn = document.getElementById("lienzo-cancel-btn");
+
+        const validatorSendBtn = document.getElementById("lienzo-validator-send-btn");
+
+        if (validatorSendBtn) {
+            validatorSendBtn.addEventListener("click", () => {
+                handleSendPlay(play);
+            });
+        }
 
         if (saveBtn) {
             saveBtn.addEventListener("click", () => {
