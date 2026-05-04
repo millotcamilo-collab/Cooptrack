@@ -2409,29 +2409,29 @@ RETURNING *
       ]
     );
 
-const updatedPlay = updateResult.rows[0];
+    const updatedPlay = updateResult.rows[0];
 
-if (
-  currentRank === 'Q' &&
-  currentSuit === 'SPADE' &&
-  nextStatus === 'PENDING'
-) {
-  const aceClubOwnerUserId = await getAceClubOwnerUserId(
-    client,
-    updatedPlay.deck_id
-  );
+    if (
+      currentRank === 'Q' &&
+      currentSuit === 'SPADE' &&
+      nextStatus === 'PENDING'
+    ) {
+      const aceClubOwnerUserId = await getAceClubOwnerUserId(
+        client,
+        updatedPlay.deck_id
+      );
 
-  if (aceClubOwnerUserId) {
-    await createPlayValidation(client, {
-      playId: updatedPlay.id,
-      validatorUserId: aceClubOwnerUserId,
-      validatorRole: 'A_CLUB',
-      validationOrder: 1
-    });
+      if (aceClubOwnerUserId) {
+        await createPlayValidation(client, {
+          playId: updatedPlay.id,
+          validatorUserId: aceClubOwnerUserId,
+          validatorRole: 'A_CLUB',
+          validationOrder: 1
+        });
 
-    await addReadersToPlay(client, updatedPlay.id, [aceClubOwnerUserId]);
-  }
-}
+        await addReadersToPlay(client, updatedPlay.id, [aceClubOwnerUserId]);
+      }
+    }
 
     const previousSettlement = getSettlementInfoFromPlayCode(current.play_code);
     const nextSettlement = getSettlementInfoFromPlayCode(updatedPlay.play_code);
@@ -3420,7 +3420,9 @@ app.post('/plays/:id/validate', requireAuth, async (req, res) => {
     let updatedPlay = play;
 
     if (!remainingResult.rows.length) {
-      const finalTargetUserId = getFinalTargetFromPlayCode(play.play_code);
+      const finalTargetUserId =
+        getFinalTargetFromPlayCode(play.play_code) ||
+        Number(play.target_user_id || 0);
 
       if (!finalTargetUserId) {
         await client.query('ROLLBACK');
@@ -3444,7 +3446,14 @@ app.post('/plays/:id/validate', requireAuth, async (req, res) => {
 
       updatedPlay = updatePlayResult.rows[0];
 
-      await expandReadersForKSend(client, updatedPlay);
+      if (
+        String(updatedPlay.card_rank || '').toUpperCase() === 'Q' &&
+        String(updatedPlay.card_suit || '').toUpperCase() === 'SPADE'
+      ) {
+        await expandReadersForQSpadeSend(client, updatedPlay);
+      } else if (String(updatedPlay.card_rank || '').toUpperCase() === 'K') {
+        await expandReadersForKSend(client, updatedPlay);
+      }
 
       await client.query(
         `
@@ -3476,7 +3485,7 @@ app.post('/plays/:id/validate', requireAuth, async (req, res) => {
   } catch (error) {
     try {
       await client.query('ROLLBACK');
-    } catch (_) {}
+    } catch (_) { }
 
     console.error('Error en POST /plays/:id/validate', error);
 
