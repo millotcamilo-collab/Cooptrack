@@ -785,43 +785,51 @@
     }
 
     function renderPlayCardBox(play) {
-        const parentPlay = getPlayById(play?.parent_play_id);
+  const parentPlay = getPlayById(play?.parent_play_id);
 
-        const rank = normalizeRank(play?.card_rank || play?.rank);
-        const suit = normalizeSuit(play?.card_suit || play?.suit);
-        const imageSrc = getCardImageSrc(rank, suit);
+  const rank = normalizeRank(play?.card_rank || play?.rank);
+  const suit = normalizeSuit(play?.card_suit || play?.suit);
+  const imageSrc = getCardImageSrc(rank, suit);
 
-        const title = getCardLabel(rank, suit);
-        const parentText = parentPlay?.play_text || "";
+  const title = getCardLabel(rank, suit);
+  const parentText = parentPlay?.play_text || "";
 
-        const start = formatTimeLabel(parentPlay?.start_date);
-        const end = formatTimeLabel(parentPlay?.end_date);
-        const location = String(parentPlay?.location || "").trim();
+  const start = formatTimeLabel(parentPlay?.start_date);
+  const end = formatTimeLabel(parentPlay?.end_date);
+  const location = String(parentPlay?.location || "").trim();
 
-        return `
-      <div class="lienzo-play-card-box">
-        <img
-          class="lienzo-card-image lienzo-card-image--base"
-          src="${escapeHtml(imageSrc)}"
-          alt="${escapeHtml(title)}"
-          title="${escapeHtml(title)}"
-        />
+  return `
+    <div class="lienzo-play-card-box">
 
-        <div class="lienzo-play-card-box__content">
-          ${parentText ? `<div>${escapeHtml(parentText)}</div>` : ""}
-
-          ${start ? `<div>Inicio: ${escapeHtml(start)}</div>` : ""}
-          ${end ? `<div>Fin: ${escapeHtml(end)}</div>` : ""}
-          ${location ? `<div>Lugar: ${escapeHtml(location)}</div>` : ""}
-
-          <div class="lienzo-play-card-box__actions">
-            ${renderPlayCardActions(play)}
-          </div>
+      <div class="lienzo-play-card-box__row">
+        
+        <!-- IZQUIERDA -->
+        <div class="lienzo-play-card-box__card">
+          <img
+            class="lienzo-card-image"
+            src="${escapeHtml(imageSrc)}"
+            alt="${escapeHtml(title)}"
+          />
         </div>
-      </div>
-    `;
-    }
 
+        <!-- DERECHA -->
+        <div class="lienzo-play-card-box__info">
+          ${parentText ? `<div class="play-text">${escapeHtml(parentText)}</div>` : ""}
+
+          ${start ? `<div class="play-meta">🕒 ${escapeHtml(start)}</div>` : ""}
+          ${location ? `<div class="play-meta">📍 ${escapeHtml(location)}</div>` : ""}
+        </div>
+
+      </div>
+
+      <!-- ACCIONES ABAJO -->
+      <div class="lienzo-play-card-box__actions">
+        ${renderPlayCardActions(play)}
+      </div>
+
+    </div>
+  `;
+}
     function renderSourceSessionDia(play) {
         if (!play || typeof window.renderDia !== "function") return "";
 
@@ -1375,7 +1383,7 @@
           />
         </div>
       `,
-            actionsHtml: showActionsHere ? renderSourceActions(play) : ""
+            actionsHtml: ""
         });
 
         return `

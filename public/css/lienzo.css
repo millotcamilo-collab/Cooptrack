@@ -1187,3 +1187,42 @@ body {
   border-top-right-radius: 14px;
   border-bottom-right-radius: 14px;
 }
+
+.lienzo-play-card-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lienzo-play-card-box__row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.lienzo-play-card-box__card img {
+  height: 120px;
+  border-radius: 8px;
+}
+
+.lienzo-play-card-box__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.play-text {
+  font-weight: 600;
+}
+
+.play-meta {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.lienzo-play-card-box__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
