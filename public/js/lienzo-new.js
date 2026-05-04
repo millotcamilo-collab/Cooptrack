@@ -436,6 +436,7 @@
     document.body.appendChild(ghostNode);
 
     source.style.visibility = "hidden";
+    source.style.pointerEvents = "none";
 
     const container = document.querySelector(".lienzo-grid__right");
     if (!container) return;
@@ -1086,20 +1087,10 @@
           ${delivered
         ? ""
         : `
-              <div class="lienzo-source-active">
-                <img
-                  id="lienzo-source-card"
-                  class="lienzo-card-image"
-                  src="${escapeHtml(
-          getCardImageSrc(
-            scene.activeCard.card_rank,
-            scene.activeCard.card_suit
-          )
-        )}"
-                  alt=""
-                />
-              </div>
-            `}
+    <div id="lienzo-source-card" class="lienzo-source-active">
+      ${renderPlayCardBox(draft, { showActions: false })}
+    </div>
+  `}
         </div>
       </div>
 
