@@ -731,6 +731,44 @@
     `;
     }
 
+    function renderPlayCardBox(play) {
+        const parentPlay = getPlayById(play?.parent_play_id);
+
+        const rank = normalizeRank(play?.card_rank || play?.rank);
+        const suit = normalizeSuit(play?.card_suit || play?.suit);
+        const imageSrc = getCardImageSrc(rank, suit);
+
+        const title = getCardLabel(rank, suit);
+        const parentText = parentPlay?.play_text || "";
+
+        const start = formatTimeLabel(parentPlay?.start_date);
+        const end = formatTimeLabel(parentPlay?.end_date);
+        const location = String(parentPlay?.location || "").trim();
+
+        return `
+      <div class="lienzo-play-card-box">
+        <img
+          class="lienzo-card-image lienzo-card-image--base"
+          src="${escapeHtml(imageSrc)}"
+          alt="${escapeHtml(title)}"
+          title="${escapeHtml(title)}"
+        />
+
+        <div class="lienzo-play-card-box__content">
+          ${parentText ? `<div>${escapeHtml(parentText)}</div>` : ""}
+
+          ${start ? `<div>Inicio: ${escapeHtml(start)}</div>` : ""}
+          ${end ? `<div>Fin: ${escapeHtml(end)}</div>` : ""}
+          ${location ? `<div>Lugar: ${escapeHtml(location)}</div>` : ""}
+
+          <div class="lienzo-play-card-box__actions">
+            ${renderPlayCardActions(play)}
+          </div>
+        </div>
+      </div>
+    `;
+    }
+
     function renderSourceSessionDia(play) {
         if (!play || typeof window.renderDia !== "function") return "";
 
@@ -1322,9 +1360,6 @@
         const droppedInAmsterdam = selection?.targetZone === "AMSTERDAM";
         const showQHeartBox = isSelectedQHeartInZone("AMSTERDAM");
 
-        const baseRank = normalizeRank(play?.card_rank || play?.rank);
-        const baseSuit = normalizeSuit(play?.card_suit || play?.suit);
-        const baseImageSrc = getCardImageSrc(baseRank, baseSuit);
 
         const deck = getCurrentDeck();
         const currencyCode = getCurrencyCode(deck);
@@ -1374,7 +1409,7 @@
           />
         </div>
       `,
-            actionsHtml: showActionsHere ? renderTargetActions(play) : ""
+            actionsHtml: ""
         });
 
         return `
@@ -1383,13 +1418,7 @@
 
         <div class="lienzo-target-mainrow">
           <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-            <img
-              class="lienzo-card-image lienzo-card-image--base"
-              src="${escapeHtml(baseImageSrc)}"
-              alt="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
-              title="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
-            />
-
+            ${renderPlayCardBox(play)}
             ${droppedCardHtml}
           </div>
 
