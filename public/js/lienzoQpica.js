@@ -1852,19 +1852,23 @@
     function getAceOwnerTribune(suit) {
         const plays = getAllPlays();
 
-        const ace = plays.find((p) => {
+        const candidates = plays.filter((p) => {
             const rank = normalizeRank(p?.card_rank || p?.rank);
             const cardSuit = normalizeSuit(p?.card_suit || p?.suit);
-            const flow = String(p?.play_code || "").split("§")[7] || "";
+            const parts = String(p?.play_code || "").split("§");
+            const flow = String(parts[7] || "").toLowerCase();
 
             return (
                 rank === "A" &&
                 cardSuit === normalizeSuit(suit) &&
-                String(flow).toLowerCase() === "foundation"
+                flow === "foundation"
             );
         });
 
-        if (!ace) return null;
+        if (!candidates.length) return null;
+
+        // 🔥 CLAVE: tomar el último (estado actual)
+        const ace = candidates[candidates.length - 1];
 
         return {
             role: `A_${normalizeSuit(suit)}`,
