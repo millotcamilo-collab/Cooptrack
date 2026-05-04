@@ -246,67 +246,67 @@
         }).join("");
     }
 
-function deriveOwnedCorporateCards(plays, userId) {
-    if (!Array.isArray(plays) || !userId) return [];
+    function deriveOwnedCorporateCards(plays, userId) {
+        if (!Array.isArray(plays) || !userId) return [];
 
-    const activeStatuses = ["ACTIVE", "APPROVED", "SENT", "PENDING"];
-    const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
+        const activeStatuses = ["ACTIVE", "APPROVED", "SENT", "PENDING"];
+        const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
 
-    return plays
-        .filter((p, index) => {
-            // 🔥 CLAVE: ignorar primeras líneas del libro
-            if (index < 10) return false;
+        return plays
+            .filter((p, index) => {
+                // 🔥 CLAVE: ignorar primeras líneas del libro
+                if (index < 10) return false;
 
-            const parts = String(p?.play_code || "").split("§");
+                const parts = String(p?.play_code || "").split("§");
 
-            const rank = normalizeRank(p?.card_rank || p?.rank || parts[3]);
-            const suit = normalizeSuit(p?.card_suit || p?.suit || parts[4]);
-            const action = String(parts[5] || "").trim().toLowerCase();
-            const flow = String(parts[7] || "").trim().toLowerCase();
-            const status = normalizeRank(p?.play_status || p?.status);
+                const rank = normalizeRank(p?.card_rank || p?.rank || parts[3]);
+                const suit = normalizeSuit(p?.card_suit || p?.suit || parts[4]);
+                const action = String(parts[5] || "").trim().toLowerCase();
+                const flow = String(parts[7] || "").trim().toLowerCase();
+                const status = normalizeRank(p?.play_status || p?.status);
 
-            if (!["A", "K"].includes(rank)) return false;
-            if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+                if (!["A", "K"].includes(rank)) return false;
+                if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
 
-            // ❌ excluir estados finales
-            if (finalStatuses.includes(status)) return false;
+                // ❌ excluir estados finales
+                if (finalStatuses.includes(status)) return false;
 
-            // ❌ excluir ACL
-            if (flow === "acl") return false;
-            if (action === "puedejugar") return false;
+                // ❌ excluir ACL
+                if (flow === "acl") return false;
+                if (action === "puedejugar") return false;
 
-            // 🎯 ownership correcto
-            let ownerId = 0;
+                // 🎯 ownership correcto
+                let ownerId = 0;
 
-            if (rank === "A") {
-                ownerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
-                return flow === "foundation" && ownerId === Number(userId);
-            }
-
-            if (rank === "K") {
-                if (status === "APPROVED") {
+                if (rank === "A") {
                     ownerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
-                } else {
-                    ownerId = Number(p?.created_by_user_id || 0);
+                    return flow === "foundation" && ownerId === Number(userId);
                 }
 
-                if (!activeStatuses.includes(status)) return false;
-                return ownerId === Number(userId);
-            }
+                if (rank === "K") {
+                    if (status === "APPROVED") {
+                        ownerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
+                    } else {
+                        ownerId = Number(p?.created_by_user_id || 0);
+                    }
 
-            return false;
-        })
-        .map((p) => ({
-            id: p.id,
-            card_rank: normalizeRank(p.card_rank || p.rank),
-            card_suit: normalizeSuit(p.card_suit || p.suit)
-        }))
-        .filter((card, index, self) => {
-            const key = `${card.card_rank}_${card.card_suit}`;
-            return index === self.findIndex(c => `${c.card_rank}_${c.card_suit}` === key);
-        })
-        .sort(compareCorporateCards);
-}
+                    if (!activeStatuses.includes(status)) return false;
+                    return ownerId === Number(userId);
+                }
+
+                return false;
+            })
+            .map((p) => ({
+                id: p.id,
+                card_rank: normalizeRank(p.card_rank || p.rank),
+                card_suit: normalizeSuit(p.card_suit || p.suit)
+            }))
+            .filter((card, index, self) => {
+                const key = `${card.card_rank}_${card.card_suit}`;
+                return index === self.findIndex(c => `${c.card_rank}_${c.card_suit}` === key);
+            })
+            .sort(compareCorporateCards);
+    }
 
     function compareCorporateCards(a, b) {
         const order = {
@@ -1039,7 +1039,18 @@ function deriveOwnedCorporateCards(plays, userId) {
         const parentSuit = normalizeSuit(parentPlay?.card_suit || parentPlay?.suit);
 
         if (activeRank === "Q" && activeSuit === "SPADE") {
-            const stackCards = [...ownedCards];
+            const stackCards = ownedCards.filter(card => {
+                const rank = normalizeRank(card.card_rank);
+                const suit = normalizeSuit(card.card_suit);
+
+                // 🔥 para Q♠ solo importa:
+                // - K que está jugando
+                // - A♣ si la tiene
+                return (
+                    rank === "K" ||
+                    (rank === "A" && suit === "CLUB")
+                );
+            });
 
             if (parentPlay && parentRank === "J" && parentSuit === "SPADE") {
                 stackCards.push({
@@ -1918,23 +1929,23 @@ function deriveOwnedCorporateCards(plays, userId) {
   `;
     }
 
-function renderColombesTribunes(play) {
-    const sourceTribune = renderSourcePlayerPanel(play);
+    function renderColombesTribunes(play) {
+        const sourceTribune = renderSourcePlayerPanel(play);
 
-    const validatorTribunes = getValidatorTribunesForPlay(play)
-        .map((validator) => {
-            const cards = getValidatorRoleCards(validator);
-            return renderUserTribune(validator, cards);
-        })
-        .join("");
+        const validatorTribunes = getValidatorTribunesForPlay(play)
+            .map((validator) => {
+                const cards = getValidatorRoleCards(validator);
+                return renderUserTribune(validator, cards);
+            })
+            .join("");
 
-    return `
+        return `
     <div class="lienzo-tribunes lienzo-tribunes--colombes">
       ${sourceTribune}
       ${validatorTribunes}
     </div>
   `;
-}
+    }
 
     function renderLienzo(play) {
         const container = getLienzoContainer();
