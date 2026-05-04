@@ -3533,149 +3533,140 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
         ON deck.id = p.deck_id
       LEFT JOIN play_reads pr
         ON pr.play_id = p.id
-        AND pr.user_id = $1
+       AND pr.user_id = $1
       LEFT JOIN play_validations pv
         ON pv.play_id = p.id
-        AND pv.validator_user_id = $1
-        AND pv.validation_status = 'PENDING'
+       AND pv.validator_user_id = $1
+       AND pv.validation_status = 'PENDING'
       WHERE
+      (
+        -- =========================
+        -- Q♠
+        -- =========================
+        (
+          p.card_rank = 'Q'
+          AND p.card_suit = 'SPADE'
+          AND (
+            -- Invitación enviada al destinatario final
+            (
+              p.target_user_id = $1
+              AND COALESCE(p.play_status, '') = 'SENT'
+            )
 
-  -- =========================
-  -- Q♠
-  -- =========================
-  p.card_rank = 'Q'
-  AND p.card_suit = 'SPADE'
-  AND (
-    -- Invitación pendiente para mí
-    (
-      p.target_user_id = $1
-      AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
-    )
+            OR
 
-    OR
+            -- Notificación al creador
+            (
+              p.created_by_user_id = $1
+              AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'CANCELLED')
+            )
 
-    -- Notificación al creador
-    (
-      p.created_by_user_id = $1
-      AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'CANCELLED')
-    )
+            OR
 
-    OR
+            -- Settlement
+            (
+              p.target_user_id = $1
+              AND COALESCE(p.play_status, '') = 'APPROVED'
+              AND (
+                p.play_code LIKE '%settlement:PAID%'
+                OR p.play_code LIKE '%settlement:COMPLAINED%'
+              )
+            )
 
-    -- Settlement (soy target y ya se resolvió pago)
-    (
-      p.target_user_id = $1
-      AND COALESCE(p.play_status, '') = 'APPROVED'
-      AND (
-        p.play_code LIKE '%settlement:PAID%'
-        OR p.play_code LIKE '%settlement:COMPLAINED%'
+            OR
+
+            -- Validación pendiente para A♣
+            (
+              pv.validator_user_id IS NOT NULL
+              AND pv.validation_status = 'PENDING'
+            )
+          )
+        )
+
+        OR
+
+        -- =========================
+        -- K
+        -- =========================
+        (
+          p.card_rank = 'K'
+          AND (
+            (
+              p.target_user_id = $1
+              AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+            )
+
+            OR
+
+            (
+              p.play_code LIKE ('%finalTarget:U:' || $1 || '%')
+              AND COALESCE(p.play_status, '') = 'PENDING'
+            )
+
+            OR
+
+            (
+              p.created_by_user_id = $1
+              AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'QUIT')
+            )
+
+            OR
+
+            (
+              p.target_user_id = $1
+              AND COALESCE(p.play_status, '') = 'FIRED'
+            )
+          )
+        )
+
+        OR
+
+        -- =========================
+        -- A target
+        -- =========================
+        (
+          p.card_rank = 'A'
+          AND p.target_user_id = $1
+          AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+        )
+
+        OR
+
+        -- =========================
+        -- A creador
+        -- =========================
+        (
+          p.card_rank = 'A'
+          AND p.created_by_user_id = $1
+          AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'QUIT', 'FIRED')
+        )
+
+        OR
+
+        -- =========================
+        -- J♥
+        -- =========================
+        (
+          p.card_rank = 'J'
+          AND p.card_suit = 'HEART'
+          AND (
+            (
+              p.target_user_id = $1
+              AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+            )
+
+            OR
+
+            (
+              p.created_by_user_id = $1
+              AND p.target_user_id IS NOT NULL
+              AND p.target_user_id <> p.created_by_user_id
+              AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED')
+            )
+          )
+        )
       )
-    )
-
-OR
-
--- Validación pendiente para A♣
-EXISTS (
-  SELECT 1
-  FROM play_validations pv
-  WHERE pv.play_id = p.id
-    AND pv.validator_user_id = $1
-    AND pv.validation_status = 'PENDING'
-)
-
-  )
-)
-
-OR
-
-(
-  -- =========================
-  -- K
-  -- =========================
-  p.card_rank = 'K'
-  AND (
-    -- Invitación directa
-    (
-      p.target_user_id = $1
-      AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
-    )
-
-    OR
-
-    -- Invitación vía flow (finalTarget)
-    (
-      p.play_code LIKE ('%finalTarget:U:' || $1 || '%')
-      AND COALESCE(p.play_status, '') = 'PENDING'
-    )
-
-    OR
-
-    -- Notificación al creador
-    (
-      p.created_by_user_id = $1
-      AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'QUIT')
-    )
-
-    OR
-
-    -- Fired al target
-    (
-      p.target_user_id = $1
-      AND COALESCE(p.play_status, '') = 'FIRED'
-    )
-  )
-)
-
-OR
-
-(
-  -- =========================
-  -- A (target)
-  -- =========================
-  p.card_rank = 'A'
-  AND p.target_user_id = $1
-  AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
-)
-
-OR
-
-(
-  -- =========================
-  -- A (creador)
-  -- =========================
-  p.card_rank = 'A'
-  AND p.created_by_user_id = $1
-  AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'QUIT', 'FIRED')
-)
-
-OR
-
-(
-  -- =========================
-  -- J♥
-  -- =========================
-  p.card_rank = 'J'
-  AND p.card_suit = 'HEART'
-  AND (
-    -- Me llega para aprobar
-    (
-      p.target_user_id = $1
-      AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
-    )
-
-    OR
-
-    -- Notificación al creador (otro actor intervino)
-    (
-      p.created_by_user_id = $1
-      AND p.target_user_id IS NOT NULL
-      AND p.target_user_id <> p.created_by_user_id
-      AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED')
-    )
-  )
-)
-)  
-AND pr.id IS NULL
+      AND pr.id IS NULL
       ORDER BY p.created_at DESC
       `,
       [userId]
