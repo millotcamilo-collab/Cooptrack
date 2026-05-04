@@ -1918,25 +1918,23 @@ function deriveOwnedCorporateCards(plays, userId) {
   `;
     }
 
-    function renderColombesTribunes(play) {
-        const currentUser = getCurrentUser();
-        const sourceTribune = renderSourcePlayerPanel(play);
+function renderColombesTribunes(play) {
+    const sourceTribune = renderSourcePlayerPanel(play);
 
-        const validatorTribunes = getValidatorTribunesForPlay(play)
-            .filter((validator) => Number(validator.userId) !== Number(currentUser?.id || 0))
-            .map((validator) => {
-                const cards = getValidatorRoleCards(validator);
-                return renderUserTribune(validator, cards);
-            })
-            .join("");
+    const validatorTribunes = getValidatorTribunesForPlay(play)
+        .map((validator) => {
+            const cards = getValidatorRoleCards(validator);
+            return renderUserTribune(validator, cards);
+        })
+        .join("");
 
-        return `
+    return `
     <div class="lienzo-tribunes lienzo-tribunes--colombes">
       ${sourceTribune}
       ${validatorTribunes}
     </div>
   `;
-    }
+}
 
     function renderLienzo(play) {
         const container = getLienzoContainer();
