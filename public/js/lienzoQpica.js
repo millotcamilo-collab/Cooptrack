@@ -785,20 +785,28 @@
     }
 
     function renderPlayCardBox(play) {
-  const parentPlay = getPlayById(play?.parent_play_id);
+        const parentPlay = getPlayById(play?.parent_play_id);
 
-  const rank = normalizeRank(play?.card_rank || play?.rank);
-  const suit = normalizeSuit(play?.card_suit || play?.suit);
-  const imageSrc = getCardImageSrc(rank, suit);
+        const rank = normalizeRank(play?.card_rank || play?.rank);
+        const suit = normalizeSuit(play?.card_suit || play?.suit);
+        const imageSrc = getCardImageSrc(rank, suit);
 
-  const title = getCardLabel(rank, suit);
-  const parentText = parentPlay?.play_text || "";
+        const title = getCardLabel(rank, suit);
+        const parentText = parentPlay?.play_text || "";
 
-  const start = formatTimeLabel(parentPlay?.start_date);
-  const end = formatTimeLabel(parentPlay?.end_date);
-  const location = String(parentPlay?.location || "").trim();
+        const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
 
-  return `
+        const isDeadline = spadeMode === "DEADLINE";
+
+        const timeLabel = isDeadline
+            ? formatTimeLabel(parentPlay?.end_date)
+            : formatTimeLabel(parentPlay?.start_date);
+
+        const location = isDeadline
+            ? ""
+            : String(parentPlay?.location || "").trim();
+
+        return `
     <div class="lienzo-play-card-box">
 
       <div class="lienzo-play-card-box__row">
@@ -816,8 +824,19 @@
         <div class="lienzo-play-card-box__info">
           ${parentText ? `<div class="play-text">${escapeHtml(parentText)}</div>` : ""}
 
-          ${start ? `<div class="play-meta">🕒 ${escapeHtml(start)}</div>` : ""}
-          ${location ? `<div class="play-meta">📍 ${escapeHtml(location)}</div>` : ""}
+         ${timeLabel ? `
+  <div class="play-meta">
+    <img class="play-meta__icon" src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}" alt="" />
+    <span>${escapeHtml(timeLabel)}</span>
+  </div>
+` : ""}
+
+${location ? `
+  <div class="play-meta">
+    <img class="play-meta__icon" src="/assets/icons/LocGlobito80.gif" alt="" />
+    <span>${escapeHtml(location)}</span>
+  </div>
+` : ""}
         </div>
 
       </div>
@@ -829,7 +848,7 @@
 
     </div>
   `;
-}
+    }
     function renderSourceSessionDia(play) {
         if (!play || typeof window.renderDia !== "function") return "";
 

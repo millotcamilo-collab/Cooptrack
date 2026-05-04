@@ -65,27 +65,27 @@
     return validators.filter(Boolean);
   }
 
-function getValidatorRoleCards(validator) {
-  const role = String(validator?.role || "").trim().toUpperCase();
+  function getValidatorRoleCards(validator) {
+    const role = String(validator?.role || "").trim().toUpperCase();
 
-  if (role === "A_CLUB") {
-    return [{ card_rank: "A", card_suit: "CLUB" }];
+    if (role === "A_CLUB") {
+      return [{ card_rank: "A", card_suit: "CLUB" }];
+    }
+
+    if (role === "A_DIAMOND") {
+      return [{ card_rank: "A", card_suit: "DIAMOND" }];
+    }
+
+    if (role === "A_SPADE") {
+      return [{ card_rank: "A", card_suit: "SPADE" }];
+    }
+
+    if (role === "A_HEART") {
+      return [{ card_rank: "A", card_suit: "HEART" }];
+    }
+
+    return [];
   }
-
-  if (role === "A_DIAMOND") {
-    return [{ card_rank: "A", card_suit: "DIAMOND" }];
-  }
-
-  if (role === "A_SPADE") {
-    return [{ card_rank: "A", card_suit: "SPADE" }];
-  }
-
-  if (role === "A_HEART") {
-    return [{ card_rank: "A", card_suit: "HEART" }];
-  }
-
-  return [];
-}
 
   function renderColombesTribunes(draft) {
     const currentUser = getCurrentUser();
@@ -345,6 +345,67 @@ function getValidatorRoleCards(validator) {
     />
   `;
   }
+
+  function renderPlayCardBox(draft, options = {}) {
+    const showActions = options.showActions !== false;
+    const parentPlay = draft?.parentPlay || null;
+
+    const rank = normalizeRank(draft?.card_rank);
+    const suit = normalizeSuit(draft?.card_suit);
+    const imageSrc = getCardImageSrc(rank, suit);
+    const title = `${rank}${getSuitSymbol(suit)}`;
+
+    const parentText = parentPlay?.play_text || "";
+    const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
+    const isDeadline = spadeMode === "DEADLINE";
+
+    const timeLabel = isDeadline
+      ? formatTimeLabel(parentPlay?.end_date)
+      : formatTimeLabel(parentPlay?.start_date);
+
+    const location = isDeadline
+      ? ""
+      : String(parentPlay?.location || "").trim();
+
+    return `
+    <div class="lienzo-play-card-box">
+      <div class="lienzo-play-card-box__row">
+        <div class="lienzo-play-card-box__card">
+          <img
+            class="lienzo-card-image"
+            src="${escapeHtml(imageSrc)}"
+            alt="${escapeHtml(title)}"
+          />
+        </div>
+
+        <div class="lienzo-play-card-box__info">
+          ${parentText ? `<div class="play-text">${escapeHtml(parentText)}</div>` : ""}
+
+          ${timeLabel ? `
+            <div class="play-meta">
+              <img class="play-meta__icon" src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}" alt="" />
+              <span>${escapeHtml(timeLabel)}</span>
+            </div>
+          ` : ""}
+
+          ${location ? `
+            <div class="play-meta">
+              <img class="play-meta__icon" src="/assets/icons/LocGlobito80.gif" alt="" />
+              <span>${escapeHtml(location)}</span>
+            </div>
+          ` : ""}
+        </div>
+      </div>
+
+      ${showActions ? `
+        <div class="lienzo-play-card-box__actions">
+          ${renderActionButtons()}
+        </div>
+      ` : ""}
+    </div>
+  `;
+  }
+
   function animateCardToUser(user) {
     const source = document.getElementById("lienzo-source-card");
     if (!source) {
@@ -354,40 +415,46 @@ function getValidatorRoleCards(validator) {
 
     const rect = source.getBoundingClientRect();
 
-    // 👻 crear carta fantasma
-    const ghost = source.cloneNode(true);
-    ghost.style.position = "fixed";
-    ghost.style.left = rect.left + "px";
-    ghost.style.top = rect.top + "px";
-    ghost.style.width = rect.width + "px";
-    ghost.style.height = rect.height + "px";
-    ghost.style.margin = "0";
-    ghost.style.zIndex = "9999";
-    ghost.style.transition = "all 450ms ease";
-    ghost.style.pointerEvents = "none";
+    // 👻 crear recuadro fantasma
+    const ghostWrap = document.createElement("div");
+    ghostWrap.innerHTML = renderPlayCardBox(window.__lienzoNewDraft, {
+      showActions: false
+    });
 
-    document.body.appendChild(ghost);
+    const ghostNode = ghostWrap.firstElementChild;
+    if (!ghostNode) return;
 
-    // ocultar carta original
+    ghostNode.style.position = "fixed";
+    ghostNode.style.left = rect.left + "px";
+    ghostNode.style.top = rect.top + "px";
+    ghostNode.style.width = "360px";
+    ghostNode.style.margin = "0";
+    ghostNode.style.zIndex = "9999";
+    ghostNode.style.transition = "all 450ms ease";
+    ghostNode.style.pointerEvents = "none";
+
+    document.body.appendChild(ghostNode);
+
     source.style.visibility = "hidden";
 
-    // 🎯 destino (centro del panel derecho por ahora)
     const container = document.querySelector(".lienzo-grid__right");
+    if (!container) return;
+
     const targetRect = container.getBoundingClientRect();
 
-    const targetX = targetRect.left + targetRect.width / 2 - rect.width / 2;
+    const targetX = targetRect.left + targetRect.width / 2 - 180;
     const targetY = targetRect.top + targetRect.height / 3;
 
     requestAnimationFrame(() => {
-      ghost.style.left = targetX + "px";
-      ghost.style.top = targetY + "px";
-      ghost.style.transform = "scale(1.05)";
+      ghostNode.style.left = targetX + "px";
+      ghostNode.style.top = targetY + "px";
+      ghostNode.style.transform = "scale(1.05)";
     });
 
-    ghost.addEventListener("transitionend", () => {
-      if (!ghost.parentNode) return;
+    ghostNode.addEventListener("transitionend", () => {
+      if (!ghostNode.parentNode) return;
 
-      ghost.remove();
+      ghostNode.remove();
 
       window.__lienzoAnimationState = {
         ...(window.__lienzoAnimationState || {}),
@@ -404,22 +471,21 @@ function getValidatorRoleCards(validator) {
       bindActionButtons();
 
       setTimeout(() => {
-        mountCardInTarget(source);
+        mountCardInTarget();
       }, 50);
     });
   }
 
-  function mountCardInTarget(sourceCard) {
-    const dropzone = document.getElementById("lienzo-target-dropzone");
-    if (!dropzone) return;
+function mountCardInTarget() {
+  const dropzone = document.getElementById("lienzo-target-dropzone");
+  if (!dropzone) return;
 
-    const card = sourceCard.cloneNode(true);
+  dropzone.innerHTML = renderPlayCardBox(window.__lienzoNewDraft, {
+    showActions: true
+  });
 
-    card.style.visibility = "visible";
-    card.removeAttribute("id");
-
-    dropzone.appendChild(card);
-  }
+  bindActionButtons();
+}
 
   function renderAssignedTargetPanel(user) {
     const container = document.querySelector(".lienzo-grid__right");
