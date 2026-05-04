@@ -1029,10 +1029,17 @@
     }
 
     function buildSourceCardsScene(play) {
-        const ownedCards = getOwnedCorporateCardsForCurrentUser();
+        const sourceUser = resolveSourceUser(play);
+        const sourceUserId = Number(sourceUser?.id || play?.created_by_user_id || 0);
+
+        const ownedCards = deriveOwnedCorporateCards(
+            getAllPlays(),
+            sourceUserId
+        );
 
         const activeRank = normalizeRank(play?.card_rank || play?.rank);
         const activeSuit = normalizeSuit(play?.card_suit || play?.suit);
+
 
         const parentPlay = getPlayById(play?.parent_play_id);
         const parentRank = normalizeRank(parentPlay?.card_rank || parentPlay?.rank);
@@ -1056,7 +1063,7 @@
                 stackCards.push({
                     id: parentPlay.id,
                     card_rank: parentPlay.card_rank || parentPlay.rank,
-                    card_suit: parentPlay.suit || parentPlay.card_suit
+                    card_suit: parentPlay.card_suit || parentPlay.suit
                 });
             }
 
