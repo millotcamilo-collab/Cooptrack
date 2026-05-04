@@ -246,29 +246,67 @@
         }).join("");
     }
 
-    function deriveOwnedCorporateCards(plays, currentUserId) {
-        if (!Array.isArray(plays) || !currentUserId) return [];
+function deriveOwnedCorporateCards(plays, userId) {
+    if (!Array.isArray(plays) || !userId) return [];
 
-        return plays
-            .filter((p) => {
-                const rank = normalizeRank(p.card_rank || p.rank);
-                const suit = normalizeSuit(p.card_suit || p.suit);
+    const activeStatuses = ["ACTIVE", "APPROVED", "SENT", "PENDING"];
+    const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
 
-                if (!["A", "K"].includes(rank)) return false;
-                if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+    return plays
+        .filter((p, index) => {
+            // 🔥 CLAVE: ignorar primeras líneas del libro
+            if (index < 10) return false;
 
-                const ownerId =
-                    Number(p.target_user_id || 0) ||
-                    Number(p.created_by_user_id || 0);
+            const parts = String(p?.play_code || "").split("§");
 
-                return ownerId === Number(currentUserId);
-            })
-            .map((p) => ({
-                id: p.id,
-                card_rank: p.card_rank || p.rank,
-                card_suit: p.card_suit || p.suit
-            }));
-    }
+            const rank = normalizeRank(p?.card_rank || p?.rank || parts[3]);
+            const suit = normalizeSuit(p?.card_suit || p?.suit || parts[4]);
+            const action = String(parts[5] || "").trim().toLowerCase();
+            const flow = String(parts[7] || "").trim().toLowerCase();
+            const status = normalizeRank(p?.play_status || p?.status);
+
+            if (!["A", "K"].includes(rank)) return false;
+            if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+
+            // ❌ excluir estados finales
+            if (finalStatuses.includes(status)) return false;
+
+            // ❌ excluir ACL
+            if (flow === "acl") return false;
+            if (action === "puedejugar") return false;
+
+            // 🎯 ownership correcto
+            let ownerId = 0;
+
+            if (rank === "A") {
+                ownerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
+                return flow === "foundation" && ownerId === Number(userId);
+            }
+
+            if (rank === "K") {
+                if (status === "APPROVED") {
+                    ownerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
+                } else {
+                    ownerId = Number(p?.created_by_user_id || 0);
+                }
+
+                if (!activeStatuses.includes(status)) return false;
+                return ownerId === Number(userId);
+            }
+
+            return false;
+        })
+        .map((p) => ({
+            id: p.id,
+            card_rank: normalizeRank(p.card_rank || p.rank),
+            card_suit: normalizeSuit(p.card_suit || p.suit)
+        }))
+        .filter((card, index, self) => {
+            const key = `${card.card_rank}_${card.card_suit}`;
+            return index === self.findIndex(c => `${c.card_rank}_${c.card_suit}` === key);
+        })
+        .sort(compareCorporateCards);
+}
 
     function compareCorporateCards(a, b) {
         const order = {
