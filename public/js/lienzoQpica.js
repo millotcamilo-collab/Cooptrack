@@ -731,6 +731,59 @@
     `;
     }
 
+    function isCurrentUserValidator(play) {
+        const currentUser = getCurrentUser();
+        const currentUserId = Number(currentUser?.id || 0);
+
+        if (!currentUserId) return false;
+
+        return getValidatorTribunesForPlay(play).some((validator) => {
+            return Number(validator?.userId || 0) === currentUserId;
+        });
+    }
+
+    function renderPlayCardActions(play) {
+        const isTarget = isCurrentUserTarget(play);
+        const isSource = isCurrentUserSource(play);
+        const isValidator = isCurrentUserValidator(play);
+
+        const status = String(play?.play_status || "").trim().toUpperCase();
+
+        const sendIcon = "/assets/icons/buzon60.gif";
+        const acceptIcon = "/assets/icons/Sello40.gif";
+        const rejectIcon = "/assets/icons/stepback40.gif";
+
+        if (isValidator && status === "PENDING") {
+            return `
+          <button id="lienzo-validator-send-btn" class="icon-btn" title="Validar y enviar">
+            <img src="${sendIcon}" alt="Validar y enviar" />
+          </button>
+        `;
+        }
+
+        if (isSource && status !== "SENT" && status !== "APPROVED" && status !== "REJECTED" && status !== "CANCELLED") {
+            return `
+          <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
+            <img src="${sendIcon}" alt="Enviar" />
+          </button>
+        `;
+        }
+
+        if (isTarget && status === "SENT") {
+            return `
+          <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
+            <img src="${acceptIcon}" alt="Aceptar" />
+          </button>
+
+          <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
+            <img src="${rejectIcon}" alt="Rechazar" />
+          </button>
+        `;
+        }
+
+        return "";
+    }
+
     function renderPlayCardBox(play) {
         const parentPlay = getPlayById(play?.parent_play_id);
 
