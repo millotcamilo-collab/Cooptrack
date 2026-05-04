@@ -476,16 +476,16 @@
     });
   }
 
-function mountCardInTarget() {
-  const dropzone = document.getElementById("lienzo-target-dropzone");
-  if (!dropzone) return;
+  function mountCardInTarget() {
+    const dropzone = document.getElementById("lienzo-target-dropzone");
+    if (!dropzone) return;
 
-  dropzone.innerHTML = renderPlayCardBox(window.__lienzoNewDraft, {
-    showActions: true
-  });
+    dropzone.innerHTML = renderPlayCardBox(window.__lienzoNewDraft, {
+      showActions: true
+    });
 
-  bindActionButtons();
-}
+    bindActionButtons();
+  }
 
   function renderAssignedTargetPanel(user) {
     const container = document.querySelector(".lienzo-grid__right");
@@ -1072,13 +1072,7 @@ function mountCardInTarget() {
         />
       </div>
     `,
-      actionsHtml: delivered
-        ? `
-        <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-          ${renderActionButtons()}
-        </div>
-      `
-        : ``
+      actionsHtml: ""
     });
 
     return `
