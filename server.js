@@ -2555,37 +2555,37 @@ RETURNING *
       );
     }
 
-if (isSendingQSpadeNow) {
-  const invitedUserId = Number(updatedPlay.target_user_id || 0);
+    if (isSendingQSpadeNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
 
-  if (!invitedUserId) {
-    await client.query('ROLLBACK');
-    return res.status(400).json({
-      ok: false,
-      error: 'La Q♠ enviada debe tener target_user_id'
-    });
-  }
+      if (!invitedUserId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La Q♠ enviada debe tener target_user_id'
+        });
+      }
 
-  await expandReadersForQSpadeSend(client, updatedPlay);
+      await expandReadersForQSpadeSend(client, updatedPlay);
 
-  await client.query(
-    `
+      await client.query(
+        `
     INSERT INTO deck_members (deck_id, user_id)
     VALUES ($1, $2)
     ON CONFLICT DO NOTHING
     `,
-    [updatedPlay.deck_id, invitedUserId]
-  );
+        [updatedPlay.deck_id, invitedUserId]
+      );
 
-  await client.query(
-    `
+      await client.query(
+        `
     DELETE FROM ex_deck_members
     WHERE deck_id = $1
       AND user_id = $2
     `,
-    [updatedPlay.deck_id, invitedUserId]
-  );
-}
+        [updatedPlay.deck_id, invitedUserId]
+      );
+    }
 
     if (isSendingJHeartNow) {
       const deckId = Number(updatedPlay.deck_id || 0);
