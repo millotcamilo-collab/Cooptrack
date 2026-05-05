@@ -62,6 +62,24 @@ async function computeReadersForQSpadeDraft(client, play) {
 }
 
 async function expandReadersForQSpadeSend(client, play) {
+  async function getAceClubPlayId(client, deckId) {
+    const result = await client.query(
+      `
+    SELECT id
+    FROM plays
+    WHERE deck_id = $1
+      AND card_rank = 'A'
+      AND card_suit = 'CLUB'
+      AND split_part(play_code, '§', 8) = 'foundation'
+    ORDER BY id ASC
+    LIMIT 1
+    `,
+      [deckId]
+    );
+
+    return result.rows[0] ? Number(result.rows[0].id) : null;
+  }
+
   const invitedUserId = Number(play?.target_user_id || 0);
   const authorUserId = Number(play?.created_by_user_id || 0);
   const parentPlayId = Number(play?.parent_play_id || 0);
@@ -83,6 +101,11 @@ async function expandReadersForQSpadeSend(client, play) {
   const deckTitleAHeartPlayId = await getDeckTitleAHeartPlayId(client, deckId);
   if (deckTitleAHeartPlayId) {
     await addReadersToPlay(client, deckTitleAHeartPlayId, invitedReader);
+  }
+
+  const aceClubPlayId = await getAceClubPlayId(client, deckId);
+  if (aceClubPlayId) {
+    await addReadersToPlay(client, aceClubPlayId, invitedReader);
   }
 
   const approvedJHeartIds = await getApprovedJHeartsByDeck(client, deckId);
