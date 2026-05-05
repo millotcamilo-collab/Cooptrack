@@ -1997,6 +1997,16 @@ ${location ? `
         };
     }
 
+    function resolveAuthorityTribuneForTarget(play) {
+        const aceClubTribune = getAceOwnerTribune("CLUB");
+        if (aceClubTribune) return aceClubTribune;
+
+        const validators = getValidatorTribunesForPlay(play);
+        if (validators.length) return validators[0];
+
+        return null;
+    }
+
     function getValidatorTribunesForPlay(play) {
         const rank = normalizeRank(play?.card_rank || play?.rank);
         const suit = normalizeSuit(play?.card_suit || play?.suit);
@@ -2063,53 +2073,53 @@ ${location ? `
   `;
     }
 
-function renderColombesTribunes(play) {
-    const rank = normalizeRank(play?.card_rank || play?.rank);
-    const suit = normalizeSuit(play?.card_suit || play?.suit);
-    const status = String(play?.play_status || "").trim().toUpperCase();
+    function renderColombesTribunes(play) {
+        const rank = normalizeRank(play?.card_rank || play?.rank);
+        const suit = normalizeSuit(play?.card_suit || play?.suit);
+        const status = String(play?.play_status || "").trim().toUpperCase();
 
-    const currentUserIsTarget = isCurrentUserTarget(play);
+        const currentUserIsTarget = isCurrentUserTarget(play);
 
-    // 🔥 Si el invitado está mirando una Q♠ recibida,
-    // en Colombes solo debe ver la autoridad: A♣.
-    if (
-        currentUserIsTarget &&
-        rank === "Q" &&
-        suit === "SPADE" &&
-        ["SENT", "APPROVED", "REJECTED", "CANCELLED"].includes(status)
-    ) {
-        const aceClubTribune = getAceOwnerTribune("CLUB");
+        // 🔥 Si el invitado está mirando una Q♠ recibida,
+        // en Colombes solo debe ver la autoridad: A♣.
+        if (
+            currentUserIsTarget &&
+            rank === "Q" &&
+            suit === "SPADE" &&
+            ["SENT", "APPROVED", "REJECTED", "CANCELLED"].includes(status)
+        ) {
+            const aceClubTribune = resolveAuthorityTribuneForTarget(play);
 
-        const validatorOnlyHtml = aceClubTribune
-            ? renderUserTribune(
-                aceClubTribune,
-                getValidatorRoleCards(aceClubTribune)
-            )
-            : "";
+            const validatorOnlyHtml = aceClubTribune
+                ? renderUserTribune(
+                    aceClubTribune,
+                    getValidatorRoleCards(aceClubTribune)
+                )
+                : "";
 
-        return `
+            return `
     <div class="lienzo-tribunes lienzo-tribunes--colombes">
       ${validatorOnlyHtml}
     </div>
   `;
-    }
+        }
 
-    const sourceTribune = renderSourcePlayerPanel(play);
+        const sourceTribune = renderSourcePlayerPanel(play);
 
-    const validatorTribunes = getValidatorTribunesForPlay(play)
-        .map((validator) => {
-            const cards = getValidatorRoleCards(validator);
-            return renderUserTribune(validator, cards);
-        })
-        .join("");
+        const validatorTribunes = getValidatorTribunesForPlay(play)
+            .map((validator) => {
+                const cards = getValidatorRoleCards(validator);
+                return renderUserTribune(validator, cards);
+            })
+            .join("");
 
-    return `
+        return `
     <div class="lienzo-tribunes lienzo-tribunes--colombes">
       ${sourceTribune}
       ${validatorTribunes}
     </div>
   `;
-}
+    }
 
     function renderLienzo(play) {
         const container = getLienzoContainer();
