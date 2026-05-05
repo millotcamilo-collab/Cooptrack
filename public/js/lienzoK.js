@@ -36,6 +36,45 @@
         return match ? Number(match[1]) : 0;
     }
 
+    function isAceTransferFallbackKing(play) {
+        const parsed = parsePlayCode(play?.play_code);
+        return (
+            normalizeRank(play?.card_rank) === "K" &&
+            String(parsed?.action || "").trim() === "ace_transfer_fallback_king"
+        );
+    }
+
+    function getParentPlay(play) {
+        return getPlayById(play?.parent_play_id);
+    }
+
+    function resolveFallbackAceNewOwner(play) {
+        const parentAce = getParentPlay(play);
+
+        if (!parentAce) return null;
+
+        return {
+            id: Number(parentAce.target_user_id || parentAce.created_by_user_id || 0),
+            nickname:
+                parentAce.target_user_nickname ||
+                parentAce.created_by_nickname ||
+                "Nuevo propietario",
+            profile_photo_url:
+                parentAce.target_user_profile_photo_url ||
+                parentAce.created_by_profile_photo_url ||
+                "/assets/icons/singeta120.gif"
+        };
+    }
+
+    function resolveFallbackKingOwner(play) {
+        return {
+            id: Number(play?.created_by_user_id || 0),
+            nickname: play?.created_by_nickname || "Propietario anterior",
+            profile_photo_url:
+                play?.created_by_profile_photo_url || "/assets/icons/singeta120.gif"
+        };
+    }
+
     function findUserById(userId) {
         const id = Number(userId || 0);
         if (!id) return null;
@@ -126,7 +165,8 @@
 
     function getSourceUserCorporateCards(play) {
         const plays = getAllPlays();
-        const sourceUserId = Number(play?.created_by_user_id || 0);
+        const sourceUser = resolveSourceUser(play);
+        const sourceUserId = Number(sourceUser?.id || 0);
 
         if (!sourceUserId) return [];
 
@@ -296,6 +336,14 @@
     }
 
     function resolveSourceUser(play) {
+        if (isAceTransferFallbackKing(play)) {
+            return resolveFallbackAceNewOwner(play) || {
+                id: 0,
+                nickname: "Nuevo propietario",
+                profile_photo_url: "/assets/icons/singeta120.gif"
+            };
+        }
+
         return {
             id: Number(play?.created_by_user_id || 0),
             nickname: play?.created_by_nickname || "Anfitrión",
@@ -305,9 +353,12 @@
     }
 
     function resolveTargetUser(play) {
+        if (isAceTransferFallbackKing(play)) {
+            return resolveFallbackKingOwner(play);
+        }
+
         const finalTargetUserId = getFinalTargetUserIdFromPlayCode(play?.play_code);
 
-        // 👉 Caso especial: K en validación por A♣
         if (finalTargetUserId) {
             return {
                 id: finalTargetUserId,
@@ -317,7 +368,6 @@
             };
         }
 
-        // 👉 Caso normal
         return {
             id: Number(play?.target_user_id || 0),
             nickname: play?.target_user_nickname || "Destinatario",
