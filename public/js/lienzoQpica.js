@@ -1572,16 +1572,6 @@ ${location ? `
         });
     }
 
-    function currentUserRequiresValidationForQSpade() {
-        const hasAceClub = currentUserHasCorporateCard("A", "CLUB");
-        const hasAnyK = ["HEART", "SPADE", "DIAMOND", "CLUB"]
-            .some(s => currentUserHasCorporateCard("K", s));
-
-        if (hasAceClub) return false; // manda directo
-        if (hasAnyK) return true;     // necesita validación
-
-        return true; // fallback (sin permisos fuertes)
-    }
 
     async function handleSendPlay(play) {
         try {
