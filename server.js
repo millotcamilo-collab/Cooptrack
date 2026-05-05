@@ -1789,35 +1789,6 @@ app.post('/plays', requireAuth, async (req, res) => {
     // Readers iniciales de la jugada recién creada
     await handleReadersOnPlayCreate(client, created.row);
 
-    // Si se envía una Q♠ con destinatario,
-    // se incorpora ese usuario al mazo si aún no está
-    if (
-      parsed.rank === 'Q' &&
-      parsed.suit === 'SPADE' &&
-      target_user_id
-    ) {
-      const memberCheck = await client.query(
-        `
-          SELECT 1
-          FROM deck_members
-          WHERE deck_id = $1
-            AND user_id = $2
-          LIMIT 1
-        `,
-        [mazoId, target_user_id]
-      );
-
-      if (!memberCheck.rows.length) {
-        await client.query(
-          `
-            INSERT INTO deck_members (deck_id, user_id)
-            VALUES ($1, $2)
-          `,
-          [mazoId, target_user_id]
-        );
-      }
-    }
-
     await client.query('COMMIT');
 
     return res.json({
@@ -2584,19 +2555,37 @@ RETURNING *
       );
     }
 
-    if (isSendingQSpadeNow) {
-      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+if (isSendingQSpadeNow) {
+  const invitedUserId = Number(updatedPlay.target_user_id || 0);
 
-      if (!invitedUserId) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({
-          ok: false,
-          error: 'La Q♠ enviada debe tener target_user_id'
-        });
-      }
+  if (!invitedUserId) {
+    await client.query('ROLLBACK');
+    return res.status(400).json({
+      ok: false,
+      error: 'La Q♠ enviada debe tener target_user_id'
+    });
+  }
 
-      await expandReadersForQSpadeSend(client, updatedPlay);
-    }
+  await expandReadersForQSpadeSend(client, updatedPlay);
+
+  await client.query(
+    `
+    INSERT INTO deck_members (deck_id, user_id)
+    VALUES ($1, $2)
+    ON CONFLICT DO NOTHING
+    `,
+    [updatedPlay.deck_id, invitedUserId]
+  );
+
+  await client.query(
+    `
+    DELETE FROM ex_deck_members
+    WHERE deck_id = $1
+      AND user_id = $2
+    `,
+    [updatedPlay.deck_id, invitedUserId]
+  );
+}
 
     if (isSendingJHeartNow) {
       const deckId = Number(updatedPlay.deck_id || 0);
