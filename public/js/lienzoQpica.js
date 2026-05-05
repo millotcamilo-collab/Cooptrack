@@ -1779,7 +1779,21 @@ ${location ? `
             }
 
             alert("Invitación rechazada");
-            window.location.href = "/archivo.html";
+
+            // 🔥 CLAVE: distinguir quién está rechazando
+            const statusBefore = String(play?.play_status || "").toUpperCase();
+
+            const deckId =
+                Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
+
+            if (isCurrentUserValidator(play) && statusBefore === "PENDING") {
+                // 👉 rechazo del A♣
+                window.location.href = `/mazo.html?id=${deckId}`;
+            } else {
+                // 👉 rechazo del invitado
+                window.location.href = "/archivo.html";
+            }
+
         } catch (error) {
             console.error("Error en handleRejectPlay", error);
             alert("No se pudo rechazar la invitación");
