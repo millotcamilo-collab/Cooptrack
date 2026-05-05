@@ -28,8 +28,12 @@ function getDeckMembershipStatusFromPlays(plays, userId) {
       }
     }
 
-    if (isActive && rank === 'Q') {
-      if (targetId === userIdStr) {
+    if (rank === 'Q') {
+      const qCountsAsMember =
+        status === 'SENT' ||
+        status === 'APPROVED';
+
+      if (qCountsAsMember && targetId === userIdStr) {
         hasActiveQ = true;
       }
     }
