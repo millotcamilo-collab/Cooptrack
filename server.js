@@ -2810,13 +2810,18 @@ RETURNING *
           mazoId: deckId,
           createdByUserId: previousAceOwnerId,
           parentPlayId: parentAceId,
-          targetUserId: previousAceOwnerId,
+
+          // 🔥 clave: esta K no tiene destinatario/invitado
+          targetUserId: null,
+
           playCode: fallbackKingPlayCode,
           playText: 'K conservada por transferencia de A',
           playStatus: 'APPROVED',
         });
 
-        await expandReadersForKSend(client, createdFallbackKing.row);
+        // 🔥 clave: lectores explícitos para el antiguo dueño
+        await setPlayReaders(client, createdFallbackKing.row.id, [previousAceOwnerId]);
+
         await addUserToAclLines(client, deckId, previousAceOwnerId);
       }
     }
