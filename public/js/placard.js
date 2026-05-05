@@ -331,7 +331,7 @@
       return `Transferencia del as de ${suitLabel} de ${sourceNickname} a ${targetNickname}. Enviado`;
     }
 
-    if (status === "REJECTED") {
+    if (status === "REJECTED" || status === "QUIT") {
       return `Transferencia del as de ${suitLabel} de ${sourceNickname} a ${targetNickname}. Rechazada`;
     }
 
