@@ -1600,7 +1600,7 @@ ${location ? `
 
             const nextStatus = isCurrentUserValidator(play)
                 ? "SENT"
-                : currentUserRequiresValidationForQSpade()
+                : getValidatorTribunesForPlay(play).length > 0
                     ? "PENDING"
                     : "SENT";
 
@@ -2014,7 +2014,21 @@ ${location ? `
         const validators = [];
 
         if (rank === "Q" && suit === "SPADE") {
-            validators.push(getAceOwnerTribune("CLUB"));
+
+            // 🔥 CLAVE: si el source ya tiene A♣ → NO hay validador
+            const sourceUser = resolveSourceUser(play);
+            const sourceUserId = Number(sourceUser?.id || 0);
+
+            const sourceCards = deriveOwnedCorporateCards(getAllPlays(), sourceUserId);
+
+            const hasAceClub = sourceCards.some(card =>
+                normalizeRank(card.card_rank) === "A" &&
+                normalizeSuit(card.card_suit) === "CLUB"
+            );
+
+            if (!hasAceClub) {
+                validators.push(getAceOwnerTribune("CLUB"));
+            }
         }
 
         return validators.filter(Boolean);
