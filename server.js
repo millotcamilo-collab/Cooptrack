@@ -2751,10 +2751,22 @@ RETURNING *
       const deckId = Number(updatedPlay.deck_id || 0);
       const parentAceId = Number(updatedPlay.parent_play_id || 0);
 
+      const previousAceOwnerResult = await client.query(
+        `
+  SELECT COALESCE(target_user_id, created_by_user_id) AS owner_user_id
+  FROM plays
+  WHERE id = $1
+    AND deck_id = $2
+    AND card_rank = 'A'
+    AND card_suit = $3
+    AND split_part(play_code, '§', 8) = 'foundation'
+  LIMIT 1
+  `,
+        [parentAceId, deckId, currentSuit]
+      );
+
       const previousAceOwnerId = Number(
-        current.target_user_id ||
-        current.created_by_user_id ||
-        0
+        previousAceOwnerResult.rows[0]?.owner_user_id || 0
       );
 
       if (!invitedUserId || !deckId || !parentAceId) {
