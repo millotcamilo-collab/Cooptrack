@@ -2267,19 +2267,41 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       const targetUserId = Number(current.target_user_id || 0);
+      const aceClubOwnerUserId = await getAceClubOwnerUserId(client, current.deck_id);
+      const creatorUserId = Number(current.created_by_user_id || 0);
 
-      if (!targetUserId || Number(userId) !== targetUserId) {
+      const isTargetReject =
+        targetUserId &&
+        Number(userId) === targetUserId;
+
+      const isValidatorReject =
+        isQSpade &&
+        currentStatus === 'PENDING' &&
+        Number(userId) === Number(aceClubOwnerUserId);
+
+      if (!isTargetReject && !isValidatorReject) {
         return res.status(403).json({
           ok: false,
-          error: 'Solo el destinatario puede rechazar esta invitación'
+          error: 'Solo el destinatario o el A♣ validador puede rechazar esta invitación'
         });
       }
 
-      if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
+      if (isTargetReject && currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
         return res.status(400).json({
           ok: false,
           error: 'Solo una invitación enviada puede rechazarse'
         });
+      }
+
+      if (isValidatorReject && currentStatus !== 'PENDING') {
+        return res.status(400).json({
+          ok: false,
+          error: 'Solo una solicitud pendiente puede rechazarse'
+        });
+      }
+
+      if (isValidatorReject && creatorUserId) {
+        await addReadersToPlay(client, current.id, [creatorUserId]);
       }
     }
 
