@@ -255,7 +255,13 @@
         draft.card_suit
       );
 
-      window.location.href = `${nextPage}?deckId=${draft.deckId}&playId=${playId}`;
+      let extraParams = "";
+
+      if (normalizeRank(draft.card_rank) === "A") {
+        extraParams = "&action=transfer";
+      }
+
+      window.location.href = `${nextPage}?deckId=${draft.deckId}&playId=${playId}${extraParams}`;
 
     } catch (error) {
       console.error("Error en SAVE", error);
