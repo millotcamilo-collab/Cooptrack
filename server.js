@@ -2105,14 +2105,20 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       const creatorUserId = Number(current.created_by_user_id || 0);
+      const aceClubOwnerUserId = await getAceClubOwnerUserId(client, current.deck_id);
 
-      if (!creatorUserId || Number(userId) !== creatorUserId) {
+      const isCreator = creatorUserId && Number(userId) === creatorUserId;
+
+      const isAceClubFinalSender =
+        (isKCard || isQSpade) &&
+        Number(userId) === Number(aceClubOwnerUserId);
+
+      if (!isCreator && !isAceClubFinalSender) {
         return res.status(403).json({
           ok: false,
-          error: 'Solo el creador puede iniciar el envío de esta jugada'
+          error: 'Solo el creador o el A♣ puede enviar esta jugada'
         });
       }
-
       if (
         currentStatus === 'SENT' ||
         currentStatus === 'APPROVED' ||
@@ -2135,7 +2141,6 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       const needsAceClubFinalSend = isKCard || isQSpade;
-      const aceClubOwnerUserId = await getAceClubOwnerUserId(client, current.deck_id);
 
       if (needsAceClubFinalSend && Number(userId) !== aceClubOwnerUserId) {
         return res.status(403).json({
