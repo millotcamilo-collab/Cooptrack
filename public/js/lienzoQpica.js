@@ -755,10 +755,14 @@
 
         if (isValidator && status === "PENDING") {
             return `
-          <button id="lienzo-validator-send-btn" class="icon-btn" title="Validar y enviar">
-            <img src="${sendIcon}" alt="Validar y enviar" />
-          </button>
-        `;
+      <button id="lienzo-validator-send-btn" class="icon-btn" title="Validar y enviar">
+        <img src="${sendIcon}" alt="Validar y enviar" />
+      </button>
+
+      <button id="lienzo-validator-reject-btn" class="icon-btn" title="Rechazar solicitud">
+        <img src="${rejectIcon}" alt="Rechazar solicitud" />
+      </button>
+    `;
         }
 
         if (isSource && status !== "SENT" && status !== "APPROVED" && status !== "REJECTED" && status !== "CANCELLED") {
@@ -1849,6 +1853,7 @@ ${location ? `
         const acceptBtn = document.getElementById("lienzo-accept-btn");
         const rejectBtn = document.getElementById("lienzo-reject-btn");
         const cancelBtn = document.getElementById("lienzo-cancel-btn");
+        const validatorRejectBtn = document.getElementById("lienzo-validator-reject-btn");
 
         const validatorSendBtn = document.getElementById("lienzo-validator-send-btn");
 
@@ -1867,6 +1872,12 @@ ${location ? `
         if (sendBtn) {
             sendBtn.addEventListener("click", () => {
                 handleSendPlay(play);
+            });
+        }
+
+        if (validatorRejectBtn) {
+            validatorRejectBtn.addEventListener("click", () => {
+                handleRejectPlay(play);
             });
         }
 
