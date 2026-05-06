@@ -2080,14 +2080,14 @@ ${location ? `
             if (hasEconomicHeartQ && !hasAceDiamond) {
                 validators.push(getAceOwnerTribune("DIAMOND"));
             }
-        }
 
-        console.log("VALIDADORES QPICA", {
-            hasAceClub,
-            hasAceDiamond,
-            hasEconomicHeartQ,
-            validators
-        });
+            console.log("VALIDADORES QPICA", {
+                hasAceClub,
+                hasAceDiamond,
+                hasEconomicHeartQ,
+                validators
+            });
+        }
 
         return validators
             .filter(Boolean)
