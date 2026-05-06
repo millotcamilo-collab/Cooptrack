@@ -2013,10 +2013,18 @@ ${location ? `
 
         const ownerId = Number(ace.target_user_id || ace.created_by_user_id || 0);
 
-        const ownerPlay = plays.find((p) =>
-            Number(p?.created_by_user_id || 0) === ownerId ||
-            Number(p?.target_user_id || 0) === ownerId
-        );
+        const ownerPlay = plays.find((p) => {
+            const matchesUser =
+                Number(p?.created_by_user_id || 0) === ownerId ||
+                Number(p?.target_user_id || 0) === ownerId;
+
+            if (!matchesUser) return false;
+
+            return Boolean(
+                p?.created_by_profile_photo_url ||
+                p?.target_user_profile_photo_url
+            );
+        });
 
         return {
             role: `A_${normalizeSuit(suit)}`,
