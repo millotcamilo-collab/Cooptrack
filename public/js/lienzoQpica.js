@@ -2026,20 +2026,32 @@ ${location ? `
             );
         });
 
+        const state = getCurrentState();
+
+        const ownerUser =
+            Array.isArray(state?.users)
+                ? state.users.find((u) => Number(u?.id || 0) === ownerId)
+                : null;
+
         return {
             role: `A_${normalizeSuit(suit)}`,
             userId: ownerId,
+
             nickname:
                 ace.target_user_nickname ||
                 ace.created_by_nickname ||
                 ownerPlay?.target_user_nickname ||
                 ownerPlay?.created_by_nickname ||
+                ownerUser?.nickname ||
                 "Usuario",
+
             profile_photo_url:
                 ace.target_user_profile_photo_url ||
                 ace.created_by_profile_photo_url ||
                 ownerPlay?.target_user_profile_photo_url ||
                 ownerPlay?.created_by_profile_photo_url ||
+                ownerUser?.profile_photo_url ||
+                ownerUser?.photo_url ||
                 "/assets/icons/singeta120.gif"
         };
     }
