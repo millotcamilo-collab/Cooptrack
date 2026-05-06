@@ -2101,6 +2101,24 @@ ${parentJSpadeText
     `;
   }
 
+function compareCorporateCards(a, b) {
+  const order = {
+    A_HEART: 1,
+    A_SPADE: 2,
+    A_DIAMOND: 3,
+    A_CLUB: 4,
+    K_HEART: 5,
+    K_SPADE: 6,
+    K_DIAMOND: 7,
+    K_CLUB: 8
+  };
+
+  const aKey = `${a.card_rank}_${a.card_suit}`;
+  const bKey = `${b.card_rank}_${b.card_suit}`;
+
+  return (order[aKey] || 999) - (order[bKey] || 999);
+}
+
   function deriveOwnedCorporateCards(plays, userId) {
     if (!Array.isArray(plays) || !userId) return [];
 
