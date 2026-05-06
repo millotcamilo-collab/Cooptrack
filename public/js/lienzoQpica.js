@@ -2056,8 +2056,17 @@ ${location ? `
             const amount = Number(play?.amount || 0);
             const flow = String(parsePlayCode(play?.play_code)?.flow || "").toLowerCase();
 
+            const qHeartDraft = (() => {
+                try {
+                    return JSON.parse(sessionStorage.getItem("cooptrackQHeartDraft") || "null");
+                } catch {
+                    return null;
+                }
+            })();
+
             const hasEconomicHeartQ =
                 hasDroppedQHeart() ||
+                Number(qHeartDraft?.playId || 0) === Number(play?.id || 0) ||
                 amount > 0 ||
                 flow.includes("settlement") ||
                 flow.includes("qheart") ||
@@ -2072,6 +2081,13 @@ ${location ? `
                 validators.push(getAceOwnerTribune("DIAMOND"));
             }
         }
+
+        console.log("VALIDADORES QPICA", {
+            hasAceClub,
+            hasAceDiamond,
+            hasEconomicHeartQ,
+            validators
+        });
 
         return validators
             .filter(Boolean)
