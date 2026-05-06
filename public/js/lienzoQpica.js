@@ -2033,51 +2033,52 @@ ${location ? `
     }
 
     function getValidatorTribunesForPlay(play) {
-    const rank = normalizeRank(play?.card_rank || play?.rank);
-    const suit = normalizeSuit(play?.card_suit || play?.suit);
+        const rank = normalizeRank(play?.card_rank || play?.rank);
+        const suit = normalizeSuit(play?.card_suit || play?.suit);
 
-    const validators = [];
+        const validators = [];
 
-    if (rank === "Q" && suit === "SPADE") {
-        const sourceUser = resolveSourceUser(play);
-        const sourceUserId = Number(sourceUser?.id || 0);
-        const sourceCards = deriveOwnedCorporateCards(getAllPlays(), sourceUserId);
+        if (rank === "Q" && suit === "SPADE") {
+            const sourceUser = resolveSourceUser(play);
+            const sourceUserId = Number(sourceUser?.id || 0);
+            const sourceCards = deriveOwnedCorporateCards(getAllPlays(), sourceUserId);
 
-        const hasAceClub = sourceCards.some(card =>
-            normalizeRank(card.card_rank) === "A" &&
-            normalizeSuit(card.card_suit) === "CLUB"
-        );
+            const hasAceClub = sourceCards.some(card =>
+                normalizeRank(card.card_rank) === "A" &&
+                normalizeSuit(card.card_suit) === "CLUB"
+            );
 
-        const hasAceDiamond = sourceCards.some(card =>
-            normalizeRank(card.card_rank) === "A" &&
-            normalizeSuit(card.card_suit) === "DIAMOND"
-        );
+            const hasAceDiamond = sourceCards.some(card =>
+                normalizeRank(card.card_rank) === "A" &&
+                normalizeSuit(card.card_suit) === "DIAMOND"
+            );
 
-        const amount = Number(play?.amount || 0);
-        const flow = String(parsePlayCode(play?.play_code)?.flow || "").toLowerCase();
+            const amount = Number(play?.amount || 0);
+            const flow = String(parsePlayCode(play?.play_code)?.flow || "").toLowerCase();
 
-        const hasEconomicHeartQ =
-            amount > 0 ||
-            flow.includes("settlement") ||
-            flow.includes("qheart") ||
-            flow.includes("q_heart") ||
-            flow.includes("heart");
+            const hasEconomicHeartQ =
+                hasDroppedQHeart() ||
+                amount > 0 ||
+                flow.includes("settlement") ||
+                flow.includes("qheart") ||
+                flow.includes("q_heart") ||
+                flow.includes("heart");
 
-        if (!hasAceClub) {
-            validators.push(getAceOwnerTribune("CLUB"));
+            if (!hasAceClub) {
+                validators.push(getAceOwnerTribune("CLUB"));
+            }
+
+            if (hasEconomicHeartQ && !hasAceDiamond) {
+                validators.push(getAceOwnerTribune("DIAMOND"));
+            }
         }
 
-        if (hasEconomicHeartQ && !hasAceDiamond) {
-            validators.push(getAceOwnerTribune("DIAMOND"));
-        }
+        return validators
+            .filter(Boolean)
+            .filter((validator, index, self) =>
+                index === self.findIndex(v => Number(v.userId) === Number(validator.userId))
+            );
     }
-
-    return validators
-        .filter(Boolean)
-        .filter((validator, index, self) =>
-            index === self.findIndex(v => Number(v.userId) === Number(validator.userId))
-        );
-}
 
     function getValidatorRoleCards(validator) {
         const role = String(validator?.role || "").trim().toUpperCase();
