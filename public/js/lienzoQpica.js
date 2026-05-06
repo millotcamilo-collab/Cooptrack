@@ -2011,13 +2011,27 @@ ${location ? `
         // 🔥 CLAVE: tomar el último (estado actual)
         const ace = candidates[candidates.length - 1];
 
+        const ownerId = Number(ace.target_user_id || ace.created_by_user_id || 0);
+
+        const ownerPlay = plays.find((p) =>
+            Number(p?.created_by_user_id || 0) === ownerId ||
+            Number(p?.target_user_id || 0) === ownerId
+        );
+
         return {
             role: `A_${normalizeSuit(suit)}`,
-            userId: Number(ace.target_user_id || ace.created_by_user_id || 0),
-            nickname: ace.target_user_nickname || ace.created_by_nickname || "Usuario",
+            userId: ownerId,
+            nickname:
+                ace.target_user_nickname ||
+                ace.created_by_nickname ||
+                ownerPlay?.target_user_nickname ||
+                ownerPlay?.created_by_nickname ||
+                "Usuario",
             profile_photo_url:
                 ace.target_user_profile_photo_url ||
                 ace.created_by_profile_photo_url ||
+                ownerPlay?.target_user_profile_photo_url ||
+                ownerPlay?.created_by_profile_photo_url ||
                 "/assets/icons/singeta120.gif"
         };
     }
@@ -2074,12 +2088,12 @@ ${location ? `
                 flow.includes("q_heart") ||
                 flow.includes("heart");
 
-            if (!hasAceClub) {
-                validators.push(getAceOwnerTribune("CLUB"));
-            }
-
             if (hasEconomicHeartQ && !hasAceDiamond) {
                 validators.push(getAceOwnerTribune("DIAMOND"));
+            }
+
+            if (!hasAceClub) {
+                validators.push(getAceOwnerTribune("CLUB"));
             }
 
             console.log("VALIDADORES QPICA", {
