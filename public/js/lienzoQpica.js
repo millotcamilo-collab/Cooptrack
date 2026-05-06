@@ -2150,12 +2150,10 @@ ${location ? `
             const isCreator = Number(p?.created_by_user_id || 0) === userId;
             const isTarget = Number(p?.target_user_id || 0) === userId;
 
-            if (!isCreator && !isTarget) return false;
+            if (isCreator && p?.created_by_profile_photo_url) return true;
+            if (isTarget && p?.target_user_profile_photo_url) return true;
 
-            return Boolean(
-                p?.created_by_profile_photo_url ||
-                p?.target_user_profile_photo_url
-            );
+            return false;
         });
 
         const name =
@@ -2166,17 +2164,14 @@ ${location ? `
 
         const photo =
             user?.profile_photo_url ||
-            ownerPlay?.target_user_profile_photo_url ||
-            ownerPlay?.created_by_profile_photo_url ||
+            (
+                Number(ownerPlay?.created_by_user_id || 0) === userId
+                    ? ownerPlay?.created_by_profile_photo_url
+                    : ownerPlay?.target_user_profile_photo_url
+            ) ||
             "/assets/icons/singeta120.gif";
 
-console.log("TRIBUNA USER", {
-    user,
-    userId,
-    ownerPlay,
-    photo
-});
-            
+
         return `
     <section class="lienzo-panel lienzo-panel--source panel--split-top">
       <div class="panel-topbar panel-topbar--single">
