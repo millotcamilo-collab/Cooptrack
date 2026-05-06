@@ -2033,31 +2033,51 @@ ${location ? `
     }
 
     function getValidatorTribunesForPlay(play) {
-        const rank = normalizeRank(play?.card_rank || play?.rank);
-        const suit = normalizeSuit(play?.card_suit || play?.suit);
+    const rank = normalizeRank(play?.card_rank || play?.rank);
+    const suit = normalizeSuit(play?.card_suit || play?.suit);
 
-        const validators = [];
+    const validators = [];
 
-        if (rank === "Q" && suit === "SPADE") {
+    if (rank === "Q" && suit === "SPADE") {
+        const sourceUser = resolveSourceUser(play);
+        const sourceUserId = Number(sourceUser?.id || 0);
+        const sourceCards = deriveOwnedCorporateCards(getAllPlays(), sourceUserId);
 
-            // 🔥 CLAVE: si el source ya tiene A♣ → NO hay validador
-            const sourceUser = resolveSourceUser(play);
-            const sourceUserId = Number(sourceUser?.id || 0);
+        const hasAceClub = sourceCards.some(card =>
+            normalizeRank(card.card_rank) === "A" &&
+            normalizeSuit(card.card_suit) === "CLUB"
+        );
 
-            const sourceCards = deriveOwnedCorporateCards(getAllPlays(), sourceUserId);
+        const hasAceDiamond = sourceCards.some(card =>
+            normalizeRank(card.card_rank) === "A" &&
+            normalizeSuit(card.card_suit) === "DIAMOND"
+        );
 
-            const hasAceClub = sourceCards.some(card =>
-                normalizeRank(card.card_rank) === "A" &&
-                normalizeSuit(card.card_suit) === "CLUB"
-            );
+        const amount = Number(play?.amount || 0);
+        const flow = String(parsePlayCode(play?.play_code)?.flow || "").toLowerCase();
 
-            if (!hasAceClub) {
-                validators.push(getAceOwnerTribune("CLUB"));
-            }
+        const hasEconomicHeartQ =
+            amount > 0 ||
+            flow.includes("settlement") ||
+            flow.includes("qheart") ||
+            flow.includes("q_heart") ||
+            flow.includes("heart");
+
+        if (!hasAceClub) {
+            validators.push(getAceOwnerTribune("CLUB"));
         }
 
-        return validators.filter(Boolean);
+        if (hasEconomicHeartQ && !hasAceDiamond) {
+            validators.push(getAceOwnerTribune("DIAMOND"));
+        }
     }
+
+    return validators
+        .filter(Boolean)
+        .filter((validator, index, self) =>
+            index === self.findIndex(v => Number(v.userId) === Number(validator.userId))
+        );
+}
 
     function getValidatorRoleCards(validator) {
         const role = String(validator?.role || "").trim().toUpperCase();
