@@ -2414,17 +2414,50 @@ RETURNING *
       currentSuit === 'SPADE' &&
       nextStatus === 'PENDING'
     ) {
-      const aceClubOwnerUserId = await getAceClubOwnerUserId(
+      const creatorUserId = Number(updatedPlay.created_by_user_id || 0);
+
+      const aceDiamondOwnerUserId = await getAceOwnerUserId(
         client,
-        updatedPlay.deck_id
+        updatedPlay.deck_id,
+        'DIAMOND'
       );
 
-      if (aceClubOwnerUserId) {
+      const aceClubOwnerUserId = await getAceOwnerUserId(
+        client,
+        updatedPlay.deck_id,
+        'CLUB'
+      );
+
+      const hasQHeartPayment = String(updatedPlay.play_code || '')
+        .toLowerCase()
+        .includes('pay:qheart');
+
+      let order = 1;
+
+      if (
+        hasQHeartPayment &&
+        aceDiamondOwnerUserId &&
+        aceDiamondOwnerUserId !== creatorUserId
+      ) {
+        await createPlayValidation(client, {
+          playId: updatedPlay.id,
+          validatorUserId: aceDiamondOwnerUserId,
+          validatorRole: 'A_DIAMOND',
+          validationOrder: order++
+        });
+
+        await addReadersToPlay(client, updatedPlay.id, [aceDiamondOwnerUserId]);
+      }
+
+      if (
+        aceClubOwnerUserId &&
+        aceClubOwnerUserId !== creatorUserId
+      ) {
         await createPlayValidation(client, {
           playId: updatedPlay.id,
           validatorUserId: aceClubOwnerUserId,
           validatorRole: 'A_CLUB',
-          validationOrder: 1
+          validationOrder: order++
         });
 
         await addReadersToPlay(client, updatedPlay.id, [aceClubOwnerUserId]);
@@ -3567,10 +3600,16 @@ app.get('/plays/pending', requireAuth, async (req, res) => {
       LEFT JOIN play_reads pr
         ON pr.play_id = p.id
        AND pr.user_id = $1
-      LEFT JOIN play_validations pv
-        ON pv.play_id = p.id
-       AND pv.validator_user_id = $1
-       AND pv.validation_status = 'PENDING'
+LEFT JOIN play_validations pv
+  ON pv.play_id = p.id
+ AND pv.validator_user_id = $1
+ AND pv.validation_status = 'PENDING'
+ AND pv.validation_order = (
+   SELECT MIN(pv2.validation_order)
+   FROM play_validations pv2
+   WHERE pv2.play_id = p.id
+     AND pv2.validation_status = 'PENDING'
+ )
       WHERE
       (
         -- =========================
