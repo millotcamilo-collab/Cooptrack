@@ -2143,8 +2143,32 @@ ${location ? `
     }
 
     function renderUserTribune(user, cards = []) {
-        const name = user?.nickname || "Usuario";
-        const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+        const plays = getAllPlays();
+        const userId = Number(user?.userId || user?.id || 0);
+
+        const ownerPlay = plays.find((p) => {
+            const isCreator = Number(p?.created_by_user_id || 0) === userId;
+            const isTarget = Number(p?.target_user_id || 0) === userId;
+
+            if (!isCreator && !isTarget) return false;
+
+            return Boolean(
+                p?.created_by_profile_photo_url ||
+                p?.target_user_profile_photo_url
+            );
+        });
+
+        const name =
+            user?.nickname ||
+            ownerPlay?.target_user_nickname ||
+            ownerPlay?.created_by_nickname ||
+            "Usuario";
+
+        const photo =
+            user?.profile_photo_url ||
+            ownerPlay?.target_user_profile_photo_url ||
+            ownerPlay?.created_by_profile_photo_url ||
+            "/assets/icons/singeta120.gif";
 
         return `
     <section class="lienzo-panel lienzo-panel--source panel--split-top">
