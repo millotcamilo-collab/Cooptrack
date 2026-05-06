@@ -2170,6 +2170,13 @@ ${location ? `
             ownerPlay?.created_by_profile_photo_url ||
             "/assets/icons/singeta120.gif";
 
+console.log("TRIBUNA USER", {
+    user,
+    userId,
+    ownerPlay,
+    photo
+});
+            
         return `
     <section class="lienzo-panel lienzo-panel--source panel--split-top">
       <div class="panel-topbar panel-topbar--single">
