@@ -156,7 +156,7 @@ async function getAceOwnerUserId(client, deckId, suit) {
       AND card_rank = 'A'
       AND card_suit = $2
       AND split_part(play_code, '§', 8) = 'foundation'
-    ORDER BY id ASC
+    ORDER BY id DESC
     LIMIT 1
     `,
     [deckId, suit]
@@ -2428,9 +2428,13 @@ RETURNING *
         'CLUB'
       );
 
-      const hasQHeartPayment = String(updatedPlay.play_code || '')
-        .toLowerCase()
-        .includes('pay:qheart');
+      const playCodeLower = String(updatedPlay.play_code || '').toLowerCase();
+
+      const hasQHeartPayment =
+        playCodeLower.includes('pay:qheart') ||
+        playCodeLower.includes('qheart') ||
+        playCodeLower.includes('q_heart') ||
+        Number(updatedPlay.amount || 0) > 0;
 
       let order = 1;
 
