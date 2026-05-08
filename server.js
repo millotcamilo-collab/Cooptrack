@@ -2543,6 +2543,10 @@ RETURNING *
       currentStatus !== 'SENT' &&
       nextStatus === 'SENT';
 
+    if (isSendingANow) {
+      await expandReadersForASend(client, updatedPlay);
+    }
+
 
     if (isSendingKNow) {
       const invitedUserId = Number(updatedPlay.target_user_id || 0);
