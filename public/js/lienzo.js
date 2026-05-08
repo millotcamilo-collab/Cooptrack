@@ -413,10 +413,6 @@
       <div class="lienzo-source-cards">
         <div class="lienzo-source-stack">
           ${backgroundCards.map((card, index) => renderBackgroundCard(card, index)).join("")}
-
-          <div class="lienzo-source-active">
-            ${renderTransferredAceBox(play, renderSourceActions(play))}
-          </div>
         </div>
       </div>
     </section>
@@ -475,7 +471,7 @@
 
     return `
     <section class="lienzo-panel lienzo-panel--target panel--split-top">
-      <div class="panel-topbar">
+      <div class="panel-topbar panel-topbar--single">
         <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-target-header lienzo-target-header--top">
             <div class="lienzo-target-header__name">${escapeHtml(targetUser.nickname)}</div>
@@ -486,17 +482,10 @@
             />
           </div>
         </div>
-        <div class="panel-topbar__col panel-topbar__col--actions">
-          ${renderTargetActions(play)}
-        </div>
       </div>
 
       <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-        <img
-          class="lienzo-card-image"
-          src="${escapeHtml(getCardImageSrc(play?.card_rank, play?.card_suit))}"
-          alt="${escapeHtml(`K${getSuitSymbol(play?.card_suit)}`)}"
-        />
+        ${renderTransferredAceBox(play, renderSourceActions(play) || renderTargetActions(play))}
       </div>
     </section>
   `;
