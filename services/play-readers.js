@@ -226,7 +226,13 @@ async function getDeckPlaysByKinds(client, deckId, filters = {}) {
 }
 
 async function expandReadersForASend(client, play) {
-  await expandReadersForAdminCardHolder(client, play);
+  const authorUserId = Number(play?.created_by_user_id || 0);
+  const targetUserId = Number(play?.target_user_id || 0);
+
+  await setPlayReaders(client, play.id, [
+    authorUserId,
+    targetUserId
+  ]);
 }
 
 async function expandReadersForKSend(client, play) {
