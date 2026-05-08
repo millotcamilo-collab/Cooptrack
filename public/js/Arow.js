@@ -30,45 +30,63 @@
     );
   }
 
-function getSourceNickname(play) {
-  return (
-    play?.createdByNickname ||
-    play?.created_by_nickname ||
-    "—"
-  );
-}
+  function getSourceNickname(play) {
+    return (
+      play?.createdByNickname ||
+      play?.created_by_nickname ||
+      "—"
+    );
+  }
 
-function getSourcePhoto(play) {
-  return (
-    play?.createdByProfilePhotoUrl ||
-    play?.created_by_profile_photo_url ||
-    "/assets/icons/singeta120.gif"
-  );
-}
+  function getSourcePhoto(play) {
+    return (
+      play?.createdByProfilePhotoUrl ||
+      play?.created_by_profile_photo_url ||
+      "/assets/icons/singeta120.gif"
+    );
+  }
 
-function getTargetNickname(play) {
-  return (
-    play?.targetNickname ||
-    play?.target_user_nickname ||
-    "—"
-  );
-}
+  function getTargetNickname(play) {
+    return (
+      play?.targetNickname ||
+      play?.target_user_nickname ||
+      "—"
+    );
+  }
 
-function getTargetPhoto(play) {
-  return (
-    play?.targetProfilePhotoUrl ||
-    play?.target_user_profile_photo_url ||
-    play?.target_profile_photo_url ||
-    "/assets/icons/singeta120.gif"
-  );
-}
+  function getTargetPhoto(play) {
+    return (
+      play?.targetProfilePhotoUrl ||
+      play?.target_user_profile_photo_url ||
+      play?.target_profile_photo_url ||
+      "/assets/icons/singeta120.gif"
+    );
+  }
 
-function isAceTransferPending(play) {
-  const rank = getRank(play);
-  const status = String(play?.play_status || "").toUpperCase();
+  function isAceTransferPending(play) {
+    const rank = getRank(play);
+    const status = String(play?.play_status || "").toUpperCase();
 
-  return rank === "A" && ["SENT", "PENDING"].includes(status);
-}
+    return rank === "A" && ["SENT", "PENDING"].includes(status);
+  }
+
+  function findPendingAceTransfer(play, context) {
+    const plays = Array.isArray(context?.state?.plays) ? context.state.plays : [];
+    const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
+
+    return plays.find((p) => {
+      const rank = String(p?.card_rank || p?.rank || "").toUpperCase();
+      const pSuit = String(p?.card_suit || p?.suit || "").toUpperCase();
+      const status = String(p?.play_status || "").toUpperCase();
+      const id = Number(p?.id || 0);
+
+      return (
+        rank === "A" &&
+        pSuit === suit &&
+        ["SENT", "PENDING"].includes(status)
+      );
+    }) || null;
+  }
 
   function getOwnerPhoto(play) {
     return (
@@ -267,16 +285,19 @@ function isAceTransferPending(play) {
     const suitSymbol = getSuitSymbol(suit);
     const miniLabel = `${rank}${suitSymbol}`;
 
-const transferPending = isAceTransferPending(play);
+    const pendingTransfer = findPendingAceTransfer(play, context);
+    const transferPending = !!pendingTransfer;
+    const transferPlay = pendingTransfer || play;
 
-const ownerNickname = escapeHtml(getOwnerNickname(play));
-const ownerPhoto = escapeHtml(getOwnerPhoto(play));
+    const ownerNickname = escapeHtml(getOwnerNickname(play));
+    const ownerPhoto = escapeHtml(getOwnerPhoto(play));
 
-const sourceNickname = escapeHtml(getSourceNickname(play));
-const sourcePhoto = escapeHtml(getSourcePhoto(play));
+    const sourceNickname = escapeHtml(getSourceNickname(transferPlay));
+    const sourcePhoto = escapeHtml(getSourcePhoto(transferPlay));
 
-const targetNickname = escapeHtml(getTargetNickname(play));
-const targetPhoto = escapeHtml(getTargetPhoto(play));
+    const targetNickname = escapeHtml(getTargetNickname(transferPlay));
+    const targetPhoto = escapeHtml(getTargetPhoto(transferPlay));
+
     const suitName = getSuitName(suit);
     const rankName = getRankName(rank);
 
