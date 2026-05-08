@@ -30,6 +30,46 @@
     );
   }
 
+function getSourceNickname(play) {
+  return (
+    play?.createdByNickname ||
+    play?.created_by_nickname ||
+    "—"
+  );
+}
+
+function getSourcePhoto(play) {
+  return (
+    play?.createdByProfilePhotoUrl ||
+    play?.created_by_profile_photo_url ||
+    "/assets/icons/singeta120.gif"
+  );
+}
+
+function getTargetNickname(play) {
+  return (
+    play?.targetNickname ||
+    play?.target_user_nickname ||
+    "—"
+  );
+}
+
+function getTargetPhoto(play) {
+  return (
+    play?.targetProfilePhotoUrl ||
+    play?.target_user_profile_photo_url ||
+    play?.target_profile_photo_url ||
+    "/assets/icons/singeta120.gif"
+  );
+}
+
+function isAceTransferPending(play) {
+  const rank = getRank(play);
+  const status = String(play?.play_status || "").toUpperCase();
+
+  return rank === "A" && ["SENT", "PENDING"].includes(status);
+}
+
   function getOwnerPhoto(play) {
     return (
       play?.targetProfilePhotoUrl ||
@@ -227,8 +267,16 @@
     const suitSymbol = getSuitSymbol(suit);
     const miniLabel = `${rank}${suitSymbol}`;
 
-    const ownerNickname = escapeHtml(getOwnerNickname(play));
-    const ownerPhoto = escapeHtml(getOwnerPhoto(play));
+const transferPending = isAceTransferPending(play);
+
+const ownerNickname = escapeHtml(getOwnerNickname(play));
+const ownerPhoto = escapeHtml(getOwnerPhoto(play));
+
+const sourceNickname = escapeHtml(getSourceNickname(play));
+const sourcePhoto = escapeHtml(getSourcePhoto(play));
+
+const targetNickname = escapeHtml(getTargetNickname(play));
+const targetPhoto = escapeHtml(getTargetPhoto(play));
     const suitName = getSuitName(suit);
     const rankName = getRankName(rank);
 
@@ -281,15 +329,41 @@
             </span>
           </div>
 
-          <div class="admin-row__owner">
-            <img
-              src="${ownerPhoto}"
-              alt="${ownerNickname}"
-              class="admin-row__owner-photo"
-              onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
-            />
-            <span class="admin-row__owner-name">${ownerNickname}</span>
-          </div>
+${transferPending ? `
+  <div class="admin-row__transfer">
+    <div class="admin-row__owner">
+      <img
+        src="${sourcePhoto}"
+        alt="${sourceNickname}"
+        class="admin-row__owner-photo"
+        onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
+      />
+      <span class="admin-row__owner-name">${sourceNickname}</span>
+    </div>
+
+    <span class="admin-row__transfer-arrow" title="Transferencia pendiente">➜</span>
+
+    <div class="admin-row__owner">
+      <img
+        src="${targetPhoto}"
+        alt="${targetNickname}"
+        class="admin-row__owner-photo"
+        onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
+      />
+      <span class="admin-row__owner-name">${targetNickname}</span>
+    </div>
+  </div>
+` : `
+  <div class="admin-row__owner">
+    <img
+      src="${ownerPhoto}"
+      alt="${ownerNickname}"
+      class="admin-row__owner-photo"
+      onerror="this.onerror=null;this.src='/assets/icons/singeta120.gif';"
+    />
+    <span class="admin-row__owner-name">${ownerNickname}</span>
+  </div>
+`}
         </div>
       </article>
     `;
