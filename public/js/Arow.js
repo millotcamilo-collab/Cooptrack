@@ -70,7 +70,7 @@
     return rank === "A" && ["SENT", "PENDING"].includes(status);
   }
 
-  function findPendingAceTransfer(play, context) {
+  function findAceTransferDraftOrPending(play, context) {
     const plays = Array.isArray(context?.state?.plays) ? context.state.plays : [];
     const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
 
@@ -78,12 +78,12 @@
       const rank = String(p?.card_rank || p?.rank || "").toUpperCase();
       const pSuit = String(p?.card_suit || p?.suit || "").toUpperCase();
       const status = String(p?.play_status || "").toUpperCase();
-      const id = Number(p?.id || 0);
 
       return (
         rank === "A" &&
         pSuit === suit &&
-        ["SENT", "PENDING"].includes(status)
+        ["ACTIVE", "SENT", "PENDING"].includes(status) &&
+        Number(p?.target_user_id || 0) > 0
       );
     }) || null;
   }
@@ -235,6 +235,23 @@
     const rank = getRank(play);
     const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
 
+    const aceTransfer = rank === "A"
+      ? findAceTransferDraftOrPending(play, context)
+      : null;
+
+    if (aceTransfer) {
+      const transferPlayId = Number(aceTransfer.id || 0);
+
+      if (transferPlayId) {
+        return (
+          `/lienzo.html` +
+          `?deckId=${deckId}` +
+          `&playId=${transferPlayId}` +
+          `&action=transfer`
+        );
+      }
+    }
+
     if (rank === "A") {
       const action = resolveAceAction(play, context);
 
@@ -285,9 +302,15 @@
     const suitSymbol = getSuitSymbol(suit);
     const miniLabel = `${rank}${suitSymbol}`;
 
-    const pendingTransfer = findPendingAceTransfer(play, context);
-    const transferPending = !!pendingTransfer;
-    const transferPlay = pendingTransfer || play;
+    const aceTransfer = findAceTransferDraftOrPending(play, context);
+    const transferPending = !!aceTransfer;
+    const transferPlay = aceTransfer || play;
+
+    const transferStatus = String(transferPlay?.play_status || "").toUpperCase();
+    const transferLabel =
+      transferStatus === "ACTIVE"
+        ? "Listo para enviar"
+        : "Transferencia pendiente";
 
     const ownerNickname = escapeHtml(getOwnerNickname(play));
     const ownerPhoto = escapeHtml(getOwnerPhoto(play));
@@ -363,6 +386,7 @@ ${transferPending ? `
     </div>
 
     <span class="admin-row__transfer-arrow" title="Transferencia pendiente">➜</span>
+    <span class="admin-row__transfer-label">${escapeHtml(transferLabel)}</span>
 
     <div class="admin-row__owner">
       <img
