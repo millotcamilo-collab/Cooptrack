@@ -264,6 +264,31 @@
     });
   }
 
+  function renderTransferredAceBox(play, actionsHtml = "") {
+    const imageSrc = getCardImageSrc(play?.card_rank, play?.card_suit);
+    const title = `${normalizeRank(play?.card_rank)}${getSuitSymbol(play?.card_suit)}`;
+
+    return `
+    <div class="lienzo-play-card-box">
+      <div class="lienzo-play-card-box__row">
+        <div class="lienzo-play-card-box__card">
+          <img
+            class="lienzo-card-image"
+            src="${escapeHtml(imageSrc)}"
+            alt="${escapeHtml(title)}"
+          />
+        </div>
+      </div>
+
+      ${actionsHtml ? `
+        <div class="lienzo-play-card-box__actions">
+          ${actionsHtml}
+        </div>
+      ` : ""}
+    </div>
+  `;
+  }
+
   function resolveSourceUser(play) {
     return {
       id: Number(play?.created_by_user_id || 0),
@@ -372,7 +397,7 @@
 
     return `
     <section class="lienzo-panel lienzo-panel--source panel--split-top">
-      <div class="panel-topbar">
+      <div class="panel-topbar panel-topbar--single">
         <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-target-header lienzo-target-header--top">
             <div class="lienzo-target-header__name">${escapeHtml(sourceUser.nickname)}</div>
@@ -383,14 +408,15 @@
             />
           </div>
         </div>
-        <div class="panel-topbar__col panel-topbar__col--actions">
-          ${renderSourceActions(play)}
-        </div>
       </div>
 
       <div class="lienzo-source-cards">
         <div class="lienzo-source-stack">
           ${backgroundCards.map((card, index) => renderBackgroundCard(card, index)).join("")}
+
+          <div class="lienzo-source-active">
+            ${renderTransferredAceBox(play, renderSourceActions(play))}
+          </div>
         </div>
       </div>
     </section>
