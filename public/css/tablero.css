@@ -304,3 +304,24 @@
   object-fit: contain;
   pointer-events: none;
 }
+
+.admin-row__transfer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.admin-row__transfer-arrow {
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.admin-row__transfer .admin-row__owner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
