@@ -228,11 +228,31 @@ async function getDeckPlaysByKinds(client, deckId, filters = {}) {
 async function expandReadersForASend(client, play) {
   const authorUserId = Number(play?.created_by_user_id || 0);
   const targetUserId = Number(play?.target_user_id || 0);
+  const deckId = Number(play?.deck_id || 0);
 
-  await setPlayReaders(client, play.id, [
+  if (!deckId || !targetUserId) return;
+
+  const readers = normalizeReaderEntries([
     authorUserId,
     targetUserId
   ]);
+
+  // La propia transferencia A
+  await setPlayReaders(client, play.id, readers);
+
+  // El invitado al As ve todos los documentos/jugadas del mazo
+  const result = await client.query(
+    `
+    SELECT id
+    FROM plays
+    WHERE deck_id = $1
+    `,
+    [deckId]
+  );
+
+  for (const row of result.rows) {
+    await addReadersToPlay(client, row.id, [targetUserId]);
+  }
 }
 
 async function expandReadersForKSend(client, play) {
