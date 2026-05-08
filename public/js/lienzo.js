@@ -469,6 +469,10 @@
   function renderTargetPlayerPanel(play) {
     const targetUser = resolveTargetUser(play);
 
+    const actionsHtml = isTargetViewer(play)
+      ? renderTargetActions(play)
+      : renderSourceActions(play);
+
     return `
     <section class="lienzo-panel lienzo-panel--target panel--split-top">
       <div class="panel-topbar panel-topbar--single">
@@ -485,7 +489,7 @@
       </div>
 
       <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-        ${renderTransferredAceBox(play, renderSourceActions(play) || renderTargetActions(play))}
+        ${renderTransferredAceBox(play, actionsHtml)}
       </div>
     </section>
   `;
