@@ -37,16 +37,7 @@
             </div>
           </div>
 
-          <div class="panel-topbar__col panel-topbar__col--actions">
-            <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
 
-              <button id="sendJokerBlueBtn" class="icon-btn is-hidden" type="button" title="Solicitar Joker azul"
-                aria-label="Solicitar Joker azul">
-                <img src="/assets/icons/buzon60.gif" alt="Solicitar Joker azul">
-              </button>
-
-            </div>
-          </div>
         </div>
 
         <div class="content colombes-content">
@@ -163,6 +154,10 @@
                   <button id="createDeckBtn" class="icon-btn is-hidden" type="button" title="Aprobar"
                     aria-label="Aprobar">
                     <img src="/assets/icons/Sello40.gif" alt="Aprobar">
+                  </button>
+                  <button id="sendJokerBlueBtn" class="icon-btn is-hidden" type="button" title="Solicitar Joker azul"
+                    aria-label="Solicitar Joker azul">
+                    <img src="/assets/icons/buzon60.gif" alt="Solicitar Joker azul">
                   </button>
                 </div>
 
@@ -751,23 +746,6 @@
     document.addEventListener("DOMContentLoaded", async () => {
       const mode = getPageMode();
 
-      if (mode === "jokerblue") {
-        renderDeckPlacard();
-
-        const placardEl = document.getElementById("placard-container");
-        if (placardEl) {
-          placardEl.classList.add("is-visible");
-        }
-
-        renderFinalJokers();
-        updateServerNextLabels();
-
-        showEl("serverNextPanel");
-        showEl("sendJokerBlueBtn");
-
-        enableServerNextPanel();
-      }
-
       applyPageMode();
 
       if (mode !== "jokerblue") {
@@ -787,7 +765,6 @@
           placardEl.classList.add("is-visible");
         }
 
-        renderJokerBlueCardInColombes();
         renderFinalJokers();
         updateServerNextLabels();
 
