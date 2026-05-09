@@ -783,8 +783,13 @@
           placardEl.classList.add("is-visible");
         }
 
+        renderJokerBlueCardInColombes();
         renderFinalJokers();
         updateServerNextLabels();
+
+        showEl("serverNextPanel");
+        showEl("sendJokerBlueBtn");
+
         enableServerNextPanel();
       }
 
