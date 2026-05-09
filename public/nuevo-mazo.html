@@ -408,6 +408,23 @@
         renderFinalJokers();
         updateServerNextLabels();
       });
+      
+      const btn = document.getElementById("jokerToggleBtn");
+
+      btn?.addEventListener("click", () => {
+        isBlueOnTop = !isBlueOnTop;
+        renderFinalJokers();
+        updateServerNextLabels();
+      });
+
+      requestAnimationFrame(() => {
+        btn?.classList.add("is-wiggle");
+
+        setTimeout(() => {
+          btn?.classList.remove("is-wiggle");
+        }, 700);
+      });
+
     }
 
 
