@@ -270,55 +270,6 @@
       opacity: 1;
     }
 
-    .server-next__fake-checkbox {
-      width: 14px;
-      height: 14px;
-      border: 2px solid #bbb;
-      border-radius: 3px;
-      background: transparent;
-      display: inline-block;
-      position: relative;
-      flex: 0 0 auto;
-    }
-
-    /* tilde (oculta por defecto) */
-    .server-next__fake-checkbox::after {
-      content: "";
-      position: absolute;
-      left: 2px;
-      top: 0px;
-      width: 6px;
-      height: 10px;
-      border: solid #1d1d1d;
-      border-width: 0 2px 2px 0;
-      transform: rotate(45deg);
-      opacity: 0;
-    }
-
-    .server-next__item.is-checked .server-next__fake-checkbox {
-      background: #ffffff;
-    }
-
-    .server-next__fake-checkbox::after {
-      border-color: #1d1d1d;
-    }
-
-    /* estado marcado */
-    .server-next__item.is-checked .server-next__fake-checkbox::after {
-      opacity: 1;
-    }
-
-    /* modo readonly */
-    .server-next--readonly .server-next__fake-checkbox {
-      opacity: 0.5;
-    }
-
-    /* modo editable */
-    .server-next--editable .server-next__fake-checkbox {
-      border-color: #fff;
-      cursor: pointer;
-    }
-
     .colombes-final-stack {
       position: relative;
       width: 190px;
