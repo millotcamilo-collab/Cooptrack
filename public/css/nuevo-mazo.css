@@ -539,3 +539,21 @@
       order: 2;
       text-align: center;
     }
+
+    #colombes-panel .colombes-content .colombes-editor {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: flex-start !important;
+      justify-content: flex-start !important;
+      gap: 18px !important;
+      width: 100%;
+    }
+
+    #colombes-panel #colombesCardZone {
+      flex: 0 0 auto;
+    }
+
+    #colombes-panel #colombesForm {
+      flex: 0 0 auto;
+      margin-top: 6px;
+    }
