@@ -548,3 +548,11 @@
     .joker-toggle-btn.is-wiggle {
       animation: jokerWiggle 0.7s ease;
     }
+
+    .server-plan-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.88);
+      margin-bottom: 12px;
+      letter-spacing: 0.3px;
+    }

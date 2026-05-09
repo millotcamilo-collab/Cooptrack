@@ -132,6 +132,10 @@
             <div class="amsterdam-stage__right">
               <div id="serverNextPanel" class="server-next server-next--readonly is-hidden">
 
+                <div id="serverPlanLabel" class="server-plan-label">
+                  Gratis
+                </div>
+
                 <label class="server-next__item">
                   <img src="/assets/icons/Sello40.gif" class="server-next__icon">
                   <span class="server-next__label">Aprobar J ♠ ♥ ♦ ♣</span>
@@ -361,21 +365,30 @@
     // 👇 PEGAR ACÁ
     function updateServerNextLabels() {
       const labels = document.querySelectorAll("#serverNextPanel .server-next__label");
+      const planLabel = document.getElementById("serverPlanLabel");
+
 
       if (!labels.length) return;
 
       if (isBlueOnTop) {
+        if (planLabel) {
+          planLabel.textContent = "Costo mensual 1 dólar";
+        }
         labels[0].textContent = "Aprobar J ♥ ♠ ♦ ♣";
         labels[1].textContent = "Enviar A, K, Q ♥ ♠ ♦ ♣";
         labels[2].textContent = "Despedir A, K, Q ♥ ♠ ♦ ♣";
         labels[3].textContent = "Publicar A♥ J♥ ♠ ♣";
       } else {
+        if (planLabel) {
+          planLabel.textContent = "Gratis";
+        }
         labels[0].textContent = "Aprobar J ♥ ♠ ♦ ♣";
         labels[1].textContent = "Enviar Q ♠";
         labels[2].textContent = "Despedir Q ♠";
         labels[3].textContent = "Publicar A♥ J ♥ ♠";
       }
     }
+
     function renderFinalJokers() {
       const pack = document.getElementById("pack");
       if (!pack) return;
@@ -408,7 +421,7 @@
         renderFinalJokers();
         updateServerNextLabels();
       });
-      
+
       const btn = document.getElementById("jokerToggleBtn");
 
       btn?.addEventListener("click", () => {
