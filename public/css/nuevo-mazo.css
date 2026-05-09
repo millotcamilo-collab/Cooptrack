@@ -495,9 +495,13 @@
       display: flex !important;
       flex-direction: row !important;
       align-items: flex-start !important;
-      justify-content: flex-start !important;
+      justify-content: center !important;
       gap: 18px !important;
-      width: 100%;
+      width: auto !important;
+    }
+
+    #colombes-panel .colombes-content {
+      justify-content: center !important;
     }
 
     #colombes-panel #colombesCardZone {
