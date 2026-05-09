@@ -508,3 +508,9 @@
       flex: 0 0 auto;
       margin-top: 6px;
     }
+
+    .amsterdam-create-action {
+      margin-top: 18px;
+      display: flex;
+      justify-content: flex-start;
+    }
