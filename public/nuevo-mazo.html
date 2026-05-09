@@ -187,6 +187,11 @@
       return String(params.get("mode") || "create").trim().toLowerCase();
     }
 
+    function getJokerPlayIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return Number(params.get("jokerPlayId") || params.get("playId") || 0);
+    }
+
     function getDeckIdFromUrl() {
       const params = new URLSearchParams(window.location.search);
       return Number(params.get("deckId") || params.get("id") || 0);
@@ -274,6 +279,7 @@
       }
 
       const deckId = getDeckIdFromUrl();
+
       if (!deckId) {
         setStatus("Falta deckId para solicitar Joker azul", true);
         return;
@@ -288,25 +294,45 @@
       }
 
       try {
-        setStatus("Enviando solicitud de Joker azul...");
+        const jokerPlayId = getJokerPlayIdFromUrl();
+
+        setStatus(
+          jokerPlayId
+            ? "Enviando renovación de Joker azul..."
+            : "Enviando solicitud de Joker azul..."
+        );
 
         const now = new Date().toISOString();
         const playCode = buildJokerBluePlayCode(deckId, userId, now);
 
-        const response = await fetch(`${API_BASE_URL}/plays`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({
+        const url = jokerPlayId
+          ? `${API_BASE_URL}/plays/${jokerPlayId}`
+          : `${API_BASE_URL}/plays`;
+
+        const method = jokerPlayId ? "PATCH" : "POST";
+
+        const body = jokerPlayId
+          ? {
+            play_status: "PENDING",
+            play_code: playCode,
+            text: "Renovación de Joker azul"
+          }
+          : {
             deck_id: deckId,
             parent_play_id: null,
             target_user_id: ADMIN_USER_ID,
             play_code: playCode,
             play_status: "PENDING",
             text: "Solicitud de Joker azul"
-          })
+          };
+
+        const response = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(body)
         });
 
         const data = await response.json();
@@ -316,7 +342,12 @@
           return;
         }
 
-        setStatus("Solicitud de Joker azul enviada.");
+        setStatus(
+          jokerPlayId
+            ? "Renovación de Joker azul enviada."
+            : "Solicitud de Joker azul enviada."
+        );
+
         window.location.href = `/mazo.html?id=${deckId}`;
       } catch (error) {
         console.error("Error solicitando Joker azul:", error);
@@ -415,12 +446,6 @@
         }
     </button>
   `;
-
-      document.getElementById("jokerToggleBtn")?.addEventListener("click", () => {
-        isBlueOnTop = !isBlueOnTop;
-        renderFinalJokers();
-        updateServerNextLabels();
-      });
 
       const btn = document.getElementById("jokerToggleBtn");
 
