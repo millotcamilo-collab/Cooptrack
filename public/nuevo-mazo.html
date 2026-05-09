@@ -222,15 +222,6 @@
       }
     }
 
-    function renderJokerBlueCardInColombes() {
-      const zone = document.getElementById("colombesCardZone");
-      if (!zone) return;
-
-      zone.innerHTML = `
-    <img src="/assets/icons/joker_blue.gif" class="card" alt="Joker azul">
-  `;
-    }
-
     function hideEl(id) {
       const el = document.getElementById(id);
       if (el) {
@@ -761,7 +752,20 @@
       const mode = getPageMode();
 
       if (mode === "jokerblue") {
-        isBlueOnTop = true;
+        renderDeckPlacard();
+
+        const placardEl = document.getElementById("placard-container");
+        if (placardEl) {
+          placardEl.classList.add("is-visible");
+        }
+
+        renderFinalJokers();
+        updateServerNextLabels();
+
+        showEl("serverNextPanel");
+        showEl("sendJokerBlueBtn");
+
+        enableServerNextPanel();
       }
 
       applyPageMode();
