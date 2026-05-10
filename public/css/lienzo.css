@@ -192,10 +192,13 @@ body {
 
 .lienzo-target-actions {
   display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
   gap: 10px;
   margin-top: 12px;
+  flex-wrap: wrap;
 }
-
 
 .lienzo-target-actions img {
   height: 35px;

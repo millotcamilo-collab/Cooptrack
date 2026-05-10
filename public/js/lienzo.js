@@ -400,12 +400,13 @@
       <div class="panel-topbar panel-topbar--single">
         <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-target-header lienzo-target-header--top">
-            <div class="lienzo-target-header__name">${escapeHtml(sourceUser.nickname)}</div>
+            
             <img
               class="lienzo-target-header__photo"
               src="${escapeHtml(sourceUser.profile_photo_url)}"
               alt="${escapeHtml(sourceUser.nickname)}"
             />
+            <div class="lienzo-target-header__name">${escapeHtml(sourceUser.nickname)}</div>
           </div>
         </div>
       </div>
@@ -478,13 +479,14 @@
       <div class="panel-topbar panel-topbar--single">
         <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-target-header lienzo-target-header--top">
-            <div class="lienzo-target-header__name">${escapeHtml(targetUser.nickname)}</div>
+            
             <img
               class="lienzo-target-header__photo"
               src="${escapeHtml(targetUser.profile_photo_url)}"
               alt="${escapeHtml(targetUser.nickname)}"
             />
           </div>
+          <div class="lienzo-target-header__name">${escapeHtml(targetUser.nickname)}</div>
         </div>
       </div>
 
