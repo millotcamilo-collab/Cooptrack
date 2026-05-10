@@ -575,9 +575,7 @@
             <div class="lienzo-target-header__name">${escapeHtml(targetUser.nickname)}</div>
           </div>
         </div>
-        <div class="panel-topbar__col panel-topbar__col--actions">
-          ${renderTargetActions(play)}
-        </div>
+
       </div>
 
 <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
@@ -590,6 +588,7 @@
 
 <div class="lienzo-target-actions">
   ${renderSourceActions(play)}
+  ${renderTargetActions(play)}
 </div>
     </section>
   `;
