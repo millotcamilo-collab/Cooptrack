@@ -487,7 +487,7 @@
 
         return `
     <section class="lienzo-panel lienzo-panel--source panel--split-top">
-      <div class="panel-topbar">
+      <div class="panel-topbar panel-topbar--single">
         <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-target-header lienzo-target-header--top">
             

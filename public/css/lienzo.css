@@ -1236,3 +1236,17 @@ body {
   display: block;
   object-fit: contain;
 }
+
+/* Centrar identidad cuando ya no hay columna de acciones */
+.panel-topbar--single {
+  grid-template-columns: 1fr;
+}
+
+.panel-topbar--single .panel-topbar__col--identity {
+  justify-content: center;
+}
+
+.panel-topbar--single .lienzo-target-header--top,
+.panel-topbar--single .lienzo-source-header--top {
+  justify-content: center;
+}
