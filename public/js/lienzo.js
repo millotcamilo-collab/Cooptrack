@@ -485,8 +485,9 @@
               src="${escapeHtml(targetUser.profile_photo_url)}"
               alt="${escapeHtml(targetUser.nickname)}"
             />
+            <div class="lienzo-target-header__name">${escapeHtml(targetUser.nickname)}</div>
           </div>
-          <div class="lienzo-target-header__name">${escapeHtml(targetUser.nickname)}</div>
+          
         </div>
       </div>
 

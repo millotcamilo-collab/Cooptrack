@@ -330,17 +330,18 @@
 
     function buildPanelTopbar({ user, actionsHtml = "" }) {
         return `
-      <div class="panel-topbar">
+      <div class="panel-topbar panel-topbar--single">
         <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-source-header lienzo-source-header--top">
-            <div class="lienzo-source-header__name">
-              ${escapeHtml(user?.nickname || "Usuario")}
-            </div>
+
             <img
               class="lienzo-source-header__photo"
               src="${escapeHtml(user?.profile_photo_url || "/assets/icons/singeta120.gif")}"
               alt="${escapeHtml(user?.nickname || "Usuario")}"
             />
+            <div class="lienzo-source-header__name">
+              ${escapeHtml(user?.nickname || "Usuario")}
+            </div>
           </div>
         </div>
 
