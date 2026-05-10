@@ -2258,8 +2258,9 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       const isQSpade = currentRank === 'Q' && currentSuit === 'SPADE';
       const isKCard = currentRank === 'K';
       const isACard = currentRank === 'A';
+      const isJHeart = currentRank === 'J' && currentSuit === 'HEART';
 
-      if (!isQSpade && !isKCard && !isACard) {
+      if (!isQSpade && !isKCard && !isACard && !isJHeart) {
         return res.status(400).json({
           ok: false,
           error: 'Esta jugada no admite rechazo'
@@ -2269,6 +2270,15 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       const targetUserId = Number(current.target_user_id || 0);
       const aceClubOwnerUserId = await getAceClubOwnerUserId(client, current.deck_id);
       const creatorUserId = Number(current.created_by_user_id || 0);
+      const aceHeartOwnerUserId = await getAceOwnerUserId(
+        client,
+        current.deck_id,
+        'HEART'
+      );
+
+      const isHeartAceReject =
+        isJHeart &&
+        Number(userId) === Number(aceHeartOwnerUserId);
 
       const isTargetReject =
         targetUserId &&
@@ -2279,7 +2289,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         currentStatus === 'PENDING' &&
         Number(userId) === Number(aceClubOwnerUserId);
 
-      if (!isTargetReject && !isValidatorReject) {
+      if (!isTargetReject && !isValidatorReject && !isHeartAceReject) {
         return res.status(403).json({
           ok: false,
           error: 'Solo el destinatario o el A♣ validador puede rechazar esta invitación'
