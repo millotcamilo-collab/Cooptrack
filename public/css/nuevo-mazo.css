@@ -476,9 +476,9 @@
 
     #amsterdam-panel .lienzo-source-header--top {
       justify-content: center;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
-      gap: 6px;
+      gap: 10px;
       margin-bottom: 0;
     }
 
