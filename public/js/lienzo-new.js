@@ -117,12 +117,12 @@
       <div class="panel-topbar panel-topbar--single">
         <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-source-header lienzo-source-header--top">
-            <div class="lienzo-source-header__name">${escapeHtml(name)}</div>
             <img
               class="lienzo-source-header__photo"
               src="${escapeHtml(photo)}"
               alt="${escapeHtml(name)}"
             />
+            <div class="lienzo-source-header__name">${escapeHtml(name)}</div>
           </div>
         </div>
       </div>
@@ -510,14 +510,14 @@
       <div class="panel-topbar panel-topbar--single">
         <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-target-header lienzo-target-header--top">
-            <div class="lienzo-target-header__name">
-              ${escapeHtml(name)}
-            </div>
             <img
               class="lienzo-target-header__photo"
               src="${escapeHtml(photo)}"
               alt="${escapeHtml(name)}"
             />
+            <div class="lienzo-target-header__name">
+              ${escapeHtml(name)}
+            </div>
           </div>
         </div>
       </div>
@@ -1069,14 +1069,14 @@
     const topbar = buildPanelTopbar({
       identityHtml: `
       <div class="lienzo-source-header lienzo-source-header--top">
-        <div class="lienzo-source-header__name">
-          ${escapeHtml(userName)}
-        </div>
         <img
           class="lienzo-source-header__photo"
           src="${escapeHtml(userPhoto)}"
           alt="${escapeHtml(userName)}"
         />
+        <div class="lienzo-source-header__name">
+          ${escapeHtml(userName)}
+        </div>
       </div>
     `,
       actionsHtml: ""

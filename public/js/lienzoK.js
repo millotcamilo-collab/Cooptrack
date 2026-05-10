@@ -490,17 +490,16 @@
       <div class="panel-topbar">
         <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-target-header lienzo-target-header--top">
-            <div class="lienzo-target-header__name">${escapeHtml(sourceUser.nickname)}</div>
+            
             <img
               class="lienzo-target-header__photo"
               src="${escapeHtml(sourceUser.profile_photo_url)}"
               alt="${escapeHtml(sourceUser.nickname)}"
             />
+            <div class="lienzo-target-header__name">${escapeHtml(sourceUser.nickname)}</div>
           </div>
         </div>
-        <div class="panel-topbar__col panel-topbar__col--actions">
-          ${renderSourceActions(play)}
-        </div>
+
       </div>
 
       <div class="lienzo-source-cards">
@@ -567,12 +566,13 @@
       <div class="panel-topbar">
         <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-target-header lienzo-target-header--top">
-            <div class="lienzo-target-header__name">${escapeHtml(targetUser.nickname)}</div>
+            
             <img
               class="lienzo-target-header__photo"
               src="${escapeHtml(targetUser.profile_photo_url)}"
               alt="${escapeHtml(targetUser.nickname)}"
             />
+            <div class="lienzo-target-header__name">${escapeHtml(targetUser.nickname)}</div>
           </div>
         </div>
         <div class="panel-topbar__col panel-topbar__col--actions">
@@ -580,13 +580,17 @@
         </div>
       </div>
 
-      <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-        <img
-          class="lienzo-card-image"
-          src="${escapeHtml(getCardImageSrc(play?.card_rank, play?.card_suit))}"
-          alt="${escapeHtml(`K${getSuitSymbol(play?.card_suit)}`)}"
-        />
-      </div>
+<div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+  <img
+    class="lienzo-card-image"
+    src="${escapeHtml(getCardImageSrc(play?.card_rank, play?.card_suit))}"
+    alt="${escapeHtml(`K${getSuitSymbol(play?.card_suit)}`)}"
+  />
+</div>
+
+<div class="lienzo-target-actions">
+  ${renderSourceActions(play)}
+</div>
     </section>
   `;
     }
