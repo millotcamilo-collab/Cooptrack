@@ -561,14 +561,6 @@ body {
   margin-bottom: 0;
 }
 
-.lienzo-target-header--top .lienzo-target-header__name {
-  order: 1;
-}
-
-.lienzo-target-header--top .lienzo-target-header__photo {
-  order: 2;
-}
-
 .nuevo-mazo-target-actions--top {
   width: 100%;
   margin-top: 0;
