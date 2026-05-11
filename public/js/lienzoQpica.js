@@ -1415,21 +1415,22 @@ ${location ? `
         ${topbar}
 
         <div class="lienzo-source-cards">
-          <div class="lienzo-source-stack">
-            ${scene.backgroundCards.map(renderBackgroundCard).join("")}
-          </div>
+  <div class="lienzo-source-stack">
+    ${scene.backgroundCards.map(renderBackgroundCard).join("")}
+  </div>
+
 ${parentJSpadeText
-                ? `
+  ? `
     <div class="lienzo-parent-play-box">
-      ${renderPlayCardBox(play)}
+      ${renderSourceSessionDia(play)}
     </div>
   `
-                : ""
-            }
+  : ""
+}
 
-          ${droppedCardHtml}
-          ${qHeartBoxHtml}
-        </div>
+  ${droppedCardHtml}
+  ${qHeartBoxHtml}
+</div>
 
       </section>
     `;
