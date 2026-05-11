@@ -298,14 +298,14 @@ body {
 
 .lienzo-source-stack {
   position: relative;
-  width: 240px;
+  width: 180px;
   height: 110px;   /* antes era 300px */
 }
 
 .lienzo-source-stack__card {
   position: absolute;
   top: 5px;
-  width: 180px;
+  width: auto;
   height: 120px;
   z-index: 1;
 }
