@@ -1418,12 +1418,12 @@ ${location ? `
           <div class="lienzo-source-stack">
             ${scene.backgroundCards.map(renderBackgroundCard).join("")}
           </div>
-          ${parentJSpadeText
+${parentJSpadeText
                 ? `
-      <div class="lienzo-parent-j-text">
-        ${escapeHtml(parentJSpadeText)}
-      </div>
-    `
+    <div class="lienzo-parent-play-box">
+      ${renderPlayCardBox(play)}
+    </div>
+  `
                 : ""
             }
 

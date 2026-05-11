@@ -2014,13 +2014,13 @@
             ${scene.backgroundCards.map(renderBackgroundCard).join("")}
           </div>
 ${parentJSpadeText
-        ? `
-    <div class="lienzo-parent-j-text">
-      ${escapeHtml(parentJSpadeText)}
+  ? `
+    <div class="lienzo-parent-play-box">
+      ${renderSourceSessionDia(play)}
     </div>
   `
-        : ""
-      }
+  : ""
+}
           ${qqState && getQQPicaDisplayedSide(play) === "COLOMBES" ? droppedCardHtml : ""}
           ${qHeartBoxHtml}
         </div>
