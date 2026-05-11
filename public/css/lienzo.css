@@ -305,7 +305,7 @@ body {
 .lienzo-source-stack__card {
   position: absolute;
   top: 5px;
-  width: auto;
+  width: 180px;
   height: 120px;
   z-index: 1;
 }
@@ -313,7 +313,7 @@ body {
 .lienzo-source-active {
   position: absolute;
   top: 0;
-  left: 54px;
+  left: 36px;
   z-index: 5;
 }
 
