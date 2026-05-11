@@ -172,7 +172,7 @@
     return plays
       .filter((p, index) => {
         // igual que en deck-row / lienzos: evitar primeras líneas ACL
-        if (index < 10) return false;
+        //if (index < 10) return false;
 
         const rank = String(p.rank || "").toUpperCase();
         const suit = String(p.suit || "").toUpperCase();
