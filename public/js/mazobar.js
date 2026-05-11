@@ -191,8 +191,12 @@
         let ownerId = 0;
 
         if (rank === "A") {
-          ownerId = Number(p.target_user_id || p.created_by_user_id || 0);
-          return flow === "foundation" && ownerId === viewerId;
+          ownerId =
+            Number(p.target_user_id || 0) ||
+            Number(p.created_by_user_id || 0) ||
+            Number(p.parsed?.userId || 0);
+
+          return ownerId === viewerId;
         }
 
         if (rank === "K") {
@@ -625,9 +629,9 @@
             <div class="mazobar__top-left">
               <div class="mazobar__topcards">
                 ${isAdminPage
-                ? buildTopCardsHTML(enabledCards)
-                : buildTopCardsHTML(corporateCards)
-                }
+        ? buildTopCardsHTML(enabledCards)
+        : buildTopCardsHTML(corporateCards)
+      }
             </div>
 
               ${buildDeckPhotoHTML(deck, normalizedPlays, currentUserId)}
