@@ -163,6 +163,55 @@
     });
   }
 
+  function getCorporateCardsForCurrentUser(plays, currentUserId) {
+    const viewerId = Number(currentUserId || 0);
+    if (!viewerId) return [];
+
+    const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
+
+    return plays
+      .filter((p, index) => {
+        // igual que en deck-row / lienzos: evitar primeras líneas ACL
+        if (index < 10) return false;
+
+        const rank = String(p.rank || "").toUpperCase();
+        const suit = String(p.suit || "").toUpperCase();
+        const status = String(p.status || "").toUpperCase();
+        const flow = String(p.parsed?.flow || "").toLowerCase();
+        const action = String(p.action || "").toLowerCase();
+
+        if (!["A", "K"].includes(rank)) return false;
+        if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+        if (finalStatuses.includes(status)) return false;
+
+        // excluir ACL / puedeJugar
+        if (flow === "acl") return false;
+        if (action === "puedejugar") return false;
+
+        let ownerId = 0;
+
+        if (rank === "A") {
+          ownerId = Number(p.target_user_id || p.created_by_user_id || 0);
+          return flow === "foundation" && ownerId === viewerId;
+        }
+
+        if (rank === "K") {
+          ownerId =
+            status === "APPROVED"
+              ? Number(p.target_user_id || p.created_by_user_id || 0)
+              : Number(p.created_by_user_id || 0);
+
+          return ["ACTIVE", "APPROVED", "SENT", "PENDING"].includes(status) &&
+            ownerId === viewerId;
+        }
+
+        return false;
+      })
+      .filter((card, index, self) => {
+        const key = `${card.rank}_${card.suit}`;
+        return index === self.findIndex((c) => `${c.rank}_${c.suit}` === key);
+      });
+  }
 
   function getCurrentJokerPlay(plays) {
     const jokerPlays = plays.filter((p) => {
@@ -558,6 +607,10 @@
       : [];
 
     const enabledCards = getEnabledTopCards(normalizedPlays);
+    const corporateCards = getCorporateCardsForCurrentUser(
+      normalizedPlays,
+      currentUserId
+    );
     const deckName = deck?.name || "Mazo";
     const currencyCode = getCurrencyCode(deck);
     const balance = getApprovedClubTotal(normalizedPlays);
@@ -571,8 +624,11 @@
 
             <div class="mazobar__top-left">
               <div class="mazobar__topcards">
-                ${isAdminPage ? buildTopCardsHTML(enabledCards) : ""}
-              </div>
+                ${isAdminPage
+                ? buildTopCardsHTML(enabledCards)
+                : buildTopCardsHTML(corporateCards)
+                }
+            </div>
 
               ${buildDeckPhotoHTML(deck, normalizedPlays, currentUserId)}
             </div>
