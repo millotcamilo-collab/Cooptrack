@@ -170,10 +170,7 @@
     const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
 
     return plays
-      .filter((p, index) => {
-        // igual que en deck-row / lienzos: evitar primeras líneas ACL
-        //if (index < 10) return false;
-
+      .filter((p) => {
         const rank = String(p.rank || "").toUpperCase();
         const suit = String(p.suit || "").toUpperCase();
         const status = String(p.status || "").toUpperCase();
@@ -184,7 +181,6 @@
         if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
         if (finalStatuses.includes(status)) return false;
 
-        // excluir ACL / puedeJugar
         if (flow === "acl") return false;
         if (action === "puedejugar") return false;
 
@@ -211,6 +207,7 @@
 
         return false;
       })
+      
       .filter((card, index, self) => {
         const key = `${card.rank}_${card.suit}`;
         return index === self.findIndex((c) => `${c.rank}_${c.suit}` === key);
