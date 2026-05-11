@@ -2178,12 +2178,13 @@ ${location ? `
       <div class="panel-topbar panel-topbar--single">
         <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-source-header lienzo-source-header--top">
-            <div class="lienzo-source-header__name">${escapeHtml(name)}</div>
+            
             <img
               class="lienzo-source-header__photo"
               src="${escapeHtml(photo)}"
               alt="${escapeHtml(name)}"
             />
+            <div class="lienzo-source-header__name">${escapeHtml(name)}</div>
           </div>
         </div>
       </div>

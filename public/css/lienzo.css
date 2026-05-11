@@ -1250,3 +1250,15 @@ body {
 .panel-topbar--single .lienzo-source-header--top {
   justify-content: center;
 }
+
+/* Centrar contenido principal de Amsterdam */
+#amsterdam .lienzo-target-mainrow {
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+#amsterdam .lienzo-target-dropzone {
+  margin-left: auto;
+  margin-right: auto;
+}
