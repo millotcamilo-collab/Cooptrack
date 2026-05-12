@@ -1421,8 +1421,33 @@ ${location ? `
 
 ${parentJSpadeText
   ? `
-    <div class="lienzo-parent-play-box">
-      ${renderSourceSessionDia(play)}
+    <div class="lienzo-parent-play-box lienzo-parent-play-box--inline">
+
+      <div class="lienzo-play-card-box__info">
+        <div class="play-text">
+          ${escapeHtml(parentJSpadeText)}
+        </div>
+
+        ${parentPlay?.start_date ? `
+          <div class="play-meta">
+            <img class="play-meta__icon"
+                 src="/assets/icons/reloj60.gif"
+                 alt="" />
+            <span>${escapeHtml(formatTimeLabel(parentPlay.start_date))}</span>
+          </div>
+        ` : ""}
+
+        ${parentPlay?.location ? `
+          <div class="play-meta">
+            <img class="play-meta__icon"
+                 src="/assets/icons/LocGlobito80.gif"
+                 alt="" />
+            <span>${escapeHtml(parentPlay.location)}</span>
+          </div>
+        ` : ""}
+
+      </div>
+
     </div>
   `
   : ""
