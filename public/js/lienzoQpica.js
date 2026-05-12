@@ -2248,11 +2248,14 @@ ${parentJSpadeText
                 )
                 : "";
 
-            return `
-    <div class="lienzo-tribunes lienzo-tribunes--colombes">
-      ${validatorOnlyHtml}
-    </div>
-  `;
+const sourceTribune = renderSourcePlayerPanel(play);
+
+return `
+  <div class="lienzo-tribunes lienzo-tribunes--colombes">
+    ${sourceTribune}
+    ${validatorOnlyHtml}
+  </div>
+`;
         }
 
         const sourceTribune = renderSourcePlayerPanel(play);
