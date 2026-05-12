@@ -1267,3 +1267,14 @@ body {
   flex: 0 0 auto;
   align-self: flex-start;
 }
+
+/* Q♠ Colombes: acercar info de la J a la carta */
+.lienzo-panel--source .lienzo-parent-play-box--inline {
+  margin-left: -48px;   /* acercar a la J */
+  align-self: flex-start;
+}
+
+.lienzo-panel--source .lienzo-parent-play-box--inline .lienzo-play-card-box__info {
+  padding-top: 4px;
+  min-width: 140px;
+}
