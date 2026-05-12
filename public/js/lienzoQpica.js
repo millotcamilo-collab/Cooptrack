@@ -1420,7 +1420,7 @@ ${location ? `
   </div>
 
 ${parentJSpadeText
-  ? `
+                ? `
     <div class="lienzo-parent-play-box lienzo-parent-play-box--inline">
 
       <div class="lienzo-play-card-box__info">
@@ -1450,8 +1450,8 @@ ${parentJSpadeText
 
     </div>
   `
-  : ""
-}
+                : ""
+            }
 
   ${droppedCardHtml}
   ${qHeartBoxHtml}
@@ -2239,21 +2239,20 @@ ${parentJSpadeText
             suit === "SPADE" &&
             ["SENT", "APPROVED", "REJECTED", "CANCELLED"].includes(status)
         ) {
-            const aceClubTribune = resolveAuthorityTribuneForTarget(play);
+            const sourceTribune = renderSourcePlayerPanel(play);
 
-            const validatorOnlyHtml = aceClubTribune
-                ? renderUserTribune(
-                    aceClubTribune,
-                    getValidatorRoleCards(aceClubTribune)
-                )
-                : "";
+            const validatorTribunes = getValidatorTribunesForPlay(play)
+                .slice(0, 1) // invitado: máximo una segunda tribuna
+                .map((validator) => {
+                    const cards = getValidatorRoleCards(validator);
+                    return renderUserTribune(validator, cards);
+                })
+                .join("");
 
-const sourceTribune = renderSourcePlayerPanel(play);
-
-return `
+            return `
   <div class="lienzo-tribunes lienzo-tribunes--colombes">
     ${sourceTribune}
-    ${validatorOnlyHtml}
+    ${validatorTribunes}
   </div>
 `;
         }
