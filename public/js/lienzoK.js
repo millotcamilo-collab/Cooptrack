@@ -930,11 +930,14 @@
         const aceClubOwnerId = getAceClubOwnerUserId();
         const currentUserId = getCurrentUserId();
 
+        const isCreator = currentUserId === creatorId;
+        const isAceClubValidator = currentUserId === aceClubOwnerId;
+
         const shouldShowValidatorTribune =
-            isSourceViewer(play) &&
             aceClubOwnerId &&
             creatorId &&
-            aceClubOwnerId !== creatorId;
+            aceClubOwnerId !== creatorId &&
+            (isCreator || isAceClubValidator);
 
         if (!shouldShowValidatorTribune) {
             return sourceTribune;
