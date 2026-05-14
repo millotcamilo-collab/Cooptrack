@@ -1581,29 +1581,34 @@ async function getMazoStateHandler(req, res) {
       .filter((play) => {
         const rank = String(play.card_rank || '').toUpperCase();
         const suit = String(play.card_suit || '').toUpperCase();
-        const flow = String(play.play_code || '').split('§')[7] || '';
-        const targetId = Number(play.target_user_id || 0);
-        const authorId = Number(play.created_by_user_id || 0);
+        const status = String(play.play_status || '').toUpperCase();
+        const parts = String(play.play_code || '').split('§');
+        const action = String(parts[5] || '').toLowerCase();
+        const flow = String(parts[7] || '').toLowerCase();
 
-        const isAce = rank === 'A';
-        const isCorporateSuit =
-          suit === 'HEART' ||
-          suit === 'SPADE' ||
-          suit === 'DIAMOND' ||
-          suit === 'CLUB';
+        if (!['A', 'K'].includes(rank)) return false;
+        if (!['HEART', 'SPADE', 'DIAMOND', 'CLUB'].includes(suit)) return false;
+        if (['QUIT', 'FIRED', 'REJECTED', 'CANCELLED'].includes(status)) return false;
+        if (flow === 'acl') return false;
+        if (action === 'puedejugar') return false;
 
-        const isActive =
-          String(play.play_status || '').toUpperCase() !== 'BLOCKED';
-
-        const isFoundation = String(flow).trim().toLowerCase() === 'foundation';
-
-        return (
-          isAce &&
-          isCorporateSuit &&
-          isActive &&
-          isFoundation &&
-          (targetId === userId || authorId === userId)
+        const ownerId = Number(
+          play.target_user_id ||
+          play.created_by_user_id ||
+          0
         );
+
+        if (ownerId !== Number(userId)) return false;
+
+        if (rank === 'A') {
+          return flow === 'foundation';
+        }
+
+        if (rank === 'K') {
+          return ['ACTIVE', 'APPROVED', 'SENT', 'PENDING'].includes(status);
+        }
+
+        return false;
       })
       .map((play) => ({
         play_id: play.id,
@@ -1623,6 +1628,7 @@ async function getMazoStateHandler(req, res) {
       deck: mazo,
       plays,
       corporateCards,
+      canPlay: corporateCards.length > 0,
     });
 
   } catch (error) {
