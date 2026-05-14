@@ -48,14 +48,82 @@
     container.innerHTML = "";
   }
 
-function userCanPlayInDeck(deck, state = null) {
-  if (!getToken()) return false;
+  function normalizeRank(value) {
+    return String(value || "").trim().toUpperCase();
+  }
 
-  return !!window.__canPlay;
-}
+  function normalizeSuit(value) {
+    return String(value || "").trim().toUpperCase();
+  }
+
+  function parsePlayCode(code) {
+    const parts = String(code || "").split("§");
+
+    return {
+      rank: parts[3] || "",
+      suit: parts[4] || "",
+      action: parts[5] || "",
+      flow: parts[7] || "",
+      userId: parts[1] || ""
+    };
+  }
+
+  function getCurrentUserId(state = null) {
+    return Number(
+      state?.userId ||
+      state?.currentUser?.id ||
+      window.__currentUser?.id ||
+      window.__currentState?.currentUser?.id ||
+      0
+    );
+  }
+
+  function userOwnsPlayableAOrK(state = null) {
+    const plays = Array.isArray(state?.plays)
+      ? state.plays
+      : Array.isArray(window.__currentState?.plays)
+        ? window.__currentState.plays
+        : [];
+
+    const currentUserId = getCurrentUserId(state);
+    if (!currentUserId) return false;
+
+    return plays.some((p) => {
+      const parsed = parsePlayCode(p?.play_code);
+
+      const rank = normalizeRank(p?.rank || p?.card_rank || parsed.rank);
+      const suit = normalizeSuit(p?.suit || p?.card_suit || parsed.suit);
+      const status = normalizeRank(p?.status || p?.play_status);
+      const action = String(p?.action || parsed.action || "").toLowerCase();
+      const flow = String(p?.flow || parsed.flow || "").toLowerCase();
+
+      if (!["A", "K"].includes(rank)) return false;
+      if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+      if (["QUIT", "FIRED", "REJECTED", "CANCELLED"].includes(status)) return false;
+
+      // No contar ACL / puedeJugar como carta corporativa real
+      if (flow === "acl") return false;
+      if (action === "puedejugar") return false;
+
+      const ownerId = Number(
+        p?.target_user_id ||
+        p?.created_by_user_id ||
+        parsed.userId ||
+        0
+      );
+
+      return ownerId === currentUserId;
+    });
+  }
+
+  function userCanPlayInDeck(deck, state = null) {
+    if (!getToken()) return false;
+
+    return !!window.__canPlay || userOwnsPlayableAOrK(state);
+  }
 
   function buildPlayformHTML() {
-  return `
+    return `
     <section id="playform-j" class="playform ct-block ct-surface is-hidden">
 
       <div class="playform__inner">
@@ -122,7 +190,7 @@ function userCanPlayInDeck(deck, state = null) {
 
     </section>
   `;
-}
+  }
   function dispatchCreatePlay(deck, state, suit, text) {
     document.dispatchEvent(
       new CustomEvent("playform:createPlay", {

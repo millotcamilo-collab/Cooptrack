@@ -196,10 +196,12 @@
         }
 
         if (rank === "K") {
-          ownerId =
-            status === "APPROVED"
-              ? Number(p.target_user_id || p.created_by_user_id || 0)
-              : Number(p.created_by_user_id || 0);
+          ownerId = Number(
+            p.target_user_id ||
+            p.created_by_user_id ||
+            p.parsed?.userId ||
+            0
+          );
 
           return ["ACTIVE", "APPROVED", "SENT", "PENDING"].includes(status) &&
             ownerId === viewerId;
@@ -207,7 +209,7 @@
 
         return false;
       })
-      
+
       .filter((card, index, self) => {
         const key = `${card.rank}_${card.suit}`;
         return index === self.findIndex((c) => `${c.rank}_${c.suit}` === key);
