@@ -213,12 +213,13 @@
         if (rank !== "K") return false;
         if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
         if (flow === "acl") return false;
-        if (!["ACTIVE", "APPROVED", "SENT", "PENDING"].includes(status)) return false;
+        if (["QUIT", "FIRED", "REJECTED", "CANCELLED"].includes(status)) return false;
 
-        const ownerId =
-          status === "APPROVED"
-            ? Number(p?.target_user_id || p?.created_by_user_id || 0)
-            : Number(p?.created_by_user_id || 0);
+        const ownerId = Number(
+          p?.target_user_id ||
+          p?.created_by_user_id ||
+          0
+        );
 
         return ownerId === currentUserId;
       });
