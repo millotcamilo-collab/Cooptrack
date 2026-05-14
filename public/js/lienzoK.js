@@ -395,6 +395,7 @@
     function getKUiState(play) {
         const status = getPlayStatus(play);
 
+        if (status === "PENDING") return "PENDING";
         if (status === "SENT") return "SENT";
         if (status === "APPROVED") return "APPROVED";
         if (status === "QUIT") return "QUIT";
@@ -547,6 +548,26 @@
                     action: "quit-k",
                     icon: getActionIcon("quit") || "/assets/icons/step60.gif",
                     title: "Renunciar"
+                })
+            );
+        }
+
+        if (uiState === "PENDING") {
+            buttons.push(
+                renderIconButton({
+                    id: "lienzo-approve-btn",
+                    action: "validate-k",
+                    icon: getActionIcon("send") || "/assets/icons/buzon60.gif",
+                    title: "Validar y enviar"
+                })
+            );
+
+            buttons.push(
+                renderIconButton({
+                    id: "lienzo-reject-btn",
+                    action: "reject-k",
+                    icon: getActionIcon("reject") || "/assets/icons/stepback40.gif",
+                    title: "Rechazar"
                 })
             );
         }
@@ -836,6 +857,101 @@
         }
     }
 
+    function getAceClubOwnerTribune() {
+        const plays = getAllPlays();
+
+        const aceClub = plays.find((p) => {
+            const rank = normalizeRank(p?.card_rank || p?.rank);
+            const suit = normalizeSuit(p?.card_suit || p?.suit);
+            const flow = String(p?.play_code || "").split("§")[7] || "";
+
+            return (
+                rank === "A" &&
+                suit === "CLUB" &&
+                String(flow).toLowerCase() === "foundation"
+            );
+        });
+
+        if (!aceClub) return null;
+
+        const userId = Number(aceClub.target_user_id || aceClub.created_by_user_id || 0);
+        if (!userId) return null;
+
+        const user = findUserById(userId) || {};
+
+        return {
+            id: userId,
+            userId,
+            nickname:
+                aceClub.target_user_nickname ||
+                aceClub.created_by_nickname ||
+                user.nickname ||
+                "Validador A♣",
+            profile_photo_url:
+                aceClub.target_user_profile_photo_url ||
+                aceClub.created_by_profile_photo_url ||
+                user.profile_photo_url ||
+                "/assets/icons/singeta120.gif"
+        };
+    }
+
+    function renderUserTribune(user, cards = []) {
+        const name = user?.nickname || "Usuario";
+        const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+
+        return `
+    <section class="lienzo-panel lienzo-panel--source panel--split-top">
+      <div class="panel-topbar panel-topbar--single">
+        <div class="panel-topbar__col panel-topbar__col--identity">
+          <div class="lienzo-target-header lienzo-target-header--top">
+            <img
+              class="lienzo-target-header__photo"
+              src="${escapeHtml(photo)}"
+              alt="${escapeHtml(name)}"
+            />
+            <div class="lienzo-target-header__name">${escapeHtml(name)}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lienzo-source-cards">
+        <div class="lienzo-source-stack">
+          ${cards.map((card, index) => renderBackgroundCard(card, index)).join("")}
+        </div>
+      </div>
+    </section>
+  `;
+    }
+
+    function renderColombesTribunes(play) {
+        const sourceTribune = renderSourcePlayerPanel(play);
+
+        const creatorId = Number(play?.created_by_user_id || 0);
+        const aceClubOwnerId = getAceClubOwnerUserId();
+        const currentUserId = getCurrentUserId();
+
+        const shouldShowValidatorTribune =
+            isSourceViewer(play) &&
+            aceClubOwnerId &&
+            creatorId &&
+            aceClubOwnerId !== creatorId;
+
+        if (!shouldShowValidatorTribune) {
+            return sourceTribune;
+        }
+
+        const validator = getAceClubOwnerTribune();
+
+        return `
+      <div class="lienzo-tribunes lienzo-tribunes--colombes">
+        ${sourceTribune}
+        ${validator
+                ? renderUserTribune(validator, [{ card_rank: "A", card_suit: "CLUB" }])
+                : ""}
+      </div>
+    `;
+    }
+
     function renderLienzo(play) {
         console.count("renderLienzo");
 
@@ -849,7 +965,7 @@
 
       <div class="lienzo-grid">
         <div id="colombes" class="lienzo-grid__left">
-          ${renderSourcePlayerPanel(play)}
+          ${renderColombesTribunes(play)}
         </div>
 
         <div id="amsterdam" class="lienzo-grid__right">
