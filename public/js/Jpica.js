@@ -196,6 +196,25 @@
       return !["CANCELLED", "DELETED", "REJECTED"].includes(status);
     }
 
+    function userOwnsAnyActiveK() {
+      return allPlays.some((p) => {
+        const rank = normalizeRank(p?.rank || p?.card_rank);
+        const suit = normalizeSuit(p?.suit || p?.card_suit);
+        const status = String(p?.play_status || p?.status || "").toUpperCase();
+
+        if (rank !== "K") return false;
+        if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+        if (!["ACTIVE", "APPROVED", "SENT", "PENDING"].includes(status)) return false;
+
+        const ownerId =
+          status === "APPROVED"
+            ? Number(p?.target_user_id || p?.created_by_user_id || 0)
+            : Number(p?.created_by_user_id || 0);
+
+        return ownerId === currentUserId;
+      });
+    }
+
     function resolveSpadeAceHolderUserId(plays) {
       const aceSpadePlays = plays
         .filter((p) => {
@@ -483,16 +502,16 @@
         row.dataset.mode = mode;
       }
 
-function canLaunchQspade(play) {
-  return isFutureDate(play?.start_date || play?.end_date);
-}
+      function canLaunchQspade(play) {
+        return isFutureDate(play?.start_date || play?.end_date);
+      }
 
       function renderMode() {
         const visualMode = row.dataset.mode || "read";
         const isEdit = visualMode === "edit";
         const isRead = visualMode === "read";
 
-        const userCanCreateChildren = !!window.__canPlay;
+        const userCanCreateChildren = !!window.__canPlay || userOwnsAnyActiveK();
         const showApprovedExtras =
           isApproved && !isCancelled && userCanCreateChildren;
         const showCancelApproved = canCancelApprovedPlay();
