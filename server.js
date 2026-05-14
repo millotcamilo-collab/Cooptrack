@@ -1568,8 +1568,23 @@ async function getMazoStateHandler(req, res) {
             ''
          )::int  
       WHERE p.deck_id = $1
-        AND dm.user_id = $2
-        AND ${visibilityWhere}
+  AND dm.user_id = $2
+  AND (
+    ${visibilityWhere}
+
+    OR (
+      p.card_rank IN ('A', 'K')
+      AND p.card_suit IN ('HEART', 'SPADE', 'DIAMOND', 'CLUB')
+      AND UPPER(COALESCE(p.play_status, '')) NOT IN ('QUIT', 'FIRED', 'REJECTED', 'CANCELLED')
+      AND split_part(p.play_code, '§', 8) <> 'acl'
+      AND split_part(p.play_code, '§', 6) <> 'puedeJugar'
+      AND (
+        p.created_by_user_id = $2
+        OR p.target_user_id = $2
+        OR split_part(p.play_code, '§', 2) = $2::text
+      )
+    )
+  )
       ORDER BY p.id ASC
       `,
       [mazoId, userId, String(userId), `U:${userId}`]
