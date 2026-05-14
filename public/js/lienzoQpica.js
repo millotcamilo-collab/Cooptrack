@@ -2227,44 +2227,36 @@ ${parentJSpadeText
     function renderColombesTribunes(play) {
         const rank = normalizeRank(play?.card_rank || play?.rank);
         const suit = normalizeSuit(play?.card_suit || play?.suit);
-        const status = String(play?.play_status || "").trim().toUpperCase();
 
         const currentUserIsTarget = isCurrentUserTarget(play);
+        const currentUserIsSource = isCurrentUserSource(play);
 
-        // 🔥 Si el invitado está mirando una Q♠ recibida,
-        // en Colombes solo debe ver la autoridad: A♣.
+        const sourceTribune = renderSourcePlayerPanel(play);
+
+        // Invitado: solo ve la Colombes principal del anfitrión.
+        // No ve Colombes de validadores.
         if (
             currentUserIsTarget &&
             rank === "Q" &&
-            suit === "SPADE" &&
-            ["SENT", "APPROVED", "REJECTED", "CANCELLED"].includes(status)
+            suit === "SPADE"
         ) {
-            const sourceTribune = renderSourcePlayerPanel(play);
+            return `
+    <div class="lienzo-tribunes lienzo-tribunes--colombes">
+      ${sourceTribune}
+    </div>
+  `;
+        }
 
-            const validatorTribunes = getValidatorTribunesForPlay(play)
-                .slice(0, 1) // invitado: máximo una segunda tribuna
+        // Solo el anfitrión ve tribunas extra de validación.
+        // getValidatorTribunesForPlay ya decide si agrega A♣ o A♦ según corresponda.
+        const validatorTribunes = currentUserIsSource
+            ? getValidatorTribunesForPlay(play)
                 .map((validator) => {
                     const cards = getValidatorRoleCards(validator);
                     return renderUserTribune(validator, cards);
                 })
-                .join("");
-
-            return `
-  <div class="lienzo-tribunes lienzo-tribunes--colombes">
-    ${sourceTribune}
-    ${validatorTribunes}
-  </div>
-`;
-        }
-
-        const sourceTribune = renderSourcePlayerPanel(play);
-
-        const validatorTribunes = getValidatorTribunesForPlay(play)
-            .map((validator) => {
-                const cards = getValidatorRoleCards(validator);
-                return renderUserTribune(validator, cards);
-            })
-            .join("");
+                .join("")
+            : "";
 
         return `
     <div class="lienzo-tribunes lienzo-tribunes--colombes">
