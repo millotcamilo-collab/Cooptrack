@@ -163,7 +163,13 @@
 
     const state = context.state || {};
     const allPlays = Array.isArray(state.plays) ? state.plays : [];
-    const currentUserId = Number(state.userId || 0);
+    const currentUserId = Number(
+      state.userId ||
+      state.currentUser?.id ||
+      window.__currentUser?.id ||
+      window.__currentState?.currentUser?.id ||
+      0
+    );
 
     const playId = play?.id;
     let originalText = String(play?.play_text || "");
@@ -202,9 +208,11 @@
         const rank = normalizeRank(p?.rank || p?.card_rank);
         const suit = normalizeSuit(p?.suit || p?.card_suit);
         const status = String(p?.play_status || p?.status || "").toUpperCase();
+        const flow = String(p?.flow || p?.play_code?.split("§")?.[7] || "").toLowerCase();
 
         if (rank !== "K") return false;
         if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+        if (flow === "acl") return false;
         if (!["ACTIVE", "APPROVED", "SENT", "PENDING"].includes(status)) return false;
 
         const ownerId =
