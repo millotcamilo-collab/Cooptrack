@@ -1170,18 +1170,11 @@ body {
 .lienzo-tribunes--colombes > .lienzo-panel {
   flex: 1 1 0;
   min-width: 0;
-  border-radius: 0;
+
+  border-radius: 14px;
+  overflow: hidden;
 }
 
-.lienzo-tribunes--colombes > .lienzo-panel:first-child {
-  border-top-left-radius: 14px;
-  border-bottom-left-radius: 14px;
-}
-
-.lienzo-tribunes--colombes > .lienzo-panel:last-child {
-  border-top-right-radius: 14px;
-  border-bottom-right-radius: 14px;
-}
 
 .lienzo-play-card-box {
   display: flex;
