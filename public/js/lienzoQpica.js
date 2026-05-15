@@ -2272,10 +2272,22 @@ ${parentJSpadeText
 
         if (!container || !play) return;
 
+        const validatorCount = getValidatorTribunesForPlay(play).length;
+
+        let gridClass = "";
+
+        if (validatorCount === 1) {
+            gridClass = "lienzo-grid--3cols";
+        }
+
+        if (validatorCount >= 2) {
+            gridClass = "lienzo-grid--4cols";
+        }
+
         container.innerHTML = `
   ${renderDeckHeader(deck)}
 
-  <div class="lienzo-grid">
+  <div class="lienzo-grid ${gridClass}">
 <div id="colombes" class="lienzo-grid__left">
   ${renderColombesTribunes(play)}
 </div>
