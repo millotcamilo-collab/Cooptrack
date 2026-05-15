@@ -7,9 +7,15 @@
 
   const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
-  function isArchivedJHeartStatus(status) {
-    const value = normalizeStatus(status);
-    return value === "CANCELLED" || value === "REJECTED";
+  function isArchivedJHeartStatus(play) {
+    const status = normalizeStatus(play?.play_status || play?.status);
+    const rank = normalizeRank(play?.rank || play?.card_rank);
+    const suit = normalizeSuit(play?.suit || play?.card_suit);
+
+    if (rank !== "J") return false;
+    if (suit !== "HEART") return false;
+
+    return status === "CANCELLED" || status === "REJECTED";
   }
 
   function normalizeStatus(value) {
@@ -605,7 +611,7 @@
           if (!matchesTableroFilter(play, activeTableroFilter)) return false;
 
           const status = normalizeStatus(play?.play_status || play?.status);
-          if (!activeTableroStatusFilter && isArchivedJHeartStatus(status)) return false;
+          if (!activeTableroStatusFilter && isArchivedJHeartStatus(play)) return false;
 
           if (!matchesStatusFilter(play, activeTableroStatusFilter)) return false;
           return true;
