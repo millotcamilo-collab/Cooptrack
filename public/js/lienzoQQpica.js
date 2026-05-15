@@ -2201,22 +2201,33 @@ function compareCorporateCards(a, b) {
 
     if (!container || !play) return;
 
+    const validatorCount = getValidatorTribunesForPlay(play).length;
+
+    let gridClass = "";
+
+    if (validatorCount === 1) {
+        gridClass = "lienzo-grid--3cols";
+    }
+
+    if (validatorCount >= 2) {
+        gridClass = "lienzo-grid--4cols";
+    }
+
     container.innerHTML = `
-  ${renderDeckHeader(deck)}
+      ${renderDeckHeader(deck)}
 
-<div class="lienzo-grid">
-<div id="colombes" class="lienzo-grid__left">
-  ${renderColombesTribunes(play)}
-</div>
+      <div class="lienzo-grid ${gridClass}">
+        <div id="colombes" class="lienzo-grid__left">
+          ${renderColombesTribunes(play)}
+        </div>
 
-  <div id="amsterdam" class="lienzo-grid__right">
-    ${renderTargetPlayerPanel(play)}
-  </div>
-</div>
+        <div id="amsterdam" class="lienzo-grid__right">
+          ${renderTargetPlayerPanel(play)}
+        </div>
+      </div>
 
-  ${renderWeekRow(parsePlayReferenceDate(play), play)}
-`;
-
+      ${renderWeekRow(parsePlayReferenceDate(play), play)}
+    `;
     mountPlacardFromDataset(play);
     handleSettlementNotificationIfNeeded(play);
     bindLienzoActions(play);
