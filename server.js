@@ -2497,6 +2497,12 @@ RETURNING *
 
         await addReadersToPlay(client, updatedPlay.id, [aceClubOwnerUserId]);
       }
+      const targetUserId = Number(updatedPlay.target_user_id || 0);
+
+      if (targetUserId) {
+        await addReadersToPlay(client, updatedPlay.id, [targetUserId]);
+      }
+
     }
 
     const previousSettlement = getSettlementInfoFromPlayCode(current.play_code);
