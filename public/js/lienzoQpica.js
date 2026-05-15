@@ -2266,6 +2266,13 @@ ${parentJSpadeText
   `;
     }
 
+    function hasPersistedQHeartPayment(play) {
+        const parsed = parsePlayCode(play?.play_code || "");
+        const flow = String(parsed?.flow || "").toLowerCase();
+
+        return flow.includes("pay:qheart");
+    }
+
     function renderLienzo(play) {
         const container = getLienzoContainer();
         const deck = getCurrentDeck();
@@ -2317,6 +2324,16 @@ ${parentJSpadeText
           </div>
         `;
             }
+            return;
+        }
+
+        if (hasPersistedQHeartPayment(play)) {
+            const deckId =
+                Number(play?.deck_id || 0) ||
+                Number(getCurrentDeck()?.id || 0) ||
+                new URLSearchParams(window.location.search).get("deckId");
+
+            window.location.href = `/lienzoQQpica.html?deckId=${deckId}&playId=${play.id}`;
             return;
         }
 
