@@ -908,6 +908,16 @@ body {
   height: 250px;
 }
 
+/* 2 Colombes + Amsterdam */
+.lienzo-grid--3cols {
+  grid-template-columns: 2fr 1fr;
+}
+
+/* 3 Colombes + Amsterdam */
+.lienzo-grid--4cols {
+  grid-template-columns: 3fr 1fr;
+}
+
 .lienzo-grid__left,
 .lienzo-grid__right {
   min-width: 0;
