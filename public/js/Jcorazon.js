@@ -13,7 +13,6 @@
     const SUITS = ICONS.suits || {};
     const ACTIONS = ICONS.actions || {};
 
-    const sendIcon = escapeHtml(ACTIONS.send || "/assets/icons/buzon60.gif");
 
     const state = context.state || {};
     const allPlays = Array.isArray(state.plays) ? state.plays : [];
@@ -137,7 +136,6 @@
       const btnExit = row.querySelector('[data-action="exit-edit"]');
       const btnPrived = row.querySelector('[data-action="open-private-readers"]');
       const btnReaders = row.querySelector('[data-action="show-readers"]');
-      const btnSend = row.querySelector('[data-action="send-play"]');
 
       function getCurrentText() {
         return String(textInput?.value || "").trim();
@@ -161,11 +159,6 @@
         const isEditMode = row.dataset.mode === "edit";
         const isSent = statusRaw === "SENT";
 
-        if (!isApproved && !isEditMode && userCanEdit && !userIsHeartAceHolder && !isSent) {
-          showButton(btnSend);
-        } else {
-          hideButton(btnSend);
-        }
 
         if (textView) textView.style.display = isEditMode ? "none" : "";
         if (textInput) textInput.style.display = isEditMode ? "block" : "none";
@@ -180,7 +173,15 @@
           hideButton(btnExit);
           hideButton(btnPrived);
           hideButton(btnReaders);
-          hideButton(btnSend);
+          btnSave?.addEventListener("click", () => {
+            const nextText = getCurrentText();
+
+            dispatch("tablero:save-play", {
+              playId,
+              text: nextText,
+              play_status: userIsHeartAceHolder ? "ACTIVE" : "SENT"
+            });
+          });
 
           if (textView) textView.style.display = "";
           if (textInput) textInput.style.display = "none";
@@ -271,26 +272,13 @@
       });
 
       btnSave?.addEventListener("click", () => {
+        const nextText = getCurrentText();
+
         dispatch("tablero:save-play", {
           playId,
-          text: getCurrentText()
+          text: nextText,
+          play_status: userIsHeartAceHolder ? "ACTIVE" : "SENT"
         });
-      });
-
-      btnSend?.addEventListener("click", () => {
-        const deckId =
-          context?.deck?.id ||
-          context?.state?.deck?.id ||
-          play?.deck_id ||
-          window.__currentDeck?.id ||
-          null;
-
-        if (!deckId || !playId) {
-          alert("No se pudo abrir el lienzo J♥");
-          return;
-        }
-
-        window.location.href = `/lienzoJcorazon.html?deckId=${deckId}&playId=${playId}`;
       });
 
       btnApprove?.addEventListener("click", () => {
@@ -375,10 +363,6 @@
           <button type="button" data-action="open-private-readers" title="Abrir lectura" style="display:none;">
             <img src="${privedIcon}" alt="Privado" />
           </button>
-
-<button type="button" data-action="send-play" title="Enviar a A♥" style="display:none;">
-  <img src="${sendIcon}" alt="Enviar" />
-</button>
 
           <button type="button" data-action="show-readers" title="Lectores" style="display:none;">
             <img src="${readersIcon}" alt="Lectores" />

@@ -1024,7 +1024,8 @@
         endDate,
         location,
         amount,
-        recurrence
+        recurrence,
+        play_status
       } = event.detail || {};
 
       console.log("SAVE DETAIL =", event.detail);
@@ -1053,7 +1054,8 @@
           startDate,
           endDate,
           location,
-          amount
+          amount,
+          play_status
         })
       });
 
