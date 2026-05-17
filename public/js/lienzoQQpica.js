@@ -257,14 +257,12 @@
       })();
 
       const hasEconomicHeartQ =
-        hasBlueJokerActive() ||
-        hasDroppedQHeart() ||
         Number(qHeartDraft?.playId || 0) === Number(play?.id || 0) ||
         amount > 0 ||
         flow.includes("settlement") ||
         flow.includes("qheart") ||
         flow.includes("q_heart") ||
-        flow.includes("heart");
+
 
       if (hasEconomicHeartQ && !hasAceDiamond) {
         validators.push(getAceOwnerTribune("DIAMOND"));
