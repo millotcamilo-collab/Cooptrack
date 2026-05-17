@@ -1665,27 +1665,86 @@ ${parentJSpadeText
         }
     }
 
-    function handleSaveQHeartDraft(play) {
-        const built = buildQHeartDraftPayload(play);
+async function handleSaveQHeartDraft(play) {
+  const built = buildQHeartDraftPayload(play);
 
-        if (!built.ok) {
-            alert(built.error || "No se pudo preparar la Q de corazón.");
-            built.focusEl?.focus?.();
-            return;
-        }
+  if (!built.ok) {
+    alert(built.error || "No se pudo preparar la Q de corazón.");
+    built.focusEl?.focus?.();
+    return;
+  }
 
-        sessionStorage.setItem(
-            "cooptrackQHeartDraft",
-            JSON.stringify(built.draft)
-        );
+  const token = localStorage.getItem("cooptrackToken");
 
-        const deckId =
-            Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
+  if (!token) {
+    alert("No estás logueado");
+    return;
+  }
 
-        const playId = Number(play?.id || 0);
+  const currentPlayCode = String(play?.play_code || "").trim();
+  const parsed = parsePlayCode(currentPlayCode);
 
-        window.location.href = `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}`;
-    }
+  const existingFlowChunks = String(parsed.flow || "")
+    .split(";")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .filter((chunk) => !chunk.toLowerCase().startsWith("pay:qheart"));
+
+  const deck = getCurrentDeck();
+  const currency = getCurrencyCode(deck);
+
+  const draft = built.draft;
+
+  const paymentBlock =
+    `pay:QHEART` +
+    `|side:${draft.side}` +
+    `|payer:${draft.side === "AMSTERDAM" ? "guest" : "deck"}` +
+    `|concept:${draft.concept}` +
+    `|amount:${draft.amount}` +
+    `|currency:${currency}` +
+    `|payDate:${draft.payDate}`;
+
+  const nextFlow = [...existingFlowChunks, paymentBlock].join(";");
+
+  const nextPlayCode = [
+    parsed.deckId || "",
+    parsed.userId || "",
+    parsed.date || "",
+    parsed.rank || "",
+    parsed.suit || "",
+    parsed.action || "",
+    parsed.autorizados || "",
+    nextFlow,
+    parsed.recipients || ""
+  ].join("§");
+
+  const response = await fetch(`/plays/${play.id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      play_code: nextPlayCode,
+      play_status: String(play.play_status || "ACTIVE").toUpperCase()
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    console.error("No se pudo guardar Q♥", data);
+    alert(data?.error || "No se pudo guardar la Q♥");
+    return;
+  }
+
+  sessionStorage.removeItem("cooptrackQHeartDraft");
+
+  const deckId =
+    Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
+
+  window.location.href = `/lienzoQQpica.html?deckId=${deckId}&playId=${play.id}`;
+}
 
     async function acknowledgePlayIfNeeded(play) {
         return true;

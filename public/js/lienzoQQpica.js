@@ -2267,27 +2267,25 @@ ${parentJSpadeText
     bindLienzoActions(play);
   }
 
-  async function openLienzoByPlayId(playId) {
-    let play = getPlayById(playId);
+async function openLienzoByPlayId(playId) {
+  const play = getPlayById(playId);
 
-    if (!play) {
-      const container = getLienzoContainer();
+  if (!play) {
+    const container = getLienzoContainer();
 
-      if (container) {
-        container.innerHTML = `
+    if (container) {
+      container.innerHTML = `
         <div class="lienzo-error">
           No se encontró la jugada ${escapeHtml(playId)}.
         </div>
       `;
-      }
-
-      return;
     }
 
-    play = await persistQHeartDraftIfNeeded(play);
-
-    renderLienzo(play);
+    return;
   }
+
+  renderLienzo(play);
+}
 
   window.openLienzoByPlayId = openLienzoByPlayId;
 })();
