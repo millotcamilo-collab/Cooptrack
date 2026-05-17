@@ -1496,10 +1496,6 @@
 
     const nextFlow = [...existingFlowChunks, paymentBlock].join(";");
 
-    const nextFlow = meta.baseFlow
-      ? `${meta.baseFlow};${paymentBlock}`
-      : paymentBlock;
-
     const updatedPlayCode = [
       parsed.deckId || "",
       parsed.userId || "",
