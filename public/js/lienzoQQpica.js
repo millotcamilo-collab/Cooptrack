@@ -1478,7 +1478,12 @@
     }
 
     const parsed = parsePlayCode(currentPlayCode);
-    const meta = parseFlowMetadata(parsed.flow);
+
+    const existingFlowChunks = String(parsed.flow || "")
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .filter((chunk) => !chunk.toLowerCase().startsWith("pay:qheart"));
 
     const paymentBlock =
       `pay:QHEART` +
@@ -1488,6 +1493,8 @@
       `|amount:${qqState.amount}` +
       `|currency:${qqState.currency}` +
       `|payDate:${qqState.payDate}`;
+
+    const nextFlow = [...existingFlowChunks, paymentBlock].join(";");
 
     const nextFlow = meta.baseFlow
       ? `${meta.baseFlow};${paymentBlock}`
@@ -1511,38 +1518,38 @@
     };
   }
 
-async function persistQHeartDraftIfNeeded(play) {
-  const draft = getQHeartDraftFromSession();
+  async function persistQHeartDraftIfNeeded(play) {
+    const draft = getQHeartDraftFromSession();
 
-  if (!draft || Number(draft.playId || 0) !== Number(play?.id || 0)) return play;
-  if (String(play?.play_code || "").includes("pay:QHEART")) return play;
+    if (!draft || Number(draft.playId || 0) !== Number(play?.id || 0)) return play;
+    if (String(play?.play_code || "").includes("pay:QHEART")) return play;
 
-  const built = buildPlayCodeWithQHeartPayment(play);
-  if (!built.ok) return play;
+    const built = buildPlayCodeWithQHeartPayment(play);
+    if (!built.ok) return play;
 
-  const token = localStorage.getItem("cooptrackToken");
+    const token = localStorage.getItem("cooptrackToken");
 
-  const response = await fetch(`/plays/${play.id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({
-      play_code: built.playCode,
-      play_status: String(play.play_status || "ACTIVE").toUpperCase()
-    })
-  });
+    const response = await fetch(`/plays/${play.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        play_code: built.playCode,
+        play_status: String(play.play_status || "ACTIVE").toUpperCase()
+      })
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  if (response.ok && data.ok && data.play) {
-    sessionStorage.removeItem("cooptrackQHeartDraft");
-    return data.play;
+    if (response.ok && data.ok && data.play) {
+      sessionStorage.removeItem("cooptrackQHeartDraft");
+      return data.play;
+    }
+
+    return play;
   }
-
-  return play;
-}
 
   async function handleSendPlay(play) {
     try {
@@ -2045,13 +2052,13 @@ async function persistQHeartDraftIfNeeded(play) {
             ${scene.backgroundCards.map(renderBackgroundCard).join("")}
           </div>
 ${parentJSpadeText
-  ? `
+        ? `
     <div class="lienzo-parent-play-box">
       ${renderSourceSessionDia(play)}
     </div>
   `
-  : ""
-}
+        : ""
+      }
           ${qqState && getQQPicaDisplayedSide(play) === "COLOMBES" ? droppedCardHtml : ""}
           ${qHeartBoxHtml}
         </div>
@@ -2135,23 +2142,23 @@ ${parentJSpadeText
     `;
   }
 
-function compareCorporateCards(a, b) {
-  const order = {
-    A_HEART: 1,
-    A_SPADE: 2,
-    A_DIAMOND: 3,
-    A_CLUB: 4,
-    K_HEART: 5,
-    K_SPADE: 6,
-    K_DIAMOND: 7,
-    K_CLUB: 8
-  };
+  function compareCorporateCards(a, b) {
+    const order = {
+      A_HEART: 1,
+      A_SPADE: 2,
+      A_DIAMOND: 3,
+      A_CLUB: 4,
+      K_HEART: 5,
+      K_SPADE: 6,
+      K_DIAMOND: 7,
+      K_CLUB: 8
+    };
 
-  const aKey = `${a.card_rank}_${a.card_suit}`;
-  const bKey = `${b.card_rank}_${b.card_suit}`;
+    const aKey = `${a.card_rank}_${a.card_suit}`;
+    const bKey = `${b.card_rank}_${b.card_suit}`;
 
-  return (order[aKey] || 999) - (order[bKey] || 999);
-}
+    return (order[aKey] || 999) - (order[bKey] || 999);
+  }
 
   function deriveOwnedCorporateCards(plays, userId) {
     if (!Array.isArray(plays) || !userId) return [];
@@ -2237,11 +2244,11 @@ function compareCorporateCards(a, b) {
     let gridClass = "";
 
     if (validatorCount === 1) {
-        gridClass = "lienzo-grid--3cols";
+      gridClass = "lienzo-grid--3cols";
     }
 
     if (validatorCount >= 2) {
-        gridClass = "lienzo-grid--4cols";
+      gridClass = "lienzo-grid--4cols";
     }
 
     container.innerHTML = `
@@ -2264,27 +2271,27 @@ function compareCorporateCards(a, b) {
     bindLienzoActions(play);
   }
 
-async function openLienzoByPlayId(playId) {
-  let play = getPlayById(playId);
+  async function openLienzoByPlayId(playId) {
+    let play = getPlayById(playId);
 
-  if (!play) {
-    const container = getLienzoContainer();
+    if (!play) {
+      const container = getLienzoContainer();
 
-    if (container) {
-      container.innerHTML = `
+      if (container) {
+        container.innerHTML = `
         <div class="lienzo-error">
           No se encontró la jugada ${escapeHtml(playId)}.
         </div>
       `;
+      }
+
+      return;
     }
 
-    return;
+    play = await persistQHeartDraftIfNeeded(play);
+
+    renderLienzo(play);
   }
-
-  play = await persistQHeartDraftIfNeeded(play);
-
-  renderLienzo(play);
-}
 
   window.openLienzoByPlayId = openLienzoByPlayId;
 })();
