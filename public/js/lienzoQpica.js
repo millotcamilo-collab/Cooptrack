@@ -1241,6 +1241,9 @@ ${location ? `
             class="lienzo-qheart-box__paydate"
             value="${safePayDate}"
           />
+        <button id="lienzo-save-btn" class="icon-btn lienzo-qheart-box__save" title="Guardar Q♥">
+            <img src="/assets/icons/salvar40.gif" alt="Guardar Q♥" />
+          </button>
         </div>
       </div>
     `;
@@ -1272,18 +1275,14 @@ ${location ? `
 
         return `
       <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-        ${qHeartMode
-                ? `
-          <button id="lienzo-save-btn" class="icon-btn" title="Guardar">
-            <img src="${saveIcon}" alt="Guardar" />
-          </button>
-        `
-                : `
-          <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
-            <img src="${sendIcon}" alt="Enviar" />
-          </button>
-        `
-            }
+${qHeartMode
+  ? ``
+  : `
+    <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
+      <img src="${sendIcon}" alt="Enviar" />
+    </button>
+  `
+}
 
       </div>
     `;
