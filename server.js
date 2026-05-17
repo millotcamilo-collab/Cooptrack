@@ -1570,9 +1570,10 @@ async function getMazoStateHandler(req, res) {
     FROM play_recurrences pr
     WHERE pr.play_id = p.id
   ) AS has_recurrence
-      FROM plays p
-      INNER JOIN deck_members dm
-        ON dm.deck_id = p.deck_id
+    FROM plays p
+    LEFT JOIN deck_members dm
+      ON dm.deck_id = p.deck_id
+      AND dm.user_id = $2
       LEFT JOIN users creator
         ON creator.id = p.created_by_user_id
       LEFT JOIN users target
@@ -1583,8 +1584,7 @@ async function getMazoStateHandler(req, res) {
             ''
          )::int  
       WHERE p.deck_id = $1
-  AND dm.user_id = $2
-  AND (
+        AND (
     ${visibilityWhere}
 
     OR (
