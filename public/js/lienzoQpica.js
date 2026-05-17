@@ -2126,7 +2126,6 @@ ${parentJSpadeText
             })();
 
             const hasEconomicHeartQ =
-                hasBlueJokerActive() ||
                 hasDroppedQHeart() ||
                 Number(qHeartDraft?.playId || 0) === Number(play?.id || 0) ||
                 amount > 0 ||
