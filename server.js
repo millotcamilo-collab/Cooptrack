@@ -341,14 +341,29 @@ async function insertInstitutionalPlay(client, {
 
 async function getMazoByIdForUser(client, mazoId, userId) {
   const result = await client.query(
-    `SELECT d.*
-     FROM decks d
-     INNER JOIN deck_members dm
-       ON dm.deck_id = d.id
-     WHERE d.id = $1
-       AND dm.user_id = $2
-     LIMIT 1`,
-    [mazoId, userId]
+    `
+    SELECT DISTINCT d.*
+    FROM decks d
+
+    LEFT JOIN deck_members dm
+      ON dm.deck_id = d.id
+     AND dm.user_id = $2
+
+    LEFT JOIN plays p
+      ON p.deck_id = d.id
+
+    WHERE d.id = $1
+      AND (
+        dm.user_id IS NOT NULL
+
+        OR p.reader_user_ids ? $3
+        OR p.reader_user_ids ? $4
+        OR p.reader_user_ids ? 'TODOS'
+      )
+
+    LIMIT 1
+    `,
+    [mazoId, userId, String(userId), `U:${userId}`]
   );
 
   return result.rows[0] || null;
