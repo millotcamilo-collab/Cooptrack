@@ -261,7 +261,7 @@
         amount > 0 ||
         flow.includes("settlement") ||
         flow.includes("qheart") ||
-        flow.includes("q_heart") ||
+        flow.includes("q_heart");
 
 
       if (hasEconomicHeartQ && !hasAceDiamond) {
