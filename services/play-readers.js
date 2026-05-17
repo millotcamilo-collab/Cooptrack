@@ -11,26 +11,10 @@ const {
   getDeckTitleAHeartPlayId
 } = require('./readers');
 
-async function getCurrentCardHolderUserIds(client, deckId, rank, suit) {
-  const result = await client.query(
-    `
-    SELECT DISTINCT
-      COALESCE(target_user_id, created_by_user_id) AS user_id
-    FROM plays
-    WHERE deck_id = $1
-      AND UPPER(COALESCE(card_rank, '')) = $2
-      AND UPPER(COALESCE(card_suit, '')) = $3
-      AND UPPER(COALESCE(play_status, '')) <> 'BLOCKED'
-      AND COALESCE(target_user_id, created_by_user_id) IS NOT NULL
-    ORDER BY user_id ASC
-    `,
-    [deckId, String(rank || '').toUpperCase(), String(suit || '').toUpperCase()]
-  );
+const {
+  getCurrentCardHolderUserIds
+} = require('./card-holders');
 
-  return result.rows
-    .map((row) => Number(row.user_id))
-    .filter((value) => Number.isInteger(value) && value > 0);
-}
 
 async function getAllAceHolderUserIds(client, deckId) {
   const suits = ['HEART', 'SPADE', 'DIAMOND', 'CLUB'];
@@ -46,18 +30,30 @@ async function computeReadersForQSpadeDraft(client, play) {
   const deckId = Number(play?.deck_id || 0);
   const authorUserId = Number(play?.created_by_user_id || 0);
 
-  const aceHolders = await getAllAceHolderUserIds(client, deckId);
-  const kSpadeHolders = await getCurrentCardHolderUserIds(
+  const clubAceHolders = await getCurrentCardHolderUserIds(
     client,
     deckId,
-    'K',
-    'SPADE'
+    'A',
+    'CLUB'
   );
+
+  const hasQHeart = qSpadeHasAttachedQHeart(play);
+
+  let diamondAceHolders = [];
+
+  if (hasQHeart) {
+    diamondAceHolders = await getCurrentCardHolderUserIds(
+      client,
+      deckId,
+      'A',
+      'DIAMOND'
+    );
+  }
 
   return normalizeReaderEntries([
     authorUserId,
-    ...aceHolders,
-    ...kSpadeHolders,
+    ...clubAceHolders,
+    ...diamondAceHolders,
   ]);
 }
 
@@ -130,28 +126,7 @@ function parsePlayCodeRaw(code) {
   };
 }
 
-async function expandReadersForAdminCardHolder(client, play) {
-  const holderUserId = Number(play?.target_user_id || play?.created_by_user_id || 0);
-  const deckId = Number(play?.deck_id || 0);
 
-  if (!holderUserId || !deckId) return;
-
-  const holderReaders = normalizeReaderEntries([holderUserId]);
-
-  const adminPlays = await getDeckPlaysByKinds(client, deckId, {
-    ranks: ["A", "K", "JOKER"]
-  });
-
-  for (const targetPlay of adminPlays) {
-    await addReadersToPlay(client, targetPlay.id, holderReaders);
-  }
-
-  await addReadersToPlay(
-    client,
-    play.id,
-    normalizeReaderEntries([play?.created_by_user_id, holderUserId])
-  );
-}
 
 function qSpadeHasAttachedQHeart(play) {
   const rank = String(play?.card_rank || "").trim().toUpperCase();
@@ -256,115 +231,45 @@ async function expandReadersForASend(client, play) {
 }
 
 async function expandReadersForKSend(client, play) {
-  await expandReadersForAdminCardHolder(client, play);
   const invitedUserId = Number(play?.target_user_id || 0);
+  const authorUserId = Number(play?.created_by_user_id || 0);
   const deckId = Number(play?.deck_id || 0);
-  const kSuit = String(play?.card_suit || "").toUpperCase();
 
-  if (!invitedUserId || !deckId || !kSuit) {
-    return;
-  }
+  if (!invitedUserId || !deckId) return;
 
   const invitedReaders = normalizeReaderEntries([invitedUserId]);
-  if (!invitedReaders.length) return;
 
-  // La propia K enviada debería quedar visible al anfitrión y al destinatario
+  // La propia K queda visible para quien la creó y quien la recibe.
   await addReadersToPlay(
     client,
     play.id,
-    normalizeReaderEntries([play?.created_by_user_id, invitedUserId])
+    normalizeReaderEntries([authorUserId, invitedUserId])
   );
 
-  // Todas las jugadas A del mazo deben quedar legibles para quien recibe una K
-  const acePlays = await getDeckPlaysByKinds(client, deckId, {
-    rank: "A"
+  // Quien recibe una K pasa a leer el cuerpo institucional A/K/JOKER.
+  const adminPlays = await getDeckPlaysByKinds(client, deckId, {
+    ranks: ["A", "K", "JOKER"]
   });
 
-  for (const targetPlay of acePlays) {
+  for (const targetPlay of adminPlays) {
     await addReadersToPlay(client, targetPlay.id, invitedReaders);
   }
-
-  // K♥ -> todas las J♥
-  if (kSuit === "HEART") {
-    const heartJs = await getDeckPlaysByKinds(client, deckId, {
-      rank: "J",
-      suit: "HEART"
-    });
-
-    for (const targetPlay of heartJs) {
-      await addReadersToPlay(client, targetPlay.id, invitedReaders);
-    }
-
-    return;
-  }
-
-  // K♠ -> J♠ y Q♠ sin Q roja
-  if (kSuit === "SPADE") {
-    const spadeJs = await getDeckPlaysByKinds(client, deckId, {
-      rank: "J",
-      suit: "SPADE"
-    });
-
-    for (const targetPlay of spadeJs) {
-      await addReadersToPlay(client, targetPlay.id, invitedReaders);
-    }
-
-    const spadeQs = await getDeckPlaysByKinds(client, deckId, {
-      rank: "Q",
-      suit: "SPADE"
-    });
-
-    for (const targetPlay of spadeQs) {
-      if (qSpadeHasAttachedQHeart(targetPlay)) continue;
-      await addReadersToPlay(client, targetPlay.id, invitedReaders);
-    }
-
-    return;
-  }
-
-  // K♦ -> J♣ + J♠ + Q♠ con o sin roja
-  if (kSuit === "DIAMOND") {
-    const clubJs = await getDeckPlaysByKinds(client, deckId, {
-      rank: "J",
-      suit: "CLUB"
-    });
-
-    const spadeJs = await getDeckPlaysByKinds(client, deckId, {
-      rank: "J",
-      suit: "SPADE"
-    });
-
-    const spadeQs = await getDeckPlaysByKinds(client, deckId, {
-      rank: "Q",
-      suit: "SPADE"
-    });
-
-    for (const targetPlay of [...clubJs, ...spadeJs, ...spadeQs]) {
-      await addReadersToPlay(client, targetPlay.id, invitedReaders);
-    }
-
-    return;
-  }
-
-  // K♣ -> por ahora no hace nada
 }
 
 async function computeReadersForJSpade(client, play) {
   const deckId = Number(play?.deck_id || 0);
   const authorUserId = Number(play?.created_by_user_id || 0);
 
-  const aceHolders = await getAllAceHolderUserIds(client, deckId);
-  const kSpadeHolders = await getCurrentCardHolderUserIds(
+  const spadeAceHolders = await getCurrentCardHolderUserIds(
     client,
     deckId,
-    'K',
+    'A',
     'SPADE'
   );
 
   return normalizeReaderEntries([
     authorUserId,
-    ...aceHolders,
-    ...kSpadeHolders,
+    ...spadeAceHolders,
   ]);
 }
 
@@ -372,18 +277,16 @@ async function computeReadersForJClub(client, play) {
   const deckId = Number(play?.deck_id || 0);
   const authorUserId = Number(play?.created_by_user_id || 0);
 
-  const aceHolders = await getAllAceHolderUserIds(client, deckId);
-  const kClubHolders = await getCurrentCardHolderUserIds(
+  const diamondAceHolders = await getCurrentCardHolderUserIds(
     client,
     deckId,
-    'K',
-    'CLUB'
+    'A',
+    'DIAMOND'
   );
 
   return normalizeReaderEntries([
     authorUserId,
-    ...aceHolders,
-    ...kClubHolders,
+    ...diamondAceHolders,
   ]);
 }
 

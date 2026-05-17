@@ -2305,15 +2305,26 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         targetUserId &&
         Number(userId) === targetUserId;
 
+      const pendingValidationForUser = await client.query(
+        `
+  SELECT 1
+  FROM play_validations
+  WHERE play_id = $1
+    AND validator_user_id = $2
+    AND validation_status = 'PENDING'
+  LIMIT 1
+  `,
+        [current.id, userId]
+      );
+
       const isValidatorReject =
-        isQSpade &&
         currentStatus === 'PENDING' &&
-        Number(userId) === Number(aceClubOwnerUserId);
+        pendingValidationForUser.rows.length > 0;
 
       if (!isTargetReject && !isValidatorReject && !isHeartAceReject) {
         return res.status(403).json({
           ok: false,
-          error: 'Solo el destinatario o el A♣ validador puede rechazar esta invitación'
+          error: 'Solo el destinatario o un validador pendiente puede rechazar esta invitación'
         });
       }
 
@@ -2543,33 +2554,54 @@ RETURNING *
       currentStatus !== 'SENT' &&
       nextStatus === 'SENT';
 
-    const isRoutingKToAceClubNow =
+    const isRoutingKToValidatorNow =
       currentRank === 'K' &&
       currentStatus !== 'PENDING' &&
       nextStatus === 'PENDING';
 
-    if (isRoutingKToAceClubNow) {
-      const aceClubUserId = Number(updatedPlay.target_user_id || 0);
+    if (isRoutingKToValidatorNow) {
+      const kSuit = String(updatedPlay.card_suit || '').trim().toUpperCase();
 
-      if (!aceClubUserId) {
+      const validatorSuitByKSuit = {
+        HEART: 'HEART',
+        SPADE: 'SPADE',
+        DIAMOND: 'DIAMOND',
+        CLUB: 'CLUB'
+      };
+
+      const validatorSuit = validatorSuitByKSuit[kSuit];
+
+      if (!validatorSuit) {
         await client.query('ROLLBACK');
         return res.status(400).json({
           ok: false,
-          error: 'La K pendiente debe tener target_user_id'
+          error: 'La K pendiente tiene un palo inválido'
         });
       }
 
-      // 👉 Readers
+      const validatorUserId = await getAceOwnerUserId(
+        client,
+        updatedPlay.deck_id,
+        validatorSuit
+      );
+
+      if (!validatorUserId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: `No se encontró propietario del A ${validatorSuit} para validar la K`
+        });
+      }
+
       await addReadersToPlay(client, updatedPlay.id, [
         updatedPlay.created_by_user_id,
-        aceClubUserId
+        validatorUserId
       ]);
 
-      // 👉 VALIDACIÓN (ACÁ va)
       await createPlayValidation(client, {
         playId: updatedPlay.id,
-        validatorUserId: aceClubUserId,
-        validatorRole: 'ACE_CLUB',
+        validatorUserId,
+        validatorRole: `A_${validatorSuit}`,
         validationOrder: 1
       });
     }
@@ -2579,10 +2611,6 @@ RETURNING *
       currentRank === 'A' &&
       currentStatus !== 'SENT' &&
       nextStatus === 'SENT';
-
-    if (isSendingANow) {
-      await expandReadersForASend(client, updatedPlay);
-    }
 
 
     if (isSendingKNow) {
@@ -2655,37 +2683,19 @@ RETURNING *
       );
     }
 
-    if (isSendingQSpadeNow) {
-      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+if (isSendingQSpadeNow) {
+  const invitedUserId = Number(updatedPlay.target_user_id || 0);
 
-      if (!invitedUserId) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({
-          ok: false,
-          error: 'La Q♠ enviada debe tener target_user_id'
-        });
-      }
+  if (!invitedUserId) {
+    await client.query('ROLLBACK');
+    return res.status(400).json({
+      ok: false,
+      error: 'La Q♠ enviada debe tener target_user_id'
+    });
+  }
 
-      await expandReadersForQSpadeSend(client, updatedPlay);
-
-      await client.query(
-        `
-    INSERT INTO deck_members (deck_id, user_id)
-    VALUES ($1, $2)
-    ON CONFLICT DO NOTHING
-    `,
-        [updatedPlay.deck_id, invitedUserId]
-      );
-
-      await client.query(
-        `
-    DELETE FROM ex_deck_members
-    WHERE deck_id = $1
-      AND user_id = $2
-    `,
-        [updatedPlay.deck_id, invitedUserId]
-      );
-    }
+  await expandReadersForQSpadeSend(client, updatedPlay);
+}
 
     if (isSendingJHeartNow) {
       const deckId = Number(updatedPlay.deck_id || 0);
@@ -3566,23 +3576,26 @@ app.post('/plays/:id/validate', requireAuth, async (req, res) => {
         await expandReadersForKSend(client, updatedPlay);
       }
 
-      await client.query(
-        `
-        INSERT INTO deck_members (deck_id, user_id)
-        VALUES ($1, $2)
-        ON CONFLICT DO NOTHING
-        `,
-        [updatedPlay.deck_id, finalTargetUserId]
-      );
+      if (String(updatedPlay.card_rank || '').toUpperCase() === 'K') {
+        await client.query(
+          `
+    INSERT INTO deck_members (deck_id, user_id)
+    VALUES ($1, $2)
+    ON CONFLICT DO NOTHING
+    `,
+          [updatedPlay.deck_id, finalTargetUserId]
+        );
 
-      await client.query(
-        `
-        DELETE FROM ex_deck_members
-        WHERE deck_id = $1
-          AND user_id = $2
-        `,
-        [updatedPlay.deck_id, finalTargetUserId]
-      );
+        await client.query(
+          `
+    DELETE FROM ex_deck_members
+    WHERE deck_id = $1
+      AND user_id = $2
+    `,
+          [updatedPlay.deck_id, finalTargetUserId]
+        );
+      }
+
     }
 
     await client.query('COMMIT');
