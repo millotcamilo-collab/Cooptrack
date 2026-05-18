@@ -1263,19 +1263,28 @@
   }
 
   function renderQQHeartSummaryBox(play, qqState) {
-  if (!qqState) return "";
+    if (!qqState) return "";
 
-  const settlement = getQQPicaSettlementState(play);
+    const settlement = getQQPicaSettlementState(play);
 
-  let title = `Paga ${qqState.payerLabel}`;
+    let title = `Paga ${qqState.payerLabel}`;
 
-  if (settlement?.status === "PAID") {
-    title = `Pagó ${qqState.payerLabel}`;
-  } else if (settlement?.status === "COMPLAINED") {
-    title = `Incumplió ${qqState.payerLabel}`;
-  }
+    if (settlement?.status === "PAID") {
+      title = `Pagó ${qqState.payerLabel}`;
+    } else if (settlement?.status === "COMPLAINED") {
+      title = `Incumplió ${qqState.payerLabel}`;
+    }
 
-  return `
+    const status = String(play?.play_status || "").trim().toUpperCase();
+
+    const showSend =
+      isCurrentUserSource(play) &&
+      status !== "SENT" &&
+      status !== "APPROVED" &&
+      status !== "REJECTED" &&
+      status !== "CANCELLED";
+
+    return `
     <div class="lienzo-qheart-box lienzo-qheart-box--readonly">
 
       <div class="lienzo-qheart-box__card">
@@ -1308,10 +1317,22 @@
           </div>
 
         </div>
+
+        ${showSend
+  ? `
+    <div class="lienzo-qheart-box__actions">
+      <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
+        <img src="/assets/icons/buzon60.gif" alt="Enviar" />
+      </button>
+    </div>
+  `
+  : ""
+}
+
       </div>
     </div>
   `;
-}
+  }
 
   function renderSourceActions(play) {
     const status = String(play?.play_status || "").trim().toUpperCase();
@@ -1334,14 +1355,6 @@
 
     return `
     <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-      ${showSend
-        ? `
-          <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
-            <img src="${sendIcon}" alt="Enviar" />
-          </button>
-        `
-        : ""
-      }
 
       ${showSettlementActions
         ? `
@@ -2258,25 +2271,25 @@ ${parentJSpadeText
     bindLienzoActions(play);
   }
 
-async function openLienzoByPlayId(playId) {
-  const play = getPlayById(playId);
+  async function openLienzoByPlayId(playId) {
+    const play = getPlayById(playId);
 
-  if (!play) {
-    const container = getLienzoContainer();
+    if (!play) {
+      const container = getLienzoContainer();
 
-    if (container) {
-      container.innerHTML = `
+      if (container) {
+        container.innerHTML = `
         <div class="lienzo-error">
           No se encontró la jugada ${escapeHtml(playId)}.
         </div>
       `;
+      }
+
+      return;
     }
 
-    return;
+    renderLienzo(play);
   }
-
-  renderLienzo(play);
-}
 
   window.openLienzoByPlayId = openLienzoByPlayId;
 })();
