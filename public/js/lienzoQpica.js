@@ -763,36 +763,18 @@
     }
 
     function renderPlayCardActions(play) {
-        const isTarget = isCurrentUserTarget(play);
-        const isSource = isCurrentUserSource(play);
-        const isValidator = isCurrentUserValidator(play);
+  const isTarget = isCurrentUserTarget(play);
+  const isSource = isCurrentUserSource(play);
+  const isValidator = isCurrentUserValidator(play);
 
-        const status = String(play?.play_status || "").trim().toUpperCase();
+  const status = String(play?.play_status || "").trim().toUpperCase();
 
-        const sendIcon = "/assets/icons/buzon60.gif";
-        const acceptIcon = "/assets/icons/Sello40.gif";
-        const rejectIcon = "/assets/icons/stepback40.gif";
+  const sendIcon = "/assets/icons/buzon60.gif";
+  const acceptIcon = "/assets/icons/Sello40.gif";
+  const rejectIcon = "/assets/icons/stepback40.gif";
 
-        const qHeartIncomplete =
-            hasDroppedQHeart() &&
-            (
-                !document.querySelector(".lienzo-qheart-box__amount")?.value?.trim() ||
-                !document.querySelector(".lienzo-qheart-box__paydate")?.value?.trim()
-            );
-
-        return `
-  <button
-    id="lienzo-send-btn"
-    class="icon-btn"
-    title="Enviar"
-    style="${qHeartIncomplete ? "display:none;" : ""}"
-  >
-    <img src="${sendIcon}" alt="Enviar" />
-  </button>
-`;
-
-        if (isValidator && status === "PENDING") {
-            return `
+  if (isValidator && status === "PENDING") {
+    return `
       <button id="lienzo-validator-send-btn" class="icon-btn" title="Validar y enviar">
         <img src="${sendIcon}" alt="Validar y enviar" />
       </button>
@@ -801,30 +783,48 @@
         <img src="${rejectIcon}" alt="Rechazar solicitud" />
       </button>
     `;
-        }
+  }
 
-        if (isSource && status !== "SENT" && status !== "APPROVED" && status !== "REJECTED" && status !== "CANCELLED") {
-            return `
-          <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
-            <img src="${sendIcon}" alt="Enviar" />
-          </button>
-        `;
-        }
+  if (
+    isSource &&
+    status !== "SENT" &&
+    status !== "APPROVED" &&
+    status !== "REJECTED" &&
+    status !== "CANCELLED"
+  ) {
+    const qHeartIncomplete =
+      hasDroppedQHeart() &&
+      (
+        !document.querySelector(".lienzo-qheart-box__amount")?.value?.trim() ||
+        !document.querySelector(".lienzo-qheart-box__paydate")?.value?.trim()
+      );
 
-        if (isTarget && status === "SENT") {
-            return `
-          <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
-            <img src="${acceptIcon}" alt="Aceptar" />
-          </button>
+    return `
+      <button
+        id="lienzo-send-btn"
+        class="icon-btn"
+        title="Enviar"
+        style="${qHeartIncomplete ? "display:none;" : ""}"
+      >
+        <img src="${sendIcon}" alt="Enviar" />
+      </button>
+    `;
+  }
 
-          <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
-            <img src="${rejectIcon}" alt="Rechazar" />
-          </button>
-        `;
-        }
+  if (isTarget && status === "SENT") {
+    return `
+      <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
+        <img src="${acceptIcon}" alt="Aceptar" />
+      </button>
 
-        return "";
-    }
+      <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
+        <img src="${rejectIcon}" alt="Rechazar" />
+      </button>
+    `;
+  }
+
+  return "";
+}
 
     function renderPlayCardBox(play) {
         const parentPlay = getPlayById(play?.parent_play_id);
