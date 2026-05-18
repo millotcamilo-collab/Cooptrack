@@ -1576,65 +1576,74 @@
   }
 
   async function handleSendPlay(play) {
-    try {
-      const playId = Number(play?.id || 0);
-      const token = localStorage.getItem("cooptrackToken");
+  try {
+    const playId = Number(play?.id || 0);
+    const token = localStorage.getItem("cooptrackToken");
 
-      if (!playId) {
-        alert("playId inválido");
-        return;
-      }
-
-      if (!token) {
-        alert("No estás logueado");
-        return;
-      }
-
-      const built = buildPlayCodeWithQHeartPayment(play);
-
-      if (!built.ok) {
-        alert(built.error || "No se pudo preparar la jugada.");
-        return;
-      }
-
-      const response = await fetch(`/plays/${playId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          play_code: built.playCode,
-          play_status: "PENDING"
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.ok) {
-        console.error("Error enviando QQ♠:", data);
-        alert(data?.error || "No se pudo enviar la jugada");
-        return;
-      }
-
-      sessionStorage.removeItem("cooptrackQHeartDraft");
-
-      alert("Invitación enviada");
-
-      const deckId =
-        Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
-
-      if (deckId) {
-        window.location.href = `/mazo.html?id=${deckId}`;
-        return;
-      }
-
-      window.history.back();
-    } catch (error) {
-      console.error("Error en handleSendPlay", error);
-      alert("No se pudo enviar la jugada");
+    if (!playId) {
+      alert("playId inválido");
+      return;
     }
+
+    if (!token) {
+      alert("No estás logueado");
+      return;
+    }
+
+    const built = buildPlayCodeWithQHeartPayment(play);
+
+    if (!built.ok) {
+      alert(built.error || "No se pudo preparar la jugada.");
+      return;
+    }
+
+    const nextStatus =
+      getValidatorTribunesForPlay(play).length > 0
+        ? "PENDING"
+        : "SENT";
+
+    const response = await fetch(`/plays/${playId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        play_code: built.playCode,
+        play_status: nextStatus
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error enviando QQ♠:", data);
+      alert(data?.error || "No se pudo enviar la jugada");
+      return;
+    }
+
+    sessionStorage.removeItem("cooptrackQHeartDraft");
+
+    alert(
+      nextStatus === "PENDING"
+        ? "Solicitud de validación enviada"
+        : "Invitación enviada"
+    );
+
+    const deckId =
+      Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
+
+    if (deckId) {
+      window.location.href = `/mazo.html?id=${deckId}`;
+      return;
+    }
+
+    window.history.back();
+  } catch (error) {
+    console.error("Error en handleSendPlay", error);
+    alert("No se pudo enviar la jugada");
   }
+}
 
   async function handleAcceptPlay(play) {
     try {
