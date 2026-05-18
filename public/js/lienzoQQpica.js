@@ -1263,40 +1263,55 @@
   }
 
   function renderQQHeartSummaryBox(play, qqState) {
-    if (!qqState) return "";
+  if (!qqState) return "";
 
-    const settlement = getQQPicaSettlementState(play);
+  const settlement = getQQPicaSettlementState(play);
 
-    let title = `Paga ${qqState.payerLabel}`;
+  let title = `Paga ${qqState.payerLabel}`;
 
-    if (settlement?.status === "PAID") {
-      title = `Pagó ${qqState.payerLabel}`;
-    } else if (settlement?.status === "COMPLAINED") {
-      title = `Incumplió ${qqState.payerLabel}`;
-    }
+  if (settlement?.status === "PAID") {
+    title = `Pagó ${qqState.payerLabel}`;
+  } else if (settlement?.status === "COMPLAINED") {
+    title = `Incumplió ${qqState.payerLabel}`;
+  }
 
-    return `
+  return `
     <div class="lienzo-qheart-box lienzo-qheart-box--readonly">
-      <div class="lienzo-qheart-box__title">
-        ${escapeHtml(title)}
+
+      <div class="lienzo-qheart-box__card">
+        <img
+          class="lienzo-card-image"
+          src="${escapeHtml(getCardImageSrc("Q", qqState.attachedSuit || "HEART"))}"
+          alt="Q♥"
+        />
       </div>
 
-      <div class="lienzo-qheart-box__body">
-        <div class="lienzo-qheart-box__readonly-line">
-          ${escapeHtml(qqState.concept)}
+      <div class="lienzo-qheart-box__content">
+
+        <div class="lienzo-qheart-box__title">
+          ${escapeHtml(title)}
         </div>
 
-        <div class="lienzo-qheart-box__readonly-line">
-          ${escapeHtml(qqState.currency)} ${escapeHtml(qqState.amount)}
-        </div>
+        <div class="lienzo-qheart-box__body">
 
-        <div class="lienzo-qheart-box__readonly-line">
-          ${escapeHtml(qqState.payDate)}
+          <div class="lienzo-qheart-box__readonly-line">
+            ${escapeHtml(qqState.concept)}
+          </div>
+
+          <div class="lienzo-qheart-box__readonly-line">
+            ${escapeHtml(qqState.currency)}
+            ${escapeHtml(qqState.amount)}
+          </div>
+
+          <div class="lienzo-qheart-box__readonly-line">
+            ${escapeHtml(qqState.payDate)}
+          </div>
+
         </div>
       </div>
     </div>
   `;
-  }
+}
 
   function renderSourceActions(play) {
     const status = String(play?.play_status || "").trim().toUpperCase();
@@ -2000,18 +2015,6 @@
     const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "COLOMBES");
     const parentJSpadeText = getParentJSpadeText(play);
 
-    const droppedCardHtml = qqState
-      ? `
-        <div class="lienzo-dropped-card-slot">
-          <img
-            class="lienzo-card-image lienzo-card-image--dropped"
-            src="${escapeHtml(getCardImageSrc("Q", attachedSuit))}"
-            alt="${escapeHtml(getCardLabel("Q", attachedSuit))}"
-            title="${escapeHtml(getCardLabel("Q", attachedSuit))}"
-          />
-        </div>
-      `
-      : "";
 
     const qHeartBoxHtml =
       qqState && getQQPicaDisplayedSide(play) === "COLOMBES"
@@ -2055,7 +2058,7 @@ ${parentJSpadeText
   `
         : ""
       }
-          ${qqState && getQQPicaDisplayedSide(play) === "COLOMBES" ? droppedCardHtml : ""}
+        
           ${qHeartBoxHtml}
         </div>
 
@@ -2076,17 +2079,6 @@ ${parentJSpadeText
     const attachedSuit = qqState?.attachedSuit || "HEART";
     const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "AMSTERDAM");
 
-    const droppedCardHtml =
-      qqState && getQQPicaDisplayedSide(play) === "AMSTERDAM"
-        ? `
-        <img
-          class="lienzo-card-image lienzo-card-image--overlay"
-          src="${escapeHtml(getCardImageSrc("Q", attachedSuit))}"
-          alt="${escapeHtml(getCardLabel("Q", attachedSuit))}"
-          title="${escapeHtml(getCardLabel("Q", attachedSuit))}"
-        />
-      `
-        : "";
 
     const qHeartBoxHtml =
       qqState && getQQPicaDisplayedSide(play) === "AMSTERDAM"
@@ -2128,7 +2120,6 @@ ${parentJSpadeText
               alt="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
               title="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
             />
-            ${droppedCardHtml}
           </div>
 
           ${qHeartBoxHtml}
