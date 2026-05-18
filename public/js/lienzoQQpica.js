@@ -1319,15 +1319,15 @@
         </div>
 
         ${showSend
-  ? `
+        ? `
     <div class="lienzo-qheart-box__actions">
       <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
         <img src="/assets/icons/buzon60.gif" alt="Enviar" />
       </button>
     </div>
   `
-  : ""
-}
+        : ""
+      }
 
       </div>
     </div>
@@ -2014,6 +2014,70 @@
 
   }
 
+  function renderPlayCardBox(play, options = {}) {
+    const parentPlay = getPlayById(play?.parent_play_id);
+
+    const rank = normalizeRank(options.rank || play?.card_rank || play?.rank);
+    const suit = normalizeSuit(options.suit || play?.card_suit || play?.suit);
+
+    const imageSrc = getCardImageSrc(rank, suit);
+    const title = getCardLabel(rank, suit);
+
+    const parentText = parentPlay?.play_text || "";
+    const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
+    const isDeadline = spadeMode === "DEADLINE";
+
+    const timeLabel = isDeadline
+      ? formatTimeLabel(parentPlay?.end_date)
+      : formatTimeLabel(parentPlay?.start_date);
+
+    const location = isDeadline
+      ? ""
+      : String(parentPlay?.location || "").trim();
+
+    return `
+    <div class="lienzo-play-card-box">
+      <div class="lienzo-play-card-box__row">
+
+        <div class="lienzo-play-card-box__card">
+          <img
+            class="lienzo-card-image"
+            src="${escapeHtml(imageSrc)}"
+            alt="${escapeHtml(title)}"
+          />
+        </div>
+
+        <div class="lienzo-play-card-box__info">
+          ${parentText ? `<div class="play-text">${escapeHtml(parentText)}</div>` : ""}
+
+          ${timeLabel ? `
+            <div class="play-meta">
+              <img
+                class="play-meta__icon"
+                src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}"
+                alt=""
+              />
+              <span>${escapeHtml(timeLabel)}</span>
+            </div>
+          ` : ""}
+
+          ${location ? `
+            <div class="play-meta">
+              <img
+                class="play-meta__icon"
+                src="/assets/icons/LocGlobito80.gif"
+                alt=""
+              />
+              <span>${escapeHtml(location)}</span>
+            </div>
+          ` : ""}
+        </div>
+
+      </div>
+    </div>
+  `;
+  }
+
   function renderSourcePlayerPanel(play) {
     const user = resolveSourceUser(play);
     const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
@@ -2065,8 +2129,11 @@
           </div>
 ${parentJSpadeText
         ? `
-    <div class="lienzo-parent-play-box">
-      ${renderSourceSessionDia(play)}
+    <div class="lienzo-parent-play-box lienzo-parent-play-box--inline">
+      ${renderPlayCardBox(play, {
+          rank: "J",
+          suit: "SPADE"
+        })}
     </div>
   `
         : ""
@@ -2127,12 +2194,10 @@ ${parentJSpadeText
 
         <div class="lienzo-target-mainrow">
           <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-            <img
-              class="lienzo-card-image lienzo-card-image--base"
-              src="${escapeHtml(baseImageSrc)}"
-              alt="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
-              title="${escapeHtml(getCardLabel(baseRank, baseSuit))}"
-            />
+            ${renderPlayCardBox(play, {
+      rank: baseRank,
+      suit: baseSuit
+    })}
           </div>
 
           ${qHeartBoxHtml}
