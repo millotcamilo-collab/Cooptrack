@@ -53,29 +53,29 @@
         return "";
     }
 
-function syncQHeartSendButtonVisibility() {
-    const sendBtn = document.getElementById("lienzo-send-btn");
-    if (!sendBtn) return;
+    function syncQHeartSendButtonVisibility() {
+        const sendBtn = document.getElementById("lienzo-send-btn");
+        if (!sendBtn) return;
 
-    if (!hasDroppedQHeart()) {
-        sendBtn.style.display = "";
-        return;
+        if (!hasDroppedQHeart()) {
+            sendBtn.style.display = "";
+            return;
+        }
+
+        const concept = String(
+            document.querySelector(".lienzo-qheart-box__concept")?.value || ""
+        ).trim();
+
+        const amount = String(
+            document.querySelector(".lienzo-qheart-box__amount")?.value || ""
+        ).trim();
+
+        const payDate = String(
+            document.querySelector(".lienzo-qheart-box__paydate")?.value || ""
+        ).trim();
+
+        sendBtn.style.display = concept && amount && payDate ? "" : "none";
     }
-
-    const concept = String(
-        document.querySelector(".lienzo-qheart-box__concept")?.value || ""
-    ).trim();
-
-    const amount = String(
-        document.querySelector(".lienzo-qheart-box__amount")?.value || ""
-    ).trim();
-
-    const payDate = String(
-        document.querySelector(".lienzo-qheart-box__paydate")?.value || ""
-    ).trim();
-
-    sendBtn.style.display = concept && amount && payDate ? "" : "none";
-}
 
     function getCardLabel(rank, suit) {
         return `${normalizeRank(rank)}${getSuitSymbol(suit)}`;
@@ -863,12 +863,7 @@ function syncQHeartSendButtonVisibility() {
             status !== "REJECTED" &&
             status !== "CANCELLED"
         ) {
-            const qHeartIncomplete =
-                hasDroppedQHeart() &&
-                (
-                    !document.querySelector(".lienzo-qheart-box__amount")?.value?.trim() ||
-                    !document.querySelector(".lienzo-qheart-box__paydate")?.value?.trim()
-                );
+            const qHeartIncomplete = hasDroppedQHeart();
 
             return `
       <button
@@ -1661,10 +1656,18 @@ ${parentJSpadeText
         const amountInput = document.querySelector(".lienzo-qheart-box__amount");
         const payDateInput = document.querySelector(".lienzo-qheart-box__paydate");
 
-        const concept = String(conceptInput?.value || "").trim() || "Ticket";
+        const concept = String(conceptInput?.value || "").trim();
         const amount = String(amountInput?.value || "").trim();
         const payDate = String(payDateInput?.value || "").trim();
         const side = String(selection.targetZone || "").toUpperCase();
+
+if (!concept) {
+    return {
+        ok: false,
+        error: "Falta la descripción.",
+        focusEl: conceptInput || null
+    };
+}
 
         if (!amount) {
             return {
