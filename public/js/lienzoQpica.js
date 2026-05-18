@@ -121,6 +121,73 @@
         return String(deck?.currency_symbol || "").trim().toUpperCase();
     }
 
+    function parseQHeartPaymentFromPlay(play) {
+        const parsed = parsePlayCode(play?.play_code || "");
+        const flow = String(parsed.flow || "");
+
+        const chunk = flow
+            .split(";")
+            .map((item) => item.trim())
+            .find((item) => item.toLowerCase().startsWith("pay:qheart"));
+
+        if (!chunk) return null;
+
+        const data = {};
+
+        chunk.split("|").forEach((part, index) => {
+            if (index === 0) return;
+
+            const sep = part.indexOf(":");
+            if (sep === -1) return;
+
+            const key = part.slice(0, sep).trim();
+            const value = part.slice(sep + 1).trim();
+
+            if (key) data[key] = value;
+        });
+
+        return data;
+    }
+
+    function findPreviousQHeartPayment(play) {
+        const currentId = Number(play?.id || 0);
+        const targetId = Number(play?.target_user_id || 0);
+        const deckId = Number(play?.deck_id || getCurrentDeck()?.id || 0);
+
+        return getAllPlays()
+            .filter((p) => Number(p?.id || 0) !== currentId)
+            .filter((p) => Number(p?.deck_id || 0) === deckId)
+            .filter((p) => Number(p?.target_user_id || 0) === targetId)
+            .filter((p) => normalizeRank(p?.card_rank || p?.rank) === "Q")
+            .filter((p) => normalizeSuit(p?.card_suit || p?.suit) === "SPADE")
+            .map((p) => ({
+                play: p,
+                payment: parseQHeartPaymentFromPlay(p)
+            }))
+            .filter((item) => item.payment)
+            .sort((a, b) => {
+                const aTime = new Date(a.play?.created_at || 0).getTime();
+                const bTime = new Date(b.play?.created_at || 0).getTime();
+                return bTime - aTime;
+            })[0]?.payment || null;
+    }
+
+    function getQHeartDefaults(play, side) {
+        const previous = findPreviousQHeartPayment(play);
+
+        if (previous) {
+            return {
+                concept: previous.concept || "",
+                amount: previous.amount || ""
+            };
+        }
+
+        return {
+            concept: side === "AMSTERDAM" ? "Ticket" : "",
+            amount: ""
+        };
+    }
+
     function parsePlayCode(code) {
         const parts = String(code || "").split("§");
 
@@ -763,18 +830,18 @@
     }
 
     function renderPlayCardActions(play) {
-  const isTarget = isCurrentUserTarget(play);
-  const isSource = isCurrentUserSource(play);
-  const isValidator = isCurrentUserValidator(play);
+        const isTarget = isCurrentUserTarget(play);
+        const isSource = isCurrentUserSource(play);
+        const isValidator = isCurrentUserValidator(play);
 
-  const status = String(play?.play_status || "").trim().toUpperCase();
+        const status = String(play?.play_status || "").trim().toUpperCase();
 
-  const sendIcon = "/assets/icons/buzon60.gif";
-  const acceptIcon = "/assets/icons/Sello40.gif";
-  const rejectIcon = "/assets/icons/stepback40.gif";
+        const sendIcon = "/assets/icons/buzon60.gif";
+        const acceptIcon = "/assets/icons/Sello40.gif";
+        const rejectIcon = "/assets/icons/stepback40.gif";
 
-  if (isValidator && status === "PENDING") {
-    return `
+        if (isValidator && status === "PENDING") {
+            return `
       <button id="lienzo-validator-send-btn" class="icon-btn" title="Validar y enviar">
         <img src="${sendIcon}" alt="Validar y enviar" />
       </button>
@@ -783,23 +850,23 @@
         <img src="${rejectIcon}" alt="Rechazar solicitud" />
       </button>
     `;
-  }
+        }
 
-  if (
-    isSource &&
-    status !== "SENT" &&
-    status !== "APPROVED" &&
-    status !== "REJECTED" &&
-    status !== "CANCELLED"
-  ) {
-    const qHeartIncomplete =
-      hasDroppedQHeart() &&
-      (
-        !document.querySelector(".lienzo-qheart-box__amount")?.value?.trim() ||
-        !document.querySelector(".lienzo-qheart-box__paydate")?.value?.trim()
-      );
+        if (
+            isSource &&
+            status !== "SENT" &&
+            status !== "APPROVED" &&
+            status !== "REJECTED" &&
+            status !== "CANCELLED"
+        ) {
+            const qHeartIncomplete =
+                hasDroppedQHeart() &&
+                (
+                    !document.querySelector(".lienzo-qheart-box__amount")?.value?.trim() ||
+                    !document.querySelector(".lienzo-qheart-box__paydate")?.value?.trim()
+                );
 
-    return `
+            return `
       <button
         id="lienzo-send-btn"
         class="icon-btn"
@@ -809,10 +876,10 @@
         <img src="${sendIcon}" alt="Enviar" />
       </button>
     `;
-  }
+        }
 
-  if (isTarget && status === "SENT") {
-    return `
+        if (isTarget && status === "SENT") {
+            return `
       <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
         <img src="${acceptIcon}" alt="Aceptar" />
       </button>
@@ -821,10 +888,10 @@
         <img src="${rejectIcon}" alt="Rechazar" />
       </button>
     `;
-  }
+        }
 
-  return "";
-}
+        return "";
+    }
 
     function renderPlayCardBox(play) {
         const parentPlay = getPlayById(play?.parent_play_id);
@@ -1248,48 +1315,43 @@ ${location ? `
     function renderQHeartBudgetBox({
         title,
         currencyCode = "",
-        defaultPayDate = ""
+        defaultPayDate = "",
+        defaultConcept = "",
+        defaultAmount = ""
     }) {
         const safeTitle = escapeHtml(title || "Paga");
         const safeCurrency = escapeHtml(currencyCode || "");
         const safePayDate = escapeHtml(defaultPayDate || "");
+        const safeConcept = escapeHtml(defaultConcept || "");
+        const safeAmount = escapeHtml(defaultAmount || "");
 
         return `
     <div class="lienzo-qheart-box">
-
       <div class="lienzo-qheart-box__card">
-        <img
-          class="lienzo-card-image"
-          src="/assets/icons/Qcorazon.gif"
-          alt="Q♥"
-        />
+        <img class="lienzo-card-image" src="/assets/icons/Qcorazon.gif" alt="Q♥" />
       </div>
 
       <div class="lienzo-qheart-box__content">
-
         <div class="lienzo-qheart-box__title">
           ${safeTitle}
         </div>
 
         <div class="lienzo-qheart-box__body">
-
           <input
             type="text"
             class="lienzo-qheart-box__concept"
-            placeholder="Ticket"
-            value="Ticket"
+            placeholder="Descripción"
+            value="${safeConcept}"
           />
 
           <div class="lienzo-qheart-box__amount-row">
-            <span class="lienzo-qheart-box__currency">
-              ${safeCurrency}
-            </span>
-
+            <span class="lienzo-qheart-box__currency">${safeCurrency}</span>
             <input
               type="text"
               class="lienzo-qheart-box__amount"
               placeholder="0"
               inputmode="decimal"
+              value="${safeAmount}"
             />
           </div>
 
@@ -1304,15 +1366,10 @@ ${location ? `
             class="icon-btn lienzo-qheart-box__save"
             title="Guardar Q♥"
           >
-            <img
-              src="/assets/icons/salvar40.gif"
-              alt="Guardar Q♥"
-            />
+            <img src="/assets/icons/salvar40.gif" alt="Guardar Q♥" />
           </button>
-
         </div>
       </div>
-
     </div>
   `;
     }
@@ -1435,14 +1492,16 @@ ${qHeartMode
                 : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
         );
 
-
+        const qHeartDefaults = getQHeartDefaults(play, "COLOMBES");
         const qHeartBoxHtml = showQHeartBox
             ? `
         <div class="lienzo-dropped-extra-slot">
           ${renderQHeartBudgetBox({
                 title: `Paga ${deckName}`,
                 currencyCode,
-                defaultPayDate
+                defaultPayDate,
+                defaultConcept: qHeartDefaults.concept,
+                defaultAmount: qHeartDefaults.amount
             })}
         </div>
       `
@@ -1516,37 +1575,41 @@ ${parentJSpadeText
     }
 
     function renderTargetPlayerPanel(play) {
-  const user = resolveTargetUser(play);
-  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-  const userName =
-    user?.nickname || user?.full_name || user?.name || "Invitado";
+        const user = resolveTargetUser(play);
+        const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+        const userName =
+            user?.nickname || user?.full_name || user?.name || "Invitado";
 
-  const showQHeartBox = isSelectedQHeartInZone("AMSTERDAM");
+        const showQHeartBox = isSelectedQHeartInZone("AMSTERDAM");
 
-  const deck = getCurrentDeck();
-  const currencyCode = getCurrencyCode(deck);
+        const deck = getCurrentDeck();
+        const currencyCode = getCurrencyCode(deck);
 
-  const parentPlay = getPlayById(play?.parent_play_id);
-  const defaultPayDate = formatDateForInput(
-    String(parentPlay?.spade_mode || "").trim().toUpperCase() === "DEADLINE"
-      ? parentPlay?.end_date
-      : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
-  );
+        const parentPlay = getPlayById(play?.parent_play_id);
+        const defaultPayDate = formatDateForInput(
+            String(parentPlay?.spade_mode || "").trim().toUpperCase() === "DEADLINE"
+                ? parentPlay?.end_date
+                : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
+        );
 
-  const qHeartBoxHtml = showQHeartBox
-    ? `
+        const qHeartDefaults = getQHeartDefaults(play, "AMSTERDAM");
+
+        const qHeartBoxHtml = showQHeartBox
+            ? `
       <div class="lienzo-target-extra-slot">
         ${renderQHeartBudgetBox({
-          title: `Paga ${userName}`,
-          currencyCode,
-          defaultPayDate
-        })}
+                title: `Paga ${userName}`,
+                currencyCode,
+                defaultPayDate,
+                defaultConcept: qHeartDefaults.concept,
+                defaultAmount: qHeartDefaults.amount
+            })}
       </div>
     `
-    : "";
+            : "";
 
-  const topbar = buildPanelTopbar({
-    identityHtml: `
+        const topbar = buildPanelTopbar({
+            identityHtml: `
       <div class="lienzo-target-header lienzo-target-header--top">
         <img
           class="lienzo-target-header__photo"
@@ -1558,10 +1621,10 @@ ${parentJSpadeText
         </div>
       </div>
     `,
-    actionsHtml: ""
-  });
+            actionsHtml: ""
+        });
 
-  return `
+        return `
     <section class="lienzo-panel lienzo-panel--target panel--split-top">
       ${topbar}
 
@@ -1574,7 +1637,7 @@ ${parentJSpadeText
       </div>
     </section>
   `;
-}
+    }
 
     function buildQHeartDraftPayload(play) {
         const selection = getLienzoDropSelection();
