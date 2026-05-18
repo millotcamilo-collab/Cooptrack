@@ -53,6 +53,26 @@
         return "";
     }
 
+    function syncQHeartSendButtonVisibility() {
+        const sendBtn = document.getElementById("lienzo-send-btn");
+        if (!sendBtn) return;
+
+        if (!hasDroppedQHeart()) {
+            sendBtn.style.display = "";
+            return;
+        }
+
+        const amount = String(
+            document.querySelector(".lienzo-qheart-box__amount")?.value || ""
+        ).trim();
+
+        const payDate = String(
+            document.querySelector(".lienzo-qheart-box__paydate")?.value || ""
+        ).trim();
+
+        sendBtn.style.display = amount && payDate ? "" : "none";
+    }
+
     function getCardLabel(rank, suit) {
         return `${normalizeRank(rank)}${getSuitSymbol(suit)}`;
     }
@@ -753,6 +773,24 @@
         const acceptIcon = "/assets/icons/Sello40.gif";
         const rejectIcon = "/assets/icons/stepback40.gif";
 
+        const qHeartIncomplete =
+            hasDroppedQHeart() &&
+            (
+                !document.querySelector(".lienzo-qheart-box__amount")?.value?.trim() ||
+                !document.querySelector(".lienzo-qheart-box__paydate")?.value?.trim()
+            );
+
+        return `
+  <button
+    id="lienzo-send-btn"
+    class="icon-btn"
+    title="Enviar"
+    style="${qHeartIncomplete ? "display:none;" : ""}"
+  >
+    <img src="${sendIcon}" alt="Enviar" />
+  </button>
+`;
+
         if (isValidator && status === "PENDING") {
             return `
       <button id="lienzo-validator-send-btn" class="icon-btn" title="Validar y enviar">
@@ -1276,13 +1314,13 @@ ${location ? `
         return `
       <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
 ${qHeartMode
-  ? ``
-  : `
+                ? ``
+                : `
     <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
       <img src="${sendIcon}" alt="Enviar" />
     </button>
   `
-}
+            }
 
       </div>
     `;
@@ -1664,86 +1702,86 @@ ${parentJSpadeText
         }
     }
 
-async function handleSaveQHeartDraft(play) {
-  const built = buildQHeartDraftPayload(play);
+    async function handleSaveQHeartDraft(play) {
+        const built = buildQHeartDraftPayload(play);
 
-  if (!built.ok) {
-    alert(built.error || "No se pudo preparar la Q de corazón.");
-    built.focusEl?.focus?.();
-    return;
-  }
+        if (!built.ok) {
+            alert(built.error || "No se pudo preparar la Q de corazón.");
+            built.focusEl?.focus?.();
+            return;
+        }
 
-  const token = localStorage.getItem("cooptrackToken");
+        const token = localStorage.getItem("cooptrackToken");
 
-  if (!token) {
-    alert("No estás logueado");
-    return;
-  }
+        if (!token) {
+            alert("No estás logueado");
+            return;
+        }
 
-  const currentPlayCode = String(play?.play_code || "").trim();
-  const parsed = parsePlayCode(currentPlayCode);
+        const currentPlayCode = String(play?.play_code || "").trim();
+        const parsed = parsePlayCode(currentPlayCode);
 
-  const existingFlowChunks = String(parsed.flow || "")
-    .split(";")
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .filter((chunk) => !chunk.toLowerCase().startsWith("pay:qheart"));
+        const existingFlowChunks = String(parsed.flow || "")
+            .split(";")
+            .map((item) => item.trim())
+            .filter(Boolean)
+            .filter((chunk) => !chunk.toLowerCase().startsWith("pay:qheart"));
 
-  const deck = getCurrentDeck();
-  const currency = getCurrencyCode(deck);
+        const deck = getCurrentDeck();
+        const currency = getCurrencyCode(deck);
 
-  const draft = built.draft;
+        const draft = built.draft;
 
-  const paymentBlock =
-    `pay:QHEART` +
-    `|side:${draft.side}` +
-    `|payer:${draft.side === "AMSTERDAM" ? "guest" : "deck"}` +
-    `|concept:${draft.concept}` +
-    `|amount:${draft.amount}` +
-    `|currency:${currency}` +
-    `|payDate:${draft.payDate}`;
+        const paymentBlock =
+            `pay:QHEART` +
+            `|side:${draft.side}` +
+            `|payer:${draft.side === "AMSTERDAM" ? "guest" : "deck"}` +
+            `|concept:${draft.concept}` +
+            `|amount:${draft.amount}` +
+            `|currency:${currency}` +
+            `|payDate:${draft.payDate}`;
 
-  const nextFlow = [...existingFlowChunks, paymentBlock].join(";");
+        const nextFlow = [...existingFlowChunks, paymentBlock].join(";");
 
-  const nextPlayCode = [
-    parsed.deckId || "",
-    parsed.userId || "",
-    parsed.date || "",
-    parsed.rank || "",
-    parsed.suit || "",
-    parsed.action || "",
-    parsed.autorizados || "",
-    nextFlow,
-    parsed.recipients || ""
-  ].join("§");
+        const nextPlayCode = [
+            parsed.deckId || "",
+            parsed.userId || "",
+            parsed.date || "",
+            parsed.rank || "",
+            parsed.suit || "",
+            parsed.action || "",
+            parsed.autorizados || "",
+            nextFlow,
+            parsed.recipients || ""
+        ].join("§");
 
-  const response = await fetch(`/plays/${play.id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({
-      play_code: nextPlayCode,
-      play_status: String(play.play_status || "ACTIVE").toUpperCase()
-    })
-  });
+        const response = await fetch(`/plays/${play.id}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                play_code: nextPlayCode,
+                play_status: String(play.play_status || "ACTIVE").toUpperCase()
+            })
+        });
 
-  const data = await response.json();
+        const data = await response.json();
 
-  if (!response.ok || !data.ok) {
-    console.error("No se pudo guardar Q♥", data);
-    alert(data?.error || "No se pudo guardar la Q♥");
-    return;
-  }
+        if (!response.ok || !data.ok) {
+            console.error("No se pudo guardar Q♥", data);
+            alert(data?.error || "No se pudo guardar la Q♥");
+            return;
+        }
 
-  sessionStorage.removeItem("cooptrackQHeartDraft");
+        sessionStorage.removeItem("cooptrackQHeartDraft");
 
-  const deckId =
-    Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
+        const deckId =
+            Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
 
-  window.location.href = `/lienzoQQpica.html?deckId=${deckId}&playId=${play.id}`;
-}
+        window.location.href = `/lienzoQQpica.html?deckId=${deckId}&playId=${play.id}`;
+    }
 
     async function acknowledgePlayIfNeeded(play) {
         return true;
@@ -1955,6 +1993,24 @@ async function handleSaveQHeartDraft(play) {
         const validatorRejectBtn = document.getElementById("lienzo-validator-reject-btn");
 
         const validatorSendBtn = document.getElementById("lienzo-validator-send-btn");
+
+        document
+            .querySelectorAll(
+                ".lienzo-qheart-box__amount, .lienzo-qheart-box__paydate"
+            )
+            .forEach((input) => {
+                input.addEventListener("input", syncQHeartSendButtonVisibility);
+                input.addEventListener("change", syncQHeartSendButtonVisibility);
+            });
+
+        syncQHeartSendButtonVisibility();
+
+        if (validatorSendBtn) {
+            validatorSendBtn.addEventListener("click", () => {
+                handleSendPlay(play);
+            });
+        }
+
 
         if (validatorSendBtn) {
             validatorSendBtn.addEventListener("click", () => {
