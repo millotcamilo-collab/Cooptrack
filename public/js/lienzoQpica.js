@@ -53,29 +53,17 @@
         return "";
     }
 
-    function syncQHeartSendButtonVisibility() {
-        const sendBtn = document.getElementById("lienzo-send-btn");
-        if (!sendBtn) return;
+function syncQHeartSendButtonVisibility() {
+    const sendBtn = document.getElementById("lienzo-send-btn");
+    if (!sendBtn) return;
 
-        if (!hasDroppedQHeart()) {
-            sendBtn.style.display = "";
-            return;
-        }
-
-        const concept = String(
-            document.querySelector(".lienzo-qheart-box__concept")?.value || ""
-        ).trim();
-
-        const amount = String(
-            document.querySelector(".lienzo-qheart-box__amount")?.value || ""
-        ).trim();
-
-        const payDate = String(
-            document.querySelector(".lienzo-qheart-box__paydate")?.value || ""
-        ).trim();
-
-        sendBtn.style.display = concept && amount && payDate ? "" : "none";
+    if (hasDroppedQHeart()) {
+        sendBtn.style.display = "none";
+        return;
     }
+
+    sendBtn.style.display = "";
+}
 
     function getCardLabel(rank, suit) {
         return `${normalizeRank(rank)}${getSuitSymbol(suit)}`;
