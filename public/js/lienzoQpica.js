@@ -1516,83 +1516,65 @@ ${parentJSpadeText
     }
 
     function renderTargetPlayerPanel(play) {
-        const user = resolveTargetUser(play);
-        const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-        const userName =
-            user?.nickname || user?.full_name || user?.name || "Invitado";
+  const user = resolveTargetUser(play);
+  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+  const userName =
+    user?.nickname || user?.full_name || user?.name || "Invitado";
 
-        const selection = getLienzoDropSelection();
-        const droppedInAmsterdam = selection?.targetZone === "AMSTERDAM";
-        const showQHeartBox = isSelectedQHeartInZone("AMSTERDAM");
+  const showQHeartBox = isSelectedQHeartInZone("AMSTERDAM");
 
+  const deck = getCurrentDeck();
+  const currencyCode = getCurrencyCode(deck);
 
-        const deck = getCurrentDeck();
-        const currencyCode = getCurrencyCode(deck);
+  const parentPlay = getPlayById(play?.parent_play_id);
+  const defaultPayDate = formatDateForInput(
+    String(parentPlay?.spade_mode || "").trim().toUpperCase() === "DEADLINE"
+      ? parentPlay?.end_date
+      : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
+  );
 
-        const parentPlay = getPlayById(play?.parent_play_id);
-        const defaultPayDate = formatDateForInput(
-            String(parentPlay?.spade_mode || "").trim().toUpperCase() === "DEADLINE"
-                ? parentPlay?.end_date
-                : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
-        );
+  const qHeartBoxHtml = showQHeartBox
+    ? `
+      <div class="lienzo-target-extra-slot">
+        ${renderQHeartBudgetBox({
+          title: `Paga ${userName}`,
+          currencyCode,
+          defaultPayDate
+        })}
+      </div>
+    `
+    : "";
 
-        const droppedCardHtml = droppedInAmsterdam
-            ? `
+  const topbar = buildPanelTopbar({
+    identityHtml: `
+      <div class="lienzo-target-header lienzo-target-header--top">
         <img
-          class="lienzo-card-image lienzo-card-image--overlay"
-          src="${escapeHtml(getCardImageSrc(selection.rank, selection.suit))}"
-          alt="${escapeHtml(getCardLabel(selection.rank, selection.suit))}"
-          title="${escapeHtml(getCardLabel(selection.rank, selection.suit))}"
+          class="lienzo-target-header__photo"
+          src="${escapeHtml(userPhoto)}"
+          alt="${escapeHtml(userName)}"
         />
-      `
-            : "";
-
-        const qHeartBoxHtml = showQHeartBox
-            ? `
-        <div class="lienzo-target-extra-slot">
-          ${renderQHeartBudgetBox({
-                title: `Paga ${userName}`,
-                currencyCode,
-                defaultPayDate
-            })}
+        <div class="lienzo-target-header__name">
+          ${escapeHtml(userName)}
         </div>
-      `
-            : "";
+      </div>
+    `,
+    actionsHtml: ""
+  });
 
-        const showActionsHere = isCurrentUserTarget(play);
+  return `
+    <section class="lienzo-panel lienzo-panel--target panel--split-top">
+      ${topbar}
 
-        const topbar = buildPanelTopbar({
-            identityHtml: `
-        <div class="lienzo-target-header lienzo-target-header--top">
-          <img
-            class="lienzo-target-header__photo"
-            src="${escapeHtml(userPhoto)}"
-            alt="${escapeHtml(userName)}"
-          />
-          <div class="lienzo-target-header__name">
-            ${escapeHtml(userName)}
-          </div>
-        </div>
-      `,
-            actionsHtml: ""
-        });
-
-        return `
-      <section class="lienzo-panel lienzo-panel--target panel--split-top">
-        ${topbar}
-
-        <div class="lienzo-target-mainrow">
-          <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-            ${renderPlayCardBox(play)}
-            ${droppedCardHtml}
-          </div>
-
-          ${qHeartBoxHtml}
+      <div class="lienzo-target-mainrow">
+        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+          ${renderPlayCardBox(play)}
         </div>
 
-      </section>
-    `;
-    }
+        ${qHeartBoxHtml}
+      </div>
+    </section>
+  `;
+}
 
     function buildQHeartDraftPayload(play) {
         const selection = getLienzoDropSelection();

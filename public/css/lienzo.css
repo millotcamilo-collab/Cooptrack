@@ -733,12 +733,34 @@ body {
 }
 
 .lienzo-qheart-box {
-  width: 190px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  width: auto;
+  min-width: 340px;
+
   padding: 10px;
+
   border: 1px solid #999;
   border-radius: 8px;
   background: none;
+
   box-sizing: border-box;
+}
+
+.lienzo-qheart-box__card {
+  flex: 0 0 auto;
+}
+
+.lienzo-qheart-box__card .lienzo-card-image {
+  height: 120px;
+  width: auto;
+}
+
+.lienzo-qheart-box__content {
+  flex: 1 1 auto;
+  min-width: 180px;
 }
 
 .lienzo-qheart-box__title {
