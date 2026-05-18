@@ -1245,18 +1245,34 @@ ${location ? `
         };
     }
 
-    function renderQHeartBudgetBox({ title, currencyCode = "", defaultPayDate = "" }) {
+    function renderQHeartBudgetBox({
+        title,
+        currencyCode = "",
+        defaultPayDate = ""
+    }) {
         const safeTitle = escapeHtml(title || "Paga");
         const safeCurrency = escapeHtml(currencyCode || "");
         const safePayDate = escapeHtml(defaultPayDate || "");
 
         return `
-      <div class="lienzo-qheart-box">
+    <div class="lienzo-qheart-box">
+
+      <div class="lienzo-qheart-box__card">
+        <img
+          class="lienzo-card-image"
+          src="/assets/icons/Qcorazon.gif"
+          alt="Q♥"
+        />
+      </div>
+
+      <div class="lienzo-qheart-box__content">
+
         <div class="lienzo-qheart-box__title">
           ${safeTitle}
         </div>
 
         <div class="lienzo-qheart-box__body">
+
           <input
             type="text"
             class="lienzo-qheart-box__concept"
@@ -1265,7 +1281,10 @@ ${location ? `
           />
 
           <div class="lienzo-qheart-box__amount-row">
-            <span class="lienzo-qheart-box__currency">${safeCurrency}</span>
+            <span class="lienzo-qheart-box__currency">
+              ${safeCurrency}
+            </span>
+
             <input
               type="text"
               class="lienzo-qheart-box__amount"
@@ -1279,12 +1298,23 @@ ${location ? `
             class="lienzo-qheart-box__paydate"
             value="${safePayDate}"
           />
-        <button id="lienzo-save-btn" class="icon-btn lienzo-qheart-box__save" title="Guardar Q♥">
-            <img src="/assets/icons/salvar40.gif" alt="Guardar Q♥" />
+
+          <button
+            id="lienzo-save-btn"
+            class="icon-btn lienzo-qheart-box__save"
+            title="Guardar Q♥"
+          >
+            <img
+              src="/assets/icons/salvar40.gif"
+              alt="Guardar Q♥"
+            />
           </button>
+
         </div>
       </div>
-    `;
+
+    </div>
+  `;
     }
 
     function renderSourceActions(play) {
@@ -1405,18 +1435,6 @@ ${qHeartMode
                 : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
         );
 
-        const droppedCardHtml = droppedInColombes
-            ? `
-        <div class="lienzo-dropped-card-slot">
-          <img
-            class="lienzo-card-image lienzo-card-image--dropped"
-            src="${escapeHtml(getCardImageSrc(selection.rank, selection.suit))}"
-            alt="${escapeHtml(getCardLabel(selection.rank, selection.suit))}"
-            title="${escapeHtml(getCardLabel(selection.rank, selection.suit))}"
-          />
-        </div>
-      `
-            : "";
 
         const qHeartBoxHtml = showQHeartBox
             ? `
@@ -1490,7 +1508,6 @@ ${parentJSpadeText
                 : ""
             }
 
-  ${droppedCardHtml}
   ${qHeartBoxHtml}
 </div>
 
