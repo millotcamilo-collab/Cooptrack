@@ -588,79 +588,66 @@ function renderUsersPicker(containerId, options = {}) {
   }
 
   function renderResultsState() {
-    const alreadyInvited = hasActiveInvitationForUser(user);
-    let resultsHtml = "";
+  let resultsHtml = "";
 
-    if (state.loading) {
-      resultsHtml = `<div class="users-picker__empty">Cargando usuarios...</div>`;
-    } else if (state.error) {
-      resultsHtml = `<div class="users-picker__empty">${escapeHtml(state.error)}</div>`;
-    } else if (!state.searchValue.trim()) {
-      resultsHtml = "";
-    } else if (!state.filteredUsers.length) {
-      resultsHtml = `<div class="users-picker__empty">No se encontraron usuarios.</div>`;
-    } else {
-      resultsHtml = state.filteredUsers.map((user) => `
-  <div
-    class="users-picker__row"
-    data-users-row-id="${escapeHtml(user.id)}"
-  >
-    <button
-      type="button"
-      class="users-picker__row-main"
-      data-users-row-select-id="${escapeHtml(user.id)}"
-    >
-      <img
-        class="users-picker__row-type-icon"
-        src="${escapeHtml(getUserTypeIcon(user))}"
-        alt="${escapeHtml(user.qCategory || user.user_type || "Usuario")}"
-      />
+  if (state.loading) {
+    resultsHtml = `<div class="users-picker__empty">Cargando usuarios...</div>`;
+  } else if (state.error) {
+    resultsHtml = `<div class="users-picker__empty">${escapeHtml(state.error)}</div>`;
+  } else if (!state.searchValue.trim()) {
+    resultsHtml = "";
+  } else if (!state.filteredUsers.length) {
+    resultsHtml = `<div class="users-picker__empty">No se encontraron usuarios.</div>`;
+  } else {
+    resultsHtml = state.filteredUsers.map((user) => {
+      const alreadyInvited = hasActiveInvitationForUser(user);
 
-      <img
-        class="users-picker__row-photo"
-        src="${escapeHtml(getUserPhoto(user))}"
-        alt="${escapeHtml(getUserDisplayName(user))}"
-      />
+      return `
+        <div class="users-picker__row" data-users-row-id="${escapeHtml(user.id)}">
+          <button
+            type="button"
+            class="users-picker__row-main"
+            data-users-row-select-id="${escapeHtml(user.id)}"
+          >
+            <img class="users-picker__row-type-icon"
+              src="${escapeHtml(getUserTypeIcon(user))}" alt="" />
 
-      <span class="users-picker__row-name">${escapeHtml(getUserDisplayName(user))}</span>
-    </button>
+            <img class="users-picker__row-photo"
+              src="${escapeHtml(getUserPhoto(user))}"
+              alt="${escapeHtml(getUserDisplayName(user))}" />
 
-${alreadyInvited
-  ? `
-    <span
-      class="users-picker__row-action users-picker__row-action--disabled"
-      title="Ya invitado"
-    >
-      Q♠
-    </span>
-  `
-  : `
-    <button
-      type="button"
-      class="users-picker__row-action"
-      data-users-row-animate-id="${escapeHtml(user.id)}"
-      title="Asignar usuario"
-    >
-      <img
-        src="/assets/icons/ClaquetaAbierta.gif"
-        alt="Asignar usuario"
-      />
-    </button>
-  `
-}
-  </div>
-`).join("");
-    }
+            <span class="users-picker__row-name">
+              ${escapeHtml(getUserDisplayName(user))}
+            </span>
+          </button>
 
-    return `
-  ${state.isCreatingUser ? renderCreateUserState() : renderSearchState()}
-  ${state.isCreatingUser ? "" : `
-    <div class="users-picker__results">
-      ${resultsHtml}
-    </div>
-  `}
-`;
+          ${alreadyInvited
+            ? `<span class="users-picker__row-action users-picker__row-action--disabled" title="Ya invitado">Q♠</span>`
+            : `
+              <button
+                type="button"
+                class="users-picker__row-action"
+                data-users-row-animate-id="${escapeHtml(user.id)}"
+                title="Asignar usuario"
+              >
+                <img src="/assets/icons/ClaquetaAbierta.gif" alt="Asignar usuario" />
+              </button>
+            `
+          }
+        </div>
+      `;
+    }).join("");
   }
+
+  return `
+    ${state.isCreatingUser ? renderCreateUserState() : renderSearchState()}
+    ${state.isCreatingUser ? "" : `
+      <div class="users-picker__results">
+        ${resultsHtml}
+      </div>
+    `}
+  `;
+}
 
   function renderSelectedState() {
     const user = state.selectedUser;
