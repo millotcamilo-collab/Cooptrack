@@ -371,21 +371,10 @@
       const aceClubTribune = resolveAuthorityTribuneForTarget(play);
 
 const validatorOnlyHtml = aceClubTribune
-  ? `
-    <div class="lienzo-validator-with-context">
-      ${renderUserTribune(
-        aceClubTribune,
-        getValidatorRoleCards(aceClubTribune)
-      )}
-
-      <div class="lienzo-parent-play-box lienzo-parent-play-box--inline">
-        ${renderPlayCardBox(play, {
-          rank: "J",
-          suit: "SPADE"
-        })}
-      </div>
-    </div>
-  `
+  ? renderUserTribune(
+      aceClubTribune,
+      getValidatorRoleCards(aceClubTribune)
+    )
   : "";
 
       return `
@@ -1254,14 +1243,6 @@ const validatorOnlyHtml = aceClubTribune
           id: clubAce.id,
           card_rank: clubAce.card_rank,
           card_suit: clubAce.card_suit
-        });
-      }
-
-      if (parentPlay && parentRank === "J" && parentSuit === "SPADE") {
-        stackCards.push({
-          id: parentPlay.id,
-          card_rank: parentPlay.card_rank || parentPlay.rank,
-          card_suit: parentPlay.card_suit || parentPlay.suit
         });
       }
 
@@ -2172,13 +2153,25 @@ const showTargetActions =
       <section class="lienzo-panel lienzo-panel--source panel--split-top">
         ${topbar}
 
-        <div class="lienzo-source-cards">
-          <div class="lienzo-source-stack">
-            ${scene.backgroundCards.map(renderBackgroundCard).join("")}
-          </div>
-        
-          ${qHeartBoxHtml}
-        </div>
+<div class="lienzo-source-cards">
+  <div class="lienzo-source-stack">
+    ${scene.backgroundCards.map(renderBackgroundCard).join("")}
+  </div>
+
+  ${parentJSpadeText
+    ? `
+      <div class="lienzo-parent-play-box lienzo-parent-play-box--inline">
+        ${renderPlayCardBox(play, {
+          rank: "J",
+          suit: "SPADE"
+        })}
+      </div>
+    `
+    : ""
+  }
+
+  ${qHeartBoxHtml}
+</div>
 
       </section>
     `;
