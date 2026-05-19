@@ -2327,13 +2327,22 @@ ${parentJSpadeText
 
     let gridClass = "";
 
-    if (validatorCount === 1) {
-      gridClass = "lienzo-grid--3cols";
-    }
+const status = String(play?.play_status || "").trim().toUpperCase();
 
-    if (validatorCount >= 2) {
-      gridClass = "lienzo-grid--4cols";
-    }
+if (
+  isCurrentUserTarget(play) &&
+  ["SENT", "APPROVED", "REJECTED", "CANCELLED"].includes(status)
+) {
+  gridClass = "lienzo-grid--qqpica-target";
+} else {
+  if (validatorCount === 1) {
+    gridClass = "lienzo-grid--3cols";
+  }
+
+  if (validatorCount >= 2) {
+    gridClass = "lienzo-grid--4cols";
+  }
+}
 
     container.innerHTML = `
       ${renderDeckHeader(deck)}
