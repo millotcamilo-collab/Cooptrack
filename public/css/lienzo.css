@@ -921,7 +921,8 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 0;
   align-items: stretch;
-  height: 250px;
+  min-height: 250px;
+  height: auto;
 }
 
 /* 2 Colombes + Amsterdam */
@@ -1326,4 +1327,11 @@ body {
 
 .lienzo-target-extra-slot {
   flex: 0 0 auto;
+}
+
+.lienzo-week-row-wrap {
+  clear: both;
+  margin-top: 16px;
+  position: relative;
+  z-index: 1;
 }
