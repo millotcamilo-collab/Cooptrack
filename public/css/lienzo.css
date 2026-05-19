@@ -1301,3 +1301,29 @@ body {
 .lienzo-grid--qqpica-target {
   grid-template-columns: 1fr 1.45fr;
 }
+
+/* QQpica: Q♠ y Q♦/Q♥ sin marco y centradas */
+.lienzo-play-card-box,
+.lienzo-qheart-box,
+.lienzo-qheart-box--readonly {
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+.lienzo-target-mainrow {
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 48px;
+}
+
+.lienzo-target-dropzone {
+  width: auto;
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.lienzo-target-extra-slot {
+  flex: 0 0 auto;
+}
