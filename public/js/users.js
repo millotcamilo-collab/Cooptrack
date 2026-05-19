@@ -148,15 +148,14 @@ function renderUsersPicker(containerId, options = {}) {
       return;
     }
 
-state.filteredUsers = state.allUsers.filter((user) => {
-  const userId = Number(user?.id || 0);
-  const currentUserId = Number(options.currentUserId || 0);
+    state.filteredUsers = state.allUsers.filter((user) => {
+      const userId = Number(user?.id || 0);
+      const currentUserId = Number(options.currentUserId || 0);
 
-  if (currentUserId && userId === currentUserId) return false;
-  if (hasActiveInvitationForUser(user)) return false;
+      if (currentUserId && userId === currentUserId) return false;
 
-  return startsWithSearch(getUserDisplayName(user), trimmed);
-});
+      return startsWithSearch(getUserDisplayName(user), trimmed);
+    });
   }
 
   function handleSelect(userId) {
@@ -589,6 +588,7 @@ state.filteredUsers = state.allUsers.filter((user) => {
   }
 
   function renderResultsState() {
+    const alreadyInvited = hasActiveInvitationForUser(user);
     let resultsHtml = "";
 
     if (state.loading) {
@@ -625,6 +625,16 @@ state.filteredUsers = state.allUsers.filter((user) => {
       <span class="users-picker__row-name">${escapeHtml(getUserDisplayName(user))}</span>
     </button>
 
+${alreadyInvited
+  ? `
+    <span
+      class="users-picker__row-action users-picker__row-action--disabled"
+      title="Ya invitado"
+    >
+      Q♠
+    </span>
+  `
+  : `
     <button
       type="button"
       class="users-picker__row-action"
@@ -636,6 +646,8 @@ state.filteredUsers = state.allUsers.filter((user) => {
         alt="Asignar usuario"
       />
     </button>
+  `
+}
   </div>
 `).join("");
     }
