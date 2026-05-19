@@ -1249,8 +1249,8 @@
   }
 
   function buildSourceCardsScene(play) {
-    const currentUser = getCurrentUser();
-    const userId = Number(currentUser?.id || 0);
+    const sourceUser = resolveSourceUser(play);
+    const userId = Number(sourceUser?.id || 0);
     const ownedCards = getAllPlays()
       .filter((p) => {
         const rank = normalizeRank(p.card_rank || p.rank);
@@ -1279,7 +1279,15 @@
     const parentSuit = normalizeSuit(parentPlay?.card_suit || parentPlay?.suit);
 
     if (activeRank === "Q" && activeSuit === "SPADE") {
-      const stackCards = [];
+      const stackCards = ownedCards.filter((card) => {
+        const rank = normalizeRank(card?.card_rank);
+        const suit = normalizeSuit(card?.card_suit);
+
+        return (
+          (rank === "A" && suit === "CLUB") ||
+          (rank === "K" && suit === "SPADE")
+        );
+      });
 
       const clubAce = ownedCards.find((card) => {
         return (
