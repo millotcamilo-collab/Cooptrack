@@ -335,6 +335,7 @@ function renderUsersPicker(containerId, options = {}) {
     const editBtn = container.querySelector("[data-users-edit-btn]");
     const rowSelectButtons = container.querySelectorAll("[data-users-row-select-id]");
     const rowAnimateButtons = container.querySelectorAll("[data-users-row-animate-id]");
+    const extraBtn = container.querySelector("[data-users-extra-btn]");
 
     const createFields = container.querySelectorAll("[data-users-create-field]");
     const saveNewBtn = container.querySelector("[data-users-save-new]");
@@ -360,6 +361,14 @@ function renderUsersPicker(containerId, options = {}) {
 
     if (sealBtn) {
       sealBtn.addEventListener("click", handleCreateUser);
+    }
+
+    if (extraBtn) {
+      extraBtn.addEventListener("click", () => {
+        if (typeof options.onPublishExtra === "function") {
+          options.onPublishExtra();
+        }
+      });
     }
 
     if (exitBtn) {
@@ -553,6 +562,14 @@ function renderUsersPicker(containerId, options = {}) {
           <img src="${escapeHtml(options.sealIcon || "/assets/icons/lacre120.gif")}" alt="Registrar usuario" />
         </button>
 
+        <button
+  type="button"
+  class="users-picker__icon-btn"
+  data-users-extra-btn
+  title="Publicar actividad"
+>
+  <img src="/assets/icons/Extra120.gif" alt="Publicar actividad" />
+</button>
         
       </div>
     </div>
@@ -588,21 +605,21 @@ function renderUsersPicker(containerId, options = {}) {
   }
 
   function renderResultsState() {
-  let resultsHtml = "";
+    let resultsHtml = "";
 
-  if (state.loading) {
-    resultsHtml = `<div class="users-picker__empty">Cargando usuarios...</div>`;
-  } else if (state.error) {
-    resultsHtml = `<div class="users-picker__empty">${escapeHtml(state.error)}</div>`;
-  } else if (!state.searchValue.trim()) {
-    resultsHtml = "";
-  } else if (!state.filteredUsers.length) {
-    resultsHtml = `<div class="users-picker__empty">No se encontraron usuarios.</div>`;
-  } else {
-    resultsHtml = state.filteredUsers.map((user) => {
-      const alreadyInvited = hasActiveInvitationForUser(user);
+    if (state.loading) {
+      resultsHtml = `<div class="users-picker__empty">Cargando usuarios...</div>`;
+    } else if (state.error) {
+      resultsHtml = `<div class="users-picker__empty">${escapeHtml(state.error)}</div>`;
+    } else if (!state.searchValue.trim()) {
+      resultsHtml = "";
+    } else if (!state.filteredUsers.length) {
+      resultsHtml = `<div class="users-picker__empty">No se encontraron usuarios.</div>`;
+    } else {
+      resultsHtml = state.filteredUsers.map((user) => {
+        const alreadyInvited = hasActiveInvitationForUser(user);
 
-      return `
+        return `
         <div class="users-picker__row" data-users-row-id="${escapeHtml(user.id)}">
           <button
             type="button"
@@ -636,10 +653,10 @@ function renderUsersPicker(containerId, options = {}) {
           }
         </div>
       `;
-    }).join("");
-  }
+      }).join("");
+    }
 
-  return `
+    return `
     ${state.isCreatingUser ? renderCreateUserState() : renderSearchState()}
     ${state.isCreatingUser ? "" : `
       <div class="users-picker__results">
@@ -647,7 +664,7 @@ function renderUsersPicker(containerId, options = {}) {
       </div>
     `}
   `;
-}
+  }
 
   function renderSelectedState() {
     const user = state.selectedUser;

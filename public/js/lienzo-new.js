@@ -16,6 +16,62 @@
 
   }
 
+  async function publishActivityWithoutUser() {
+    const draft = window.__lienzoNewDraft;
+    const token = localStorage.getItem("cooptrackToken");
+    const userId = Number(getCurrentUser()?.id || 0);
+
+    if (!draft?.deckId || !draft?.parentPlayId || !draft?.card_rank || !draft?.card_suit) {
+      alert("Faltan datos para publicar la actividad.");
+      return;
+    }
+
+    if (!token || !userId) {
+      alert("No estás logueado.");
+      return;
+    }
+
+    const when = new Date().toISOString();
+
+    const playCode = [
+      draft.deckId,
+      userId,
+      when,
+      String(draft.card_rank).toUpperCase(),
+      String(draft.card_suit).toUpperCase(),
+      "publish_extra",
+      `U:${userId}`,
+      `news;child_of:${draft.parentPlayId}`,
+      "TODOS"
+    ].join("§");
+
+    const response = await fetch("/plays", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        deck_id: draft.deckId,
+        parent_play_id: draft.parentPlayId,
+        target_user_id: null,
+        play_code: playCode,
+        text: draft.play_text || "",
+        play_status: "SENT"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error publicando actividad:", data);
+      alert(data?.error || "No se pudo publicar la actividad");
+      return;
+    }
+
+    window.location.href = "/noticias.html";
+  }
+
   function getAceOwnerTribune(suit) {
     const plays = getAllPlays();
 
@@ -1147,6 +1203,11 @@
       childRank: normalizeRank(draft.card_rank),
       childSuit: normalizeSuit(draft.card_suit),
       plays: getAllPlays(),
+
+      onPublishExtra() {
+        publishActivityWithoutUser();
+      },
+
       onSelect(user) {
         window.__lienzoNewDraft = {
           ...window.__lienzoNewDraft,
