@@ -219,3 +219,11 @@
   height: 16px;
   opacity: 1;
 }
+
+.users-picker__row-action--disabled {
+  color: #000;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+  opacity: 1;
+}
