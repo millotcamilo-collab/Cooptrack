@@ -370,12 +370,23 @@
     ) {
       const aceClubTribune = resolveAuthorityTribuneForTarget(play);
 
-      const validatorOnlyHtml = aceClubTribune
-        ? renderUserTribune(
-          aceClubTribune,
-          getValidatorRoleCards(aceClubTribune)
-        )
-        : "";
+const validatorOnlyHtml = aceClubTribune
+  ? `
+    <div class="lienzo-validator-with-context">
+      ${renderUserTribune(
+        aceClubTribune,
+        getValidatorRoleCards(aceClubTribune)
+      )}
+
+      <div class="lienzo-parent-play-box lienzo-parent-play-box--inline">
+        ${renderPlayCardBox(play, {
+          rank: "J",
+          suit: "SPADE"
+        })}
+      </div>
+    </div>
+  `
+  : "";
 
       return `
     <div class="lienzo-tribunes lienzo-tribunes--colombes">
@@ -2165,17 +2176,6 @@ const showTargetActions =
           <div class="lienzo-source-stack">
             ${scene.backgroundCards.map(renderBackgroundCard).join("")}
           </div>
-${parentJSpadeText && !isCurrentUserSource(play)
-  ? `
-    <div class="lienzo-parent-play-box lienzo-parent-play-box--inline">
-      ${renderPlayCardBox(play, {
-        rank: "J",
-        suit: "SPADE"
-      })}
-    </div>
-  `
-  : ""
-}
         
           ${qHeartBoxHtml}
         </div>
