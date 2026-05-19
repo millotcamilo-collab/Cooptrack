@@ -69,6 +69,14 @@
       return;
     }
 
+    /* 👇 HACER LA JUGADA PÚBLICA */
+    await fetch(`/plays/${data.play.id}/readers/public`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
     window.location.href = "/noticias.html";
   }
 

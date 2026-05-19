@@ -4444,3 +4444,35 @@ console.log('PORT recibido:', PORT);
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`CoopTrack server running on port ${PORT}`);
 });
+
+app.post('/plays/:id/readers/public', requireAuth, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const playId = Number(req.params.id);
+
+    if (!playId) {
+      return res.status(400).json({
+        ok: false,
+        error: 'playId inválido'
+      });
+    }
+
+    await markPlayAsPublic(client, playId);
+
+    return res.json({
+      ok: true
+    });
+
+  } catch (error) {
+    console.error('Error publicando readers públicos', error);
+
+    return res.status(500).json({
+      ok: false,
+      error: 'No se pudo publicar la jugada'
+    });
+
+  } finally {
+    client.release();
+  }
+});
