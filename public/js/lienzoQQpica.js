@@ -2165,17 +2165,17 @@ const showTargetActions =
           <div class="lienzo-source-stack">
             ${scene.backgroundCards.map(renderBackgroundCard).join("")}
           </div>
-${parentJSpadeText
-        ? `
+${parentJSpadeText && !isCurrentUserSource(play)
+  ? `
     <div class="lienzo-parent-play-box lienzo-parent-play-box--inline">
       ${renderPlayCardBox(play, {
-          rank: "J",
-          suit: "SPADE"
-        })}
+        rank: "J",
+        suit: "SPADE"
+      })}
     </div>
   `
-        : ""
-      }
+  : ""
+}
         
           ${qHeartBoxHtml}
         </div>
