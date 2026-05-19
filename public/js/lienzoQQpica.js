@@ -1289,6 +1289,7 @@
 
     const showSend =
       isCurrentUserSource(play) &&
+      shouldShowTargetDecisionButtons(play);
       status !== "SENT" &&
       status !== "APPROVED" &&
       status !== "REJECTED" &&
@@ -1328,16 +1329,31 @@
 
         </div>
 
-        ${showSend
-        ? `
-    <div class="lienzo-qheart-box__actions">
+        <div class="lienzo-qheart-box__actions">
+
+  ${showSend
+    ? `
       <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
         <img src="/assets/icons/buzon60.gif" alt="Enviar" />
       </button>
-    </div>
-  `
-        : ""
-      }
+    `
+    : ""
+  }
+
+  ${showTargetActions
+    ? `
+      <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
+        <img src="/assets/icons/Sello40.gif" alt="Aceptar" />
+      </button>
+
+      <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
+        <img src="/assets/icons/stepback40.gif" alt="Rechazar" />
+      </button>
+    `
+    : ""
+  }
+
+</div>
 
       </div>
     </div>
@@ -2204,7 +2220,7 @@ ${parentJSpadeText
           </div>
         </div>
       `,
-      actionsHtml: (showActionsHere ? renderTargetActions(play) : "") + settlementTopbarIconHtml
+      actionsHtml: settlementTopbarIconHtml
     });
 
     return `
