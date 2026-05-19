@@ -1287,13 +1287,16 @@
 
     const status = String(play?.play_status || "").trim().toUpperCase();
 
-    const showSend =
-      isCurrentUserSource(play) &&
-      shouldShowTargetDecisionButtons(play);
-      status !== "SENT" &&
-      status !== "APPROVED" &&
-      status !== "REJECTED" &&
-      status !== "CANCELLED";
+const showSend =
+  isCurrentUserSource(play) &&
+  status !== "SENT" &&
+  status !== "APPROVED" &&
+  status !== "REJECTED" &&
+  status !== "CANCELLED";
+
+const showTargetActions =
+  isCurrentUserTarget(play) &&
+  shouldShowTargetDecisionButtons(play);
 
     return `
     <div class="lienzo-qheart-box lienzo-qheart-box--readonly">
