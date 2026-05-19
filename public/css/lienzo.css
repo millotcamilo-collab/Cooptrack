@@ -1297,3 +1297,7 @@ body {
   padding-top: 4px;
   min-width: 140px;
 }
+
+.lienzo-grid--qqpica-target {
+  grid-template-columns: 1fr 1.45fr;
+}
