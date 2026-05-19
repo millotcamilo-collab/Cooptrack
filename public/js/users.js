@@ -148,9 +148,15 @@ function renderUsersPicker(containerId, options = {}) {
       return;
     }
 
-    state.filteredUsers = state.allUsers.filter((user) =>
-      startsWithSearch(getUserDisplayName(user), trimmed)
-    );
+state.filteredUsers = state.allUsers.filter((user) => {
+  const userId = Number(user?.id || 0);
+  const currentUserId = Number(options.currentUserId || 0);
+
+  if (currentUserId && userId === currentUserId) return false;
+  if (hasActiveInvitationForUser(user)) return false;
+
+  return startsWithSearch(getUserDisplayName(user), trimmed);
+});
   }
 
   function handleSelect(userId) {
@@ -552,6 +558,34 @@ function renderUsersPicker(containerId, options = {}) {
       </div>
     </div>
   `;
+  }
+
+  function hasActiveInvitationForUser(user) {
+    const userId = Number(user?.id || 0);
+    const plays = Array.isArray(options.plays) ? options.plays : [];
+
+    const deckId = Number(options.deckId || 0);
+    const parentPlayId = Number(options.parentPlayId || 0);
+    const childRank = String(options.childRank || "").toUpperCase();
+    const childSuit = String(options.childSuit || "").toUpperCase();
+
+    if (!userId || !deckId || !childRank || !childSuit) return false;
+
+    return plays.some((play) => {
+      const status = String(play?.play_status || play?.status || "")
+        .trim()
+        .toUpperCase();
+
+      if (status === "REJECTED" || status === "CANCELLED") return false;
+
+      return (
+        Number(play?.deck_id || 0) === deckId &&
+        Number(play?.target_user_id || 0) === userId &&
+        Number(play?.parent_play_id || 0) === parentPlayId &&
+        String(play?.card_rank || play?.rank || "").toUpperCase() === childRank &&
+        String(play?.card_suit || play?.suit || "").toUpperCase() === childSuit
+      );
+    });
   }
 
   function renderResultsState() {
