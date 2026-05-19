@@ -158,6 +158,15 @@
     };
   }
 
+  function isCurrentUserValidator(play) {
+    const currentUserId = Number(getCurrentUser()?.id || 0);
+    if (!currentUserId) return false;
+
+    return getValidatorTribunesForPlay(play).some((validator) =>
+      Number(validator?.userId || 0) === currentUserId
+    );
+  }
+
   function getAceOwnerTribune(suit) {
     const plays = getAllPlays();
 
@@ -370,12 +379,12 @@
     ) {
       const aceClubTribune = resolveAuthorityTribuneForTarget(play);
 
-const validatorOnlyHtml = aceClubTribune
-  ? renderUserTribune(
-      aceClubTribune,
-      getValidatorRoleCards(aceClubTribune)
-    )
-  : "";
+      const validatorOnlyHtml = aceClubTribune
+        ? renderUserTribune(
+          aceClubTribune,
+          getValidatorRoleCards(aceClubTribune)
+        )
+        : "";
 
       return `
     <div class="lienzo-tribunes lienzo-tribunes--colombes">
@@ -1279,16 +1288,20 @@ const validatorOnlyHtml = aceClubTribune
 
     const status = String(play?.play_status || "").trim().toUpperCase();
 
-const showSend =
-  isCurrentUserSource(play) &&
-  status !== "SENT" &&
-  status !== "APPROVED" &&
-  status !== "REJECTED" &&
-  status !== "CANCELLED";
+    const showSend =
+      isCurrentUserSource(play) &&
+      status !== "SENT" &&
+      status !== "APPROVED" &&
+      status !== "REJECTED" &&
+      status !== "CANCELLED";
 
-const showTargetActions =
-  isCurrentUserTarget(play) &&
-  shouldShowTargetDecisionButtons(play);
+    const showTargetActions =
+      isCurrentUserTarget(play) &&
+      shouldShowTargetDecisionButtons(play);
+
+    const showValidatorActions =
+      isCurrentUserValidator(play) &&
+      String(play?.play_status || "").trim().toUpperCase() === "PENDING";
 
     return `
     <div class="lienzo-qheart-box lienzo-qheart-box--readonly">
@@ -1327,16 +1340,16 @@ const showTargetActions =
         <div class="lienzo-qheart-box__actions">
 
   ${showSend
-    ? `
+        ? `
       <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
         <img src="/assets/icons/buzon60.gif" alt="Enviar" />
       </button>
     `
-    : ""
-  }
+        : ""
+      }
 
   ${showTargetActions
-    ? `
+        ? `
       <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
         <img src="/assets/icons/Sello40.gif" alt="Aceptar" />
       </button>
@@ -1345,8 +1358,20 @@ const showTargetActions =
         <img src="/assets/icons/stepback40.gif" alt="Rechazar" />
       </button>
     `
-    : ""
-  }
+        : ""
+      }
+      ${showValidatorActions
+        ? `
+    <button id="lienzo-validator-send-btn" class="icon-btn" title="Validar y enviar">
+      <img src="/assets/icons/buzon60.gif" alt="Validar y enviar" />
+    </button>
+
+    <button id="lienzo-validator-reject-btn" class="icon-btn" title="Rechazar validación">
+      <img src="/assets/icons/stepback40.gif" alt="Rechazar validación" />
+    </button>
+  `
+        : ""
+      }
 
 </div>
 
@@ -2006,6 +2031,21 @@ const showTargetActions =
     const awardBtn = document.getElementById("lienzo-award-btn");
     const complainBtn = document.getElementById("lienzo-complain-btn");
 
+    const validatorSendBtn = document.getElementById("lienzo-validator-send-btn");
+    const validatorRejectBtn = document.getElementById("lienzo-validator-reject-btn");
+
+    if (validatorSendBtn) {
+      validatorSendBtn.addEventListener("click", () => {
+        handleSendPlay(play);
+      });
+    }
+
+    if (validatorRejectBtn) {
+      validatorRejectBtn.addEventListener("click", () => {
+        handleRejectPlay(play);
+      });
+    }
+
     if (sendBtn) {
       sendBtn.addEventListener("click", () => {
         handleSendPlay(play);
@@ -2159,7 +2199,7 @@ const showTargetActions =
   </div>
 
   ${parentJSpadeText
-    ? `
+        ? `
       <div class="lienzo-parent-play-box lienzo-parent-play-box--inline">
         ${renderPlayCardBox(play, {
           rank: "J",
@@ -2167,8 +2207,8 @@ const showTargetActions =
         })}
       </div>
     `
-    : ""
-  }
+        : ""
+      }
 
   ${qHeartBoxHtml}
 </div>
@@ -2339,22 +2379,22 @@ const showTargetActions =
 
     let gridClass = "";
 
-const status = String(play?.play_status || "").trim().toUpperCase();
+    const status = String(play?.play_status || "").trim().toUpperCase();
 
-if (
-  isCurrentUserTarget(play) &&
-  ["SENT", "APPROVED", "REJECTED", "CANCELLED"].includes(status)
-) {
-  gridClass = "lienzo-grid--qqpica-target";
-} else {
-  if (validatorCount === 1) {
-    gridClass = "lienzo-grid--3cols";
-  }
+    if (
+      isCurrentUserTarget(play) &&
+      ["SENT", "APPROVED", "REJECTED", "CANCELLED"].includes(status)
+    ) {
+      gridClass = "lienzo-grid--qqpica-target";
+    } else {
+      if (validatorCount === 1) {
+        gridClass = "lienzo-grid--3cols";
+      }
 
-  if (validatorCount >= 2) {
-    gridClass = "lienzo-grid--4cols";
-  }
-}
+      if (validatorCount >= 2) {
+        gridClass = "lienzo-grid--4cols";
+      }
+    }
 
     container.innerHTML = `
       ${renderDeckHeader(deck)}
