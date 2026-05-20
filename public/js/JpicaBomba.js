@@ -599,11 +599,11 @@
           return;
         }
 
-        dispatch("tablero:save-play", {
-          ...payload,
-          recurrence: recurrencePayload.recurrence_type ? recurrencePayload : null
-        });
-
+dispatch("tablero:save-play", {
+  ...payload,
+  play_status: userIsSpadeAceHolder ? "ACTIVE" : "SENT",
+  recurrence: recurrencePayload.recurrence_type ? recurrencePayload : null
+});
         originalText = payload.text || "";
         if (textView) textView.textContent = originalText || "Sin texto";
 

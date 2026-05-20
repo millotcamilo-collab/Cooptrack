@@ -671,6 +671,7 @@
 
         dispatch("tablero:save-play", {
           ...payload,
+          play_status: userIsSpadeAceHolder ? "ACTIVE" : "SENT",
           recurrence: recurrencePayload.recurrence_type ? recurrencePayload : null
         });
 
