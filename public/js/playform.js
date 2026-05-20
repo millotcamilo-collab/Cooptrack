@@ -124,7 +124,7 @@
 
   function buildPlayformHTML() {
     return `
-    <section id="playform-j" class="playform ct-block ct-surface is-hidden">
+    <section id="playform-j" class="playform ct-block ct-surface">
 
       <div class="playform__inner">
 
@@ -262,11 +262,7 @@
     container.innerHTML = buildPlayformHTML();
     attachPlayformEvents(deck, state);
 
-    if (isJPlayformOpen()) {
-      openJPlayform();
-    } else {
-      closeJPlayform();
-    }
+    openJPlayform();
   }
 
   window.renderPlayform = renderPlayform;

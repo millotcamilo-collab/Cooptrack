@@ -151,6 +151,34 @@
     return String(total);
   }
 
+  function buildPageHeroIconHTML(plays, currentUserId) {
+    const pageType = getCurrentPageType();
+
+    if (pageType === "mazo" && canUserCreateJ(plays, currentUserId)) {
+      return `
+      <div class="mazobar__hero-icon mazobar__hero-icon--maquina" title="Nueva jugada">
+        <img src="/assets/icons/maquina80.gif" alt="Nueva jugada" />
+      </div>
+    `;
+    }
+
+    if (pageType === "administradores") {
+      return `
+      <button
+        id="btnAdminActive"
+        type="button"
+        class="mazobar__hero-icon mazobar__hero-icon--team"
+        title="Administradores activos"
+        aria-label="Administradores activos"
+      >
+        <img src="/assets/icons/team80.gif" alt="Administradores" />
+      </button>
+    `;
+    }
+
+    return "";
+  }
+
   function getEnabledTopCards(plays) {
     return plays.filter((p) => {
       const rank = String(p.rank || "").toUpperCase();
@@ -628,11 +656,11 @@
             <div class="mazobar__top-left">
               <div class="mazobar__topcards">
                 ${isAdminPage
-        ? buildTopCardsHTML(enabledCards)
-        : buildTopCardsHTML(corporateCards)
-      }
-            </div>
-
+                  ? buildTopCardsHTML(enabledCards)
+                  : buildTopCardsHTML(corporateCards)
+              }
+              </div>
+              ${buildPageHeroIconHTML(normalizedPlays, currentUserId)}
               ${buildDeckPhotoHTML(deck, normalizedPlays, currentUserId)}
             </div>
 
@@ -810,21 +838,6 @@
       : "";
 
     return `
-    ${isMazoPage && canUserCreateJ(plays, currentUserId) ? `
-  <button
-    id="btnAddJ"
-    type="button"
-    class="mazobar__cmd-btn mazobar__cmd-btn--primary"
-    title="Nueva jugada"
-    aria-label="Nueva jugada"
-  >
-    <img
-      src="/assets/icons/maquina80.gif"
-      alt="J+"
-      class="mazobar__cmd-icon"
-    />
-  </button>
-` : ""}
 
     ${isAdminPage ? `
       <button
@@ -874,7 +887,6 @@ ${isAdminPage ? `
   </button>
 ` : ""}
 
-    ${adminBadge}
     ${adminArchiveButton}
     ${adminSuitButtons}
     ${mazoArchiveButton}
