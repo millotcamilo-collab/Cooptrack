@@ -26,6 +26,7 @@ const {
 const {
   setPlayReaders,
   addReadersToPlay,
+  markPlayAsPublic,
 } = require('./services/readers');
 
 app.use(cors({
