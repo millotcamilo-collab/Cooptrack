@@ -1220,10 +1220,6 @@ if (!publicResponse.ok || !publicData.ok) {
       childSuit: normalizeSuit(draft.card_suit),
       plays: getAllPlays(),
 
-      onPublishExtra() {
-        publishActivityWithoutUser();
-      },
-
       onSelect(user) {
         window.__lienzoNewDraft = {
           ...window.__lienzoNewDraft,

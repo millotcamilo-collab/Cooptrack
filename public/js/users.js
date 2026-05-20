@@ -335,7 +335,6 @@ function renderUsersPicker(containerId, options = {}) {
     const editBtn = container.querySelector("[data-users-edit-btn]");
     const rowSelectButtons = container.querySelectorAll("[data-users-row-select-id]");
     const rowAnimateButtons = container.querySelectorAll("[data-users-row-animate-id]");
-    const extraBtn = container.querySelector("[data-users-extra-btn]");
 
     const createFields = container.querySelectorAll("[data-users-create-field]");
     const saveNewBtn = container.querySelector("[data-users-save-new]");
@@ -361,14 +360,6 @@ function renderUsersPicker(containerId, options = {}) {
 
     if (sealBtn) {
       sealBtn.addEventListener("click", handleCreateUser);
-    }
-
-    if (extraBtn) {
-      extraBtn.addEventListener("click", () => {
-        if (typeof options.onPublishExtra === "function") {
-          options.onPublishExtra();
-        }
-      });
     }
 
     if (exitBtn) {
@@ -562,14 +553,6 @@ function renderUsersPicker(containerId, options = {}) {
           <img src="${escapeHtml(options.sealIcon || "/assets/icons/lacre120.gif")}" alt="Registrar usuario" />
         </button>
 
-        <button
-  type="button"
-  class="users-picker__icon-btn"
-  data-users-extra-btn
-  title="Publicar actividad"
->
-  <img src="/assets/icons/Extra120.gif" alt="Publicar actividad" />
-</button>
         
       </div>
     </div>
