@@ -197,15 +197,11 @@
                 renderArchivoMazo(deck, state.plays || [], state);
             }
 
-            const tableroEl = document.getElementById("tablero-container");
-
             const mazobarEl = document.getElementById("mazobar-container");
 
             // el mazobar siempre visible para quien pudo entrar al mazo
             if (mazobarEl) mazobarEl.style.display = "";
 
-            // el tablero también debe quedar visible por defecto
-            if (tableroEl) tableroEl.style.display = "";
 
         }
 

@@ -24,7 +24,7 @@
   }
 
   function renderArchivoMazo(deck, plays, state = {}) {
-    const container = document.getElementById("tablero-container");
+    const container = document.getElementById("archivo-container");
     if (!container) return;
 
     const archived = (Array.isArray(plays) ? plays : [])
