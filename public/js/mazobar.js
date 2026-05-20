@@ -151,6 +151,13 @@
     return String(total);
   }
 
+  function goToMazoArchivoPage() {
+    const deckId = window.__currentDeck?.id;
+    if (!deckId) return;
+
+    window.location.href = `/mazoArchivo.html?id=${deckId}`;
+  }
+
   function buildPageHeroIconHTML(plays, currentUserId) {
     const pageType = getCurrentPageType();
 
@@ -171,7 +178,7 @@
         title="Administradores activos"
         aria-label="Administradores activos"
       >
-        <img src="/assets/icons/team80.gif" alt="Administradores" />
+        <img src="/assets/icons/team120.gif" alt="Administradores" />
       </button>
     `;
     }
@@ -511,7 +518,7 @@
       aria-label="Administradores activos"
     >
       <img
-        src="/assets/icons/team80.gif"
+        src="/assets/icons/team120.gif"
         alt="Administradores"
         class="mazobar__admin-badge-icon"
       />
@@ -656,9 +663,9 @@
             <div class="mazobar__top-left">
               <div class="mazobar__topcards">
                 ${isAdminPage
-                  ? buildTopCardsHTML(enabledCards)
-                  : buildTopCardsHTML(corporateCards)
-              }
+        ? buildTopCardsHTML(enabledCards)
+        : buildTopCardsHTML(corporateCards)
+      }
               </div>
               ${buildPageHeroIconHTML(normalizedPlays, currentUserId)}
               ${buildDeckPhotoHTML(deck, normalizedPlays, currentUserId)}
@@ -864,7 +871,7 @@
         aria-label="Administradores"
       >
         <img
-          src="/assets/icons/team80.gif"
+          src="/assets/icons/team120.gif"
           alt="Administradores"
           class="mazobar__cmd-icon"
         />
@@ -901,9 +908,7 @@ ${isAdminPage ? `
     const btnMazoArchive = document.getElementById("btnMazoArchive");
 
     if (btnMazoArchive) {
-      btnMazoArchive.addEventListener("click", () => {
-        document.dispatchEvent(new CustomEvent("mazobar:showCancelled"));
-      });
+      btnMazoArchive.addEventListener("click", goToMazoArchivoPage);
     }
 
     document.querySelectorAll("[data-admin-suit]").forEach((button) => {
