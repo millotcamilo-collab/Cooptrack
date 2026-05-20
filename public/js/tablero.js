@@ -567,7 +567,46 @@
       console.warn("No se pudo sincronizar tableroView en URL", error);
     }
   }
+async function publishJSpadeAsNews(playId) {
+  try {
+    const token = localStorage.getItem("cooptrackToken");
 
+    if (!token) {
+      alert("No estás logueado");
+      return;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/plays/${playId}/readers/public`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error publicando noticia:", data);
+      alert(data?.error || "No se pudo publicar la noticia");
+      return;
+    }
+
+    alert("Noticia publicada");
+
+    const deckId =
+      data.deckId ||
+      window.__currentDeck?.id ||
+      window.__currentState?.deck?.id ||
+      new URLSearchParams(window.location.search).get("id");
+
+    document.dispatchEvent(new CustomEvent("plays:changed", {
+      detail: { deckId }
+    }));
+  } catch (error) {
+    console.error("Error en publishJSpadeAsNews", error);
+    alert("No se pudo publicar la noticia");
+  }
+}
   function initTableroViewFromUrlOnce() {
     if (hasInitializedTableroViewFromUrl) return;
 
