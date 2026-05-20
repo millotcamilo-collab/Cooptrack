@@ -101,9 +101,9 @@
       if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
       if (["QUIT", "FIRED", "REJECTED", "CANCELLED"].includes(status)) return false;
 
-      // No contar ACL / puedeJugar como carta corporativa real
-      if (flow === "acl") return false;
-      if (action === "puedejugar") return false;
+// No contar ACL como carta corporativa real.
+// Pero no usamos "puedeJugar" para decidir si puede escribir J.
+if (flow === "acl") return false;
 
       const ownerId = Number(
         p?.target_user_id ||
