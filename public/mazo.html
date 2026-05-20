@@ -233,33 +233,6 @@
       // acá no forzamos nada raro, solo dejamos visible el container
       if (playformEl) playformEl.style.display = "";
 
-      const hasVisibleGamePlays = plays.some((play) => {
-        const playCode = String(play?.play_code || "");
-        const parts = playCode.split("§");
-
-        const rank = String(play?.card_rank || parts[3] || "").toUpperCase();
-        const status = String(play?.play_status || "").toUpperCase();
-        const action = String(parts[5] || "").toLowerCase();
-
-        if (
-          status === "CANCELLED" ||
-          status === "DELETED" ||
-          status === "REJECTED"
-        ) {
-          return false;
-        }
-
-        if (action === "init_ace" || action === "puedejugar") return false;
-
-        return rank === "J" || rank === "Q";
-      });
-
-      // solo para usuarios con A/K y sin jugadas visibles:
-      // ocultamos tablero y abrimos playform automáticamente
-      if (hasCorporateAccess && !hasVisibleGamePlays) {
-        if (tableroEl) tableroEl.style.display = "none";
-        document.dispatchEvent(new CustomEvent("mazobar:addJ"));
-      }
 
       if (typeof bindLienzoDropZone === "function") {
         bindLienzoDropZone(deck.id);

@@ -86,37 +86,34 @@
         : [];
 
     const currentUserId = getCurrentUserId(state);
+
     if (!currentUserId) return false;
 
     return plays.some((p) => {
-      const parsed = parsePlayCode(p?.play_code);
-
-      const rank = normalizeRank(p?.rank || p?.card_rank || parsed.rank);
-      const suit = normalizeSuit(p?.suit || p?.card_suit || parsed.suit);
-      const status = normalizeRank(p?.status || p?.play_status);
-      const action = String(p?.action || parsed.action || "").toLowerCase();
-      const flow = String(p?.flow || parsed.flow || "").toLowerCase();
+      const rank = normalizeRank(p?.card_rank || p?.rank);
+      const suit = normalizeSuit(p?.card_suit || p?.suit);
+      const status = normalizeRank(p?.play_status || p?.status);
 
       if (!["A", "K"].includes(rank)) return false;
-      if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
-      if (["QUIT", "FIRED", "REJECTED", "CANCELLED"].includes(status)) return false;
 
-// No contar ACL como carta corporativa real.
-// Pero no usamos "puedeJugar" para decidir si puede escribir J.
-if (flow === "acl") return false;
+      if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) {
+        return false;
+      }
 
-const ownerId = Number(
-  p?.target_user_id ||
-  p?.created_by_user_id ||
-  p?.final_target_user_id ||
-  parsed.userId ||
-  0
-);
+      if (["QUIT", "FIRED", "REJECTED", "CANCELLED"].includes(status)) {
+        return false;
+      }
+
+      const ownerId = Number(
+        p?.target_user_id ||
+        p?.final_target_user_id ||
+        p?.created_by_user_id ||
+        0
+      );
 
       return ownerId === currentUserId;
     });
   }
-
   function userCanPlayInDeck(deck, state = null) {
     if (!getToken()) return false;
 
