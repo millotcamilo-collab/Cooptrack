@@ -87,11 +87,19 @@
 .mazobar__avatar {
   height: 80px;
   width: auto;
-  max-width: 140px;
-  border-radius: 6px;
+  max-width: none;
+  border-radius: 0;
+  border: none;
   object-fit: contain;
   display: block;
   background: transparent;
+  box-shadow: none;
+}
+
+.mazobar__photo-button {
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .mazobar__username {
