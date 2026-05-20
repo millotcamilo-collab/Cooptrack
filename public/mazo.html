@@ -189,7 +189,14 @@
 
         if (rank !== "A" && rank !== "K") return false;
 
-        if (status !== "ACTIVE" && status !== "APPROVED") return false;
+        if (
+          status !== "ACTIVE" &&
+          status !== "APPROVED" &&
+          status !== "SENT" &&
+          status !== "PENDING"
+        ) {
+          return false;
+        }
 
         return (
           codeUserId === currentUserId ||
