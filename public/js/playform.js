@@ -105,12 +105,13 @@
 // Pero no usamos "puedeJugar" para decidir si puede escribir J.
 if (flow === "acl") return false;
 
-      const ownerId = Number(
-        p?.target_user_id ||
-        p?.created_by_user_id ||
-        parsed.userId ||
-        0
-      );
+const ownerId = Number(
+  p?.target_user_id ||
+  p?.created_by_user_id ||
+  p?.final_target_user_id ||
+  parsed.userId ||
+  0
+);
 
       return ownerId === currentUserId;
     });
