@@ -185,7 +185,7 @@
         aria-label="Administradores activos"
       >
         <img
-          src="/assets/icons/team120.gif"
+          src="/assets/icons/team220.gif"
           alt="Administradores"
         />
       </button>
