@@ -426,3 +426,23 @@
 .mazobar__cmd-btn--archive.is-small .mazobar__cmd-icon {
   height: 22px;
 }
+
+.mazobar__hero-icon {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  outline: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mazobar__hero-icon img {
+  height: 80px;
+  width: auto;
+  display: block;
+}
