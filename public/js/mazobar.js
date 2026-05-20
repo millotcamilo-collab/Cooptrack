@@ -163,8 +163,14 @@
 
     if (pageType === "mazo" && canUserCreateJ(plays, currentUserId)) {
       return `
-      <div class="mazobar__hero-icon mazobar__hero-icon--maquina" title="Nueva jugada">
-        <img src="/assets/icons/maquina80.gif" alt="Nueva jugada" />
+      <div
+        class="mazobar__hero-icon mazobar__hero-icon--maquina"
+        title="Nueva jugada"
+      >
+        <img
+          src="/assets/icons/maquina80.gif"
+          alt="Nueva jugada"
+        />
       </div>
     `;
     }
@@ -178,7 +184,27 @@
         title="Administradores activos"
         aria-label="Administradores activos"
       >
-        <img src="/assets/icons/team120.gif" alt="Administradores" />
+        <img
+          src="/assets/icons/team120.gif"
+          alt="Administradores"
+        />
+      </button>
+    `;
+    }
+
+    if (pageType === "archivo") {
+      return `
+      <button
+        id="btnArchivoHome"
+        type="button"
+        class="mazobar__hero-icon mazobar__hero-icon--archivo"
+        title="Archivo"
+        aria-label="Archivo"
+      >
+        <img
+          src="/assets/icons/archivo80.gif"
+          alt="Archivo"
+        />
       </button>
     `;
     }
@@ -455,6 +481,10 @@
 
     if (path.includes("mazoadministradores.html")) {
       return "administradores";
+    }
+
+    if (path.includes("mazoarchivo.html")) {
+      return "archivo";
     }
 
     return "mazo";
@@ -751,6 +781,7 @@
     const pageType = getCurrentPageType();
     const isMazoPage = pageType === "mazo";
     const isAdminPage = pageType === "administradores";
+    const isArchivoPage = pageType === "archivo";
 
     const mazoArchiveButton = isMazoPage
       ? `
@@ -862,6 +893,22 @@
       </button>
     ` : ""}
 
+${isArchivoPage ? `
+  <button
+    id="btnBackToTablero"
+    type="button"
+    class="mazobar__cmd-btn mazobar__cmd-btn--primary"
+    title="Volver al tablero"
+    aria-label="Volver al tablero"
+  >
+    <img
+      src="/assets/icons/maquina80.gif"
+      alt="Tablero"
+      class="mazobar__cmd-icon"
+    />
+  </button>
+` : ""}
+
     ${isMazoPage ? `
       <button
         id="btnFilterA"
@@ -907,8 +954,10 @@ ${isAdminPage ? `
 
     const btnMazoArchive = document.getElementById("btnMazoArchive");
 
-    if (btnMazoArchive) {
-      btnMazoArchive.addEventListener("click", goToMazoArchivoPage);
+    if (btnArchivoHome) {
+      btnArchivoHome.addEventListener("click", () => {
+        goToMazoArchivoPage();
+      });
     }
 
     document.querySelectorAll("[data-admin-suit]").forEach((button) => {
