@@ -1039,11 +1039,14 @@ app.get('/plays/bitacora', requireAuth, async (req, res) => {
 
     const result = await pool.query(
       `
-      SELECT
-        p.*,
-        creator.nickname AS created_by_nickname,
-        target.nickname AS target_user_nickname,
-        d.name AS deck_name
+SELECT
+  p.*,
+  creator.nickname AS created_by_nickname,
+  target.nickname AS target_user_nickname,
+  d.name AS deck_name,
+  d.deck_image_url,
+  d.currency_symbol,
+  d.currency_name
       FROM plays p
       LEFT JOIN users creator
         ON creator.id = p.created_by_user_id

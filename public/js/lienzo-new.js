@@ -70,12 +70,20 @@
     }
 
     /* 👇 HACER LA JUGADA PÚBLICA */
-    await fetch(`/plays/${data.play.id}/readers/public`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+const publicResponse = await fetch(`/plays/${data.play.id}/readers/public`, {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});
+
+const publicData = await publicResponse.json();
+
+if (!publicResponse.ok || !publicData.ok) {
+  console.error("Error haciendo pública la noticia:", publicData);
+  alert(publicData?.error || "La actividad se creó, pero no quedó pública.");
+  return;
+}
 
     window.location.href = "/noticias.html";
   }
