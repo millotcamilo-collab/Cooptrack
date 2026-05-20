@@ -695,6 +695,14 @@
     renderTablero(deck, plays, state);
   });
 
+document.addEventListener("tablero:publish-news", async (event) => {
+  const playId = Number(event.detail?.playId || 0);
+
+  if (!playId) return;
+
+  await publishJSpadeAsNews(playId);
+});
+
   document.addEventListener("tablero:delete-play", async (event) => {
     try {
       const playId = Number(event?.detail?.playId || 0);

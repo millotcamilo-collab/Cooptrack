@@ -307,6 +307,7 @@
     const cancelIcon = escapeHtml(ACTIONS.cancel || ACTIONS.exit || "");
     const clubIcon = escapeHtml(ACTIONS.club || "");
     const qspadeIcon = escapeHtml(ACTIONS.qspade || ACTIONS.spade || "");
+    const extraIcon = "/assets/icons/Extra120.gif";
     const routineIcon = escapeHtml(ACTIONS.routine || "");
 
     setTimeout(() => {
@@ -334,6 +335,7 @@
       const btnCancel = row.querySelector('[data-action="cancel-play"]');
       const btnAddJclub = row.querySelector('[data-action="add-jclub-child"]');
       const btnAddQspade = row.querySelector('[data-action="add-qspade-child"]');
+      const btnPublishNews = row.querySelector('[data-action="publish-news"]');
       const btnRoutine = row.querySelector('[data-action="toggle-routine"]');
 
       const appointmentRead = row.querySelector('[data-role="appointment-read"]');
@@ -518,6 +520,10 @@
 
         const { startDate } = getFieldValues();
         const routineAvailable = !isApproved && canHaveRoutine(startDate);
+        const showPublishNews =
+          isApproved &&
+          !isCancelled &&
+          userCanCreateChildren;
 
         if (modeRead) modeRead.style.display = isRead ? "flex" : "none";
         if (modeEdit) modeEdit.style.display = isEdit ? "flex" : "none";
@@ -600,6 +606,11 @@
           btnAddQspade.disabled = !canLaunch;
           btnAddQspade.style.opacity = canLaunch ? "1" : "0.4";
           btnAddQspade.style.pointerEvents = canLaunch ? "auto" : "none";
+        }
+
+        if (btnPublishNews) {
+          btnPublishNews.style.display =
+            showPublishNews ? "inline-flex" : "none";
         }
 
         if (isEdit && textInput) {
@@ -756,6 +767,12 @@
 
         window.location.href =
           `/lienzo-new.html?deckId=${deckId}&parentPlayId=${playId}&childRank=Q&childSuit=SPADE`;
+      });
+
+      btnPublishNews?.addEventListener("click", () => {
+        dispatch("tablero:publish-news", {
+          playId
+        });
       });
 
       btnRoutine?.addEventListener("click", async () => {
@@ -1002,6 +1019,15 @@
       <button type="button" data-action="add-qspade-child" title="Agregar Q♠" style="display:none;">
         ${qspadeIcon ? `<img src="${qspadeIcon}" alt="Q♠" />` : `<span>Q♠</span>`}
       </button>
+
+<button
+  type="button"
+  data-action="publish-news"
+  title="Publicar noticia"
+  style="display:none;"
+>
+  <img src="${extraIcon}" alt="Noticias" />
+</button>
 
       <button type="button" data-action="help-play" title="Help">
         ${helpIcon ? `<img src="${helpIcon}" alt="Help" />` : `<span>?</span>`}
