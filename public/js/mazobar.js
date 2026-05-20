@@ -159,10 +159,10 @@
   }
 
   function buildPageHeroIconHTML(plays, currentUserId) {
-    const pageType = getCurrentPageType();
+  const pageType = getCurrentPageType();
 
-    if (pageType === "mazo" && canUserCreateJ(plays, currentUserId)) {
-      return `
+  if (pageType === "mazo" && canUserCreateJ(plays, currentUserId)) {
+    return `
       <div
         class="mazobar__hero-icon mazobar__hero-icon--maquina"
         title="Nueva jugada"
@@ -173,10 +173,10 @@
         />
       </div>
     `;
-    }
+  }
 
-    if (pageType === "administradores") {
-      return `
+  if (pageType === "administradores") {
+    return `
       <button
         id="btnAdminActive"
         type="button"
@@ -190,10 +190,10 @@
         />
       </button>
     `;
-    }
+  }
 
-    if (pageType === "archivo") {
-      return `
+  if (pageType === "archivo") {
+    return `
       <button
         id="btnArchivoHome"
         type="button"
@@ -202,15 +202,15 @@
         aria-label="Archivo"
       >
         <img
-          src="/assets/icons/archivo80.gif"
+          src="/assets/icons/archivo220.gif"
           alt="Archivo"
         />
       </button>
     `;
-    }
-
-    return "";
   }
+
+  return "";
+}
 
   function getEnabledTopCards(plays) {
     return plays.filter((p) => {
@@ -476,19 +476,19 @@
     `).join("");
   }
 
-  function getCurrentPageType() {
-    const path = String(window.location.pathname || "").toLowerCase();
+function getCurrentPageType() {
+  const path = String(window.location.pathname || "").toLowerCase();
 
-    if (path.includes("mazoadministradores.html")) {
-      return "administradores";
-    }
-
-    if (path.includes("mazoarchivo.html")) {
-      return "archivo";
-    }
-
-    return "mazo";
+  if (path.includes("mazoadministradores.html")) {
+    return "administradores";
   }
+
+  if (path.includes("mazoarchivo.html")) {
+    return "archivo";
+  }
+
+  return "mazo";
+}
 
   function buildJokersHTML(plays, currentUserId, deckId) {
     const currentJoker = getCurrentJokerPlay(plays);
@@ -793,7 +793,7 @@
       aria-label="J♥ canceladas"
     >
       <img
-        src="/assets/icons/archivo80.gif"
+        src="/assets/icons/archivo220.gif"
         alt="Archivo"
         class="mazobar__cmd-icon"
       />
@@ -811,7 +811,7 @@
       aria-label="Jugadas archivadas"
     >
       <img
-        src="/assets/icons/archivo80.gif"
+        src="/assets/icons/archivo220.gif"
         alt="Archivo"
         class="mazobar__cmd-icon"
       />
@@ -952,13 +952,17 @@ ${isAdminPage ? `
 
   function bindMazobarEvents(deck, plays, currentUserId) {
 
-    const btnMazoArchive = document.getElementById("btnMazoArchive");
+const btnMazoArchive = document.getElementById("btnMazoArchive");
 
-    if (btnArchivoHome) {
-      btnArchivoHome.addEventListener("click", () => {
-        goToMazoArchivoPage();
-      });
-    }
+if (btnMazoArchive) {
+  btnMazoArchive.addEventListener("click", goToMazoArchivoPage);
+}
+
+const btnArchivoHome = document.getElementById("btnArchivoHome");
+
+if (btnArchivoHome) {
+  btnArchivoHome.addEventListener("click", goToMazoArchivoPage);
+}
 
     document.querySelectorAll("[data-admin-suit]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -998,16 +1002,9 @@ ${isAdminPage ? `
 
     const btnAdminArchive = document.getElementById("btnAdminArchive");
 
-    if (btnAdminArchive) {
-      btnAdminArchive.addEventListener("click", () => {
-        mazobarAdminMode = "archive";
-        renderMazobar(deck, plays, currentUserId);
-
-        document.dispatchEvent(
-          new CustomEvent("mazobar:showArchivePlays")
-        );
-      });
-    }
+if (btnAdminArchive) {
+  btnAdminArchive.addEventListener("click", goToMazoArchivoPage);
+}
 
     const btnAdminActive = document.getElementById("btnAdminActive");
 
