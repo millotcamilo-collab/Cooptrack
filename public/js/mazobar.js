@@ -159,10 +159,10 @@
   }
 
   function buildPageHeroIconHTML(plays, currentUserId) {
-  const pageType = getCurrentPageType();
+    const pageType = getCurrentPageType();
 
-  if (pageType === "mazo" && canUserCreateJ(plays, currentUserId)) {
-    return `
+    if (pageType === "mazo" && canUserCreateJ(plays, currentUserId)) {
+      return `
       <div
         class="mazobar__hero-icon mazobar__hero-icon--maquina"
         title="Nueva jugada"
@@ -173,10 +173,10 @@
         />
       </div>
     `;
-  }
+    }
 
-  if (pageType === "administradores") {
-    return `
+    if (pageType === "administradores") {
+      return `
       <button
         id="btnAdminActive"
         type="button"
@@ -190,10 +190,10 @@
         />
       </button>
     `;
-  }
+    }
 
-  if (pageType === "archivo") {
-    return `
+    if (pageType === "archivo") {
+      return `
       <button
         id="btnArchivoHome"
         type="button"
@@ -207,10 +207,10 @@
         />
       </button>
     `;
-  }
+    }
 
-  return "";
-}
+    return "";
+  }
 
   function getEnabledTopCards(plays) {
     return plays.filter((p) => {
@@ -476,19 +476,19 @@
     `).join("");
   }
 
-function getCurrentPageType() {
-  const path = String(window.location.pathname || "").toLowerCase();
+  function getCurrentPageType() {
+    const path = String(window.location.pathname || "").toLowerCase();
 
-  if (path.includes("mazoadministradores.html")) {
-    return "administradores";
+    if (path.includes("mazoadministradores.html")) {
+      return "administradores";
+    }
+
+    if (path.includes("mazoarchivo.html")) {
+      return "archivo";
+    }
+
+    return "mazo";
   }
-
-  if (path.includes("mazoarchivo.html")) {
-    return "archivo";
-  }
-
-  return "mazo";
-}
 
   function buildJokersHTML(plays, currentUserId, deckId) {
     const currentJoker = getCurrentJokerPlay(plays);
@@ -779,7 +779,9 @@ function getCurrentPageType() {
 
   function buildCommandButtonsHTML(plays, currentUserId) {
     const pageType = getCurrentPageType();
-    const isMazoPage = pageType === "mazo";
+    const isMazoPage =
+      pageType === "mazo" ||
+      pageType === "archivo";
     const isAdminPage = pageType === "administradores";
     const isArchivoPage = pageType === "archivo";
 
@@ -864,13 +866,6 @@ function getCurrentPageType() {
       ? buildAlertButtonsHTML(plays)
       : "";
 
-    // -------------------------
-    // ADMIN CONTROLS (admin page)
-    // -------------------------
-    const adminBadge = isAdminPage
-      ? buildAdminBadgeHTML()
-      : "";
-
     const adminSuitButtons = isAdminPage
       ? buildAdminSuitButtonsHTML()
       : "";
@@ -952,17 +947,17 @@ ${isAdminPage ? `
 
   function bindMazobarEvents(deck, plays, currentUserId) {
 
-const btnMazoArchive = document.getElementById("btnMazoArchive");
+    const btnMazoArchive = document.getElementById("btnMazoArchive");
 
-if (btnMazoArchive) {
-  btnMazoArchive.addEventListener("click", goToMazoArchivoPage);
-}
+    if (btnMazoArchive) {
+      btnMazoArchive.addEventListener("click", goToMazoArchivoPage);
+    }
 
-const btnArchivoHome = document.getElementById("btnArchivoHome");
+    const btnArchivoHome = document.getElementById("btnArchivoHome");
 
-if (btnArchivoHome) {
-  btnArchivoHome.addEventListener("click", goToMazoArchivoPage);
-}
+    if (btnArchivoHome) {
+      btnArchivoHome.addEventListener("click", goToMazoArchivoPage);
+    }
 
     document.querySelectorAll("[data-admin-suit]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -1002,9 +997,9 @@ if (btnArchivoHome) {
 
     const btnAdminArchive = document.getElementById("btnAdminArchive");
 
-if (btnAdminArchive) {
-  btnAdminArchive.addEventListener("click", goToMazoArchivoPage);
-}
+    if (btnAdminArchive) {
+      btnAdminArchive.addEventListener("click", goToMazoArchivoPage);
+    }
 
     const btnAdminActive = document.getElementById("btnAdminActive");
 
