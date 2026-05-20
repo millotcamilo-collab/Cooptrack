@@ -777,6 +777,31 @@
     });
   }
 
+function hasArchivedPlays(plays) {
+  return plays.some((play) => {
+    const rank = String(play?.rank || "").toUpperCase();
+    const status = String(play?.status || "").toUpperCase();
+
+    if (rank === "J") {
+      return ["CANCELLED", "REJECTED", "DELETED"].includes(status);
+    }
+
+    if (rank === "Q") {
+      return ["REJECTED", "CANCELLED"].includes(status);
+    }
+
+    if (rank === "K") {
+      return ["QUIT", "FIRED", "REJECTED", "CANCELLED"].includes(status);
+    }
+
+    if (rank === "A") {
+      return ["REJECTED", "CANCELLED", "TRANSFERRED"].includes(status);
+    }
+
+    return false;
+  });
+}
+
   function buildCommandButtonsHTML(plays, currentUserId) {
     const pageType = getCurrentPageType();
     const isMazoPage =
@@ -784,8 +809,10 @@
       pageType === "archivo";
     const isAdminPage = pageType === "administradores";
     const isArchivoPage = pageType === "archivo";
+    const hasArchive = hasArchivedPlays(plays);
 
-    const mazoArchiveButton = isMazoPage
+    const mazoArchiveButton =
+      isMazoPage && hasArchive
       ? `
     <button
       id="btnMazoArchive"
