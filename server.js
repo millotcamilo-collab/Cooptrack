@@ -2698,19 +2698,19 @@ RETURNING *
       );
     }
 
-if (isSendingQSpadeNow) {
-  const invitedUserId = Number(updatedPlay.target_user_id || 0);
+    if (isSendingQSpadeNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
 
-  if (!invitedUserId) {
-    await client.query('ROLLBACK');
-    return res.status(400).json({
-      ok: false,
-      error: 'La Q♠ enviada debe tener target_user_id'
-    });
-  }
+      if (!invitedUserId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La Q♠ enviada debe tener target_user_id'
+        });
+      }
 
-  await expandReadersForQSpadeSend(client, updatedPlay);
-}
+      await expandReadersForQSpadeSend(client, updatedPlay);
+    }
 
     if (isSendingJHeartNow) {
       const deckId = Number(updatedPlay.deck_id || 0);
@@ -4459,6 +4459,65 @@ app.post('/plays/:id/readers/public', requireAuth, async (req, res) => {
     }
 
     await markPlayAsPublic(client, playId);
+
+    const playResult = await client.query(
+      `
+  SELECT *
+  FROM plays
+  WHERE id = $1
+  LIMIT 1
+  `,
+      [playId]
+    );
+
+    const play = playResult.rows[0];
+
+    if (play) {
+      const deckId = Number(play.deck_id || 0);
+      const parentPlayId = Number(play.parent_play_id || 0);
+
+      // J♠ / jugada madre
+      if (parentPlayId) {
+        await markPlayAsPublic(client, parentPlayId);
+      }
+
+      // A♥ título del mazo
+      const aHeartResult = await client.query(
+        `
+    SELECT id
+    FROM plays
+    WHERE deck_id = $1
+      AND card_rank = 'A'
+      AND card_suit = 'HEART'
+    ORDER BY id ASC
+    LIMIT 1
+    `,
+        [deckId]
+      );
+
+      const aHeartId = Number(aHeartResult.rows[0]?.id || 0);
+
+      if (aHeartId) {
+        await markPlayAsPublic(client, aHeartId);
+      }
+
+      // J♥ aprobadas
+      const approvedJHearts = await client.query(
+        `
+    SELECT id
+    FROM plays
+    WHERE deck_id = $1
+      AND card_rank = 'J'
+      AND card_suit = 'HEART'
+      AND UPPER(COALESCE(play_status, '')) = 'APPROVED'
+    `,
+        [deckId]
+      );
+
+      for (const row of approvedJHearts.rows) {
+        await markPlayAsPublic(client, Number(row.id));
+      }
+    }
 
     return res.json({
       ok: true
