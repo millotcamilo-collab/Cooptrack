@@ -10,11 +10,15 @@
 .tablero-row--jcorazon,
 .tablero-row--jpike,
 .tablero-row--jtrebol {
+  display: grid;
   grid-template-columns: 44px minmax(0, 1fr) auto;
+
   align-items: center;
   gap: 10px;
+
   min-height: 58px;
   padding: 8px 12px;
+
   background: #fffdf8;
 }
 
