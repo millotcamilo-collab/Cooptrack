@@ -504,9 +504,19 @@
         row.dataset.mode = mode;
       }
 
-      function canLaunchQspade(play) {
-        return isFutureDate(play?.start_date || play?.end_date);
-      }
+function canLaunchQspade(play) {
+  if (!play?.start_date) return false;
+
+  const start = new Date(play.start_date);
+
+  if (Number.isNaN(start.getTime())) {
+    return false;
+  }
+
+  const margen = 30 * 60 * 1000;
+
+  return (start.getTime() + margen) > Date.now();
+}
 
       function renderMode() {
         const visualMode = row.dataset.mode || "read";

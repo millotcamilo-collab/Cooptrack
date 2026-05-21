@@ -449,7 +449,9 @@
   function renderEmptyState() {
     return `
       <section class="tablero-empty">
-        <p>No hay jugadas para mostrar en el tablero.</p>
+        <p>""</p>
+
+
       </section>
     `;
   }
