@@ -3172,12 +3172,12 @@ app.get('/plays/archive', requireAuth, async (req, res) => {
         p.play_text,
         p.play_code,
         p.amount,
-        p.currency_symbol,
-        p.currency_name,
         p.created_at,
         p.updated_at,
 
         deck.name AS deck_name,
+        deck.currency_symbol AS deck_currency_symbol,
+        deck.currency_name AS deck_currency_name,
 
         creator.nickname AS created_by_nickname,
         creator.profile_photo_url AS created_by_profile_photo_url,

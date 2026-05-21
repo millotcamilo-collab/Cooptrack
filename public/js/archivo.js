@@ -173,8 +173,8 @@
     const amount = play?.amount;
     if (amount === undefined || amount === null || amount === "") return "";
 
-    const currencySymbol = String(play?.currency_symbol || "").trim();
-    const currencyName = String(play?.currency_name || "").trim();
+    const currencySymbol = String(play?.currency_symbol || play?.deck_currency_symbol || "").trim();
+    const currencyName = String(play?.currency_name || play?.deck_currency_name || "").trim();
     const amountText = String(amount);
 
     if (currencySymbol) return `${currencySymbol} ${amountText}`;
