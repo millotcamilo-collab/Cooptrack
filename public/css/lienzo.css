@@ -1413,3 +1413,35 @@ body {
   justify-content: flex-end;
   gap: 8px;
 }
+
+/* versión compacta edición Q♥ */
+
+.lienzo-qheart-box input,
+.lienzo-qheart-box textarea,
+.lienzo-qheart-box select {
+  height: 30px;
+  min-height: 30px;
+
+  padding: 4px 8px;
+
+  font-size: 13px;
+  line-height: 1.2;
+
+  border-radius: 6px;
+
+  box-sizing: border-box;
+}
+
+.lienzo-qheart-box textarea {
+  min-height: 54px;
+  resize: vertical;
+}
+
+.lienzo-qheart-box label {
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+
+.lienzo-qheart-box__body {
+  gap: 6px;
+}
