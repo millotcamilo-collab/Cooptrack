@@ -3171,16 +3171,27 @@ app.get('/plays/archive', requireAuth, async (req, res) => {
         p.play_status,
         p.play_text,
         p.play_code,
+        p.amount,
+        p.currency_symbol,
+        p.currency_name,
         p.created_at,
         p.updated_at,
 
         deck.name AS deck_name,
+        deck.currency_symbol AS deck_currency_symbol,
+        deck.currency_name AS deck_currency_name,
 
         creator.nickname AS created_by_nickname,
         creator.profile_photo_url AS created_by_profile_photo_url,
 
         target.nickname AS target_user_nickname,
-        target.profile_photo_url AS target_user_profile_photo_url
+        target.profile_photo_url AS target_user_profile_photo_url,
+
+        parent.play_text AS parent_play_text,
+        parent.spade_mode AS parent_spade_mode,
+        parent.start_date AS parent_start_date,
+        parent.end_date AS parent_end_date,
+        parent.location AS parent_location
 
       FROM plays p
       LEFT JOIN decks deck
@@ -3189,6 +3200,8 @@ app.get('/plays/archive', requireAuth, async (req, res) => {
         ON creator.id = p.created_by_user_id
       LEFT JOIN users target
         ON target.id = p.target_user_id
+      LEFT JOIN plays parent
+        ON parent.id = p.parent_play_id
 
       WHERE
         (

@@ -48,6 +48,201 @@
     return String(play?.deck_name || play?.deckName || "").trim();
   }
 
+  function formatRecurrenceSuffix(type, weekdays, months) {
+    const normalizedType = String(type || "").toUpperCase();
+
+    const weekdayMap = {
+      MON: "Lun",
+      TUE: "Mar",
+      WED: "Mié",
+      THU: "Jue",
+      FRI: "Vie",
+      SAT: "Sáb",
+      SUN: "Dom"
+    };
+
+    const monthMap = {
+      1: "Ene",
+      2: "Feb",
+      3: "Mar",
+      4: "Abr",
+      5: "May",
+      6: "Jun",
+      7: "Jul",
+      8: "Ago",
+      9: "Sep",
+      10: "Oct",
+      11: "Nov",
+      12: "Dic"
+    };
+
+    if (normalizedType === "WEEKLY" && Array.isArray(weekdays) && weekdays.length) {
+      const labels = weekdays
+        .map((day) => weekdayMap[String(day).toUpperCase()] || String(day))
+        .filter(Boolean);
+
+      return labels.length ? labels.join(", ") : "";
+    }
+
+    if (normalizedType === "MONTHLY" && Array.isArray(months) && months.length) {
+      const labels = months
+        .map((month) => monthMap[Number(month)] || String(month))
+        .filter(Boolean);
+
+      return labels.length ? labels.join(", ") : "";
+    }
+
+    return "";
+  }
+
+  function appendRecurrenceLabel(baseLabel, recurrenceType, weekdays, months) {
+    const suffix = formatRecurrenceSuffix(recurrenceType, weekdays, months);
+    if (!suffix) return baseLabel;
+    return `${baseLabel} · ${suffix}`;
+  }
+
+  function formatShortDateTime(value) {
+    if (!value) return "—";
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value ?? "");
+
+    try {
+      const parts = new Intl.DateTimeFormat("es-UY", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).formatToParts(date);
+
+      const map = {};
+      parts.forEach((part) => {
+        map[part.type] = part.value;
+      });
+
+      const weekday = String(map.weekday || "").replace(".", "");
+      const day = map.day || "";
+      const month = String(map.month || "").replace(".", "");
+      const hour = map.hour || "";
+      const minute = map.minute || "";
+
+      const cap = (txt) =>
+        txt ? txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase() : "";
+
+      return `${cap(weekday)} ${day} ${cap(month)} ${hour}:${minute}`;
+    } catch (error) {
+      return String(value ?? "");
+    }
+  }
+
+  function getHoursBetween(startValue, endValue) {
+    if (!startValue || !endValue) return null;
+
+    const start = new Date(startValue);
+    const end = new Date(endValue);
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+
+    const diffMs = end.getTime() - start.getTime();
+    if (diffMs <= 0) return null;
+
+    const hours = diffMs / (1000 * 60 * 60);
+
+    if (hours < 1) {
+      const minutes = Math.round(diffMs / (1000 * 60));
+      return `${minutes} min`;
+    }
+
+    const rounded = Math.round(hours * 10) / 10;
+    return Number.isInteger(rounded) ? `${rounded} hr` : `${rounded} hr`;
+  }
+
+  function getAppointmentReadLabel(startValue, endValue, recurrenceType, weekdays, months) {
+    const startLabel = formatShortDateTime(startValue);
+    const durationLabel = getHoursBetween(startValue, endValue);
+
+    const baseLabel = durationLabel
+      ? `${startLabel} – ${durationLabel}`
+      : startLabel;
+
+    return appendRecurrenceLabel(baseLabel, recurrenceType, weekdays, months);
+  }
+
+  function getArchiveStatusLabel(play) {
+    const status = normalize(play?.play_status);
+    if (status === "REJECTED") return "Rechazada";
+    if (status === "CANCELLED") return "Cancelada";
+    return "Archivada";
+  }
+
+  function getFormattedAmount(play) {
+    const amount = play?.amount;
+    if (amount === undefined || amount === null || amount === "") return "";
+
+    const amountText = String(amount);
+    const currencySymbol = String(play?.currency_symbol || play?.currencyName || play?.deck_currency_symbol || "").trim();
+    const currencyName = String(play?.currency_name || play?.deck_currency_name || "").trim();
+
+    if (currencySymbol) return `${currencySymbol} ${amountText}`;
+    if (currencyName) return `${currencyName} ${amountText}`;
+    return amountText;
+  }
+
+  function renderArchivedQ(play) {
+    const ICONS = window.ICONS || {};
+    const ACTIONS = ICONS.actions || {};
+
+    const parentMode = String(play?.parent_spade_mode || "").trim().toUpperCase();
+    const isDeadline = parentMode === "DEADLINE";
+    const parentLabel = `J${getSuitSymbol("SPADE")}`;
+    const parentText = String(play?.parent_play_text || play?.play_text || "J madre archivada").trim();
+    const parentDate = isDeadline
+      ? formatShortDateTime(play?.parent_end_date)
+      : getAppointmentReadLabel(play?.parent_start_date, play?.parent_end_date);
+
+    const parentMetaItems = [];
+    if (parentDate) {
+      const dateIcon = escapeHtml(isDeadline ? ACTIONS.bomb || "" : ACTIONS.start || "");
+      parentMetaItems.push(`${dateIcon}${dateIcon ? " " : ""}${escapeHtml(parentDate)}`.trim());
+    }
+
+    const parentLocation = String(play?.parent_location || "").trim();
+    if (parentLocation) {
+      const locationIcon = escapeHtml(ACTIONS.location || "");
+      parentMetaItems.push(`${locationIcon}${locationIcon ? " " : ""}${escapeHtml(parentLocation)}`.trim());
+    }
+
+    const parentMeta = parentMetaItems.join(" · ");
+    const qLabel = escapeHtml(getCardLabel(play));
+    const relatedUser = String(play?.target_user_nickname || play?.created_by_nickname || "Usuario").trim();
+    const statusLabel = getArchiveStatusLabel(play);
+    const amountLabel = getFormattedAmount(play);
+    const deckName = getDeckName(play);
+
+    return `
+      <div class="archivo-q__blocks">
+        <div class="archivo-q__parent">
+          <div class="archivo-q__card">${escapeHtml(parentLabel)}</div>
+          <div class="archivo-q__content">
+            <div class="archivo-q__title">${escapeHtml(parentText)}</div>
+            ${parentMeta ? `<div class="archivo-q__meta">${parentMeta}</div>` : ""}
+          </div>
+          <div class="archivo-q__right"></div>
+        </div>
+
+        <div class="archivo-q__child">
+          <div class="archivo-q__card">${qLabel}</div>
+          <div class="archivo-q__content">
+            <div class="archivo-q__title">${escapeHtml(`${relatedUser} · ${statusLabel}`)}</div>
+            ${amountLabel ? `<div class="archivo-q__meta">${escapeHtml(amountLabel)}</div>` : ""}
+          </div>
+          ${deckName ? `<div class="archivo-q__deck">${escapeHtml(deckName)}</div>` : `<div class="archivo-q__right"></div>`}
+        </div>
+      </div>
+    `;
+  }
+
   function getArchiveTitle(play) {
     const rank = normalize(play?.card_rank);
     const status = normalize(play?.play_status);
@@ -117,29 +312,32 @@
     const deckName = getDeckName(play);
     const isQ = rank === "Q";
 
+    if (isQ) {
+      return `
+  <a class="tablero-row tablero-row--archived tablero-row--archive-q archivo-q" href="${escapeHtml(href)}">
+    ${renderArchivedQ(play)}
+  </a>
+`;
+    }
+
     return `
-  <a class="tablero-row tablero-row--archived ${isQ ? "tablero-row--archive-q" : ""}" href="${escapeHtml(href)}">
+  <a class="tablero-row tablero-row--archived" href="${escapeHtml(href)}">
     <div class="tablero-row__left">
       <div class="tablero-row__card">${escapeHtml(getCardLabel(play))}</div>
     </div>
 
     <div class="tablero-row__center">
       <div class="tablero-row__title">
-        ${escapeHtml(isQ ? String(play?.play_text || getArchiveTitle(play)) : getArchiveTitle(play))}
+        ${escapeHtml(String(play?.play_text || getArchiveTitle(play)))}
       </div>
 
-      ${isQ && deckName
-        ? `<div class="tablero-row__deck">${escapeHtml(deckName)}</div>`
-        : `
-            <div class="tablero-row__meta">
-              ${escapeHtml(getArchiveMeta(play))}
-            </div>
+      <div class="tablero-row__meta">
+        ${escapeHtml(getArchiveMeta(play))}
+      </div>
 
-            ${play?.play_text
-          ? `<div class="tablero-row__meta">${escapeHtml(play.play_text)}</div>`
-          : ""
-        }
-          `
+      ${play?.play_text
+        ? `<div class="tablero-row__meta">${escapeHtml(play.play_text)}</div>`
+        : ""
       }
     </div>
 
