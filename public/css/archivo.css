@@ -71,12 +71,6 @@
   align-items: center;
 }
 
-.tablero-row--archive-q.archivo-q {
-  display: block;
-  padding: 0;
-  background: transparent;
-}
-
 .archivo-q__blocks {
   display: flex;
   flex-direction: column;
@@ -92,10 +86,6 @@
   min-height: 58px;
   padding: 8px 12px;
   background: #fffdf8;
-}
-
-.archivo-q__child {
-  margin-top: 0;
 }
 
 .archivo-q__card {

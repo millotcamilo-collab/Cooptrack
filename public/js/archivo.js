@@ -48,59 +48,6 @@
     return String(play?.deck_name || play?.deckName || "").trim();
   }
 
-  function formatRecurrenceSuffix(type, weekdays, months) {
-    const normalizedType = String(type || "").toUpperCase();
-
-    const weekdayMap = {
-      MON: "Lun",
-      TUE: "Mar",
-      WED: "Mié",
-      THU: "Jue",
-      FRI: "Vie",
-      SAT: "Sáb",
-      SUN: "Dom"
-    };
-
-    const monthMap = {
-      1: "Ene",
-      2: "Feb",
-      3: "Mar",
-      4: "Abr",
-      5: "May",
-      6: "Jun",
-      7: "Jul",
-      8: "Ago",
-      9: "Sep",
-      10: "Oct",
-      11: "Nov",
-      12: "Dic"
-    };
-
-    if (normalizedType === "WEEKLY" && Array.isArray(weekdays) && weekdays.length) {
-      const labels = weekdays
-        .map((day) => weekdayMap[String(day).toUpperCase()] || String(day))
-        .filter(Boolean);
-
-      return labels.length ? labels.join(", ") : "";
-    }
-
-    if (normalizedType === "MONTHLY" && Array.isArray(months) && months.length) {
-      const labels = months
-        .map((month) => monthMap[Number(month)] || String(month))
-        .filter(Boolean);
-
-      return labels.length ? labels.join(", ") : "";
-    }
-
-    return "";
-  }
-
-  function appendRecurrenceLabel(baseLabel, recurrenceType, weekdays, months) {
-    const suffix = formatRecurrenceSuffix(recurrenceType, weekdays, months);
-    if (!suffix) return baseLabel;
-    return `${baseLabel} · ${suffix}`;
-  }
-
   function formatShortDateTime(value) {
     if (!value) return "—";
 
@@ -141,14 +88,12 @@
 
     const start = new Date(startValue);
     const end = new Date(endValue);
-
     if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
 
     const diffMs = end.getTime() - start.getTime();
     if (diffMs <= 0) return null;
 
     const hours = diffMs / (1000 * 60 * 60);
-
     if (hours < 1) {
       const minutes = Math.round(diffMs / (1000 * 60));
       return `${minutes} min`;
@@ -166,7 +111,55 @@
       ? `${startLabel} – ${durationLabel}`
       : startLabel;
 
-    return appendRecurrenceLabel(baseLabel, recurrenceType, weekdays, months);
+    if (!recurrenceType) return baseLabel;
+
+    const recurrenceTypeUpper = String(recurrenceType || "").toUpperCase();
+    const weekdaysList = Array.isArray(weekdays) ? weekdays : [];
+    const monthsList = Array.isArray(months) ? months : [];
+
+    const recurrenceSuffix = [];
+    if (recurrenceTypeUpper === "WEEKLY" && weekdaysList.length) {
+      const days = {
+        MON: "Lun",
+        TUE: "Mar",
+        WED: "Mié",
+        THU: "Jue",
+        FRI: "Vie",
+        SAT: "Sáb",
+        SUN: "Dom",
+      };
+      recurrenceSuffix.push(
+        weekdaysList
+          .map((d) => days[String(d).toUpperCase()] || String(d))
+          .filter(Boolean)
+          .join(", ")
+      );
+    }
+
+    if (recurrenceTypeUpper === "MONTHLY" && monthsList.length) {
+      const monthNames = {
+        1: "Ene",
+        2: "Feb",
+        3: "Mar",
+        4: "Abr",
+        5: "May",
+        6: "Jun",
+        7: "Jul",
+        8: "Ago",
+        9: "Sep",
+        10: "Oct",
+        11: "Nov",
+        12: "Dic",
+      };
+      recurrenceSuffix.push(
+        monthsList
+          .map((m) => monthNames[Number(m)] || String(m))
+          .filter(Boolean)
+          .join(", ")
+      );
+    }
+
+    return recurrenceSuffix.length ? `${baseLabel} · ${recurrenceSuffix.join(" · ")}` : baseLabel;
   }
 
   function getArchiveStatusLabel(play) {
@@ -180,9 +173,9 @@
     const amount = play?.amount;
     if (amount === undefined || amount === null || amount === "") return "";
 
+    const currencySymbol = String(play?.currency_symbol || "").trim();
+    const currencyName = String(play?.currency_name || "").trim();
     const amountText = String(amount);
-    const currencySymbol = String(play?.currency_symbol || play?.currencyName || play?.deck_currency_symbol || "").trim();
-    const currencyName = String(play?.currency_name || play?.deck_currency_name || "").trim();
 
     if (currencySymbol) return `${currencySymbol} ${amountText}`;
     if (currencyName) return `${currencyName} ${amountText}`;
@@ -192,29 +185,25 @@
   function renderArchivedQ(play) {
     const ICONS = window.ICONS || {};
     const ACTIONS = ICONS.actions || {};
+    const startIcon = escapeHtml(ACTIONS.start || "");
+    const bombIcon = escapeHtml(ACTIONS.bomb || "");
+    const locationIcon = escapeHtml(ACTIONS.location || "");
 
-    const parentMode = String(play?.parent_spade_mode || "").trim().toUpperCase();
-    const isDeadline = parentMode === "DEADLINE";
-    const parentLabel = `J${getSuitSymbol("SPADE")}`;
-    const parentText = String(play?.parent_play_text || play?.play_text || "J madre archivada").trim();
-    const parentDate = isDeadline
+    const parentText = String(play?.parent_play_text || "Sin J madre").trim();
+    const parentMode = normalize(play?.parent_spade_mode);
+    const parentDate = parentMode === "DEADLINE"
       ? formatShortDateTime(play?.parent_end_date)
       : getAppointmentReadLabel(play?.parent_start_date, play?.parent_end_date);
 
-    const parentMetaItems = [];
-    if (parentDate) {
-      const dateIcon = escapeHtml(isDeadline ? ACTIONS.bomb || "" : ACTIONS.start || "");
-      parentMetaItems.push(`${dateIcon}${dateIcon ? " " : ""}${escapeHtml(parentDate)}`.trim());
+    const parentMetaParts = [];
+    if (parentDate && parentDate !== "—") {
+      const icon = parentMode === "DEADLINE" ? bombIcon : startIcon;
+      parentMetaParts.push(`${icon}${icon ? " " : ""}${escapeHtml(parentDate)}`.trim());
+    }
+    if (play?.parent_location) {
+      parentMetaParts.push(`${locationIcon}${locationIcon ? " " : ""}${escapeHtml(String(play.parent_location).trim())}`.trim());
     }
 
-    const parentLocation = String(play?.parent_location || "").trim();
-    if (parentLocation) {
-      const locationIcon = escapeHtml(ACTIONS.location || "");
-      parentMetaItems.push(`${locationIcon}${locationIcon ? " " : ""}${escapeHtml(parentLocation)}`.trim());
-    }
-
-    const parentMeta = parentMetaItems.join(" · ");
-    const qLabel = escapeHtml(getCardLabel(play));
     const relatedUser = String(play?.target_user_nickname || play?.created_by_nickname || "Usuario").trim();
     const statusLabel = getArchiveStatusLabel(play);
     const amountLabel = getFormattedAmount(play);
@@ -223,16 +212,16 @@
     return `
       <div class="archivo-q__blocks">
         <div class="archivo-q__parent">
-          <div class="archivo-q__card">${escapeHtml(parentLabel)}</div>
+          <div class="archivo-q__card">${escapeHtml(`J${getSuitSymbol("SPADE")}`)}</div>
           <div class="archivo-q__content">
             <div class="archivo-q__title">${escapeHtml(parentText)}</div>
-            ${parentMeta ? `<div class="archivo-q__meta">${parentMeta}</div>` : ""}
+            ${parentMetaParts.length ? `<div class="archivo-q__meta">${escapeHtml(parentMetaParts.join(" · "))}</div>` : ""}
           </div>
           <div class="archivo-q__right"></div>
         </div>
 
         <div class="archivo-q__child">
-          <div class="archivo-q__card">${qLabel}</div>
+          <div class="archivo-q__card">${escapeHtml(getCardLabel(play))}</div>
           <div class="archivo-q__content">
             <div class="archivo-q__title">${escapeHtml(`${relatedUser} · ${statusLabel}`)}</div>
             ${amountLabel ? `<div class="archivo-q__meta">${escapeHtml(amountLabel)}</div>` : ""}
@@ -315,7 +304,11 @@
     if (isQ) {
       return `
   <a class="tablero-row tablero-row--archived tablero-row--archive-q archivo-q" href="${escapeHtml(href)}">
-    ${renderArchivedQ(play)}
+    <div class="tablero-row__left"></div>
+    <div class="tablero-row__center">
+      ${renderArchivedQ(play)}
+    </div>
+    <div class="tablero-row__right"></div>
   </a>
 `;
     }
