@@ -93,6 +93,16 @@
     return play.deck_id || play.deckId || null;
   }
 
+  function getJotaCssClass(play) {
+    const suit = normalizeSuit(play.card_suit || play.suit);
+
+    if (suit === "HEART") return "tablero-row--jcorazon";
+    if (suit === "SPADE") return "tablero-row--jpike";
+    if (suit === "CLUB") return "tablero-row--jtrebol";
+
+    return "";
+  }
+
   function buildJotaRowHTML(play) {
     const playId = Number(play.id || 0);
     const cardLabel = getCardLabel(play);
@@ -102,7 +112,7 @@
     return `
       <button
         type="button"
-        class="tablero-row tablero-row--bitacora"
+        class="tablero-row tablero-row--bitacora ${getJotaCssClass(play)}"
         data-play-id="${playId}"
         data-deck-id="${deckId || ""}"
       >

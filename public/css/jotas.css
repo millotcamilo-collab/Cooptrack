@@ -1,0 +1,87 @@
+/* =========================================================
+   JOTAS - estilo común para Bitácora y Tablero
+   Usa las mismas clases que las J del tablero:
+   .tablero-row--jcorazon
+   .tablero-row--jpike
+   .tablero-row--jtrebol
+========================================================= */
+
+.tablero-row--bitacora,
+.tablero-row--jcorazon,
+.tablero-row--jpike,
+.tablero-row--jtrebol {
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 12px;
+  background: #fffdf8;
+}
+
+.tablero-row--bitacora .tablero-row__left,
+.tablero-row--jcorazon .tablero-row__left,
+.tablero-row--jpike .tablero-row__left,
+.tablero-row--jtrebol .tablero-row__left {
+  justify-content: center;
+  align-items: center;
+}
+
+.tablero-row--bitacora .tablero-row__card,
+.tablero-row--jcorazon .tablero-row__card,
+.tablero-row--jpike .tablero-row__card,
+.tablero-row--jtrebol .tablero-row__card {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.tablero-row--jcorazon .tablero-row__card {
+  color: #c62828;
+}
+
+.tablero-row--bitacora .tablero-row__center,
+.tablero-row--jcorazon .tablero-row__center,
+.tablero-row--jpike .tablero-row__center,
+.tablero-row--jtrebol .tablero-row__center {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.tablero-row--bitacora .tablero-row__title,
+.tablero-row--jcorazon .tablero-row__title,
+.tablero-row--jpike .tablero-row__title,
+.tablero-row--jtrebol .tablero-row__title {
+  min-width: 0;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tablero-row--bitacora .tablero-row__meta,
+.tablero-row--bitacora .tablero-row__text,
+.tablero-row--jcorazon .tablero-row__meta,
+.tablero-row--jcorazon .tablero-row__text,
+.tablero-row--jpike .tablero-row__meta,
+.tablero-row--jpike .tablero-row__text,
+.tablero-row--jtrebol .tablero-row__meta,
+.tablero-row--jtrebol .tablero-row__text {
+  display: none;
+}
+
+.tablero-row--bitacora .tablero-row__right,
+.tablero-row--jcorazon .tablero-row__right,
+.tablero-row--jpike .tablero-row__right,
+.tablero-row--jtrebol .tablero-row__right {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
