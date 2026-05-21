@@ -108,6 +108,9 @@
     const cardLabel = getCardLabel(play);
     const description = getDescription(play);
     const deckId = getDeckId(play);
+    const deckName = String(
+      play.deck_name || play.deckName || ""
+    ).trim();
 
     return `
       <button
@@ -120,11 +123,21 @@
           <div class="tablero-row__card">${escapeHtml(cardLabel)}</div>
         </div>
 
-        <div class="tablero-row__center">
-          <div class="tablero-row__title">
-            ${escapeHtml(description)}
-          </div>
+<div class="tablero-row__center">
+  <div class="tablero-row__title">
+    ${escapeHtml(description)}
+  </div>
+
+  ${
+    deckName
+      ? `
+        <div class="tablero-row__deck">
+          ${escapeHtml(deckName)}
         </div>
+      `
+      : ""
+  }
+</div>
 
         <div class="tablero-row__right">
         </div>

@@ -108,3 +108,14 @@
 .tablero-row--jdiamante .tablero-row__card {
   color: #c62828;
 }
+
+.tablero-row__deck {
+  margin-left: 10px;
+
+  font-size: 14px;
+  font-weight: 400;
+
+  opacity: 0.7;
+
+  white-space: nowrap;
+}
