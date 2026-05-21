@@ -44,6 +44,10 @@
     });
   }
 
+  function getDeckName(play) {
+    return String(play?.deck_name || play?.deckName || "").trim();
+  }
+
   function getArchiveTitle(play) {
     const rank = normalize(play?.card_rank);
     const status = normalize(play?.play_status);
@@ -109,29 +113,39 @@
 
   function renderArchiveRow(play) {
     const href = getArchiveHref(play);
+    const rank = normalize(play?.card_rank || play?.rank);
+    const deckName = getDeckName(play);
+    const isQ = rank === "Q";
 
     return `
-      <a class="tablero-row tablero-row--archived" href="${escapeHtml(href)}">
-        <div class="tablero-row__left">
-          <div class="tablero-row__card">${escapeHtml(getCardLabel(play))}</div>
-        </div>
+  <a class="tablero-row tablero-row--archived ${isQ ? "tablero-row--archive-q" : ""}" href="${escapeHtml(href)}">
+    <div class="tablero-row__left">
+      <div class="tablero-row__card">${escapeHtml(getCardLabel(play))}</div>
+    </div>
 
-        <div class="tablero-row__center">
-          <div class="tablero-row__title">
-            ${escapeHtml(getArchiveTitle(play))}
-          </div>
+    <div class="tablero-row__center">
+      <div class="tablero-row__title">
+        ${escapeHtml(isQ ? String(play?.play_text || getArchiveTitle(play)) : getArchiveTitle(play))}
+      </div>
 
-          <div class="tablero-row__meta">
-            ${escapeHtml(getArchiveMeta(play))}
-          </div>
+      ${isQ && deckName
+        ? `<div class="tablero-row__deck">${escapeHtml(deckName)}</div>`
+        : `
+            <div class="tablero-row__meta">
+              ${escapeHtml(getArchiveMeta(play))}
+            </div>
 
-          ${play?.play_text
-            ? `<div class="tablero-row__meta">${escapeHtml(play.play_text)}</div>`
-            : ""
-          }
-        </div>
-      </a>
-    `;
+            ${play?.play_text
+          ? `<div class="tablero-row__meta">${escapeHtml(play.play_text)}</div>`
+          : ""
+        }
+          `
+      }
+    </div>
+
+    <div class="tablero-row__right"></div>
+  </a>
+`;
   }
 
   async function loadArchive() {
