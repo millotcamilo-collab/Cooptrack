@@ -85,3 +85,22 @@
   gap: 6px;
   white-space: nowrap;
 }
+
+.tablero-row__card {
+  font-family: var(--font-card);
+}
+
+.tablero-row--bitacora .tablero-row__center,
+.tablero-row--jcorazon .tablero-row__center,
+.tablero-row--jpike .tablero-row__center,
+.tablero-row--jtrebol .tablero-row__center {
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.tablero-row--jcorazon .tablero-row__card,
+.tablero-row--jdiamante .tablero-row__card {
+  color: #c62828;
+}
