@@ -99,9 +99,12 @@
 .tablero-row--jpike .tablero-row__center,
 .tablero-row--jtrebol .tablero-row__center {
   min-width: 0;
+
   display: flex;
   flex-direction: row;
   align-items: center;
+
+  gap: 18px;
 }
 
 .tablero-row--jcorazon .tablero-row__card,
