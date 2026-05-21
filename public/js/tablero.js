@@ -449,7 +449,7 @@
   function renderEmptyState() {
     return `
       <section class="tablero-empty">
-        <p>""</p>
+        <p></p>
 
 
       </section>
