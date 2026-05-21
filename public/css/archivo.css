@@ -77,7 +77,7 @@
   gap: 8px;
 }
 
-.archivo-q__parent,
+
 .archivo-q__child {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) auto;
@@ -136,3 +136,5 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+

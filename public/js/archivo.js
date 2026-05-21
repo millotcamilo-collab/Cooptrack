@@ -209,27 +209,50 @@
     const amountLabel = getFormattedAmount(play);
     const deckName = getDeckName(play);
 
-    return `
-      <div class="archivo-q__blocks">
-        <div class="archivo-q__parent">
-          <div class="archivo-q__card">${escapeHtml(`J${getSuitSymbol("SPADE")}`)}</div>
-          <div class="archivo-q__content">
-            <div class="archivo-q__title">${escapeHtml(parentText)}</div>
-            ${parentMetaParts.length ? `<div class="archivo-q__meta">${escapeHtml(parentMetaParts.join(" · "))}</div>` : ""}
-          </div>
-          <div class="archivo-q__right"></div>
-        </div>
+return `
+  <div class="archivo-q__child">
+    <div class="archivo-q__card">
+      ${escapeHtml(getCardLabel(play))}
+    </div>
 
-        <div class="archivo-q__child">
-          <div class="archivo-q__card">${escapeHtml(getCardLabel(play))}</div>
-          <div class="archivo-q__content">
-            <div class="archivo-q__title">${escapeHtml(`${relatedUser} · ${statusLabel}`)}</div>
-            ${amountLabel ? `<div class="archivo-q__meta">${escapeHtml(amountLabel)}</div>` : ""}
-          </div>
-          ${deckName ? `<div class="archivo-q__deck">${escapeHtml(deckName)}</div>` : `<div class="archivo-q__right"></div>`}
-        </div>
+    <div class="archivo-q__content">
+
+      <div class="archivo-q__title">
+        ${escapeHtml(parentText)}
       </div>
-    `;
+
+      ${
+        parentMetaParts.length
+          ? `
+            <div class="archivo-q__meta">
+              ${escapeHtml(parentMetaParts.join(" · "))}
+            </div>
+          `
+          : ""
+      }
+
+      <div class="archivo-q__meta">
+        ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
+        ${
+          amountLabel
+            ? ` · ${escapeHtml(amountLabel)}`
+            : ""
+        }
+      </div>
+
+    </div>
+
+    ${
+      deckName
+        ? `
+          <div class="archivo-q__deck">
+            ${escapeHtml(deckName)}
+          </div>
+        `
+        : `<div class="archivo-q__right"></div>`
+    }
+  </div>
+`;
   }
 
   function getArchiveTitle(play) {
