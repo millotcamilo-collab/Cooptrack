@@ -83,69 +83,6 @@
     }
   }
 
-  function renderArchivedK(play) {
-    const parentText = String(play?.parent_play_text || "Sin J madre").trim();
-
-    const parentDate = getAppointmentReadLabel(
-      play?.parent_start_date,
-      play?.parent_end_date
-    );
-
-    const relatedUser = String(
-      play?.target_user_nickname ||
-      play?.created_by_nickname ||
-      "Usuario"
-    ).trim();
-
-    const deckName = getDeckName(play);
-
-    let statusLabel = "Archivada";
-
-    const status = normalize(play?.play_status);
-
-    if (status === "QUIT") {
-      statusLabel = "Renunció";
-    } else if (status === "FIRED") {
-      statusLabel = "Despedido";
-    } else if (status === "REJECTED") {
-      statusLabel = "Rechazada";
-    }
-
-    return `
-    <div class="archivo-k__child">
-
-      <div class="archivo-k__card">
-        ${escapeHtml(getCardLabel(play))}
-      </div>
-
-      <div class="archivo-k__content">
-
-        <div class="archivo-k__title">
-          ${escapeHtml(parentText)}
-        </div>
-
-        <div class="archivo-k__meta">
-          ${escapeHtml(parentDate)}
-        </div>
-
-        <div class="archivo-k__meta">
-          ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
-        </div>
-
-      </div>
-
-      ${deckName
-        ? `
-            <div class="archivo-k__deck">
-              ${escapeHtml(deckName)}
-            </div>
-          `
-        : `<div class="archivo-k__right"></div>`
-      }
-
-    </div>
-  `;
-  }
 
   function getHoursBetween(startValue, endValue) {
     if (!startValue || !endValue) return null;
@@ -423,6 +360,55 @@
       }
 
     </div>
+  `;
+}
+
+function renderArchiveRow(play) {
+  const href = getArchiveHref(play);
+  const rank = normalize(play?.card_rank || play?.rank);
+
+  if (rank === "Q") {
+    return `
+      <a class="tablero-row tablero-row--archived tablero-row--archive-q archivo-q" href="${escapeHtml(href)}">
+        <div class="tablero-row__left"></div>
+        <div class="tablero-row__center">
+          ${renderArchivedQ(play)}
+        </div>
+        <div class="tablero-row__right"></div>
+      </a>
+    `;
+  }
+
+  if (rank === "K") {
+    return `
+      <a class="tablero-row tablero-row--archived archivo-k" href="${escapeHtml(href)}">
+        <div class="tablero-row__left"></div>
+        <div class="tablero-row__center">
+          ${renderArchivedK(play)}
+        </div>
+        <div class="tablero-row__right"></div>
+      </a>
+    `;
+  }
+
+  return `
+    <a class="tablero-row tablero-row--archived" href="${escapeHtml(href)}">
+      <div class="tablero-row__left">
+        <div class="tablero-row__card">${escapeHtml(getCardLabel(play))}</div>
+      </div>
+
+      <div class="tablero-row__center">
+        <div class="tablero-row__title">
+          ${escapeHtml(String(play?.play_text || getArchiveTitle(play)))}
+        </div>
+
+        <div class="tablero-row__meta">
+          ${escapeHtml(getArchiveMeta(play))}
+        </div>
+      </div>
+
+      <div class="tablero-row__right"></div>
+    </a>
   `;
 }
 
