@@ -1461,7 +1461,7 @@ async function listMazosHandler(req, res) {
             joker_type,
             current_user_cards,
             membership_status: membership.status,
-            is_active_member: wantsArchived ? false : true
+            is_active_member: Boolean(deck.is_active_member)
           };
         } catch (error) {
           console.error('Error armando mazo', {
