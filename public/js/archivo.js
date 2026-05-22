@@ -317,26 +317,26 @@
   }
 
   function renderArchivedK(play) {
-  const relatedUser = String(
-    play?.target_user_nickname ||
-    play?.created_by_nickname ||
-    "Usuario"
-  ).trim();
+    const relatedUser = String(
+      play?.target_user_nickname ||
+      play?.created_by_nickname ||
+      "Usuario"
+    ).trim();
 
-  const deckName = getDeckName(play);
-  const status = normalize(play?.play_status);
+    const deckName = getDeckName(play);
+    const status = normalize(play?.play_status);
 
-  let statusLabel = "Archivada";
+    let statusLabel = "Archivada";
 
-  if (status === "QUIT") {
-    statusLabel = "Renunció";
-  } else if (status === "FIRED") {
-    statusLabel = "Despedido";
-  } else if (status === "REJECTED") {
-    statusLabel = "Rechazada";
-  }
+    if (status === "QUIT") {
+      statusLabel = "Renunció";
+    } else if (status === "FIRED") {
+      statusLabel = "Despedido";
+    } else if (status === "REJECTED") {
+      statusLabel = "Rechazada";
+    }
 
-  return `
+    return `
     <div class="archivo-k__child">
 
       <div class="archivo-k__card">
@@ -349,26 +349,72 @@
         </div>
       </div>
 
-      ${
-        deckName
-          ? `
+      ${deckName
+        ? `
             <div class="archivo-k__deck">
               ${escapeHtml(deckName)}
             </div>
           `
-          : `<div class="archivo-k__right"></div>`
+        : `<div class="archivo-k__right"></div>`
+      }
+
+    </div>
+  `;
+  }
+
+function renderArchivedA(play) {
+  const relatedUser = String(
+    play?.target_user_nickname ||
+    play?.created_by_nickname ||
+    "Usuario"
+  ).trim();
+
+  const deckName = getDeckName(play);
+  const status = normalize(play?.play_status);
+
+  let statusLabel = "Archivada";
+
+  if (status === "QUIT") {
+    statusLabel = "Transferida";
+  } else if (status === "FIRED") {
+    statusLabel = "Cancelada";
+  } else if (status === "REJECTED") {
+    statusLabel = "Rechazada";
+  }
+
+  return `
+    <div class="archivo-a__child">
+
+      <div class="archivo-a__card">
+        ${escapeHtml(getCardLabel(play))}
+      </div>
+
+      <div class="archivo-a__content">
+        <div class="archivo-a__title">
+          ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
+        </div>
+      </div>
+
+      ${
+        deckName
+          ? `
+            <div class="archivo-a__deck">
+              ${escapeHtml(deckName)}
+            </div>
+          `
+          : `<div class="archivo-a__right"></div>`
       }
 
     </div>
   `;
 }
 
-function renderArchiveRow(play) {
-  const href = getArchiveHref(play);
-  const rank = normalize(play?.card_rank || play?.rank);
+  function renderArchiveRow(play) {
+    const href = getArchiveHref(play);
+    const rank = normalize(play?.card_rank || play?.rank);
 
-  if (rank === "Q") {
-    return `
+    if (rank === "Q") {
+      return `
       <a class="tablero-row tablero-row--archived tablero-row--archive-q archivo-q" href="${escapeHtml(href)}">
         <div class="tablero-row__left"></div>
         <div class="tablero-row__center">
@@ -377,10 +423,10 @@ function renderArchiveRow(play) {
         <div class="tablero-row__right"></div>
       </a>
     `;
-  }
+    }
 
-  if (rank === "K") {
-    return `
+    if (rank === "K") {
+      return `
       <a class="tablero-row tablero-row--archived archivo-k" href="${escapeHtml(href)}">
         <div class="tablero-row__left"></div>
         <div class="tablero-row__center">
@@ -389,9 +435,19 @@ function renderArchiveRow(play) {
         <div class="tablero-row__right"></div>
       </a>
     `;
-  }
-
+    }
+if (rank === "A") {
   return `
+    <a class="tablero-row tablero-row--archived archivo-a" href="${escapeHtml(href)}">
+      <div class="tablero-row__left"></div>
+      <div class="tablero-row__center">
+        ${renderArchivedA(play)}
+      </div>
+      <div class="tablero-row__right"></div>
+    </a>
+  `;
+}
+    return `
     <a class="tablero-row tablero-row--archived" href="${escapeHtml(href)}">
       <div class="tablero-row__left">
         <div class="tablero-row__card">${escapeHtml(getCardLabel(play))}</div>
@@ -410,7 +466,7 @@ function renderArchiveRow(play) {
       <div class="tablero-row__right"></div>
     </a>
   `;
-}
+  }
 
   async function loadArchive() {
     const container = document.getElementById("archivo-container");

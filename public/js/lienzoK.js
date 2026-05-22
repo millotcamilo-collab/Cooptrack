@@ -832,7 +832,7 @@
                 if (!confirmed) return;
 
                 const result = await patchPlay(play.id, {
-                    play_status: "QUIT"
+                    play_status: "REJECTED"
                 });
 
                 if (result.ok) {
