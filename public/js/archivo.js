@@ -379,66 +379,52 @@
     return "#";
   }
 
-  function renderArchiveRow(play) {
-    const href = getArchiveHref(play);
-    const rank = normalize(play?.card_rank || play?.rank);
-    const deckName = getDeckName(play);
-    const isQ = rank === "Q";
+  function renderArchivedK(play) {
+  const relatedUser = String(
+    play?.target_user_nickname ||
+    play?.created_by_nickname ||
+    "Usuario"
+  ).trim();
 
-    if (isQ) {
-      return `
-  <a class="tablero-row tablero-row--archived tablero-row--archive-q archivo-q" href="${escapeHtml(href)}">
-    <div class="tablero-row__left"></div>
-    <div class="tablero-row__center">
-      ${renderArchivedQ(play)}
-    </div>
-    <div class="tablero-row__right"></div>
-  </a>
-`;
-    }
+  const deckName = getDeckName(play);
+  const status = normalize(play?.play_status);
 
-    if (rank === "K") {
-      return `
-    <a class="tablero-row tablero-row--archived archivo-k"
-       href="${escapeHtml(href)}">
+  let statusLabel = "Archivada";
 
-      <div class="tablero-row__left"></div>
-
-      <div class="tablero-row__center">
-        ${renderArchivedK(play)}
-      </div>
-
-      <div class="tablero-row__right"></div>
-
-    </a>
-  `;
-    }
-
-    return `
-  <a class="tablero-row tablero-row--archived" href="${escapeHtml(href)}">
-    <div class="tablero-row__left">
-      <div class="tablero-row__card">${escapeHtml(getCardLabel(play))}</div>
-    </div>
-
-    <div class="tablero-row__center">
-      <div class="tablero-row__title">
-        ${escapeHtml(String(play?.play_text || getArchiveTitle(play)))}
-      </div>
-
-      <div class="tablero-row__meta">
-        ${escapeHtml(getArchiveMeta(play))}
-      </div>
-
-      ${play?.play_text
-        ? `<div class="tablero-row__meta">${escapeHtml(play.play_text)}</div>`
-        : ""
-      }
-    </div>
-
-    <div class="tablero-row__right"></div>
-  </a>
-`;
+  if (status === "QUIT") {
+    statusLabel = "Renunció";
+  } else if (status === "FIRED") {
+    statusLabel = "Despedido";
+  } else if (status === "REJECTED") {
+    statusLabel = "Rechazada";
   }
+
+  return `
+    <div class="archivo-k__child">
+
+      <div class="archivo-k__card">
+        ${escapeHtml(getCardLabel(play))}
+      </div>
+
+      <div class="archivo-k__content">
+        <div class="archivo-k__title">
+          ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
+        </div>
+      </div>
+
+      ${
+        deckName
+          ? `
+            <div class="archivo-k__deck">
+              ${escapeHtml(deckName)}
+            </div>
+          `
+          : `<div class="archivo-k__right"></div>`
+      }
+
+    </div>
+  `;
+}
 
   async function loadArchive() {
     const container = document.getElementById("archivo-container");
