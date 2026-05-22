@@ -2920,6 +2920,8 @@ RETURNING *
         [deckId, invitedUserId]
       );
 
+      await addUserToAclLines(client, deckId, invitedUserId);
+
       if (
         currentSuit !== 'HEART' &&
         currentSuit !== 'CLUB' &&
@@ -3009,6 +3011,254 @@ RETURNING *
       ON CONFLICT DO NOTHING
       `,
           [deckId, invitedUserId, 'Q_SPADE_REJECTED', updatedPlay.id]
+        );
+      }
+    }
+
+    const isRejectingKNow =
+      currentRank === 'K' &&
+      currentStatus !== 'REJECTED' &&
+      nextStatus === 'REJECTED';
+
+    if (isRejectingKNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+      const deckId = Number(updatedPlay.deck_id || 0);
+
+      if (!invitedUserId || !deckId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La K rechazada debe tener target_user_id y deck_id válidos'
+        });
+      }
+
+      await removeUserFromAclLines(client, deckId, invitedUserId);
+
+      const tieCheck = await client.query(
+        `
+    SELECT 1
+    FROM plays
+    WHERE deck_id = $1
+      AND target_user_id = $2
+      AND id <> $3
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'QUIT', 'FIRED', 'BLOCKED')
+      AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
+    LIMIT 1
+    `,
+        [deckId, invitedUserId, updatedPlay.id]
+      );
+
+      const hasAnotherTie = tieCheck.rows.length > 0;
+
+      if (!hasAnotherTie) {
+        await client.query(
+          `
+      DELETE FROM deck_members
+      WHERE deck_id = $1
+        AND user_id = $2
+      `,
+          [deckId, invitedUserId]
+        );
+
+        await client.query(
+          `
+      INSERT INTO ex_deck_members (
+        deck_id,
+        user_id,
+        reason,
+        source_play_id,
+        created_at
+      )
+      VALUES ($1, $2, $3, $4, NOW())
+      ON CONFLICT DO NOTHING
+      `,
+          [deckId, invitedUserId, 'K_REJECTED', updatedPlay.id]
+        );
+      }
+    }
+
+    const isRejectingANow =
+      currentRank === 'A' &&
+      currentStatus !== 'REJECTED' &&
+      nextStatus === 'REJECTED';
+
+    if (isRejectingANow) {
+      const targetUserId = Number(updatedPlay.target_user_id || 0);
+      const deckId = Number(updatedPlay.deck_id || 0);
+
+      if (!targetUserId || !deckId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La A rechazada debe tener target_user_id y deck_id válidos'
+        });
+      }
+
+      await removeUserFromAclLines(client, deckId, targetUserId);
+
+      const tieCheck = await client.query(
+        `
+    SELECT 1
+    FROM plays
+    WHERE deck_id = $1
+      AND target_user_id = $2
+      AND id <> $3
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'QUIT', 'FIRED', 'BLOCKED')
+      AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
+    LIMIT 1
+    `,
+        [deckId, targetUserId, updatedPlay.id]
+      );
+
+      const hasAnotherTie = tieCheck.rows.length > 0;
+
+      if (!hasAnotherTie) {
+        await client.query(
+          `
+      DELETE FROM deck_members
+      WHERE deck_id = $1
+        AND user_id = $2
+      `,
+          [deckId, targetUserId]
+        );
+
+        await client.query(
+          `
+      INSERT INTO ex_deck_members (
+        deck_id,
+        user_id,
+        reason,
+        source_play_id,
+        created_at
+      )
+      VALUES ($1, $2, $3, $4, NOW())
+      ON CONFLICT DO NOTHING
+      `,
+          [deckId, targetUserId, 'A_REJECTED', updatedPlay.id]
+        );
+      }
+    }
+
+    const isQuittingANow =
+      currentRank === 'A' &&
+      currentStatus !== 'QUIT' &&
+      nextStatus === 'QUIT';
+
+    if (isQuittingANow) {
+      const targetUserId = Number(updatedPlay.target_user_id || 0);
+      const deckId = Number(updatedPlay.deck_id || 0);
+
+      if (!targetUserId || !deckId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La A renunciada debe tener target_user_id y deck_id válidos'
+        });
+      }
+
+      await removeUserFromAclLines(client, deckId, targetUserId);
+
+      const tieCheck = await client.query(
+        `
+    SELECT 1
+    FROM plays
+    WHERE deck_id = $1
+      AND target_user_id = $2
+      AND id <> $3
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'QUIT', 'FIRED', 'BLOCKED')
+      AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
+    LIMIT 1
+    `,
+        [deckId, targetUserId, updatedPlay.id]
+      );
+
+      const hasAnotherTie = tieCheck.rows.length > 0;
+
+      if (!hasAnotherTie) {
+        await client.query(
+          `
+      DELETE FROM deck_members
+      WHERE deck_id = $1
+        AND user_id = $2
+      `,
+          [deckId, targetUserId]
+        );
+
+        await client.query(
+          `
+      INSERT INTO ex_deck_members (
+        deck_id,
+        user_id,
+        reason,
+        source_play_id,
+        created_at
+      )
+      VALUES ($1, $2, $3, $4, NOW())
+      ON CONFLICT DO NOTHING
+      `,
+          [deckId, targetUserId, 'A_QUIT', updatedPlay.id]
+        );
+      }
+    }
+
+    const isFiringANow =
+      currentRank === 'A' &&
+      currentStatus !== 'FIRED' &&
+      nextStatus === 'FIRED';
+
+    if (isFiringANow) {
+      const targetUserId = Number(updatedPlay.target_user_id || 0);
+      const deckId = Number(updatedPlay.deck_id || 0);
+
+      if (!targetUserId || !deckId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La A despedida debe tener target_user_id y deck_id válidos'
+        });
+      }
+
+      await removeUserFromAclLines(client, deckId, targetUserId);
+
+      const tieCheck = await client.query(
+        `
+    SELECT 1
+    FROM plays
+    WHERE deck_id = $1
+      AND target_user_id = $2
+      AND id <> $3
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'QUIT', 'FIRED', 'BLOCKED')
+      AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K', 'Q')
+    LIMIT 1
+    `,
+        [deckId, targetUserId, updatedPlay.id]
+      );
+
+      const hasAnotherTie = tieCheck.rows.length > 0;
+
+      if (!hasAnotherTie) {
+        await client.query(
+          `
+      DELETE FROM deck_members
+      WHERE deck_id = $1
+        AND user_id = $2
+      `,
+          [deckId, targetUserId]
+        );
+
+        await client.query(
+          `
+      INSERT INTO ex_deck_members (
+        deck_id,
+        user_id,
+        reason,
+        source_play_id,
+        created_at
+      )
+      VALUES ($1, $2, $3, $4, NOW())
+      ON CONFLICT DO NOTHING
+      `,
+          [deckId, targetUserId, 'A_FIRED', updatedPlay.id]
         );
       }
     }
