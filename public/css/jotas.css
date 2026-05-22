@@ -122,3 +122,58 @@
 
   white-space: nowrap;
 }
+
+/* =========================================================
+   LOOK COMPARTIDO CON TABLERO
+========================================================= */
+
+.tablero-row--bitacora,
+.tablero-row--jcorazon,
+.tablero-row--jpike,
+.tablero-row--jtrebol {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease;
+
+  cursor: pointer;
+}
+
+/* HOVER */
+
+.tablero-row--bitacora:hover,
+.tablero-row--jcorazon:hover,
+.tablero-row--jpike:hover,
+.tablero-row--jtrebol:hover {
+  transform: translateY(-1px);
+
+  border-color: rgba(0, 0, 0, 0.14);
+
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.08);
+
+  background: #ffffff;
+}
+
+/* CLICK */
+
+.tablero-row--bitacora:active,
+.tablero-row--jcorazon:active,
+.tablero-row--jpike:active,
+.tablero-row--jtrebol:active {
+  transform: scale(0.995);
+}
+
+/* FOCUS */
+
+.tablero-row--bitacora:focus-visible,
+.tablero-row--jcorazon:focus-visible,
+.tablero-row--jpike:focus-visible,
+.tablero-row--jtrebol:focus-visible {
+  outline: 2px solid rgba(108, 140, 255, 0.7);
+  outline-offset: 2px;
+}

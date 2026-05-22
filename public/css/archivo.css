@@ -259,3 +259,45 @@
   line-height: 1;
   color: #c62828;
 }
+
+/* =========================================================
+   LOOK COMPARTIDO ARCHIVO
+========================================================= */
+
+.tablero-row--archived {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease;
+
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+}
+
+.tablero-row--archived:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 0, 0, 0.14);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+}
+
+.tablero-row--archived:active {
+  transform: scale(0.995);
+}
+
+.tablero-row--archived:focus-visible {
+  outline: 2px solid rgba(108, 140, 255, 0.7);
+  outline-offset: 2px;
+}
+
+.tablero-row--archived:hover .archivo-q__child,
+.tablero-row--archived:hover .archivo-k__child,
+.tablero-row--archived:hover .archivo-a__child {
+  background: #ffffff;
+}
