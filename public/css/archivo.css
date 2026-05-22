@@ -237,3 +237,25 @@
 
   white-space: nowrap;
 }
+
+.archivo-q__card-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.archivo-q__card-main {
+  font-family: var(--font-card);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.archivo-q__extra-card {
+  font-family: var(--font-card);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  color: #c62828;
+}

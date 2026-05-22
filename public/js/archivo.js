@@ -183,6 +183,33 @@
     return amountText;
   }
 
+  function getQArchiveExtraCard(play) {
+    const parts = String(play?.play_code || "").split("§");
+    const flow = String(parts[7] || "").trim();
+
+    const hasQHeart = flow
+      .split(";")
+      .map((item) => item.trim())
+      .some((item) => item.startsWith("pay:QHEART"));
+
+    if (!hasQHeart) return "";
+
+    const status = normalize(play?.play_status);
+
+    const extraSuit = status === "APPROVED" ? "♦" : "♥";
+
+    return `<span class="archivo-q__extra-card">Q${extraSuit}</span>`;
+  }
+
+  function renderArchiveQCardLabel(play) {
+    return `
+    <div class="archivo-q__card-wrap">
+      <span class="archivo-q__card-main">${escapeHtml(getCardLabel(play))}</span>
+      ${getQArchiveExtraCard(play)}
+    </div>
+  `;
+  }
+
   function renderArchivedQ(play) {
     const ICONS = window.ICONS || {};
     const ACTIONS = ICONS.actions || {};
@@ -212,9 +239,9 @@
 
     return `
   <div class="archivo-q__child">
-    <div class="archivo-q__card">
-      ${escapeHtml(getCardLabel(play))}
-    </div>
+<div class="archivo-q__card">
+  ${renderArchiveQCardLabel(play)}
+</div>
 
     <div class="archivo-q__content">
 
@@ -362,27 +389,27 @@
   `;
   }
 
-function renderArchivedA(play) {
-  const relatedUser = String(
-    play?.target_user_nickname ||
-    play?.created_by_nickname ||
-    "Usuario"
-  ).trim();
+  function renderArchivedA(play) {
+    const relatedUser = String(
+      play?.target_user_nickname ||
+      play?.created_by_nickname ||
+      "Usuario"
+    ).trim();
 
-  const deckName = getDeckName(play);
-  const status = normalize(play?.play_status);
+    const deckName = getDeckName(play);
+    const status = normalize(play?.play_status);
 
-  let statusLabel = "Archivada";
+    let statusLabel = "Archivada";
 
-  if (status === "QUIT") {
-    statusLabel = "Transferida";
-  } else if (status === "FIRED") {
-    statusLabel = "Cancelada";
-  } else if (status === "REJECTED") {
-    statusLabel = "Rechazada";
-  }
+    if (status === "QUIT") {
+      statusLabel = "Transferida";
+    } else if (status === "FIRED") {
+      statusLabel = "Cancelada";
+    } else if (status === "REJECTED") {
+      statusLabel = "Rechazada";
+    }
 
-  return `
+    return `
     <div class="archivo-a__child">
 
       <div class="archivo-a__card">
@@ -395,19 +422,20 @@ function renderArchivedA(play) {
         </div>
       </div>
 
-      ${
-        deckName
-          ? `
+      ${deckName
+        ? `
             <div class="archivo-a__deck">
               ${escapeHtml(deckName)}
             </div>
           `
-          : `<div class="archivo-a__right"></div>`
+        : `<div class="archivo-a__right"></div>`
       }
 
     </div>
   `;
-}
+  }
+
+
 
   function renderArchiveRow(play) {
     const href = getArchiveHref(play);
@@ -436,8 +464,8 @@ function renderArchivedA(play) {
       </a>
     `;
     }
-if (rank === "A") {
-  return `
+    if (rank === "A") {
+      return `
     <a class="tablero-row tablero-row--archived archivo-a" href="${escapeHtml(href)}">
       <div class="tablero-row__left"></div>
       <div class="tablero-row__center">
@@ -446,7 +474,7 @@ if (rank === "A") {
       <div class="tablero-row__right"></div>
     </a>
   `;
-}
+    }
     return `
     <a class="tablero-row tablero-row--archived" href="${escapeHtml(href)}">
       <div class="tablero-row__left">
