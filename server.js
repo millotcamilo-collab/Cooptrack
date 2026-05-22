@@ -1474,9 +1474,16 @@ async function listMazosHandler(req, res) {
       })
     );
 
+    // Filtrar mazos según membership_status para el usuario actual:
+    // - si wantsArchived === false => membership_status === 'ACTIVE'
+    // - si wantsArchived === true  => membership_status !== 'ACTIVE'
+    const filteredMazos = wantsArchived
+      ? mazos.filter((d) => String(d.membership_status || '').toUpperCase() !== 'ACTIVE')
+      : mazos.filter((d) => String(d.membership_status || '').toUpperCase() === 'ACTIVE');
+
     return res.json({
       ok: true,
-      mazos
+      mazos: filteredMazos
     });
   } catch (error) {
     console.error('Error en listar mazos', error);
