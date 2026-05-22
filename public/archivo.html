@@ -23,9 +23,22 @@
     </section>
   </main>
 
-  <script src="/js/topbar.js"></script>
-    <script src="/js/bitacorabar.js"></script>
-  <script src="/js/archivo.js"></script>
+<script src="/js/topbar.js"></script>
+
+<script>
+  window.transversalBarConfig = {
+    title: "Archivo",
+    iconSrc: "/assets/icons/archivo80.gif",
+    iconAlt: "Archivo",
+    searchPlaceholder: "Buscar en archivo",
+    filterEventName: "archivo:filterSuit",
+    searchEventName: "archivo:search",
+    filterPrefix: "archivo"
+  };
+</script>
+
+<script src="/js/bitacorabar.js"></script>
+<script src="/js/archivo.js"></script>
 
 </body>
 
