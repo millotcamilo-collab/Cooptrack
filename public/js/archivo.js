@@ -246,7 +246,7 @@
         <div class="archivo-q__content">
           <div class="archivo-q__title">
             ${deckName
-              ? `<span class="archivo-deck-name">${escapeHtml(deckName)}</span> · `
+              ? `<strong class="archivo-deck-name">${escapeHtml(deckName)}</strong> · `
               : ""
             }
             ${escapeHtml(parentText)}
@@ -351,7 +351,7 @@
         <div class="archivo-k__content">
           <div class="archivo-k__title">
             ${deckName
-              ? `<span class="archivo-deck-name">${escapeHtml(deckName)}</span> · `
+              ? `<strong class="archivo-deck-name">${escapeHtml(deckName)}</strong> · `
               : ""
             }
             ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
@@ -390,7 +390,7 @@
         <div class="archivo-a__content">
           <div class="archivo-a__title">
             ${deckName
-              ? `<span class="archivo-deck-name">${escapeHtml(deckName)}</span> · `
+              ? `<strong class="archivo-deck-name">${escapeHtml(deckName)}</strong> · `
               : ""
             }
             ${escapeHtml(`${relatedUser} · ${statusLabel}`)}

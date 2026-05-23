@@ -12,15 +12,11 @@
 }
 
 .tablero-row--archive-q {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-
+  display: block;
   min-height: 58px;
-  padding: 8px 12px;
+  padding: 0;
 
-  background: #fffdf8;
+  background: transparent;
   text-decoration: none;
   color: inherit;
 }
