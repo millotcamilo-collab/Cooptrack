@@ -13,7 +13,7 @@
 
 .tablero-row--archive-q {
   display: block;
-  min-height: 58px;
+  min-height: auto;
   padding: 0;
 
   background: transparent;
