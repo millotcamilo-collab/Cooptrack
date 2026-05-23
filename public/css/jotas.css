@@ -10,6 +10,7 @@
 .tablero-row--jcorazon,
 .tablero-row--jpike,
 .tablero-row--jtrebol {
+  font-family: var(--font-text);
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) auto;
 
@@ -33,7 +34,9 @@
 .tablero-row--bitacora .tablero-row__card,
 .tablero-row--jcorazon .tablero-row__card,
 .tablero-row--jpike .tablero-row__card,
-.tablero-row--jtrebol .tablero-row__card {
+.tablero-row--jtrebol .tablero-row__card,
+.tablero-row--jtrebol .tablero-row__amount-card {
+  font-family: var(--font-card);
   font-size: 20px;
   font-weight: 700;
   line-height: 1;
