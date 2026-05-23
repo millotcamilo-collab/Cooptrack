@@ -147,36 +147,28 @@
               : ""
           }
 
+          <div class="tablero-row__title" style="font-weight: 400;">
+            ${escapeHtml(description)}
+          </div>
+        </div>
+
+        <div class="tablero-row__right">
           ${isClub
             ? `
-                <div class="tablero-row__main-line">
-                  <span class="tablero-row__title-inline" style="font-weight: 400;">
-                    ${escapeHtml(description)}
-                  </span>
-
-                  <span class="tablero-row__amount-card">J♦</span>
-
-                  ${currencySymbol
-                    ? `
+                <span class="tablero-row__amount-card">J♦</span>
+                ${currencySymbol
+                  ? `
                       <span class="tablero-row__currency-symbol">
                         ${escapeHtml(currencySymbol)}
                       </span>
                     `
-                    : ""}
-
-                  <span class="tablero-row__amount-view">
-                    ${escapeHtml(amountValue || "—")}
-                  </span>
-                </div>
+                  : ""}
+                <span class="tablero-row__amount-view">
+                  ${escapeHtml(amountValue || "—")}
+                </span>
               `
-            : `
-                <div class="tablero-row__title" style="font-weight: 400;">
-                  ${escapeHtml(description)}
-                </div>
-              `}
+            : ""}
         </div>
-
-        <div class="tablero-row__right"></div>
       </button>
     `;
   }
