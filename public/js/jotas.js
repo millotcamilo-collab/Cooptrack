@@ -111,6 +111,11 @@
     const deckName = String(
       play.deck_name || play.deckName || ""
     ).trim();
+    const currencySymbol = String(
+      play.currency_symbol || play.deck_currency_symbol || play.currencySymbol || ""
+    ).trim();
+    const amountValue = String(play.amount ?? "").trim();
+    const isClub = normalizeSuit(play.card_suit || play.suit) === "CLUB";
 
     return `
       <button
@@ -132,9 +137,33 @@
               : ""
           }
 
-          <div class="tablero-row__title" style="font-weight: 400;">
-            ${escapeHtml(description)}
-          </div>
+          ${isClub
+            ? `
+                <div class="tablero-row__main-line">
+                  <span class="tablero-row__title-inline" style="font-weight: 400;">
+                    ${escapeHtml(description)}
+                  </span>
+
+                  <span class="tablero-row__amount-card">J♦</span>
+
+                  ${currencySymbol
+                    ? `
+                      <span class="tablero-row__currency-symbol">
+                        ${escapeHtml(currencySymbol)}
+                      </span>
+                    `
+                    : ""}
+
+                  <span class="tablero-row__amount-view">
+                    ${escapeHtml(amountValue || "—")}
+                  </span>
+                </div>
+              `
+            : `
+                <div class="tablero-row__title" style="font-weight: 400;">
+                  ${escapeHtml(description)}
+                </div>
+              `}
         </div>
 
         <div class="tablero-row__right"></div>
