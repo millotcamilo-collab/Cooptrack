@@ -123,24 +123,23 @@
           <div class="tablero-row__card">${escapeHtml(cardLabel)}</div>
         </div>
 
-<div class="tablero-row__center">
-  <div class="tablero-row__title">
-    ${escapeHtml(description)}
-  </div>
+        <div class="tablero-row__center">
+          <div class="tablero-row__title">
+            ${escapeHtml(description)}
+          </div>
 
-  ${
-    deckName
-      ? `
-        <div class="tablero-row__deck">
-          ${escapeHtml(deckName)}
+          ${
+            deckName
+              ? `
+                <div class="tablero-row__deck">
+                  ${escapeHtml(deckName)}
+                </div>
+              `
+              : ""
+          }
         </div>
-      `
-      : ""
-  }
-</div>
 
-        <div class="tablero-row__right">
-        </div>
+        <div class="tablero-row__right"></div>
       </button>
     `;
   }
