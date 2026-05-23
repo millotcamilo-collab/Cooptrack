@@ -124,10 +124,6 @@
         </div>
 
         <div class="tablero-row__center">
-          <div class="tablero-row__title">
-            ${escapeHtml(description)}
-          </div>
-
           ${
             deckName
               ? `
@@ -137,6 +133,10 @@
               `
               : ""
           }
+
+          <div class="tablero-row__title">
+            ${escapeHtml(description)}
+          </div>
         </div>
 
         <div class="tablero-row__right"></div>
