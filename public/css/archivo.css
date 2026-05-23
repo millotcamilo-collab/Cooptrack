@@ -306,8 +306,7 @@
 }
 
 .tablero--archivado .tablero-row--archived {
-  border-radius: 0;
-  border-bottom: 0;
+  border-radius: 12px;
 }
 
 .tablero--archivado .archivo-q__child,
@@ -316,6 +315,8 @@
   min-height: 44px;
   padding-top: 0;
   padding-bottom: 0;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 body #archivo-container.tablero.tablero--archivado {
