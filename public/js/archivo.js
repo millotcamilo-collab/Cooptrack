@@ -246,31 +246,31 @@
     <div class="archivo-q__content">
 
   <div class="archivo-q__title">
-    ${escapeHtml(parentText)}
 
-    ${parentMetaParts.length
-      ? ` · ${escapeHtml(parentMetaParts.join(" · "))}`
-      : ""
-    }
+  ${deckName
+        ? `${escapeHtml(deckName)} · `
+        : ""
+      }
 
-    · ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
+  ${escapeHtml(parentText)}
 
-    ${amountLabel
-      ? ` · ${escapeHtml(amountLabel)}`
-      : ""
-    }
-  </div>
+  ${parentMetaParts.length
+        ? ` · ${escapeHtml(parentMetaParts.join(" · "))}`
+        : ""
+      }
+
+  · ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
+
+  ${amountLabel
+        ? ` · ${escapeHtml(amountLabel)}`
+        : ""
+      }
 
 </div>
 
-    ${deckName
-        ? `
-          <div class="archivo-q__deck">
-            ${escapeHtml(deckName)}
-          </div>
-        `
-        : `<div class="archivo-q__right"></div>`
-      }
+</div>
+
+   
   </div>
 `;
   }
@@ -367,8 +367,13 @@
 
       <div class="archivo-k__content">
         <div class="archivo-k__title">
-          ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
-        </div>
+  ${deckName
+        ? `${escapeHtml(deckName)} · `
+        : ""
+      }
+
+  ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
+</div>
       </div>
 
       ${deckName
@@ -412,19 +417,19 @@
       </div>
 
       <div class="archivo-a__content">
-        <div class="archivo-a__title">
-          ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
-        </div>
+<div class="archivo-a__title">
+
+  ${deckName
+    ? `${escapeHtml(deckName)} · `
+    : ""
+  }
+
+  ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
+
+</div>
       </div>
 
-      ${deckName
-        ? `
-            <div class="archivo-a__deck">
-              ${escapeHtml(deckName)}
-            </div>
-          `
-        : `<div class="archivo-a__right"></div>`
-      }
+
 
     </div>
   `;
