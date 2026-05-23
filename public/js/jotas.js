@@ -177,11 +177,13 @@
     return plays.filter((play) => {
       const suit = normalizeSuit(play.card_suit || play.suit);
       const description = getDescription(play).toLowerCase();
+      const deckName = String(play.deck_name || play.deckName || "").trim().toLowerCase();
 
       const suitOk = !activeSuitFilter || suit === activeSuitFilter;
       const searchOk =
         !activeSearchQuery ||
-        description.includes(activeSearchQuery.toLowerCase());
+        description.includes(activeSearchQuery.toLowerCase()) ||
+        deckName.includes(activeSearchQuery.toLowerCase());
 
       return suitOk && searchOk;
     });
