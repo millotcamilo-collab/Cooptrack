@@ -245,28 +245,23 @@
 
     <div class="archivo-q__content">
 
-      <div class="archivo-q__title">
-        ${escapeHtml(parentText)}
-      </div>
+  <div class="archivo-q__title">
+    ${escapeHtml(parentText)}
 
-      ${parentMetaParts.length
-        ? `
-            <div class="archivo-q__meta">
-              ${escapeHtml(parentMetaParts.join(" · "))}
-            </div>
-          `
-        : ""
-      }
+    ${parentMetaParts.length
+      ? ` · ${escapeHtml(parentMetaParts.join(" · "))}`
+      : ""
+    }
 
-      <div class="archivo-q__meta">
-        ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
-        ${amountLabel
-        ? ` · ${escapeHtml(amountLabel)}`
-        : ""
-      }
-      </div>
+    · ${escapeHtml(`${relatedUser} · ${statusLabel}`)}
 
-    </div>
+    ${amountLabel
+      ? ` · ${escapeHtml(amountLabel)}`
+      : ""
+    }
+  </div>
+
+</div>
 
     ${deckName
         ? `
