@@ -308,3 +308,16 @@
 .tablero--archivado .tablero-row {
   margin: 0;
 }
+
+.tablero--archivado .tablero-row--archived {
+  border-radius: 0;
+  border-bottom: 0;
+}
+
+.tablero--archivado .archivo-q__child,
+.tablero--archivado .archivo-k__child,
+.tablero--archivado .archivo-a__child {
+  min-height: 44px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
