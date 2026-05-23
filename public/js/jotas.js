@@ -127,14 +127,12 @@
           ${
             deckName
               ? `
-                <div class="tablero-row__deck">
-                  ${escapeHtml(deckName)}
-                </div>
+                <div class="tablero-row__deck"><strong>${escapeHtml(deckName)}</strong></div>
               `
               : ""
           }
 
-          <div class="tablero-row__title">
+          <div class="tablero-row__title" style="font-weight: 400;">
             ${escapeHtml(description)}
           </div>
         </div>
