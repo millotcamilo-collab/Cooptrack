@@ -1,0 +1,219 @@
+:root {
+  --ahora-bg: #f5f6fb;
+  --ahora-card: #ffffff;
+  --ahora-border: rgba(0, 0, 0, 0.08);
+  --ahora-primary: #1f2f6d;
+  --ahora-secondary: #59608d;
+  --ahora-accent: #4c6ef5;
+  --ahora-success: #1d7a46;
+  --ahora-warning: #d97706;
+}
+
+.ahora-page {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px 16px 32px;
+  background: var(--ahora-bg);
+  min-height: calc(100vh - 72px);
+}
+
+.ahora-hero {
+  margin-bottom: 20px;
+}
+
+.ahora-hero h1 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.ahora-hero p {
+  margin: 10px 0 0;
+  color: var(--ahora-secondary);
+  font-size: 0.97rem;
+  line-height: 1.5;
+}
+
+.ahora-block {
+  margin-top: 24px;
+}
+
+.ahora-block__header {
+  margin-bottom: 12px;
+}
+
+.ahora-block h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--ahora-primary);
+}
+
+.ahora-list {
+  display: grid;
+  gap: 12px;
+}
+
+.ahora-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: var(--ahora-card);
+  border-radius: 18px;
+  border: 1px solid var(--ahora-border);
+  box-shadow: 0 6px 18px rgba(27, 37, 77, 0.06);
+}
+
+.ahora-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.ahora-card__label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(76, 110, 245, 0.12);
+  color: var(--ahora-accent);
+  font-weight: 700;
+}
+
+.ahora-card__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.ahora-card__deck {
+  margin: 0 0 4px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--ahora-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ahora-card__text {
+  margin: 0;
+  color: #30334a;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.ahora-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--ahora-secondary);
+  font-size: 0.92rem;
+}
+
+.ahora-card__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ahora-card__meta span::before {
+  content: '•';
+  font-size: 1.1rem;
+  line-height: 1;
+  color: #c4c7db;
+}
+
+.ahora-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ahora-btn,
+.ahora-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ahora-btn {
+  background: var(--ahora-accent);
+  color: #ffffff;
+}
+
+.ahora-btn--secondary {
+  background: #f4f6ff;
+  color: var(--ahora-primary);
+}
+
+.ahora-btn--danger {
+  background: #fef3f2;
+  color: #c53030;
+  border-color: rgba(229, 62, 62, 0.16);
+}
+
+.ahora-link {
+  background: rgba(31, 47, 109, 0.08);
+  color: var(--ahora-primary);
+}
+
+.ahora-card-back {
+  width: 72px;
+  height: 88px;
+  border-radius: 14px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ahora-card-back img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.ahora-summary {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ahora-summary__body {
+  flex: 1;
+}
+
+.ahora-summary__status {
+  color: var(--ahora-secondary);
+  font-size: 0.92rem;
+}
+
+.ahora-empty {
+  padding: 18px 16px;
+  border-radius: 16px;
+  background: #ffffff;
+  color: var(--ahora-secondary);
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 520px) {
+  .ahora-page {
+    padding: 16px 12px 28px;
+  }
+}

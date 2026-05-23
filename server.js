@@ -1073,6 +1073,104 @@ SELECT
   }
 });
 
+app.get('/plays/ahora', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const esAhoraJResult = await pool.query(
+      `
+      SELECT
+        p.*, d.name AS deck_name
+      FROM plays p
+      LEFT JOIN decks d
+        ON d.id = p.deck_id
+      WHERE p.created_by_user_id = $1
+        AND p.card_rank = 'J'
+        AND p.card_suit = 'SPADE'
+        AND UPPER(COALESCE(p.play_status, '')) IN ('ACTIVE', 'SENT', 'PENDING')
+        AND (
+          (p.start_date IS NOT NULL AND p.start_date <= NOW())
+          OR (p.end_date IS NOT NULL AND p.end_date <= NOW())
+        )
+      ORDER BY p.start_date ASC NULLS LAST, p.end_date ASC NULLS LAST, p.created_at DESC
+      `,
+      [userId]
+    );
+
+    const esAhoraQResult = await pool.query(
+      `
+      SELECT
+        q.*, d.name AS deck_name
+      FROM plays q
+      LEFT JOIN plays parent
+        ON parent.id = q.parent_play_id
+      LEFT JOIN decks d
+        ON d.id = q.deck_id
+      WHERE q.target_user_id = $1
+        AND q.card_rank = 'Q'
+        AND q.card_suit = 'SPADE'
+        AND UPPER(COALESCE(q.play_status, '')) IN ('ACTIVE', 'SENT', 'PENDING')
+        AND (
+          (parent.start_date IS NOT NULL AND parent.start_date <= NOW())
+          OR (parent.end_date IS NOT NULL AND parent.end_date <= NOW())
+        )
+      ORDER BY q.created_at DESC
+      `,
+      [userId]
+    );
+
+    const teMandanAhoraResult = await pool.query(
+      `
+      SELECT
+        p.id,
+        p.deck_id,
+        p.card_rank,
+        p.card_suit,
+        p.play_status,
+        p.created_at,
+        p.updated_at,
+        d.name AS deck_name
+      FROM plays p
+      LEFT JOIN decks d
+        ON d.id = p.deck_id
+      WHERE p.target_user_id = $1
+        AND UPPER(COALESCE(p.play_status, '')) IN ('SENT', 'PENDING')
+        AND (
+          p.card_rank IN ('K', 'A')
+          OR (
+            p.card_rank = 'Q'
+            AND p.card_suit = 'SPADE'
+            AND NOT EXISTS (
+              SELECT 1
+              FROM plays parent
+              WHERE parent.id = p.parent_play_id
+                AND (
+                  (parent.start_date IS NOT NULL AND parent.start_date <= NOW())
+                  OR (parent.end_date IS NOT NULL AND parent.end_date <= NOW())
+                )
+            )
+          )
+        )
+      ORDER BY p.created_at DESC
+      LIMIT 50
+      `,
+      [userId]
+    );
+
+    return res.json({
+      ok: true,
+      esAhora: [...esAhoraJResult.rows, ...esAhoraQResult.rows],
+      teMandanAhora: teMandanAhoraResult.rows,
+    });
+  } catch (error) {
+    console.error('Error en GET /plays/ahora', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'Error obteniendo ahora',
+    });
+  }
+});
+
 app.get('/plays/my-jotas', requireAuth, async (req, res) => {
   try {
     const userId = req.auth.userId;
