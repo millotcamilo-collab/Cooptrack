@@ -41,30 +41,36 @@
 
     container.innerHTML = `
       <section class="tablero">
-        ${archived.map(renderArchivoMazoRow).join("")}
+        ${archived.map((play) => renderArchivedRow(play, deck, state)).join("")}
       </section>
     `;
   }
 
-  function renderArchivoMazoRow(play) {
-    const rank = normalizeRank(play?.card_rank || play?.rank);
-    const suit = normalizeSuit(play?.card_suit || play?.suit);
-    const status = normalizeStatus(play?.play_status || play?.status);
-    const text = String(play?.play_text || "Sin texto");
+function renderArchivedRow(play, deck, state) {
+  const rank = normalizeRank(play?.card_rank || play?.rank);
 
-    return `
-      <article class="tablero-row tablero-row--archived">
-        <div class="tablero-row__left">
-          <div class="tablero-row__card">${rank}${suitToSymbol(suit)}</div>
-        </div>
+  const context = {
+    deck,
+    state,
+    helpers: {
+      escapeHtml
+    }
+  };
 
-        <div class="tablero-row__center">
-          <div class="tablero-row__title">${escapeHtml(text)}</div>
-          <div class="tablero-row__meta">${escapeHtml(status)}</div>
-        </div>
-      </article>
-    `;
+  if (rank === "Q" && typeof renderQpike === "function") {
+    return renderQpike(play, context);
   }
+
+  if (rank === "K" && typeof renderKrow === "function") {
+    return renderKrow(play, context);
+  }
+
+  if (rank === "A" && typeof renderArow === "function") {
+    return renderArow(play, context);
+  }
+
+  return renderArchivoMazoRow(play);
+}
 
   function suitToSymbol(suit) {
     if (suit === "HEART") return "♥";
