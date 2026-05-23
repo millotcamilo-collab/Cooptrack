@@ -352,4 +352,5 @@ body #archivo-container.tablero.tablero--archivado > .tablero-row + .tablero-row
 
 .archivo-deck-name {
   font-weight: 700;
+  margin-left: 5px;
 }
