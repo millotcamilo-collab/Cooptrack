@@ -301,3 +301,10 @@
 .tablero-row--archived:hover .archivo-a__child {
   background: #ffffff;
 }
+
+#archivo-container {
+  gap: 0;
+}
+.tablero--archivado .tablero-row {
+  margin: 0;
+}
