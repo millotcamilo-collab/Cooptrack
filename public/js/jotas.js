@@ -35,6 +35,15 @@
     }
   }
 
+  function getAllowedJotaSuits() {
+    const config = window.transversalBarConfig || {};
+    if (Array.isArray(config.allowedSuits) && config.allowedSuits.length) {
+      return config.allowedSuits.map((suit) => String(suit || "").toUpperCase());
+    }
+
+    return ["HEART", "SPADE", "CLUB"];
+  }
+
   async function fetchJotas() {
     try {
       const token = localStorage.getItem("cooptrackToken");
@@ -56,6 +65,7 @@
 
       const data = await response.json();
       const plays = Array.isArray(data?.plays) ? data.plays : [];
+      const allowedSuits = getAllowedJotaSuits();
 
       return plays.filter((play) => {
         const rank = normalizeRank(play.card_rank || play.rank);
@@ -64,7 +74,7 @@
 
         return (
           rank === "J" &&
-          ["HEART", "SPADE", "CLUB"].includes(suit) &&
+          allowedSuits.includes(suit) &&
           creatorId === currentUserId
         );
       });
