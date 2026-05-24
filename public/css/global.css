@@ -3,8 +3,8 @@
   /* fuente para texto general y para las cartas, respectivamente */
   --font-text: Garamond, "Times New Roman", serif;
   --font-card: "Times New Roman", Georgia, serif;
-    --page-padding-x: 20px;
-      --page-padding-top: 10px;
+  --page-padding-x: 12px;
+  --page-padding-top: 10px;
 }
 
 .ct-page {
@@ -24,7 +24,7 @@ html {
 }
 
 .ct-block {
-  padding: 0 20px;
+  padding: 0 var(--page-padding-x);
   box-sizing: border-box;
 }
 
@@ -53,7 +53,7 @@ body {
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--page-padding-x);
   width: 100%;
   box-sizing: border-box;
 }
