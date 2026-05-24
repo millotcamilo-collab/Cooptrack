@@ -61,7 +61,7 @@
         );
     }
 
-    function buildUsersByDeckModelFromPlays(plays, usersMap = {}, state = {}) {
+    function buildUsersByDeckModel(plays, usersMap = {}, state = {}) {
         const rows = {};
         const safePlays = Array.isArray(plays) ? plays : [];
 
@@ -98,86 +98,12 @@
         return Object.values(rows);
     }
 
-    function buildUsersByDeckModelFromMembers(members = [], state = {}) {
-        return Array.isArray(members)
-            ? members.map((member) => {
-                const userId = Number(member?.id || member?.user_id || 0);
-                const name =
-                    String(member?.nickname || member?.name || member?.user_name || "").trim() ||
-                    `U${userId}`;
-                const photo =
-                    String(member?.profile_photo_url || member?.photo || "").trim() ||
-                    "/assets/icons/singeta120.gif";
-                const category =
-                    String(member?.qCategory || member?.user_type || "").trim();
-
-                return {
-                    userId,
-                    name,
-                    photo,
-                    cards: category ? [category] : []
-                };
-            })
-            : [];
-    }
-
-    function buildUsersByDeckModel(playsOrMembers, usersMap = {}, state = {}) {
-        const isMemberList = Array.isArray(playsOrMembers) && playsOrMembers.length > 0 &&
-            typeof playsOrMembers[0].user_type !== "undefined";
-
-        if (isMemberList) {
-            return buildUsersByDeckModelFromMembers(playsOrMembers, state);
-        }
-
-        return buildUsersByDeckModelFromPlays(playsOrMembers, usersMap, state);
-    }
-
     function isAclLine(play) {
         const parts = String(play?.play_code || "").split("§");
         const action = String(play?.action || parts[5] || "").trim().toLowerCase();
         const flow = String(play?.flow || parts[7] || "").trim().toLowerCase();
 
         return action === "puedejugar" && flow === "acl";
-    }
-
-    function getAuthHeaders(includeJson = false) {
-        const token = localStorage.getItem("cooptrackToken");
-        const headers = {};
-
-        if (includeJson) {
-            headers["Content-Type"] = "application/json";
-        }
-
-        if (token) {
-            headers["Authorization"] = `Bearer ${token}`;
-        }
-
-        return headers;
-    }
-
-    async function fetchUsersByDeck(deckId) {
-        if (!deckId) return [];
-
-        try {
-            const response = await fetch(
-                `${window.API_BASE_URL}/decks/${encodeURIComponent(deckId)}/q-users`,
-                {
-                    method: "GET",
-                    headers: getAuthHeaders()
-                }
-            );
-
-            const data = await response.json();
-            if (!response.ok || !data.ok) {
-                console.warn("Error cargando usuarios del mazo:", data);
-                return [];
-            }
-
-            return Array.isArray(data.users) ? data.users : [];
-        } catch (error) {
-            console.error("Error fetching users by deck", error);
-            return [];
-        }
     }
 
     function renderUsersByDeck(container, model) {
@@ -204,36 +130,15 @@
     `;
     }
 
-    document.addEventListener("mazobar:showUsersByDeck", async () => {
+    document.addEventListener("mazobar:showUsersByDeck", () => {
         const container = document.getElementById("administradores-container");
         if (!container) return;
 
         const state = window.__currentState || {};
-        const deck = window.__currentDeck || {};
-        const deckId = deck?.id || state?.deck?.id;
+        const plays = state.plays || [];
+        const usersMap = state.usersMap || {};
 
-        container.innerHTML = `
-          <div class="users-deck__loading">Cargando usuarios del mazo...</div>
-        `;
-
-        const members = await fetchUsersByDeck(deckId);
-        let model = [];
-
-        if (members.length) {
-            model = buildUsersByDeckModel(members, {}, state);
-        } else {
-            const plays = state.plays || [];
-            const usersMap = state.usersMap || {};
-            model = buildUsersByDeckModel(plays, usersMap, state);
-        }
-
-        if (!model.length) {
-            container.innerHTML = `
-              <div class="users-deck__empty">No se encontraron usuarios del mazo.</div>
-            `;
-            return;
-        }
-
+        const model = buildUsersByDeckModel(plays, usersMap, state);
         renderUsersByDeck(container, model);
     });
 
