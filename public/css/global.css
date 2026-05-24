@@ -28,6 +28,11 @@ html {
   box-sizing: border-box;
 }
 
+#playform-container {
+  padding: 0 var(--page-padding-x);
+  box-sizing: border-box;
+}
+
 .ct-surface {
   border-radius: 10px;
 }

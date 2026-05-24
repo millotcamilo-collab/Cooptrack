@@ -1,6 +1,6 @@
 .tablero {
   width: 100%;
-  --layout-padding: 20px;
+  --layout-padding: var(--page-padding-x);
 }
 
 .tablero-row {
