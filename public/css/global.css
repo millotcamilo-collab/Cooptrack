@@ -29,7 +29,8 @@ html {
 }
 
 #playform-container {
-  padding: 0 var(--page-padding-x);
+  margin: 0 var(--page-padding-x);
+  padding: 0;
   box-sizing: border-box;
 }
 
