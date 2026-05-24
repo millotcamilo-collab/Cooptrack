@@ -21,44 +21,71 @@
         return String(play?.status || play?.play_status || "").toUpperCase();
     }
 
-    function getOwnerUserId(play) {
+    function getOwnerUserIdFromPlayCode(play) {
         const parts = String(play?.play_code || "").split("§");
         return Number(parts[1] || 0);
     }
 
-    function getOwnerName(play, userId, usersMap) {
-        if (Number(play?.created_by_user_id || 0) === Number(userId)) {
-            return (
-                usersMap?.[userId]?.nickname ||
-                play?.created_by_nickname ||
-                play?.created_by_user_nickname ||
-                `U${userId}`
-            );
-        }
-
-        return (
-            usersMap?.[userId]?.nickname ||
-            play?.target_user_nickname ||
-            play?.target_nickname ||
-            `U${userId}`
+    function getPlayOwnerUserId(play) {
+        return Number(
+            play?.created_by_user_id ||
+            play?.target_user_id ||
+            getOwnerUserIdFromPlayCode(play) ||
+            0
         );
     }
 
-    function getOwnerPhoto(play, userId, usersMap) {
-        if (Number(play?.created_by_user_id || 0) === Number(userId)) {
+    function getUserNameForPlay(play, userId, usersMap) {
+        const normalizedUserId = Number(userId || 0);
+        if (!normalizedUserId) return `U${normalizedUserId}`;
+
+        const fromMap = usersMap?.[normalizedUserId]?.nickname || usersMap?.[normalizedUserId]?.name;
+        if (fromMap) return fromMap;
+
+        if (Number(play?.target_user_id || 0) === normalizedUserId) {
             return (
-                usersMap?.[userId]?.profile_photo_url ||
+                play?.target_user_nickname ||
+                play?.target_nickname ||
+                play?.target_name ||
+                `U${normalizedUserId}`
+            );
+        }
+
+        if (Number(play?.created_by_user_id || 0) === normalizedUserId) {
+            return (
+                play?.created_by_nickname ||
+                play?.created_by_user_nickname ||
+                play?.created_by_name ||
+                `U${normalizedUserId}`
+            );
+        }
+
+        return `U${normalizedUserId}`;
+    }
+
+    function getUserPhotoForPlay(play, userId, usersMap) {
+        const normalizedUserId = Number(userId || 0);
+        if (!normalizedUserId) return "/assets/icons/singeta120.gif";
+
+        const fromMap = usersMap?.[normalizedUserId]?.profile_photo_url;
+        if (fromMap) return fromMap;
+
+        if (Number(play?.target_user_id || 0) === normalizedUserId) {
+            return (
+                play?.target_user_profile_photo_url ||
+                play?.target_profile_photo_url ||
+                "/assets/icons/singeta120.gif"
+            );
+        }
+
+        if (Number(play?.created_by_user_id || 0) === normalizedUserId) {
+            return (
                 play?.created_by_profile_photo_url ||
                 "/assets/icons/singeta120.gif"
             );
         }
 
-        return (
-            usersMap?.[userId]?.profile_photo_url ||
-            play?.target_user_profile_photo_url ||
-            play?.target_profile_photo_url ||
-            "/assets/icons/singeta120.gif"
-        );
+        return "/assets/icons/singeta120.gif";
     }
 
     function buildUsersByDeckModel(plays, usersMap = {}, state = {}) {
@@ -80,14 +107,14 @@
                 return;
             }
 
-            const userId = getOwnerUserId(p);
+            const userId = getPlayOwnerUserId(p);
             if (!userId) return;
 
             if (!rows[userId]) {
                 rows[userId] = {
                     userId,
-                    name: getOwnerName(p, userId, usersMap),
-                    photo: getOwnerPhoto(p, userId, usersMap),
+                    name: getUserNameForPlay(p, userId, usersMap),
+                    photo: getUserPhotoForPlay(p, userId, usersMap),
                     cards: []
                 };
             }
