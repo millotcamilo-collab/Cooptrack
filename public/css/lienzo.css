@@ -1445,3 +1445,45 @@ body {
 .lienzo-qheart-box__body {
   gap: 6px;
 }
+
+/* Carta como fondo con contenido encima */
+
+.lienzo-play-card-box {
+  position: relative;
+  overflow: hidden;
+  width: 260px;
+  min-height: 170px;
+  padding: 14px;
+  border-radius: 14px;
+  box-sizing: border-box;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: auto 160px;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.lienzo-play-card-box__row {
+  display: block;
+}
+
+.lienzo-play-card-box__card {
+  display: none;
+}
+
+.lienzo-play-card-box__info {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.58);
+  color: #f5f5f5;
+  box-sizing: border-box;
+}
+
+.lienzo-play-card-box__actions {
+  position: relative;
+  z-index: 2;
+  margin-top: 10px;
+}

@@ -903,7 +903,10 @@ function syncQHeartSendButtonVisibility() {
             : String(parentPlay?.location || "").trim();
 
         return `
-    <div class="lienzo-play-card-box">
+    <div
+  class="lienzo-play-card-box"
+  style="background-image:url('${escapeHtml(imageSrc)}')"
+>
 
       <div class="lienzo-play-card-box__row">
         
@@ -1522,7 +1525,10 @@ ${qHeartMode
 
 ${parentJSpadeText
                 ? `
-    <div class="lienzo-parent-play-box lienzo-parent-play-box--inline">
+    <div
+  class="lienzo-parent-play-box lienzo-parent-play-box--inline lienzo-play-card-box"
+  style="background-image:url('${escapeHtml(getCardImageSrc("J", "SPADE"))}')"
+>
 
       <div class="lienzo-play-card-box__info">
         <div class="play-text">
@@ -2061,12 +2067,6 @@ if (!concept) {
             });
 
         syncQHeartSendButtonVisibility();
-
-        if (validatorSendBtn) {
-            validatorSendBtn.addEventListener("click", () => {
-                handleSendPlay(play);
-            });
-        }
 
 
         if (validatorSendBtn) {

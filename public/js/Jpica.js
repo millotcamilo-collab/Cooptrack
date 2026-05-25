@@ -393,6 +393,13 @@
         return date;
       }
 
+      function getMinutesBetween(start, end) {
+        if (!start || !end) return null;
+
+        const diffMs = end.getTime() - start.getTime();
+        return Math.round(diffMs / (1000 * 60));
+      }
+
       function getWeekdayCodeFromDate(date) {
         if (!date) return null;
         const map = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -664,9 +671,50 @@ function canLaunchQspade(play) {
         const startDate = new Date(startValue);
         if (Number.isNaN(startDate.getTime())) return;
 
-        const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+        const currentEndValue = String(appointmentEndDateInput?.value || "").trim();
+        if (!currentEndValue) {
+          if (appointmentEndDateInput) {
+            appointmentEndDateInput.value = toInputDateTimeValue(
+              new Date(startDate.getTime() + 2 * 60 * 60 * 1000)
+            );
+          }
+          return;
+        }
+
+        const currentEndDate = new Date(currentEndValue);
+        if (Number.isNaN(currentEndDate.getTime())) {
+          if (appointmentEndDateInput) {
+            appointmentEndDateInput.value = toInputDateTimeValue(
+              new Date(startDate.getTime() + 2 * 60 * 60 * 1000)
+            );
+          }
+          return;
+        }
+
+        const diffMinutes = getMinutesBetween(startDate, currentEndDate);
+        if (diffMinutes === 120) {
+          appointmentEndDateInput.value = toInputDateTimeValue(
+            new Date(startDate.getTime() + 60 * 60 * 1000)
+          );
+          return;
+        }
+
+        if (diffMinutes === 60) {
+          appointmentEndDateInput.value = toInputDateTimeValue(
+            new Date(startDate.getTime() + 30 * 60 * 1000)
+          );
+          return;
+        }
+
+        if (diffMinutes === 30) {
+          appointmentEndDateInput.value = "";
+          return;
+        }
+
         if (appointmentEndDateInput) {
-          appointmentEndDateInput.value = toInputDateTimeValue(endDate);
+          appointmentEndDateInput.value = toInputDateTimeValue(
+            new Date(startDate.getTime() + 2 * 60 * 60 * 1000)
+          );
         }
       });
 
