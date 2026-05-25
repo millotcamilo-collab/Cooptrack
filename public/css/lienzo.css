@@ -1471,15 +1471,25 @@ body {
 }
 
 .lienzo-play-card-box__info {
-  position: relative;
+  position: absolute;
   z-index: 2;
-  min-width: 0;
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  background: rgba(0,0,0,0.58);
-  color: #f5f5f5;
+
+  top: 18px;
+  left: 58px;
+
+  width: 128px;
+  height: 108px;
+
+  padding: 10px;
+
+  border-radius: 10px;
   box-sizing: border-box;
+
+  background: rgba(0,0,0,0.58);
+
+  color: #f5f5f5;
+
+  overflow: hidden;
 }
 
 .lienzo-play-card-box__actions {
