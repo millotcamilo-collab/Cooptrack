@@ -352,6 +352,7 @@
       const recurrenceWeeklyBox = row.querySelector('[data-role="recurrence-weekly"]');
       const recurrenceMonthlyBox = row.querySelector('[data-role="recurrence-monthly"]');
       const recurrenceUntilDateInput = row.querySelector('[data-role="recurrence-until-date"]');
+      const btnAutoFillEndDate = row.querySelector('[data-action="fill-end-from-start"]');
 
       function getCurrentText() {
         return String(textInput?.value || "").trim();
@@ -656,6 +657,19 @@ function canLaunchQspade(play) {
         renderMode();
       });
 
+      btnAutoFillEndDate?.addEventListener("click", () => {
+        const startValue = String(startDateInput?.value || "").trim();
+        if (!startValue) return;
+
+        const startDate = new Date(startValue);
+        if (Number.isNaN(startDate.getTime())) return;
+
+        const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+        if (appointmentEndDateInput) {
+          appointmentEndDateInput.value = toInputDateTimeValue(endDate);
+        }
+      });
+
       btnSave?.addEventListener("click", () => {
         const payload = buildPayload();
 
@@ -913,7 +927,15 @@ function canLaunchQspade(play) {
           </div>
 
           <div class="tablero-row__field-inline">
-            <img src="${endIcon}" alt="Fin" class="tablero-row__field-icon" />
+            <button
+              type="button"
+              class="tablero-row__field-button"
+              data-action="fill-end-from-start"
+              title="Agregar 2 horas desde el inicio"
+              style="border:none;background:transparent;padding:0;margin:0;"
+            >
+              <img src="${endIcon}" alt="Fin" class="tablero-row__field-icon" />
+            </button>
             <input
               type="datetime-local"
               value="${escapeHtml(endDateValue)}"
