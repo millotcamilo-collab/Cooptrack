@@ -233,10 +233,11 @@
   <main class="help-page">
     <div class="page-container">
       <header class="help-page__header">
-        <h1 class="help-page__title">Help de jugadas</h1>
+        <h1 class="help-page__title">Help</h1>
         <p class="help-page__intro">
-          Aquí aparecen las jugadas que hoy tienen ayuda escrita en <strong>help.js</strong>.
-          Hacé clic en una carta para ver su explicación.
+          Cooptrack es una agenda compartida donde las cartas de la baraja francesa regula el flujo documental entre los usuarios,
+          donde los palos representan el tipo de documentación. Corazón se corresponde con contenido, picas con actividades, trebol con relaciones publicas y diamantes con montos. 
+          Cada as en su palo se corresponde con la autoridad máxima de un mazo. 
         </p>
       </header>
 
@@ -250,8 +251,8 @@
             title="Ver ayuda de A corazón"
           >
             <img src="/assets/icons/Acorazon.gif" alt="A corazón" class="help-card__image" />
-            <div class="help-card__label">A♥ · Fundación del mazo y validación de contenido</div>
-            <div class="help-card__subtext">Nombre, imagen y referencia principal del mazo.</div>
+            <div class="help-card__label">Edición</div>
+            <div class="help-card__subtext">Validación de contenido.</div>
           </button>
 
           <button
@@ -261,7 +262,7 @@
             title="Ver ayuda de A picas"
           >
             <img src="/assets/icons/Apike.gif" alt="A picas" class="help-card__image" />
-            <div class="help-card__label">A♠ · Gerencia </div>
+            <div class="help-card__label">Gerencia </div>
             <div class="help-card__subtext">Validación de actividades.</div>
           </button>
 
@@ -272,7 +273,7 @@
             title="Ver ayuda de A diamante"
           >
             <img src="/assets/icons/Adiamante.gif" alt="A diamante" class="help-card__image" />
-            <div class="help-card__label">A♦ · Tesorero</div>
+            <div class="help-card__label">Contabilidad</div>
             <div class="help-card__subtext">Validación de transacciones económicas.</div>
           </button>
 
@@ -283,7 +284,7 @@
             title="Ver ayuda de A trébol"
           >
             <img src="/assets/icons/Atrebol.gif" alt="A trébol" class="help-card__image" />
-            <div class="help-card__label">A♣ · Relaciones públicas</div>
+            <div class="help-card__label">Relaciones públicas</div>
             <div class="help-card__subtext">Validación de operaciones con outsiders.</div>
           </button>
         </div>
@@ -292,6 +293,50 @@
       <section class="help-section">
         <h2 class="help-section__title">Reyes</h2>
         <div class="help-grid">
+<button
+            type="button"
+            class="help-card"
+            onclick="openPlayHelp('A_HEART')"
+            title="Ver ayuda de A corazón"
+          >
+            <img src="/assets/icons/Kcorazon.gif" alt="A corazón" class="help-card__image" />
+            <div class="help-card__label">Edición</div>
+            <div class="help-card__subtext">Creación contenido.</div>
+          </button>
+
+          <button
+            type="button"
+            class="help-card"
+            onclick="openPlayHelp('K_SPADE')"
+            title="Ver ayuda de A picas"
+          >
+            <img src="/assets/icons/Kpike.gif" alt="A picas" class="help-card__image" />
+            <div class="help-card__label">Gerencia </div>
+            <div class="help-card__subtext">Validación de actividades.</div>
+          </button>
+
+          <button
+            type="button"
+            class="help-card"
+            onclick="openPlayHelp('K_DIAMOND')"
+            title="Ver ayuda de A diamante"
+          >
+            <img src="/assets/icons/Kdiamante.gif" alt="A diamante" class="help-card__image" />
+            <div class="help-card__label">Contabilidad</div>
+            <div class="help-card__subtext">Validación de transacciones económicas.</div>
+          </button>
+
+          <button
+            type="button"
+            class="help-card"
+            onclick="openPlayHelp('K_CLUB')"
+            title="Ver ayuda de A trébol"
+          >
+            <img src="/assets/icons/Ktrebol.gif" alt="A trébol" class="help-card__image" />
+            <div class="help-card__label">Relaciones públicas</div>
+            <div class="help-card__subtext">Validación de operaciones con outsiders.</div>
+          </button>
+
         </div>
       </section>
 
