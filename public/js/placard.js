@@ -103,7 +103,9 @@
           src="${escapeHtml(src)}"
           alt="${escapeHtml(label)}"
           title="${escapeHtml(label)}"
-          class="placard__topcard-image"
+          class="placard__topcard-image ${rank === "Q" && suit === "HEART"
+          ? "placard__topcard-image--pulse"
+          : ""}"
           draggable="true"
           data-rank="${escapeHtml(rank)}"
           data-suit="${escapeHtml(suit)}"
@@ -189,7 +191,7 @@
       return `Invitación a ${targetNickname}. Enviada`;
     }
 
-    if (status === "APPROVED" ) {
+    if (status === "APPROVED") {
       return `Invitación a ${targetNickname} aceptada`;
     }
 
@@ -221,7 +223,7 @@
       return `Invitación a ${targetNickname}. Enviada`;
     }
 
-    if (status === "APPROVED" ) {
+    if (status === "APPROVED") {
       if (settlementStatus === "PAID") {
         return `Invitación a ${targetNickname} aceptada. Pago confirmado`;
       }
@@ -259,7 +261,7 @@
       return `Invitación a ${targetNickname}. Enviada`;
     }
 
-    if (status === "APPROVED" ) {
+    if (status === "APPROVED") {
       return `Invitación a ${targetNickname} aceptada`;
     }
 
@@ -296,7 +298,7 @@
       return "Solicitud de aprobación enviada";
     }
 
-    if (status === "APPROVED" ) {
+    if (status === "APPROVED") {
       return "Solicitud de aprobación aceptada";
     }
 
@@ -335,7 +337,7 @@
       return `Transferencia del as de ${suitLabel} de ${sourceNickname} a ${targetNickname}. Rechazada`;
     }
 
-    if (status === "APPROVED" ) {
+    if (status === "APPROVED") {
       return `As de ${suitLabel} transferido de ${sourceNickname} a ${targetNickname}`;
     }
 
@@ -380,7 +382,7 @@
   function getInvitationResolutionLabel(status) {
     const s = String(status || "").trim().toUpperCase();
 
-    if (s === "APPROVED" ) return "aceptada";
+    if (s === "APPROVED") return "aceptada";
     if (s === "REJECTED") return "rechazada";
     if (s === "CANCELLED") return "cancelada";
 
