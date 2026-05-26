@@ -568,9 +568,24 @@
     const dropzone = document.getElementById("lienzo-target-dropzone");
     if (!dropzone) return;
 
-    dropzone.innerHTML = renderPlayCardBox(window.__lienzoNewDraft, {
-      showActions: true
-    });
+    const draft = window.__lienzoNewDraft;
+    const isQSpade =
+      normalizeRank(draft?.card_rank) === "Q" &&
+      normalizeSuit(draft?.card_suit) === "SPADE";
+
+    if (isQSpade) {
+      dropzone.innerHTML = renderPlayCardBox(draft, {
+        showActions: true
+      });
+    } else {
+      dropzone.innerHTML = `
+      <img
+        class="lienzo-card-image lienzo-source-active"
+        src="${escapeHtml(getCardImageSrc(draft?.card_rank, draft?.card_suit))}"
+        alt=""
+      />
+    `;
+    }
 
     bindActionButtons();
   }
@@ -1172,17 +1187,17 @@
   ${scene.backgroundCards.map(renderBackgroundCard).join("")}
 
   ${delivered
-  ? ""
-  : `
+        ? ""
+        : `
     ${normalizeRank(draft?.card_rank) === "Q" && normalizeSuit(draft?.card_suit) === "SPADE"
-      ? renderPlayCardBox(draft, {
-          showActions: false,
-          id: "lienzo-source-card",
-          extraClass: "lienzo-source-active",
-          backgroundRank: "J",
-          backgroundSuit: "SPADE"
-        })
-      : `
+          ? renderPlayCardBox(draft, {
+            showActions: false,
+            id: "lienzo-source-card",
+            extraClass: "lienzo-source-active",
+            backgroundRank: "J",
+            backgroundSuit: "SPADE"
+          })
+          : `
         <img
           id="lienzo-source-card"
           class="lienzo-card-image lienzo-source-active"
@@ -1190,7 +1205,7 @@
           alt=""
         />
       `
-    }
+        }
   `}
 </div>
       </div>
