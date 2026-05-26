@@ -429,6 +429,13 @@
     const rank = normalizeRank(draft?.card_rank);
     const suit = normalizeSuit(draft?.card_suit);
     const imageSrc = getCardImageSrc(rank, suit);
+
+    const backgroundRank = options.backgroundRank || rank;
+    const backgroundSuit = options.backgroundSuit || suit;
+    const backgroundSrc = getCardImageSrc(backgroundRank, backgroundSuit);
+    const boxId = options.id ? `id="${escapeHtml(options.id)}"` : "";
+    const extraClass = options.extraClass ? ` ${escapeHtml(options.extraClass)}` : "";
+
     const title = `${rank}${getSuitSymbol(suit)}`;
 
     const parentText = parentPlay?.play_text || "";
@@ -444,7 +451,11 @@
       : String(parentPlay?.location || "").trim();
 
     return `
-    <div class="lienzo-play-card-box">
+    <div
+  ${boxId}
+  class="lienzo-play-card-box${extraClass}"
+  style="background-image:url('${escapeHtml(backgroundSrc)}')"
+>
       <div class="lienzo-play-card-box__row">
         <div class="lienzo-play-card-box__card">
           <img
@@ -1161,15 +1172,15 @@
   ${scene.backgroundCards.map(renderBackgroundCard).join("")}
 
   ${delivered
-    ? ""
-    : `
-    <div
-      id="lienzo-source-card"
-      class="lienzo-source-active lienzo-play-card-box"
-      style="background-image:url('${escapeHtml(getCardImageSrc("J", "SPADE"))}')"
-    >
-      ${renderPlayCardBox(draft, { showActions: false })}
-    </div>
+        ? ""
+        : `
+    ${renderPlayCardBox(draft, {
+          showActions: false,
+          id: "lienzo-source-card",
+          extraClass: "lienzo-source-active",
+          backgroundRank: "J",
+          backgroundSuit: "SPADE"
+        })}
   `}
 </div>
       </div>
