@@ -577,12 +577,23 @@ function renderUsersPicker(containerId, options = {}) {
 
       if (status === "REJECTED" || status === "CANCELLED") return false;
 
+      const playDeckId = Number(play?.deck_id || 0);
+      const playTargetId = Number(play?.target_user_id || 0);
+      const playCreatorId = Number(play?.created_by_user_id || 0);
+      const playRank = String(play?.card_rank || play?.rank || "").toUpperCase();
+      const playSuit = String(play?.card_suit || play?.suit || "").toUpperCase();
+
+      if (playDeckId !== deckId) return false;
+      if (playRank !== childRank) return false;
+      if (playSuit !== childSuit) return false;
+
+      if (childRank === "K") {
+        return playTargetId === userId || playCreatorId === userId;
+      }
+
       return (
-        Number(play?.deck_id || 0) === deckId &&
-        Number(play?.target_user_id || 0) === userId &&
-        Number(play?.parent_play_id || 0) === parentPlayId &&
-        String(play?.card_rank || play?.rank || "").toUpperCase() === childRank &&
-        String(play?.card_suit || play?.suit || "").toUpperCase() === childSuit
+        playTargetId === userId &&
+        Number(play?.parent_play_id || 0) === parentPlayId
       );
     });
   }
@@ -599,8 +610,19 @@ function renderUsersPicker(containerId, options = {}) {
     } else if (!state.filteredUsers.length) {
       resultsHtml = `<div class="users-picker__empty">No se encontraron usuarios.</div>`;
     } else {
+
+      const childRank = String(options.childRank || "").toUpperCase();
+      const childSuit = String(options.childSuit || "").toUpperCase();
+
       resultsHtml = state.filteredUsers.map((user) => {
         const alreadyInvited = hasActiveInvitationForUser(user);
+
+        const actionLabel =
+          `${childRank}${childSuit === "HEART" ? "♥" :
+            childSuit === "SPADE" ? "♠" :
+              childSuit === "DIAMOND" ? "♦" :
+                "♣"
+          }`;
 
         return `
         <div class="users-picker__row" data-users-row-id="${escapeHtml(user.id)}">
@@ -622,7 +644,7 @@ function renderUsersPicker(containerId, options = {}) {
           </button>
 
           ${alreadyInvited
-            ? `<span class="users-picker__row-action users-picker__row-action--disabled" title="Ya invitado">Q♠</span>`
+            ? `<span class="users-picker__row-action users-picker__row-action--disabled" title="Ya invitado">${escapeHtml(actionLabel)}</span>`
             : `
               <button
                 type="button"
