@@ -1302,10 +1302,6 @@ body {
   align-self: flex-start;
 }
 
-.lienzo-panel--source .lienzo-parent-play-box--inline .lienzo-play-card-box__info {
-  padding-top: 4px;
-  min-width: 140px;
-}
 
 .lienzo-grid--qqpica-target {
   grid-template-columns: 1fr 1.45fr;
@@ -1468,7 +1464,7 @@ body {
   background-position: center;
   background-size: auto 150px;
   height: 170px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: none;
 }
 
 .lienzo-play-card-box__row {
