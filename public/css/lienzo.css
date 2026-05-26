@@ -299,7 +299,8 @@ body {
 .lienzo-source-stack {
   position: relative;
   width: 180px;
-  height: 110px;   /* antes era 300px */
+  height: 110px;
+  /* antes era 300px */
 }
 
 .lienzo-source-stack__card {
@@ -428,6 +429,7 @@ body {
   background: #fff;
   color: #111;
 }
+
 .lienzo-server-next__item {
   display: flex;
   align-items: center;
@@ -829,7 +831,7 @@ body {
   flex: 1 1 auto;
   display: flex;
   align-items: flex-start;
-   justify-content: center;
+  justify-content: center;
 }
 
 .lienzo-panel__actions {
@@ -842,7 +844,8 @@ body {
 
 .lienzo-panel--source .lienzo-source-stack {
   width: 240px;
-  height: 100px;            /* 🔑 compacta cartas */
+  height: 100px;
+  /* 🔑 compacta cartas */
   position: relative;
 }
 
@@ -903,10 +906,12 @@ body {
 /* Colombes: cartas compactas */
 .lienzo-panel--source .lienzo-source-cards {
   display: flex;
-  flex-direction: row;     /* 👈 clave */
+  flex-direction: row;
+  /* 👈 clave */
   align-items: flex-start;
   gap: 16px;
-  flex-wrap: nowrap;       /* 👈 evita que baje */
+  flex-wrap: nowrap;
+  /* 👈 evita que baje */
 }
 
 .lienzo-panel--source .lienzo-source-stack {
@@ -962,6 +967,7 @@ body {
   height: 36px;
   display: block;
 }
+
 .lienzo-target-empty {
   display: flex;
   flex-direction: column;
@@ -1014,7 +1020,8 @@ body {
 }
 
 .lienzo-panel--target-empty .lienzo-target-empty {
-  grid-row: 1;              /* 👈 ubicación en la grilla */
+  grid-row: 1;
+  /* 👈 ubicación en la grilla */
   align-items: center;
   justify-content: center;
 }
@@ -1127,7 +1134,7 @@ body {
   cursor: pointer;
 
   background: #ffffff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .lienzo-jheart-envelope__send img {
@@ -1194,7 +1201,7 @@ body {
   gap: 0;
 }
 
-.lienzo-tribunes--colombes > .lienzo-panel {
+.lienzo-tribunes--colombes>.lienzo-panel {
   flex: 1 1 0;
   min-width: 0;
 
@@ -1290,7 +1297,8 @@ body {
 
 /* Q♠ Colombes: acercar info de la J a la carta */
 .lienzo-panel--source .lienzo-parent-play-box--inline {
-  margin-left: -48px;   /* acercar a la J */
+  margin-left: -48px;
+  /* acercar a la J */
   align-self: flex-start;
 }
 
@@ -1458,8 +1466,9 @@ body {
   box-sizing: border-box;
   background-repeat: no-repeat;
   background-position: center;
-  background-size: auto 160px;
-  border: 1px solid rgba(255,255,255,0.18);
+  background-size: auto 150px;
+  height: 170px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .lienzo-play-card-box__row {
@@ -1474,18 +1483,19 @@ body {
   position: absolute;
   z-index: 2;
 
-  top: 18px;
-  left: 58px;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
 
-  width: 128px;
-  height: 108px;
+  width: 77px;
+  height: 120px;
 
-  padding: 10px;
+  padding: 8px;
 
   border-radius: 10px;
   box-sizing: border-box;
 
-  background: rgba(0,0,0,0.58);
+  background: rgba(0,0,0,0.52);
 
   color: #f5f5f5;
 
