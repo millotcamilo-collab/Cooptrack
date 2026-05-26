@@ -473,8 +473,13 @@
         return;
       }
 
+      const nextPage =
+        childRank === "K"
+          ? "/lienzo-new-k.html"
+          : "/lienzo-new.html";
+
       window.location.href =
-        `/lienzo-new.html?deckId=${deckId}&parentPlayId=${sourcePlayId}&childRank=${childRank}&childSuit=${childSuit}`;
+        `${nextPage}?deckId=${deckId}&parentPlayId=${sourcePlayId}&childRank=${childRank}&childSuit=${childSuit}`;
     });
   }
 

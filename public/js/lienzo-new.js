@@ -379,9 +379,6 @@
     const activeRank = normalizeRank(draft?.card_rank);
     const activeSuit = normalizeSuit(draft?.card_suit);
 
-    const parentPlay = draft?.parentPlay || null;
-    const parentRank = normalizeRank(parentPlay?.card_rank || parentPlay?.rank);
-    const parentSuit = normalizeSuit(parentPlay?.card_suit || parentPlay?.suit);
 
     if (activeRank === "Q" && activeSuit === "SPADE") {
       const stackCards = ownedCards.filter(card => {
@@ -577,15 +574,7 @@
       dropzone.innerHTML = renderPlayCardBox(draft, {
         showActions: true
       });
-    } else {
-      dropzone.innerHTML = `
-      <img
-        class="lienzo-card-image lienzo-source-active"
-        src="${escapeHtml(getCardImageSrc(draft?.card_rank, draft?.card_suit))}"
-        alt=""
-      />
-    `;
-    }
+    } 
 
     bindActionButtons();
   }
@@ -1159,8 +1148,6 @@
     const delivered =
       window.__lienzoAnimationState?.sourceCardDelivered === true;
 
-    const parentPlay = draft?.parentPlay || null;
-    const sessionDiaHtml = "";
 
     const topbar = buildPanelTopbar({
       identityHtml: `
@@ -1212,27 +1199,6 @@
 
     </section>
   `;
-  }
-
-  function renderDraftCardPanel(draft) {
-    const rank = normalizeRank(draft?.card_rank);
-    const suit = normalizeSuit(draft?.card_suit);
-    const symbol = getSuitSymbol(suit);
-    const imageSrc = getCardImageSrc(rank, suit);
-
-    return `
-      <section class="lienzo-panel lienzo-panel--card">
-
-        <div class="lienzo-card-wrap">
-          <img
-            id="lienzo-source-card"
-            class="lienzo-card-image"
-            src="${escapeHtml(imageSrc)}"
-            alt="Carta ${escapeHtml(rank)}${escapeHtml(symbol)}"
-          />
-        </div>
-      </section>
-    `;
   }
 
   function bindUsersPicker(draft) {
