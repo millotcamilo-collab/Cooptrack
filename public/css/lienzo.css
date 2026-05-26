@@ -1462,8 +1462,8 @@ body {
   box-sizing: border-box;
   background-repeat: no-repeat;
   background-position: center;
-  background-size: auto 150px;
-  height: 170px;
+  background-size: auto 200px;
+  height: 210px;
   border: none;
 }
 
@@ -1483,8 +1483,8 @@ body {
   left: 50%;
   transform: translateX(-50%);
 
-  width: 77px;
-  height: 120px;
+  width: 114px;
+  height: 160px;
 
   padding: 8px;
 
