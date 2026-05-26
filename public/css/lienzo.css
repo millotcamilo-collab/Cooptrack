@@ -1479,7 +1479,7 @@ body {
   position: absolute;
   z-index: 2;
 
-  top: 15px;
+  top: 27px;
   left: 50%;
   transform: translateX(-50%);
 
@@ -1491,7 +1491,7 @@ body {
   border-radius: 10px;
   box-sizing: border-box;
 
-  background: rgba(0,0,0,0.52);
+  background: rgba(0,0,0,0.72);
 
   color: #f5f5f5;
 
