@@ -1172,15 +1172,25 @@
   ${scene.backgroundCards.map(renderBackgroundCard).join("")}
 
   ${delivered
-        ? ""
-        : `
-    ${renderPlayCardBox(draft, {
+  ? ""
+  : `
+    ${normalizeRank(draft?.card_rank) === "Q" && normalizeSuit(draft?.card_suit) === "SPADE"
+      ? renderPlayCardBox(draft, {
           showActions: false,
           id: "lienzo-source-card",
           extraClass: "lienzo-source-active",
           backgroundRank: "J",
           backgroundSuit: "SPADE"
-        })}
+        })
+      : `
+        <img
+          id="lienzo-source-card"
+          class="lienzo-card-image lienzo-source-active"
+          src="${escapeHtml(getCardImageSrc(draft?.card_rank, draft?.card_suit))}"
+          alt=""
+        />
+      `
+    }
   `}
 </div>
       </div>
