@@ -1480,7 +1480,7 @@ body {
   z-index: 2;
 
   top: 27px;
-  left: 27px;
+  left: 50%;
   transform: translateX(-50%);
 
   width: 105px;
