@@ -1519,9 +1519,18 @@ ${qHeartMode
         ${topbar}
 
         <div class="lienzo-source-cards">
-  <div class="lienzo-source-stack">
-    ${scene.backgroundCards.map(renderBackgroundCard).join("")}
-  </div>
+<div class="lienzo-source-stack">
+  ${scene.backgroundCards
+      .filter(card => {
+          const rank = normalizeRank(card.card_rank);
+          const suit = normalizeSuit(card.card_suit);
+
+          // 🔥 sacar la J♠ que quedó afuera
+          return !(rank === "J" && suit === "SPADE");
+      })
+      .map(renderBackgroundCard)
+      .join("")}
+</div>
 
 ${parentJSpadeText
                 ? `
