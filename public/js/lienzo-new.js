@@ -70,20 +70,20 @@
     }
 
     /* 👇 HACER LA JUGADA PÚBLICA */
-const publicResponse = await fetch(`/plays/${data.play.id}/readers/public`, {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+    const publicResponse = await fetch(`/plays/${data.play.id}/readers/public`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
 
-const publicData = await publicResponse.json();
+    const publicData = await publicResponse.json();
 
-if (!publicResponse.ok || !publicData.ok) {
-  console.error("Error haciendo pública la noticia:", publicData);
-  alert(publicData?.error || "La actividad se creó, pero no quedó pública.");
-  return;
-}
+    if (!publicResponse.ok || !publicData.ok) {
+      console.error("Error haciendo pública la noticia:", publicData);
+      alert(publicData?.error || "La actividad se creó, pero no quedó pública.");
+      return;
+    }
 
     window.location.href = "/noticias.html";
   }
@@ -384,15 +384,13 @@ if (!publicResponse.ok || !publicData.ok) {
     const parentSuit = normalizeSuit(parentPlay?.card_suit || parentPlay?.suit);
 
     if (activeRank === "Q" && activeSuit === "SPADE") {
-      const stackCards = [...ownedCards];
+      const stackCards = ownedCards.filter(card => {
+        const rank = normalizeRank(card.card_rank);
+        const suit = normalizeSuit(card.card_suit);
 
-      if (parentPlay && parentRank === "J" && parentSuit === "SPADE") {
-        stackCards.push({
-          card_rank: parentPlay.card_rank || parentPlay.rank,
-          card_suit: parentPlay.card_suit || parentPlay.suit,
-          id: parentPlay.id
-        });
-      }
+        // 🔥 sacar la J♠ del manojo
+        return !(rank === "J" && suit === "SPADE");
+      });
 
       return {
         backgroundCards: stackCards,
@@ -1160,16 +1158,20 @@ if (!publicResponse.ok || !publicData.ok) {
 
       <div class="lienzo-source-cards">
         <div class="lienzo-source-stack">
-          ${scene.backgroundCards.map(renderBackgroundCard).join("")}
+  ${scene.backgroundCards.map(renderBackgroundCard).join("")}
 
-          ${delivered
-        ? ""
-        : `
-    <div id="lienzo-source-card" class="lienzo-source-active">
+  ${delivered
+    ? ""
+    : `
+    <div
+      id="lienzo-source-card"
+      class="lienzo-source-active lienzo-play-card-box"
+      style="background-image:url('${escapeHtml(getCardImageSrc("J", "SPADE"))}')"
+    >
       ${renderPlayCardBox(draft, { showActions: false })}
     </div>
   `}
-        </div>
+</div>
       </div>
 
     </section>
