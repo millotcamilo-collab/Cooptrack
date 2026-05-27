@@ -215,6 +215,25 @@
       });
     }
 
+    function resolveClubAceHolderUserId(plays) {
+      const aceClubPlays = plays
+        .filter((p) => {
+          const rank = normalizeRank(p?.rank || p?.card_rank);
+          const suit = normalizeSuit(p?.suit || p?.card_suit);
+          return rank === "A" && suit === "CLUB" && isAliveStatus(p?.play_status);
+        })
+        .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
+
+      if (!aceClubPlays.length) return null;
+
+      const latest = aceClubPlays[0];
+
+      if (latest?.target_user_id) return Number(latest.target_user_id);
+      if (latest?.created_by_user_id) return Number(latest.created_by_user_id);
+
+      return null;
+    }
+
     function resolveSpadeAceHolderUserId(plays) {
       const aceSpadePlays = plays
         .filter((p) => {
@@ -280,6 +299,13 @@
       spadeAceHolderUserId !== null &&
       currentUserId !== 0 &&
       spadeAceHolderUserId === currentUserId;
+
+    const clubAceHolderUserId = resolveClubAceHolderUserId(allPlays);
+
+    const userIsClubAceHolder =
+      clubAceHolderUserId !== null &&
+      currentUserId !== 0 &&
+      clubAceHolderUserId === currentUserId;
 
     const userIsCreator =
       creatorUserId !== 0 &&
@@ -512,19 +538,19 @@
         row.dataset.mode = mode;
       }
 
-function canLaunchQspade(play) {
-  if (!play?.start_date) return false;
+      function canLaunchQspade(play) {
+        if (!play?.start_date) return false;
 
-  const start = new Date(play.start_date);
+        const start = new Date(play.start_date);
 
-  if (Number.isNaN(start.getTime())) {
-    return false;
-  }
+        if (Number.isNaN(start.getTime())) {
+          return false;
+        }
 
-  const margen = 30 * 60 * 1000;
+        const margen = 30 * 60 * 1000;
 
-  return (start.getTime() + margen) > Date.now();
-}
+        return (start.getTime() + margen) > Date.now();
+      }
 
       function renderMode() {
         const visualMode = row.dataset.mode || "read";
@@ -541,7 +567,7 @@ function canLaunchQspade(play) {
         const showPublishNews =
           isApproved &&
           !isCancelled &&
-          userCanCreateChildren;
+          userIsClubAceHolder;
 
         if (modeRead) modeRead.style.display = isRead ? "flex" : "none";
         if (modeEdit) modeEdit.style.display = isEdit ? "flex" : "none";

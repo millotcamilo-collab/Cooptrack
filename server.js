@@ -4820,6 +4820,7 @@ app.post('/plays/:id/readers/public', requireAuth, async (req, res) => {
 
   try {
     const playId = Number(req.params.id);
+    const userId = Number(req.auth.userId || 0);
 
     if (!playId) {
       return res.status(400).json({
@@ -4828,69 +4829,80 @@ app.post('/plays/:id/readers/public', requireAuth, async (req, res) => {
       });
     }
 
-    await markPlayAsPublic(client, playId);
-
     const playResult = await client.query(
       `
-  SELECT *
-  FROM plays
-  WHERE id = $1
-  LIMIT 1
-  `,
+      SELECT *
+      FROM plays
+      WHERE id = $1
+      LIMIT 1
+      `,
       [playId]
     );
 
     const play = playResult.rows[0];
 
-    if (play) {
-      const deckId = Number(play.deck_id || 0);
-      const parentPlayId = Number(play.parent_play_id || 0);
+    if (!play) {
+      return res.status(404).json({
+        ok: false,
+        error: 'Jugada no encontrada'
+      });
+    }
 
-      // J♠ / jugada madre
-      if (parentPlayId) {
-        await markPlayAsPublic(client, parentPlayId);
-      }
+    if (Number(play.created_by_user_id || 0) !== userId) {
+      return res.status(403).json({
+        ok: false,
+        error: 'Solo el autor puede publicar esta jugada'
+      });
+    }
 
-      // A♥ título del mazo
-      const aHeartResult = await client.query(
-        `
-    SELECT id
-    FROM plays
-    WHERE deck_id = $1
-      AND card_rank = 'A'
-      AND card_suit = 'HEART'
-    ORDER BY id ASC
-    LIMIT 1
-    `,
-        [deckId]
-      );
+    const deckId = Number(play.deck_id || 0);
+    const parentPlayId = Number(play.parent_play_id || 0);
 
-      const aHeartId = Number(aHeartResult.rows[0]?.id || 0);
+    await markPlayAsPublic(client, playId);
 
-      if (aHeartId) {
-        await markPlayAsPublic(client, aHeartId);
-      }
+    if (parentPlayId) {
+      await markPlayAsPublic(client, parentPlayId);
+    }
 
-      // J♥ aprobadas
-      const approvedJHearts = await client.query(
-        `
-    SELECT id
-    FROM plays
-    WHERE deck_id = $1
-      AND card_rank = 'J'
-      AND card_suit = 'HEART'
-      AND UPPER(COALESCE(play_status, '')) = 'APPROVED'
-    `,
-        [deckId]
-      );
+    const aHeartResult = await client.query(
+      `
+      SELECT id
+      FROM plays
+      WHERE deck_id = $1
+        AND card_rank = 'A'
+        AND card_suit = 'HEART'
+      ORDER BY id ASC
+      LIMIT 1
+      `,
+      [deckId]
+    );
 
-      for (const row of approvedJHearts.rows) {
-        await markPlayAsPublic(client, Number(row.id));
-      }
+    const aHeartId = Number(aHeartResult.rows[0]?.id || 0);
+
+    if (aHeartId) {
+      await markPlayAsPublic(client, aHeartId);
+    }
+
+    const approvedJHearts = await client.query(
+      `
+      SELECT id
+      FROM plays
+      WHERE deck_id = $1
+        AND card_rank = 'J'
+        AND card_suit = 'HEART'
+        AND UPPER(COALESCE(play_status, '')) = 'APPROVED'
+      `,
+      [deckId]
+    );
+
+    for (const row of approvedJHearts.rows) {
+      await markPlayAsPublic(client, Number(row.id));
     }
 
     return res.json({
-      ok: true
+      ok: true,
+      playId,
+      deckId
     });
 
   } catch (error) {
