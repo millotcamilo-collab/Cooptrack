@@ -603,11 +603,7 @@
 
       alert("Noticia publicada");
 
-      const deckId =
-        data.deckId ||
-        window.__currentDeck?.id ||
-        window.__currentState?.deck?.id ||
-        new URLSearchParams(window.location.search).get("id");
+      window.location.href = "/noticias.html";
 
       document.dispatchEvent(new CustomEvent("plays:changed", {
         detail: { deckId }
