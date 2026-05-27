@@ -935,6 +935,127 @@ app.put('/me', requireAuth, async (req, res) => {
   }
 });
 
+app.post('/plays/from-news', requireAuth, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const userId = Number(req.auth.userId || 0);
+    const parentPlayId = Number(req.body.parent_play_id || 0);
+
+    if (!parentPlayId) {
+      return res.status(400).json({
+        ok: false,
+        error: 'parent_play_id inválido'
+      });
+    }
+
+    await client.query('BEGIN');
+
+    const parentResult = await client.query(
+      `
+      SELECT *
+      FROM plays
+      WHERE id = $1
+        AND card_rank = 'J'
+        AND card_suit = 'SPADE'
+        AND UPPER(COALESCE(play_status, '')) = 'APPROVED'
+        AND reader_user_ids ? 'TODOS'
+      LIMIT 1
+      `,
+      [parentPlayId]
+    );
+
+    const parent = parentResult.rows[0];
+
+    if (!parent) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        ok: false,
+        error: 'Publicación no encontrada'
+      });
+    }
+
+    const deckId = Number(parent.deck_id || 0);
+
+    const existingResult = await client.query(
+      `
+      SELECT *
+      FROM plays
+      WHERE deck_id = $1
+        AND parent_play_id = $2
+        AND target_user_id = $3
+        AND card_rank = 'Q'
+        AND card_suit = 'SPADE'
+        AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED')
+      ORDER BY id DESC
+      LIMIT 1
+      `,
+      [deckId, parentPlayId, userId]
+    );
+
+    if (existingResult.rows.length) {
+      await client.query('COMMIT');
+      return res.json({
+        ok: true,
+        play: existingResult.rows[0],
+        existing: true
+      });
+    }
+
+    const parsedParent = parsePlayCodeRaw(parent.play_code);
+    const parentFlow = String(parsedParent.flow || '');
+
+    const hasQHeart = parentFlow.toLowerCase().includes('pay:qheart');
+
+    const flow = hasQHeart
+      ? parentFlow
+      : `child_of:${parentPlayId};from_news:${parentPlayId}`;
+
+    const playCode = buildPlayCode({
+      mazoId: deckId,
+      userId,
+      rank: 'Q',
+      suit: 'SPADE',
+      action: 'from_news',
+      authorized: `U:${userId}`,
+      flow,
+      recipients: `U:${userId}`,
+    });
+
+    const created = await insertInstitutionalPlay(client, {
+      mazoId: deckId,
+      createdByUserId: userId,
+      parentPlayId,
+      targetUserId: userId,
+      playCode,
+      playText: parent.play_text || '',
+      playStatus: 'ACTIVE',
+    });
+
+    await handleReadersOnPlayCreate(client, created.row);
+
+    await client.query('COMMIT');
+
+    return res.json({
+      ok: true,
+      play: created.row,
+      existing: false
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error en POST /plays/from-news', error);
+
+    return res.status(500).json({
+      ok: false,
+      error: 'No se pudo iniciar la jugada desde la noticia'
+    });
+
+  } finally {
+    client.release();
+  }
+});
+
 app.get('/plays/noticias', requireAuth, async (req, res) => {
   try {
     const result = await pool.query(

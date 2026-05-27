@@ -21,14 +21,73 @@ async function fetchNewsPlays() {
   return data.plays || [];
 }
 
+function getCurrentUserId() {
+  try {
+    const user = JSON.parse(localStorage.getItem("cooptrackUser") || "null");
+    return Number(user?.id || 0);
+  } catch {
+    return 0;
+  }
+}
+
+async function createQSpadeFromPublishedJ(play) {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("Falta sesión");
+  }
+
+  const response = await fetch("/plays/from-news", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+
+    body: JSON.stringify({
+      parent_play_id: Number(play.id || 0)
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    throw new Error(data.error || "No se pudo crear la Q♠");
+  }
+
+  return data.play;
+}
+
+async function startQFromPublishedJ(play) {
+  const createdQ = await createQSpadeFromPublishedJ(play);
+
+  const hasPublishedQHeart =
+    String(play.play_code || "").toLowerCase().includes("pay:qheart");
+
+  const page = hasPublishedQHeart
+    ? "/lienzoQQpica.html"
+    : "/lienzoQpica.html";
+
+  window.location.href =
+    `${page}?deckId=${play.deck_id}&playId=${createdQ.id}`;
+}
+
 function openPlay(play) {
   const deckId = Number(play.deck_id || 0);
   const playId = Number(play.id || 0);
 
   if (!deckId || !playId) return;
 
-  window.location.href =
-    `/lienzoQpica.html?deckId=${deckId}&parentPlayId=${playId}&mode=news`;
+  const currentUserId = getCurrentUserId();
+  const hostUserId = Number(play.created_by_user_id || 0);
+
+  if (currentUserId && hostUserId && currentUserId === hostUserId) {
+    window.location.href =
+      `/lienzoJpica.html?deckId=${deckId}&playId=${playId}`;
+    return;
+  }
+
+startQFromPublishedJ(play);
 }
 
 function escapeHtml(value) {
