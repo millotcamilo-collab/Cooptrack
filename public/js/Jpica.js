@@ -552,6 +552,18 @@
         return (start.getTime() + margen) > Date.now();
       }
 
+      function canPublishNews(play) {
+        if (!play?.start_date) return false;
+
+        const start = new Date(play.start_date);
+
+        if (Number.isNaN(start.getTime())) {
+          return false;
+        }
+
+        return start.getTime() > Date.now();
+      }
+
       function renderMode() {
         const visualMode = row.dataset.mode || "read";
         const isEdit = visualMode === "edit";
@@ -564,10 +576,13 @@
 
         const { startDate } = getFieldValues();
         const routineAvailable = !isApproved && canHaveRoutine(startDate);
+        const canPublish = canPublishNews(play);
+
         const showPublishNews =
           isApproved &&
           !isCancelled &&
-          userIsClubAceHolder;
+          userIsClubAceHolder &&
+          canPublish;
 
         if (modeRead) modeRead.style.display = isRead ? "flex" : "none";
         if (modeEdit) modeEdit.style.display = isEdit ? "flex" : "none";
