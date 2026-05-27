@@ -123,10 +123,14 @@
         </div>
 
         <div class="lienzo-source-cards">
-          <div
-            class="lienzo-parent-play-box lienzo-parent-play-box--inline lienzo-play-card-box"
-            style="background-image:url('/assets/icons/Jpike.gif')"
-          >
+<div
+  id="lienzo-jpica-card"
+  class="lienzo-parent-play-box lienzo-parent-play-box--inline lienzo-play-card-box"
+  style="background-image:url('/assets/icons/Jpike.gif')"
+  draggable="true"
+  data-rank="J"
+  data-suit="SPADE"
+>
             <div class="lienzo-play-card-box__info">
               <div class="play-text">${escapeHtml(play.play_text || "Sin texto")}</div>
 
@@ -200,89 +204,120 @@
       </div>
     `;
   }
+  
+function bindSourceDrag(play) {
+  const card = document.getElementById("lienzo-jpica-card");
+  if (!card) return;
 
+  card.addEventListener("dragstart", (event) => {
+    window.__draggingPlacardCard = {
+      source: "lienzoJpica",
+      rank: "J",
+      suit: "SPADE",
+      playId: play.id
+    };
+
+    event.dataTransfer.effectAllowed = "copy";
+    event.dataTransfer.setData("text/plain", "J|SPADE");
+  });
+
+  card.addEventListener("dragend", () => {
+    window.__draggingPlacardCard = null;
+  });
+}
   function renderAmsterdam(play) {
-    return `
-      <section class="lienzo-panel lienzo-panel--target">
-        <div class="panel-topbar">
-          <div class="panel-topbar__col panel-topbar__col--identity">
-            <div class="lienzo-target-header lienzo-target-header--top">
-              <img
-                class="lienzo-target-header__photo"
-                src="/assets/icons/Extra120.gif"
-                alt="Publicar"
-              />
-              <div class="lienzo-target-header__name">
-                Publicar
-              </div>
+  return `
+    <section class="lienzo-panel lienzo-panel--target">
+      <div class="panel-topbar">
+        <div class="panel-topbar__col panel-topbar__col--identity">
+          <div class="lienzo-target-header lienzo-target-header--top">
+            <img
+              class="lienzo-target-header__photo"
+              src="/assets/icons/Extra120.gif"
+              alt="Publicar"
+            />
+            <div class="lienzo-target-header__name">
+              Publicar
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="lienzo-target-mainrow">
-          <div id="lienzo-jpica-dropzone" class="lienzo-target-dropzone">
-            <div class="lienzo-play-card-box">
-              <div class="lienzo-play-card-box__info">
-                <div class="play-text">
-                  Vas a publicar esta actividad como noticia.
-                </div>
-
-                <div class="play-meta">
-                  A partir de la publicación, todos los usuarios de CoopTrack podrán leer su contenido y verla en Noticias.
-                </div>
-
-                <div class="play-meta">
-                  Si querés convertirla en una publicación con valor económico, bajá una Q♥ a esta tribuna.
-                </div>
-              </div>
-
-              <div class="lienzo-play-card-box__actions">
-                <button id="lienzo-publish-simple-btn" class="icon-btn" title="Publicar">
-                  <img src="/assets/icons/Extra120.gif" alt="Publicar" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          ${hasDroppedQHeart() ? renderQHeartBox(play) : ""}
+      <div class="lienzo-publicar-copy">
+        <div class="play-text">
+          Vas a publicar esta actividad como noticia.
         </div>
-      </section>
-    `;
+
+        <div class="play-meta">
+          A partir de la publicación, todos los usuarios de CoopTrack podrán leer su contenido y verla en Noticias.
+        </div>
+
+        <div class="play-meta">
+          Si querés convertirla en una publicación con valor económico, bajá una Q♥ a esta tribuna.
+        </div>
+      </div>
+
+      <div class="lienzo-target-mainrow">
+        <div id="lienzo-jpica-dropzone" class="lienzo-target-dropzone">
+          <div class="lienzo-drop-hint">
+            Soltá la J♠ acá para publicarla
+          </div>
+        </div>
+
+        ${hasDroppedQHeart() ? renderQHeartBox(play) : ""}
+      </div>
+    </section>
+  `;
+}
+
+function bindDropzone(play) {
+  const zone = document.getElementById("lienzo-jpica-dropzone");
+  if (!zone) return;
+
+  function getDraggingCard() {
+    return window.__draggingPlacardCard || null;
   }
 
-  function bindDropzone(play) {
-    const zone = document.getElementById("lienzo-jpica-dropzone");
-    if (!zone) return;
+  function getCardType(card) {
+    const rank = String(card?.rank || "").toUpperCase();
+    const suit = String(card?.suit || "").toUpperCase();
 
-    zone.addEventListener("dragover", (event) => {
-      event.preventDefault();
+    return {
+      isJSpade: rank === "J" && suit === "SPADE",
+      isQHeart: rank === "Q" && suit === "HEART"
+    };
+  }
 
-      const card = window.__draggingPlacardCard || null;
-      const isQHeart =
-        String(card?.rank || "").toUpperCase() === "Q" &&
-        String(card?.suit || "").toUpperCase() === "HEART";
+  zone.addEventListener("dragover", (event) => {
+    event.preventDefault();
 
-      zone.classList.toggle("is-drag-valid", isQHeart);
-      zone.classList.toggle("is-drag-invalid", !isQHeart);
+    const card = getDraggingCard();
+    const { isJSpade, isQHeart } = getCardType(card);
+    const isValid = isJSpade || isQHeart;
 
-      event.dataTransfer.dropEffect = isQHeart ? "copy" : "none";
-    });
+    zone.classList.toggle("is-drag-valid", isValid);
+    zone.classList.toggle("is-drag-invalid", !isValid);
 
-    zone.addEventListener("dragleave", () => {
-      zone.classList.remove("is-drag-valid", "is-drag-invalid");
-    });
+    event.dataTransfer.dropEffect = isValid ? "copy" : "none";
+  });
 
-    zone.addEventListener("drop", (event) => {
-      event.preventDefault();
-      zone.classList.remove("is-drag-valid", "is-drag-invalid");
+  zone.addEventListener("dragleave", () => {
+    zone.classList.remove("is-drag-valid", "is-drag-invalid");
+  });
 
-      const card = window.__draggingPlacardCard || null;
-      const isQHeart =
-        String(card?.rank || "").toUpperCase() === "Q" &&
-        String(card?.suit || "").toUpperCase() === "HEART";
+  zone.addEventListener("drop", (event) => {
+    event.preventDefault();
+    zone.classList.remove("is-drag-valid", "is-drag-invalid");
 
-      if (!isQHeart) return;
+    const card = getDraggingCard();
+    const { isJSpade, isQHeart } = getCardType(card);
 
+    if (isJSpade) {
+      publishSimple(play);
+      return;
+    }
+
+    if (isQHeart) {
       setDroppedQHeart({
         rank: "Q",
         suit: "HEART",
@@ -291,8 +326,9 @@
       });
 
       renderLienzoJpica(play);
-    });
-  }
+    }
+  });
+}
 
   async function publishSimple(play) {
     const token = localStorage.getItem("cooptrackToken");
@@ -349,6 +385,7 @@
     `;
 
     mountPlacard(play);
+    bindSourceDrag(play);
     bindDropzone(play);
     bindActions(play);
   }
