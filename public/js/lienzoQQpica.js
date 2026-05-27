@@ -1353,15 +1353,13 @@
       String(play?.play_status || "").trim().toUpperCase() === "PENDING";
 
     return `
-    <div class="lienzo-qheart-box lienzo-qheart-box--readonly">
+    <div
+  class="lienzo-qheart-box lienzo-qheart-box--readonly lienzo-play-card-box"
+  data-card-label="${escapeHtml(
+    getCardLabel("Q", qqState.attachedSuit || "HEART")
+  )}"
+>
 
-      <div class="lienzo-qheart-box__card">
-        <img
-          class="lienzo-card-image"
-          src="${escapeHtml(getCardImageSrc("Q", qqState.attachedSuit || "HEART"))}"
-          alt="Q♥"
-        />
-      </div>
 
       <div class="lienzo-qheart-box__content">
 
@@ -2139,7 +2137,6 @@
     const rank = normalizeRank(options.rank || play?.card_rank || play?.rank);
     const suit = normalizeSuit(options.suit || play?.card_suit || play?.suit);
 
-    const imageSrc = getCardImageSrc(rank, suit);
     const title = getCardLabel(rank, suit);
 
     const parentText = parentPlay?.play_text || "";
@@ -2155,7 +2152,10 @@
       : String(parentPlay?.location || "").trim();
 
     return `
-    <div class="lienzo-play-card-box">
+    <div
+  class="lienzo-play-card-box"
+  data-card-label="${escapeHtml(title)}"
+>
       <div class="lienzo-play-card-box__row">
 
         <div class="lienzo-play-card-box__card">
