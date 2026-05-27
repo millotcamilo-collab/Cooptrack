@@ -1550,3 +1550,77 @@ body {
 .lienzo-play-card-box[data-card-label*="♣"]::before {
   color: #1c1c1c;
 }
+
+/* Naipe limpio para J/Q en lienzos */
+.lienzo-play-card-box {
+  position: relative;
+  overflow: hidden;
+
+  width: 120px;
+  min-height: 170px;
+  padding: 26px 14px;
+
+  background: #fff !important;
+  border: 2px solid #111;
+  border-radius: 8px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+
+  color: #111;
+  box-sizing: border-box;
+}
+
+/* Esquinas del naipe */
+.lienzo-play-card-box::before,
+.lienzo-play-card-box::after {
+  content: attr(data-card-label);
+  position: absolute;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 0.85;
+
+  white-space: pre-line;
+  pointer-events: none;
+  user-select: none;
+}
+
+.lienzo-play-card-box::before {
+  top: 6px;
+  left: 5px;
+}
+
+.lienzo-play-card-box::after {
+  right: 5px;
+  bottom: 6px;
+  transform: rotate(180deg);
+}
+
+/* Rojo / negro */
+.lienzo-play-card-box[data-card-label*="♥"],
+.lienzo-play-card-box[data-card-label*="♦"] {
+  color: #d00000;
+}
+
+.lienzo-play-card-box[data-card-label*="♠"],
+.lienzo-play-card-box[data-card-label*="♣"] {
+  color: #000;
+}
+
+/* El contenido va por encima del fondo de naipe */
+.lienzo-play-card-box > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Para que el texto no tape las esquinas */
+.lienzo-play-card-box__info {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+/* En QQpica, la caja Q♥/Q♦ no debe traer el viejo fondo */
+.lienzo-qheart-box.lienzo-play-card-box {
+  background-image: none !important;
+  background: #fff !important;
+}
