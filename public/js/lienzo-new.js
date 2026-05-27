@@ -429,7 +429,8 @@
 
     const backgroundRank = options.backgroundRank || rank;
     const backgroundSuit = options.backgroundSuit || suit;
-    const backgroundSrc = getCardImageSrc(backgroundRank, backgroundSuit);
+    const backgroundLabel =
+      `${backgroundRank}${getSuitSymbol(backgroundSuit)}`;
     const boxId = options.id ? `id="${escapeHtml(options.id)}"` : "";
     const extraClass = options.extraClass ? ` ${escapeHtml(options.extraClass)}` : "";
 
@@ -451,7 +452,9 @@
     <div
   ${boxId}
   class="lienzo-play-card-box${extraClass}"
-  style="background-image:url('${escapeHtml(backgroundSrc)}')"
+  data-card-label="${escapeHtml(
+  backgroundLabel.replace(/([A-Z]+)([♥♠♦♣])/, '$1\n$2')
+)}"
 >
       <div class="lienzo-play-card-box__row">
         <div class="lienzo-play-card-box__card">
@@ -574,7 +577,7 @@
       dropzone.innerHTML = renderPlayCardBox(draft, {
         showActions: true
       });
-    } 
+    }
 
     bindActionButtons();
   }

@@ -126,7 +126,8 @@
 <div
   id="lienzo-jpica-card"
   class="lienzo-parent-play-box lienzo-parent-play-box--inline lienzo-play-card-box"
-  style="background-image:url('/assets/icons/Jpike.gif')"
+  data-card-label="J
+♠"
   draggable="true"
   data-rank="J"
   data-suit="SPADE"
@@ -264,7 +265,8 @@ function bindSourceDrag(play) {
       ? `
         <div
           class="lienzo-parent-play-box lienzo-parent-play-box--inline lienzo-play-card-box"
-          style="background-image:url('/assets/icons/Jpike.gif')"
+          data-card-label="J
+♠"
         >
           <div class="lienzo-play-card-box__info">
             <div class="play-text">${escapeHtml(play.play_text || "Sin texto")}</div>
