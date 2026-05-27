@@ -353,24 +353,21 @@
     bindActions(play);
   }
 
-  function init() {
-    const playId = getPlayIdFromUrl();
-    const play = getPlayById(playId);
-    const container = getLienzoContainer();
+  window.openLienzoJpicaByPlayId = function (playId) {
+  const play = getPlayById(playId);
+  const container = getLienzoContainer();
 
-    if (!play) {
-      if (container) {
-        container.innerHTML = `
-          <div class="lienzo-error">
-            No se encontró la J♠ para publicar.
-          </div>
-        `;
-      }
-      return;
+  if (!play) {
+    if (container) {
+      container.innerHTML = `
+        <div class="lienzo-error">
+          No se encontró la J♠ para publicar.
+        </div>
+      `;
     }
-
-    renderLienzoJpica(play);
+    return;
   }
 
-  document.addEventListener("DOMContentLoaded", init);
+  renderLienzoJpica(play);
+};
 })();
