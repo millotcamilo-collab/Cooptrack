@@ -569,50 +569,6 @@
       console.warn("No se pudo sincronizar tableroView en URL", error);
     }
   }
-  async function publishJSpadeAsNews(playId) {
-    try {
-      const confirmed = window.confirm(
-        "Vas a publicar esta actividad como noticia.\n\n" +
-        "A partir de la publicación, todos los usuarios de CoopTrack podrán leer su contenido y verla en Noticias.\n\n" +
-        "¿Querés continuar?"
-      );
-
-      if (!confirmed) return;
-
-      const token = localStorage.getItem("cooptrackToken");
-
-      if (!token) {
-        alert("No estás logueado");
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/plays/${playId}/readers/public`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.ok) {
-        console.error("Error publicando noticia:", data);
-        alert(data?.error || "No se pudo publicar la noticia");
-        return;
-      }
-
-      alert("Noticia publicada");
-
-      window.location.href = "/noticias.html";
-
-      document.dispatchEvent(new CustomEvent("plays:changed", {
-        detail: { deckId }
-      }));
-    } catch (error) {
-      console.error("Error en publishJSpadeAsNews", error);
-      alert("No se pudo publicar la noticia");
-    }
-  }
 
   function initTableroViewFromUrlOnce() {
     if (hasInitializedTableroViewFromUrl) return;

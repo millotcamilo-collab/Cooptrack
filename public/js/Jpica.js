@@ -883,11 +883,21 @@
           `/lienzo-new.html?deckId=${deckId}&parentPlayId=${playId}&childRank=Q&childSuit=SPADE`;
       });
 
-      btnPublishNews?.addEventListener("click", () => {
-        dispatch("tablero:publish-news", {
-          playId
-        });
-      });
+btnPublishNews?.addEventListener("click", () => {
+  const deckId =
+    context?.state?.deck?.id ||
+    context?.state?.mazo?.id ||
+    window.__currentDeck?.id ||
+    null;
+
+  if (!deckId || !playId) {
+    alert("No se pudo abrir el lienzo de publicación");
+    return;
+  }
+
+  window.location.href =
+    `/lienzoJpica.html?deckId=${deckId}&playId=${playId}`;
+});
 
       btnRoutine?.addEventListener("click", async () => {
         await loadRecurrenceIfNeeded();

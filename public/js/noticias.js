@@ -21,27 +21,15 @@ async function fetchNewsPlays() {
   return data.plays || [];
 }
 
-  function openPlay(play) {
-    const deckId = Number(play.deck_id || 0);
-    const playId = Number(play.id || 0);
+function openPlay(play) {
+  const deckId = Number(play.deck_id || 0);
+  const playId = Number(play.id || 0);
 
-    if (!deckId || !playId) return;
+  if (!deckId || !playId) return;
 
-    const rank = String(play.card_rank || "").toUpperCase();
-    const suit = String(play.card_suit || "").toUpperCase();
-
-    if (rank === "Q" && suit === "SPADE") {
-      window.location.href = `/lienzoQpica.html?deckId=${deckId}&playId=${playId}`;
-      return;
-    }
-
-    if (rank === "K") {
-      window.location.href = `/lienzoK.html?deckId=${deckId}&playId=${playId}`;
-      return;
-    }
-
-    window.location.href = `/lienzo.html?deckId=${deckId}&playId=${playId}`;
-  }
+  window.location.href =
+    `/lienzoQpica.html?deckId=${deckId}&parentPlayId=${playId}&mode=news`;
+}
 
 function escapeHtml(value) {
   return String(value ?? "")
