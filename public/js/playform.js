@@ -173,16 +173,7 @@
           </button>
         </div>
 
-        <div class="playform__right">
-          <button
-            type="button"
-            class="playform__exit-btn"
-            id="playformCloseBtn"
-            title="Cerrar"
-          >
-            <img src="/assets/icons/exit40.gif" alt="Cerrar" />
-          </button>
-        </div>
+
 
       </div>
 
@@ -228,9 +219,6 @@
       });
     });
 
-    document.getElementById("playformCloseBtn")?.addEventListener("click", () => {
-      closeJPlayform();
-    });
 
     document.getElementById("playformTextInput")?.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {

@@ -903,9 +903,9 @@ function syncQHeartSendButtonVisibility() {
             : String(parentPlay?.location || "").trim();
 
         return `
-    <div
+<div
   class="lienzo-play-card-box"
-  style="background-image:url('${escapeHtml(imageSrc)}')"
+  data-card-label="${escapeHtml(title)}"
 >
 
       <div class="lienzo-play-card-box__row">

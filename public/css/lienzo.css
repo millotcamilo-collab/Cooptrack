@@ -1512,3 +1512,41 @@ body {
   z-index: 2;
   margin-top: 10px;
 }
+
+.lienzo-play-card-box {
+  position: relative;
+  overflow: hidden;
+}
+
+.lienzo-play-card-box::before {
+  content: attr(data-card-label);
+
+  position: absolute;
+  right: 18px;
+  bottom: -8px;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 110px;
+  font-weight: 700;
+  line-height: 1;
+
+  opacity: 0.08;
+  pointer-events: none;
+  user-select: none;
+}
+
+.lienzo-play-card-box[data-card-label*="♥"]::before {
+  color: #b30000;
+}
+
+.lienzo-play-card-box[data-card-label*="♦"]::before {
+  color: #c00000;
+}
+
+.lienzo-play-card-box[data-card-label*="♠"]::before {
+  color: #111;
+}
+
+.lienzo-play-card-box[data-card-label*="♣"]::before {
+  color: #1c1c1c;
+}
