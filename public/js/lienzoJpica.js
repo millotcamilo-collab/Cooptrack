@@ -258,11 +258,42 @@ function bindSourceDrag(play) {
       </div>
 
       <div class="lienzo-target-mainrow">
-        <div id="lienzo-jpica-dropzone" class="lienzo-target-dropzone">
-          <div class="lienzo-drop-hint">
-            Soltá la J♠ acá para publicarla
+<div id="lienzo-jpica-dropzone" class="lienzo-target-dropzone">
+  ${
+    hasDroppedJSpade()
+      ? `
+        <div
+          class="lienzo-parent-play-box lienzo-parent-play-box--inline lienzo-play-card-box"
+          style="background-image:url('/assets/icons/Jpike.gif')"
+        >
+          <div class="lienzo-play-card-box__info">
+            <div class="play-text">${escapeHtml(play.play_text || "Sin texto")}</div>
+
+            ${play.start_date ? `
+              <div class="play-meta">
+                <img class="play-meta__icon" src="/assets/icons/reloj60.gif" alt="" />
+                <span>${escapeHtml(formatTime(play.start_date))}</span>
+              </div>
+            ` : ""}
+
+            ${play.location ? `
+              <div class="play-meta">
+                <img class="play-meta__icon" src="/assets/icons/LocGlobito80.gif" alt="" />
+                <span>${escapeHtml(play.location)}</span>
+              </div>
+            ` : ""}
+          </div>
+
+          <div class="lienzo-play-card-box__actions">
+            <button id="lienzo-publish-simple-btn" class="icon-btn" title="Publicar">
+              <img src="/assets/icons/Extra120.gif" alt="Publicar" />
+            </button>
           </div>
         </div>
+      `
+      : `<div class="lienzo-drop-hint">Soltá la J♠ acá para preparar la publicación</div>`
+  }
+</div>
 
         ${hasDroppedQHeart() ? renderQHeartBox(play) : ""}
       </div>
@@ -313,7 +344,14 @@ function bindDropzone(play) {
     const { isJSpade, isQHeart } = getCardType(card);
 
     if (isJSpade) {
-      publishSimple(play);
+      setDroppedJSpade({
+        rank: "J",
+        suit: "SPADE",
+        targetZone: "AMSTERDAM",
+        playId: play.id
+      });
+
+      renderLienzoJpica(play);
       return;
     }
 
@@ -354,6 +392,15 @@ function bindDropzone(play) {
     alert("Noticia publicada");
     window.location.href = "/noticias.html";
   }
+
+function hasDroppedJSpade() {
+  const selection = window.__lienzoJpicaPublishedSelection || null;
+  return selection?.rank === "J" && selection?.suit === "SPADE";
+}
+
+function setDroppedJSpade(value) {
+  window.__lienzoJpicaPublishedSelection = value || null;
+}
 
   function bindActions(play) {
     const publishSimpleBtn = document.getElementById("lienzo-publish-simple-btn");
