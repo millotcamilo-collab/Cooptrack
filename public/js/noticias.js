@@ -75,10 +75,10 @@ function renderJHeartTicker(play) {
   if (!texts.length) return "";
 
   return `
-    <div class="noticia-row__jhearts">
-      <div class="noticia-row__ticker-track">
+    <div class="placard__subtitle placard__subtitle--ticker">
+      <div class="placard__ticker-track">
         ${texts
-          .map((text) => `<span class="noticia-row__ticker-item">${escapeHtml(text)}</span>`)
+          .map((text) => `<span class="placard__ticker-item">${escapeHtml(text)}</span>`)
           .join("")}
       </div>
     </div>
@@ -98,36 +98,46 @@ function renderNewsPlay(play, index) {
   const location = play.location || "—";
 
   host.innerHTML = `
-    <div class="noticia-row__header">
-      <img
-        src="${escapeHtml(photoUrl)}"
-        alt="Foto del mazo"
-        class="noticia-row__deck-photo"
-        onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
-      />
+  <section class="placard noticia-row__placard">
+    <div class="placard__row">
+      <div class="placard__lead">
+        <div class="placard__photo-wrap">
+          <img
+            src="${escapeHtml(photoUrl)}"
+            alt="Foto del mazo"
+            class="placard__photo"
+            onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
+          />
+        </div>
+      </div>
 
-      <img
-        src="/assets/icons/Acorazon.gif"
-        alt="A♥"
-        class="noticia-row__aheart"
-      />
+      <div class="placard__maincard">
+        <img
+          src="/assets/icons/Acorazon.gif"
+          alt="A♥"
+          class="placard__maincard-image"
+        />
+      </div>
 
-      <div class="noticia-row__deck-name">
-        ${escapeHtml(deckName)}
+      <div class="placard__text">
+        <div class="placard__titleline">
+          <span class="placard__name">${escapeHtml(deckName)}</span>
+        </div>
+
+        ${renderJHeartTicker(play)}
+
+        <div class="noticia-row__body">
+          <div class="noticia-row__text">${escapeHtml(text)}</div>
+
+          <div class="noticia-row__meta">
+            <span>${escapeHtml(formatDate(date))}</span>
+            <span>${escapeHtml(location)}</span>
+          </div>
+        </div>
       </div>
     </div>
-
-    ${renderJHeartTicker(play)}
-
-    <div class="noticia-row__body">
-      <div class="noticia-row__text">${escapeHtml(text)}</div>
-
-      <div class="noticia-row__meta">
-        <span>${escapeHtml(formatDate(date))}</span>
-        <span>${escapeHtml(location)}</span>
-      </div>
-    </div>
-  `;
+  </section>
+`;
 
   host.addEventListener("click", () => openPlay(play));
 
