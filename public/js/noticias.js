@@ -3,25 +3,23 @@
     return localStorage.getItem("cooptrackToken");
   }
 
-  async function fetchNewsPlays() {
-    const token = getToken();
+async function fetchNewsPlays() {
+  const token = getToken();
 
-    const response = await fetch("/plays/bitacora", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || "No se pudieron cargar las noticias");
+  const response = await fetch("/plays/noticias", {
+    headers: {
+      Authorization: `Bearer ${token}`
     }
+  });
 
-    return (data.plays || []).filter((play) =>
-      String(play.play_code || "").toLowerCase().includes("news")
-    );
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    throw new Error(data.error || "No se pudieron cargar las noticias");
   }
+
+  return data.plays || [];
+}
 
   function openPlay(play) {
     const deckId = Number(play.deck_id || 0);
