@@ -94,6 +94,8 @@
     }
   }
 
+
+
   function getHoursBetween(startValue, endValue) {
     if (!startValue || !endValue) return null;
 
@@ -215,6 +217,17 @@
       });
     }
 
+    function isPublishedNews(play) {
+      const readers = play?.reader_user_ids;
+
+      if (Array.isArray(readers)) {
+        return readers.includes("TODOS");
+      }
+
+      const raw = String(readers || "").toUpperCase();
+      return raw.includes("TODOS");
+    }
+
     function resolveClubAceHolderUserId(plays) {
       const aceClubPlays = plays
         .filter((p) => {
@@ -334,6 +347,7 @@
     const clubIcon = escapeHtml(ACTIONS.club || "");
     const qspadeIcon = escapeHtml(ACTIONS.qspade || ACTIONS.spade || "");
     const extraIcon = "/assets/icons/Extra120.gif";
+    const isPublished = isPublishedNews(play);
     const routineIcon = escapeHtml(ACTIONS.routine || "");
 
     setTimeout(() => {
@@ -582,7 +596,8 @@
           isApproved &&
           !isCancelled &&
           userIsClubAceHolder &&
-          canPublish;
+          canPublish &&
+          !isPublished;
 
         if (modeRead) modeRead.style.display = isRead ? "flex" : "none";
         if (modeEdit) modeEdit.style.display = isEdit ? "flex" : "none";
@@ -883,21 +898,21 @@
           `/lienzo-new.html?deckId=${deckId}&parentPlayId=${playId}&childRank=Q&childSuit=SPADE`;
       });
 
-btnPublishNews?.addEventListener("click", () => {
-  const deckId =
-    context?.state?.deck?.id ||
-    context?.state?.mazo?.id ||
-    window.__currentDeck?.id ||
-    null;
+      btnPublishNews?.addEventListener("click", () => {
+        const deckId =
+          context?.state?.deck?.id ||
+          context?.state?.mazo?.id ||
+          window.__currentDeck?.id ||
+          null;
 
-  if (!deckId || !playId) {
-    alert("No se pudo abrir el lienzo de publicación");
-    return;
-  }
+        if (!deckId || !playId) {
+          alert("No se pudo abrir el lienzo de publicación");
+          return;
+        }
 
-  window.location.href =
-    `/lienzoJpica.html?deckId=${deckId}&playId=${playId}`;
-});
+        window.location.href =
+          `/lienzoJpica.html?deckId=${deckId}&playId=${playId}`;
+      });
 
       btnRoutine?.addEventListener("click", async () => {
         await loadRecurrenceIfNeeded();
@@ -960,7 +975,17 @@ btnPublishNews?.addEventListener("click", () => {
     return `
   <article class="tablero-row tablero-row--jpike" id="${rowId}">
     <div class="tablero-row__left">
-      <div class="tablero-row__card">J♠</div>
+      <div class="tablero-row__card tablero-row__card--with-news">
+  <span>J♠</span>
+  ${isPublished ? `
+    <img
+      src="${extraIcon}"
+      alt="Publicada"
+      title="Noticia publicada"
+      class="tablero-row__news-badge"
+    />
+  ` : ""}
+</div>
     </div>
 
     <div class="tablero-row__center">
