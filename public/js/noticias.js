@@ -43,16 +43,96 @@ async function fetchNewsPlays() {
     window.location.href = `/lienzo.html?deckId=${deckId}&playId=${playId}`;
   }
 
-  function renderNewsPlay(play, index) {
-    const host = document.createElement("button");
-    host.type = "button";
-    host.className = "noticias-card";
-    host.id = `noticia-${play.id || index}`;
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
-    host.addEventListener("click", () => openPlay(play));
+function formatDate(value) {
+  if (!value) return "—";
 
-    return host;
-  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleString("es-UY", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function renderJHeartTicker(play) {
+  const texts = Array.isArray(play.approved_jheart_texts)
+    ? play.approved_jheart_texts
+    : [];
+
+  if (!texts.length) return "";
+
+  return `
+    <div class="noticia-row__jhearts">
+      <div class="noticia-row__ticker-track">
+        ${texts
+          .map((text) => `<span class="noticia-row__ticker-item">${escapeHtml(text)}</span>`)
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderNewsPlay(play, index) {
+  const host = document.createElement("button");
+  host.type = "button";
+  host.className = "noticias-card noticia-row";
+  host.id = `noticia-${play.id || index}`;
+
+  const photoUrl = play.deck_image_url || "/assets/icons/sinPicture.gif";
+  const deckName = play.deck_name || "Mazo";
+  const text = play.play_text || "Sin texto";
+  const date = play.start_date || play.end_date || play.created_at;
+  const location = play.location || "—";
+
+  host.innerHTML = `
+    <div class="noticia-row__header">
+      <img
+        src="${escapeHtml(photoUrl)}"
+        alt="Foto del mazo"
+        class="noticia-row__deck-photo"
+        onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
+      />
+
+      <img
+        src="/assets/icons/Acorazon.gif"
+        alt="A♥"
+        class="noticia-row__aheart"
+      />
+
+      <div class="noticia-row__deck-name">
+        ${escapeHtml(deckName)}
+      </div>
+    </div>
+
+    ${renderJHeartTicker(play)}
+
+    <div class="noticia-row__body">
+      <div class="noticia-row__text">${escapeHtml(text)}</div>
+
+      <div class="noticia-row__meta">
+        <span>${escapeHtml(formatDate(date))}</span>
+        <span>${escapeHtml(location)}</span>
+      </div>
+    </div>
+  `;
+
+  host.addEventListener("click", () => openPlay(play));
+
+  return host;
+}
 
   async function initNoticias() {
     const list = document.getElementById("noticias-list");
@@ -72,16 +152,6 @@ async function fetchNewsPlays() {
         const host = renderNewsPlay(play, index);
         list.appendChild(host);
 
-        window.renderPlacard(host, {
-          page: "lienzo-qpica",
-          play,
-          deckId: play.deck_id,
-          photoUrl: play.deck_image_url || "/assets/icons/sinPicture.gif",
-          title: play.deck_name || "Mazo",
-          rank: "A",
-          suit: "HEART",
-          showCurrency: false
-        });
       });
     } catch (error) {
       console.error(error);
