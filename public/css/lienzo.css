@@ -1601,27 +1601,29 @@ body {
 }
 
 .lienzo-card-inner {
-  position: relative;
-  z-index: 2;
+  position: absolute;
 
-  width: 76%;
-  min-height: 76%;
-
-  margin: 0px auto 0;
-  padding: 8px 7px;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
 
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
   gap: 6px;
 
-  border: 1px solid rgba(0, 0, 0, 0.28);
+  padding: 7px 6px;
+
+  border: 1px solid rgba(0,0,0,.26);
   border-radius: 6px;
 
-  background: rgba(0, 0, 0, 0.035);
-  color: #111;
+  background: rgba(0,0,0,.035);
 
   box-sizing: border-box;
   overflow: hidden;
+
+  z-index: 2;
 }
 
 .lienzo-card-inner__line {
