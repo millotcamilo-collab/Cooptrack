@@ -373,6 +373,22 @@
     return (order[aKey] || 999) - (order[bKey] || 999);
   }
 
+function renderCardCorners(rank, suit) {
+  const symbol = getSuitSymbol(suit);
+
+  return `
+    <div class="card-corner card-corner--tl">
+      <span class="card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="card-corner__suit">${escapeHtml(symbol)}</span>
+    </div>
+
+    <div class="card-corner card-corner--br">
+      <span class="card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="card-corner__suit">${escapeHtml(symbol)}</span>
+    </div>
+  `;
+}
+
   function buildSourceCardsScene(draft) {
     const ownedCards = getCurrentUserCorporateCards();
 
@@ -449,13 +465,11 @@
       : String(parentPlay?.location || "").trim();
 
     return `
-    <div
+<div
   ${boxId}
   class="lienzo-play-card-box${extraClass}"
-  data-card-label="${escapeHtml(
-  backgroundLabel.replace(/([A-Z]+)([♥♠♦♣])/, '$1\n$2')
-)}"
 >
+  ${renderCardCorners(backgroundRank, backgroundSuit)}
       <div class="lienzo-play-card-box__row">
         <div class="lienzo-play-card-box__card">
           <img

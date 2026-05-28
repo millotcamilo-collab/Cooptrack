@@ -274,6 +274,22 @@
     };
   }
 
+function renderCardCorners(rank, suit) {
+  const symbol = getSuitSymbol(suit);
+
+  return `
+    <div class="card-corner card-corner--tl">
+      <span class="card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="card-corner__suit">${escapeHtml(symbol)}</span>
+    </div>
+
+    <div class="card-corner card-corner--br">
+      <span class="card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="card-corner__suit">${escapeHtml(symbol)}</span>
+    </div>
+  `;
+}
+
   function getValidatorTribunesForPlay(play) {
     const rank = normalizeRank(play?.card_rank || play?.rank);
     const suit = normalizeSuit(play?.card_suit || play?.suit);
@@ -1355,12 +1371,8 @@
     return `
     <div
   class="lienzo-qheart-box lienzo-qheart-box--readonly lienzo-play-card-box"
-data-card-label="${escapeHtml(
-  getCardLabel("Q", qqState.attachedSuit || "HEART")
-    .replace(/([A-Z]+)([♥♠♦♣])/, '$1\n$2')
-)}"
 >
-
+${renderCardCorners("Q", qqState.attachedSuit || "HEART")}
 
       <div class="lienzo-qheart-box__content">
 
@@ -2153,13 +2165,10 @@ data-card-label="${escapeHtml(
       : String(parentPlay?.location || "").trim();
 
     return `
-    <div
+<div
   class="lienzo-play-card-box"
-  data-card-label="${escapeHtml(
-  getCardLabel("Q", qqState.attachedSuit || "HEART")
-    .replace(/([A-Z]+)([♥♠♦♣])/, '$1\n$2')
-)}"
 >
+  ${renderCardCorners(rank, suit)}
       <div class="lienzo-play-card-box__row">
 
         <div class="lienzo-play-card-box__card">

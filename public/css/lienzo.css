@@ -1252,12 +1252,6 @@ body {
   border-radius: 8px;
 }
 
-.lienzo-play-card-box__info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
 
 .play-text {
   font-weight: 600;
@@ -1493,14 +1487,19 @@ body {
   flex-direction: column;
   gap: 8px;
 
-  margin-top: 22px;
+  margin-top: 28px;
 
   width: 100%;
+  min-height: 104px;
 
-  padding: 0;
+  padding: 8px 6px;
 
-  background: none;
-  border: none;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  border-radius: 6px;
+
+  background: rgba(0, 0, 0, 0.035);
+
+  box-sizing: border-box;
 }
 
 .lienzo-play-card-box__actions {
@@ -1529,33 +1528,6 @@ body {
 /* Naipe limpio para J/Q en lienzos */
 
 
-/* Esquinas del naipe */
-.lienzo-play-card-box::before,
-.lienzo-play-card-box::after {
-  content: attr(data-card-label);
-  position: absolute;
-
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 0.85;
-
-  white-space: pre-line;
-  pointer-events: none;
-  user-select: none;
-}
-
-.lienzo-play-card-box::before {
-  top: 6px;
-  left: 5px;
-}
-
-.lienzo-play-card-box::after {
-  right: 5px;
-  bottom: 6px;
-  transform: rotate(180deg);
-}
-
 /* Rojo / negro */
 .lienzo-play-card-box[data-card-label*="♥"],
 .lienzo-play-card-box[data-card-label*="♦"] {
@@ -1583,4 +1555,37 @@ body {
 .lienzo-qheart-box.lienzo-play-card-box {
   background-image: none !important;
   background: #fff !important;
+}
+
+.card-corner {
+  position: absolute;
+  width: 22px;
+  text-align: center;
+  line-height: 1;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.card-corner__rank {
+  display: block;
+  font-size: 17px;
+  transform: scaleX(0.72);
+  transform-origin: center;
+}
+
+.card-corner__suit {
+  display: block;
+  font-size: 21px;
+}
+
+.card-corner--tl {
+  top: 6px;
+  left: 5px;
+}
+
+.card-corner--br {
+  right: 5px;
+  bottom: 6px;
+  transform: rotate(180deg);
 }

@@ -44,6 +44,22 @@
         return getAllPlays().find((play) => Number(play?.id || 0) === id) || null;
     }
 
+function renderCardCorners(rank, suit) {
+  const symbol = getSuitSymbol(suit);
+
+  return `
+    <div class="card-corner card-corner--tl">
+      <span class="card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="card-corner__suit">${escapeHtml(symbol)}</span>
+    </div>
+
+    <div class="card-corner card-corner--br">
+      <span class="card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="card-corner__suit">${escapeHtml(symbol)}</span>
+    </div>
+  `;
+}
+
     function getSuitSymbol(suit) {
         const s = normalizeSuit(suit);
         if (s === "HEART") return "♥";
@@ -905,10 +921,8 @@
         return `
 <div
   class="lienzo-play-card-box"
-  data-card-label="${escapeHtml(
-            title.replace(/([A-Z]+)([♥♠♦♣])/, '$1\n$2')
-        )}"
 >
+  ${renderCardCorners(rank, suit)}
 
       <div class="lienzo-play-card-box__row">
         
