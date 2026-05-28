@@ -548,23 +548,20 @@
         }
       }
 
-      function setVisualMode(mode) {
-        row.dataset.mode = mode;
-      }
+function canLaunchQspade(play) {
+  const limitValue = play?.end_date || play?.start_date;
+  if (!limitValue) return false;
 
-      function canLaunchQspade(play) {
-        if (!play?.start_date) return false;
+  const limit = new Date(limitValue);
 
-        const start = new Date(play.start_date);
+  if (Number.isNaN(limit.getTime())) {
+    return false;
+  }
 
-        if (Number.isNaN(start.getTime())) {
-          return false;
-        }
+  const margen = 30 * 60 * 1000;
 
-        const margen = 30 * 60 * 1000;
-
-        return (start.getTime() + margen) > Date.now();
-      }
+  return (limit.getTime() + margen) > Date.now();
+}
 
       function canPublishNews(play) {
         if (!play?.start_date) return false;
