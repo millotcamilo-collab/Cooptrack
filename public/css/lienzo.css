@@ -1326,15 +1326,6 @@ body {
   grid-template-columns: 1fr 1.45fr;
 }
 
-/* QQpica: Q♠ y Q♦/Q♥ sin marco y centradas */
-.lienzo-play-card-box,
-.lienzo-qheart-box,
-.lienzo-qheart-box--readonly {
-  border: none;
-  background: none;
-  box-shadow: none;
-}
-
 .lienzo-target-mainrow {
   width: 100%;
   justify-content: center;
@@ -1452,34 +1443,32 @@ body {
 .lienzo-play-card-box {
   position: relative;
   overflow: hidden;
-
   width: 157px;
   height: 210px;
-
-  padding: 15px;
-
+  padding: 0;
   background: #fff;
   border: 2px solid #111;
   border-radius: 10px;
-
   box-sizing: border-box;
-
   color: #111;
 }
 
-.lienzo-play-card-box {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 10px;
-}
-
 .lienzo-play-card-box__row {
-  display: block;
+  display: contents;
 }
 
 .lienzo-play-card-box__card {
   display: none;
+}
+
+.lienzo-play-card-box .lienzo-card-inner {
+  position: absolute;
+  top: 22px;
+  left: 22px;
+  right: 22px;
+  bottom: 22px;
+  margin: 0;
+  padding: 7px 6px;
 }
 
 .lienzo-play-card-box__info {
