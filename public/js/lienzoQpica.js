@@ -53,17 +53,17 @@
         return "";
     }
 
-function syncQHeartSendButtonVisibility() {
-    const sendBtn = document.getElementById("lienzo-send-btn");
-    if (!sendBtn) return;
+    function syncQHeartSendButtonVisibility() {
+        const sendBtn = document.getElementById("lienzo-send-btn");
+        if (!sendBtn) return;
 
-    if (hasDroppedQHeart()) {
-        sendBtn.style.display = "none";
-        return;
+        if (hasDroppedQHeart()) {
+            sendBtn.style.display = "none";
+            return;
+        }
+
+        sendBtn.style.display = "";
     }
-
-    sendBtn.style.display = "";
-}
 
     function getCardLabel(rank, suit) {
         return `${normalizeRank(rank)}${getSuitSymbol(suit)}`;
@@ -905,7 +905,9 @@ function syncQHeartSendButtonVisibility() {
         return `
 <div
   class="lienzo-play-card-box"
-  data-card-label="${escapeHtml(title)}"
+  data-card-label="${escapeHtml(
+            title.replace(/([A-Z]+)([♥♠♦♣])/, '$1\n$2')
+        )}"
 >
 
       <div class="lienzo-play-card-box__row">
@@ -1521,15 +1523,15 @@ ${qHeartMode
         <div class="lienzo-source-cards">
 <div class="lienzo-source-stack">
   ${scene.backgroundCards
-      .filter(card => {
-          const rank = normalizeRank(card.card_rank);
-          const suit = normalizeSuit(card.card_suit);
+                .filter(card => {
+                    const rank = normalizeRank(card.card_rank);
+                    const suit = normalizeSuit(card.card_suit);
 
-          // 🔥 sacar la J♠ que quedó afuera
-          return !(rank === "J" && suit === "SPADE");
-      })
-      .map(renderBackgroundCard)
-      .join("")}
+                    // 🔥 sacar la J♠ que quedó afuera
+                    return !(rank === "J" && suit === "SPADE");
+                })
+                .map(renderBackgroundCard)
+                .join("")}
 </div>
 
 ${parentJSpadeText
@@ -1664,13 +1666,13 @@ ${parentJSpadeText
         const payDate = String(payDateInput?.value || "").trim();
         const side = String(selection.targetZone || "").toUpperCase();
 
-if (!concept) {
-    return {
-        ok: false,
-        error: "Falta la descripción.",
-        focusEl: conceptInput || null
-    };
-}
+        if (!concept) {
+            return {
+                ok: false,
+                error: "Falta la descripción.",
+                focusEl: conceptInput || null
+            };
+        }
 
         if (!amount) {
             return {

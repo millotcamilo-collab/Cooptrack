@@ -1355,9 +1355,10 @@
     return `
     <div
   class="lienzo-qheart-box lienzo-qheart-box--readonly lienzo-play-card-box"
-  data-card-label="${escapeHtml(
-    getCardLabel("Q", qqState.attachedSuit || "HEART")
-  )}"
+data-card-label="${escapeHtml(
+  getCardLabel("Q", qqState.attachedSuit || "HEART")
+    .replace(/([A-Z]+)([♥♠♦♣])/, '$1\n$2')
+)}"
 >
 
 
@@ -2154,7 +2155,10 @@
     return `
     <div
   class="lienzo-play-card-box"
-  data-card-label="${escapeHtml(title)}"
+  data-card-label="${escapeHtml(
+  getCardLabel("Q", qqState.attachedSuit || "HEART")
+    .replace(/([A-Z]+)([♥♠♦♣])/, '$1\n$2')
+)}"
 >
       <div class="lienzo-play-card-box__row">
 
