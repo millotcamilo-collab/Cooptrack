@@ -1644,5 +1644,9 @@ body {
 
 .lienzo-play-card-box__info,
 .lienzo-qheart-box__content {
-  all: unset;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  min-height: 0;
 }
