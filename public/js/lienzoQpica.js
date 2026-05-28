@@ -1570,7 +1570,7 @@ ${parentJSpadeText
 >
   ${renderCardCorners("J", "SPADE")}
 
-      <div class="lienzo-play-card-box__info">
+      <div class="lienzo-card-inner">
         <div class="play-text">
           ${escapeHtml(parentJSpadeText)}
         </div>
