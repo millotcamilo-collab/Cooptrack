@@ -902,9 +902,7 @@ function renderCardCorners(rank, suit) {
 
         const rank = normalizeRank(play?.card_rank || play?.rank);
         const suit = normalizeSuit(play?.card_suit || play?.suit);
-        const imageSrc = getCardImageSrc(rank, suit);
 
-        const title = getCardLabel(rank, suit);
         const parentText = parentPlay?.play_text || "";
 
         const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
@@ -926,18 +924,8 @@ function renderCardCorners(rank, suit) {
   ${renderCardCorners(rank, suit)}
 
       <div class="lienzo-play-card-box__row">
-        
-        <!-- IZQUIERDA -->
-        <div class="lienzo-play-card-box__card">
-          <img
-            class="lienzo-card-image"
-            src="${escapeHtml(imageSrc)}"
-            alt="${escapeHtml(title)}"
-          />
-        </div>
 
-        <!-- DERECHA -->
-        <div class="lienzo-card-inner">
+  <div class="lienzo-card-inner">
           ${parentText ? `<div class="play-text">${escapeHtml(parentText)}</div>` : ""}
 
          ${timeLabel ? `

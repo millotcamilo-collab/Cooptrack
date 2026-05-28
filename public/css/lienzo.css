@@ -1603,10 +1603,10 @@ body {
 .lienzo-card-inner {
   position: absolute;
 
-  top: 18px;
-  left: 18px;
-  right: 18px;
-  bottom: 18px;
+  top: 22px;
+  left: 22px;
+  right: 22px;
+  bottom: 22px;
 
   display: flex;
   flex-direction: column;
