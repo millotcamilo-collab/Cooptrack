@@ -1375,7 +1375,7 @@ function renderCardCorners(rank, suit) {
 >
 ${renderCardCorners("Q", qqState.attachedSuit || "HEART")}
 
-      <div class="lienzo-qheart-box__content">
+      <div class="lienzo-card-inner">
 
         <div class="lienzo-qheart-box__title">
           ${escapeHtml(title)}
@@ -2173,7 +2173,7 @@ ${renderCardCorners("Q", qqState.attachedSuit || "HEART")}
       <div class="lienzo-play-card-box__row">
 
 
-        <div class="lienzo-play-card-box__info">
+        <div class="lienzo-card-inner">
           ${parentText ? `<div class="play-text">${escapeHtml(parentText)}</div>` : ""}
 
           ${timeLabel ? `

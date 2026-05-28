@@ -1600,20 +1600,19 @@ body {
   color: #111;
 }
 
-/* Q♥ económica: usar marco interno igual al naipe */
-.lienzo-qheart-box.lienzo-play-card-box .lienzo-qheart-box__content {
+.lienzo-card-inner {
   position: relative;
   z-index: 2;
 
-  top: auto;
-  left: auto;
-  transform: none;
-
-  width: 70%;
-  min-height: 70%;
+  width: 72%;
+  min-height: 58%;
 
   margin: 28px auto 0;
-  padding: 8px 6px;
+  padding: 8px 7px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 
   border: 1px solid rgba(0, 0, 0, 0.28);
   border-radius: 6px;
@@ -1622,15 +1621,28 @@ body {
   color: #111;
 
   box-sizing: border-box;
+  overflow: hidden;
 }
 
-.lienzo-qheart-box.lienzo-play-card-box .lienzo-qheart-box__title,
-.lienzo-qheart-box.lienzo-play-card-box .lienzo-qheart-box__readonly-line,
-.lienzo-qheart-box.lienzo-play-card-box .lienzo-qheart-box__currency {
-  color: #111;
+.lienzo-card-inner__line {
+  font-size: 13px;
+  line-height: 1.18;
+  font-weight: 600;
 }
 
-.lienzo-qheart-box.lienzo-play-card-box .lienzo-qheart-box__actions {
-  margin-top: 8px;
+.lienzo-card-inner__line--muted {
+  font-weight: 400;
+  opacity: 0.82;
+}
+
+.lienzo-card-inner__actions {
+  margin-top: auto;
+  display: flex;
   justify-content: flex-end;
+  gap: 6px;
+}
+
+.lienzo-play-card-box__info,
+.lienzo-qheart-box__content {
+  all: unset;
 }
