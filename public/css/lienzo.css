@@ -1473,6 +1473,13 @@ body {
   color: #111;
 }
 
+.lienzo-play-card-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
 .lienzo-play-card-box__row {
   display: block;
 }
@@ -1482,16 +1489,18 @@ body {
 }
 
 .lienzo-play-card-box__info {
-  position: relative;
-  z-index: 1;
-  transform: none;
-  top: auto;
-  left: auto;
-  width: auto;
-  height: auto;
-  padding: 14px 4px;
-  background: transparent;
-  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  margin-top: 28px;
+
+  width: 100%;
+
+  padding: 0;
+
+  background: none;
+  border: none;
 }
 
 .lienzo-play-card-box__actions {
