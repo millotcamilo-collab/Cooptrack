@@ -1599,3 +1599,38 @@ body {
 .card-corner--club {
   color: #111;
 }
+
+/* Q♥ económica: usar marco interno igual al naipe */
+.lienzo-qheart-box.lienzo-play-card-box .lienzo-qheart-box__content {
+  position: relative;
+  z-index: 2;
+
+  top: auto;
+  left: auto;
+  transform: none;
+
+  width: 70%;
+  min-height: 70%;
+
+  margin: 28px auto 0;
+  padding: 8px 6px;
+
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  border-radius: 6px;
+
+  background: rgba(0, 0, 0, 0.035);
+  color: #111;
+
+  box-sizing: border-box;
+}
+
+.lienzo-qheart-box.lienzo-play-card-box .lienzo-qheart-box__title,
+.lienzo-qheart-box.lienzo-play-card-box .lienzo-qheart-box__readonly-line,
+.lienzo-qheart-box.lienzo-play-card-box .lienzo-qheart-box__currency {
+  color: #111;
+}
+
+.lienzo-qheart-box.lienzo-play-card-box .lienzo-qheart-box__actions {
+  margin-top: 8px;
+  justify-content: flex-end;
+}
