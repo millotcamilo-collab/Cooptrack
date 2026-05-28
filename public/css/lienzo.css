@@ -1589,3 +1589,13 @@ body {
   bottom: 6px;
   transform: rotate(180deg);
 }
+
+.card-corner--heart,
+.card-corner--diamond {
+  color: #c00000;
+}
+
+.card-corner--spade,
+.card-corner--club {
+  color: #111;
+}

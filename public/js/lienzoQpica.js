@@ -46,14 +46,15 @@
 
 function renderCardCorners(rank, suit) {
   const symbol = getSuitSymbol(suit);
+  const suitClass = `card-corner--${normalizeSuit(suit).toLowerCase()}`;
 
   return `
-    <div class="card-corner card-corner--tl">
+    <div class="card-corner card-corner--tl ${suitClass}">
       <span class="card-corner__rank">${escapeHtml(rank)}</span>
       <span class="card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
 
-    <div class="card-corner card-corner--br">
+    <div class="card-corner card-corner--br ${suitClass}">
       <span class="card-corner__rank">${escapeHtml(rank)}</span>
       <span class="card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
