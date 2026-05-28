@@ -1318,31 +1318,32 @@ ${location ? `
         };
     }
 
-    function renderQHeartBudgetBox({
-        title,
-        currencyCode = "",
-        defaultPayDate = "",
-        defaultConcept = "",
-        defaultAmount = ""
-    }) {
-        const safeTitle = escapeHtml(title || "Paga");
-        const safeCurrency = escapeHtml(currencyCode || "");
-        const safePayDate = escapeHtml(defaultPayDate || "");
-        const safeConcept = escapeHtml(defaultConcept || "");
-        const safeAmount = escapeHtml(defaultAmount || "");
+function renderQHeartBudgetBox({
+  title,
+  currencyCode = "",
+  defaultPayDate = "",
+  defaultConcept = "",
+  defaultAmount = ""
+}) {
+  const safeTitle = escapeHtml(title || "Paga");
+  const safeCurrency = escapeHtml(currencyCode || "");
+  const safePayDate = escapeHtml(defaultPayDate || "");
+  const safeConcept = escapeHtml(defaultConcept || "");
+  const safeAmount = escapeHtml(defaultAmount || "");
 
-        return `
-    <div class="lienzo-qheart-box">
-      <div class="lienzo-qheart-box__card">
-        <img class="lienzo-card-image" src="/assets/icons/Qcorazon.gif" alt="Q♥" />
-      </div>
+  return `
+    <div class="lienzo-play-card-box lienzo-play-card-box--qheart">
 
-      <div class="lienzo-qheart-box__content">
+      ${renderCardCorners("Q", "HEART")}
+
+      <div class="lienzo-play-card-box__info">
+
         <div class="lienzo-qheart-box__title">
           ${safeTitle}
         </div>
 
         <div class="lienzo-qheart-box__body">
+
           <input
             type="text"
             class="lienzo-qheart-box__concept"
@@ -1351,7 +1352,10 @@ ${location ? `
           />
 
           <div class="lienzo-qheart-box__amount-row">
-            <span class="lienzo-qheart-box__currency">${safeCurrency}</span>
+            <span class="lienzo-qheart-box__currency">
+              ${safeCurrency}
+            </span>
+
             <input
               type="text"
               class="lienzo-qheart-box__amount"
@@ -1367,18 +1371,28 @@ ${location ? `
             value="${safePayDate}"
           />
 
-          <button
-            id="lienzo-save-btn"
-            class="icon-btn lienzo-qheart-box__save"
-            title="Guardar Q♥"
-          >
-            <img src="/assets/icons/salvar40.gif" alt="Guardar Q♥" />
-          </button>
         </div>
+
       </div>
+
+      <div class="lienzo-play-card-box__actions">
+
+        <button
+          id="lienzo-save-btn"
+          class="icon-btn lienzo-qheart-box__save"
+          title="Guardar Q♥"
+        >
+          <img
+            src="/assets/icons/salvar40.gif"
+            alt="Guardar Q♥"
+          />
+        </button>
+
+      </div>
+
     </div>
   `;
-    }
+}
 
     function renderSourceActions(play) {
         const status = String(play?.play_status || "").trim().toUpperCase();
