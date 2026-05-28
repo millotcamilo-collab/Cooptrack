@@ -1241,12 +1241,6 @@ body {
 }
 
 
-.lienzo-play-card-box {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .lienzo-play-card-box__row {
   display: flex;
   gap: 12px;
@@ -1464,16 +1458,19 @@ body {
 .lienzo-play-card-box {
   position: relative;
   overflow: hidden;
-  width: 260px;
-  min-height: 170px;
-  padding: 14px;
-  border-radius: 14px;
+
+  width: 120px;
+  height: 170px;
+
+  padding: 12px;
+
+  background: #fff;
+  border: 2px solid #111;
+  border-radius: 10px;
+
   box-sizing: border-box;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: auto 210px;
-  height: 220px;
-  border: none;
+
+  color: #111;
 }
 
 .lienzo-play-card-box__row {
@@ -1503,11 +1500,6 @@ body {
   margin-top: 10px;
 }
 
-.lienzo-play-card-box {
-  position: relative;
-  overflow: hidden;
-}
-
 
 .lienzo-play-card-box[data-card-label*="♥"]::before {
   color: #b30000;
@@ -1526,13 +1518,7 @@ body {
 }
 
 /* Naipe limpio para J/Q en lienzos */
-/* Naipe limpio para J/Q en lienzos */
-.lienzo-play-card-box {
-  width: 120px;
-  min-height: 170px;
-  background: #fff !important;
-  border: 2px solid #111;
-}
+
 
 /* Esquinas del naipe */
 .lienzo-play-card-box::before,
