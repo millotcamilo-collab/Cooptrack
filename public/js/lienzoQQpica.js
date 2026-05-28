@@ -2172,13 +2172,6 @@ ${renderCardCorners("Q", qqState.attachedSuit || "HEART")}
   ${renderCardCorners(rank, suit)}
       <div class="lienzo-play-card-box__row">
 
-        <div class="lienzo-play-card-box__card">
-          <img
-            class="lienzo-card-image"
-            src="${escapeHtml(imageSrc)}"
-            alt="${escapeHtml(title)}"
-          />
-        </div>
 
         <div class="lienzo-play-card-box__info">
           ${parentText ? `<div class="play-text">${escapeHtml(parentText)}</div>` : ""}
