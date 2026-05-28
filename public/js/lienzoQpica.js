@@ -1550,10 +1550,10 @@ ${qHeartMode
 
 ${parentJSpadeText
                 ? `
-    <div
+<div
   class="lienzo-parent-play-box lienzo-parent-play-box--inline lienzo-play-card-box"
-  data-card-label="J♠"
 >
+  ${renderCardCorners("J", "SPADE")}
 
       <div class="lienzo-play-card-box__info">
         <div class="play-text">
