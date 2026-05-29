@@ -443,6 +443,17 @@ function renderAssignedTargetPanel(user) {
         return String(value || "").trim().toUpperCase();
     }
 
+function getSuitSymbol(suit) {
+  const s = normalizeSuit(suit);
+
+  if (s === "HEART") return "♥";
+  if (s === "SPADE") return "♠";
+  if (s === "DIAMOND") return "♦";
+  if (s === "CLUB") return "♣";
+
+  return "";
+}
+
     function escapeHtml(value) {
         return String(value ?? "")
             .replace(/&/g, "&amp;")
