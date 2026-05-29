@@ -1521,40 +1521,37 @@ ${qHeartMode
       `
             : "";
 
-        const topbar = buildPanelTopbar({
-            identityHtml: `
-        <div class="lienzo-source-header lienzo-source-header--top">
+        const identityHtml = `
+  <div class="lienzo-tribune__identity">
+    <img
+      class="lienzo-tribune__avatar"
+      src="${escapeHtml(userPhoto)}"
+      alt="${escapeHtml(userName)}"
+    />
 
-          <img
-            class="lienzo-source-header__photo"
-            src="${escapeHtml(userPhoto)}"
-            alt="${escapeHtml(userName)}"
-          />
-          <div class="lienzo-source-header__name">
-            ${escapeHtml(userName)}
-          </div>
-        </div>
-      `,
-            actionsHtml: ""
-        });
+    <div class="lienzo-tribune__name">
+      ${escapeHtml(userName)}
+    </div>
+  </div>
+`;
 
         return `
-      <section class="lienzo-tribune lienzo-tribune--source panel--split-top">
-        ${topbar}
+<section class="lienzo-tribune lienzo-tribune--source">
+  <div class="lienzo-tribune__corporates">
+    ${scene.backgroundCards
+      .filter(card => {
+        const rank = normalizeRank(card.card_rank);
+        const suit = normalizeSuit(card.card_suit);
+        return !(rank === "J" && suit === "SPADE");
+      })
+      .map(renderBackgroundCard)
+      .join("")}
+  </div>
+
+  ${identityHtml}
 
         <div class="lienzo-tribune__stage">
-<div class="lienzo-source-stack">
-  ${scene.backgroundCards
-                .filter(card => {
-                    const rank = normalizeRank(card.card_rank);
-                    const suit = normalizeSuit(card.card_suit);
 
-                    // 🔥 sacar la J♠ que quedó afuera
-                    return !(rank === "J" && suit === "SPADE");
-                })
-                .map(renderBackgroundCard)
-                .join("")}
-</div>
 
 ${parentJSpadeText
                 ? `
