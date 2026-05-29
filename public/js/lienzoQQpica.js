@@ -276,17 +276,16 @@
 
 function renderCardCorners(rank, suit) {
   const symbol = getSuitSymbol(suit);
-  const suitClass = `card-corner--${normalizeSuit(suit).toLowerCase()}`;
 
   return `
-    <div class="card-corner card-corner--tl ${suitClass}">
-      <span class="card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="card-corner__suit">${escapeHtml(symbol)}</span>
+    <div class="lv2-card-corner lv2-card-corner--tl">
+      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
 
-    <div class="card-corner card-corner--br ${suitClass}">
-      <span class="card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="card-corner__suit">${escapeHtml(symbol)}</span>
+    <div class="lv2-card-corner lv2-card-corner--br">
+      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
   `;
 }
@@ -355,60 +354,59 @@ function renderCardCorners(rank, suit) {
   }
 
 
-  function renderUserTribune(user, cards = []) {
-    const plays = getAllPlays();
-    const userId = Number(user?.userId || user?.id || 0);
+function renderUserTribune(user, cards = []) {
+  const plays = getAllPlays();
+  const userId = Number(user?.userId || user?.id || 0);
 
-    const ownerPlay = plays.find((p) => {
-      const isCreator = Number(p?.created_by_user_id || 0) === userId;
-      const isTarget = Number(p?.target_user_id || 0) === userId;
+  const ownerPlay = plays.find((p) => {
+    const isCreator = Number(p?.created_by_user_id || 0) === userId;
+    const isTarget = Number(p?.target_user_id || 0) === userId;
 
-      if (isCreator && p?.created_by_profile_photo_url) return true;
-      if (isTarget && p?.target_user_profile_photo_url) return true;
+    if (isCreator && p?.created_by_profile_photo_url) return true;
+    if (isTarget && p?.target_user_profile_photo_url) return true;
 
-      return false;
-    });
+    return false;
+  });
 
-    const name =
-      user?.nickname ||
-      ownerPlay?.target_user_nickname ||
-      ownerPlay?.created_by_nickname ||
-      "Usuario";
+  const name =
+    user?.nickname ||
+    ownerPlay?.target_user_nickname ||
+    ownerPlay?.created_by_nickname ||
+    "Usuario";
 
-    const photo =
-      user?.profile_photo_url ||
-      (
-        Number(ownerPlay?.created_by_user_id || 0) === userId
-          ? ownerPlay?.created_by_profile_photo_url
-          : ownerPlay?.target_user_profile_photo_url
-      ) ||
-      "/assets/icons/singeta120.gif";
+  const photo =
+    user?.profile_photo_url ||
+    (
+      Number(ownerPlay?.created_by_user_id || 0) === userId
+        ? ownerPlay?.created_by_profile_photo_url
+        : ownerPlay?.target_user_profile_photo_url
+    ) ||
+    "/assets/icons/singeta120.gif";
 
+  return `
+    <section class="lienzo-tribune">
 
-    return `
-    <section class="lienzo-panel lienzo-panel--source panel--split-top">
-      <div class="panel-topbar panel-topbar--single">
-        <div class="panel-topbar__col panel-topbar__col--identity">
-          <div class="lienzo-source-header lienzo-source-header--top">
-            
-            <img
-              class="lienzo-source-header__photo"
-              src="${escapeHtml(photo)}"
-              alt="${escapeHtml(name)}"
-            />
-            <div class="lienzo-source-header__name">${escapeHtml(name)}</div>
-          </div>
+      <div class="lienzo-tribune__corporates">
+        ${cards.map(renderBackgroundCard).join("")}
+      </div>
+
+      <div class="lienzo-tribune__identity">
+        <img
+          class="lienzo-tribune__avatar"
+          src="${escapeHtml(photo)}"
+          alt="${escapeHtml(name)}"
+        />
+
+        <div class="lienzo-tribune__name">
+          ${escapeHtml(name)}
         </div>
       </div>
 
-      <div class="lienzo-source-cards">
-        <div class="lienzo-source-stack">
-          ${cards.map(renderBackgroundCard).join("")}
-        </div>
-      </div>
+      <div class="lienzo-tribune__stage"></div>
+
     </section>
   `;
-  }
+}
 
   function resolveAuthorityTribuneForTarget(play) {
     const aceClubTribune = getAceOwnerTribune("CLUB");
@@ -1252,18 +1250,18 @@ function renderCardCorners(rank, suit) {
     });
   }
 
-  function renderBackgroundCard(card, index) {
-    const src = getCardImageSrc(card?.card_rank, card?.card_suit);
+function renderBackgroundCard(card, index) {
+  const src = getCardImageSrc(card?.card_rank, card?.card_suit);
 
-    return `
-      <img
-        class="lienzo-source-stack__card"
-        src="${escapeHtml(src)}"
-        alt=""
-        style="left:${index * 18}px;"
-      />
-    `;
-  }
+  return `
+    <img
+      class="lienzo-tribune__corporate-card"
+      src="${escapeHtml(src)}"
+      alt=""
+      style="left:${index * 18}px;"
+    />
+  `;
+}
 
   function buildSourceCardsScene(play) {
     const sourceUser = resolveSourceUser(play);
@@ -1340,106 +1338,102 @@ function renderCardCorners(rank, suit) {
   }
 
   function renderQQHeartSummaryBox(play, qqState) {
-    if (!qqState) return "";
+  if (!qqState) return "";
 
-    const settlement = getQQPicaSettlementState(play);
+  const settlement = getQQPicaSettlementState(play);
 
-    let title = `Paga ${qqState.payerLabel}`;
+  let title = `Paga ${qqState.payerLabel}`;
 
-    if (settlement?.status === "PAID") {
-      title = `Pagó ${qqState.payerLabel}`;
-    } else if (settlement?.status === "COMPLAINED") {
-      title = `Incumplió ${qqState.payerLabel}`;
-    }
+  if (settlement?.status === "PAID") {
+    title = `Pagó ${qqState.payerLabel}`;
+  } else if (settlement?.status === "COMPLAINED") {
+    title = `Incumplió ${qqState.payerLabel}`;
+  }
 
-    const status = String(play?.play_status || "").trim().toUpperCase();
+  const status = String(play?.play_status || "").trim().toUpperCase();
 
-    const showSend =
-      isCurrentUserSource(play) &&
-      status !== "SENT" &&
-      status !== "APPROVED" &&
-      status !== "REJECTED" &&
-      status !== "CANCELLED";
+  const showSend =
+    isCurrentUserSource(play) &&
+    status !== "SENT" &&
+    status !== "APPROVED" &&
+    status !== "REJECTED" &&
+    status !== "CANCELLED";
 
-    const showTargetActions =
-      isCurrentUserTarget(play) &&
-      shouldShowTargetDecisionButtons(play);
+  const showTargetActions =
+    isCurrentUserTarget(play) &&
+    shouldShowTargetDecisionButtons(play);
 
-    const showValidatorActions =
-      isCurrentUserValidator(play) &&
-      String(play?.play_status || "").trim().toUpperCase() === "PENDING";
+  const showValidatorActions =
+    isCurrentUserValidator(play) &&
+    status === "PENDING";
 
-    return `
-    <div
-  class="lienzo-qheart-box lienzo-qheart-box--readonly lienzo-play-card-box"
->
-${renderCardCorners("Q", qqState.attachedSuit || "HEART")}
+  return `
+    <div class="lv2-play-card lv2-play-card--qheart">
+      ${renderCardCorners("Q", qqState.attachedSuit || "HEART")}
 
-      <div class="lienzo-card-inner">
+      <div class="lv2-play-card__inner">
 
-        <div class="lienzo-qheart-box__title">
+        <div class="lv2-play-card__title">
           ${escapeHtml(title)}
         </div>
 
-        <div class="lienzo-qheart-box__body">
-
-          <div class="lienzo-qheart-box__readonly-line">
-            ${escapeHtml(qqState.concept)}
-          </div>
-
-          <div class="lienzo-qheart-box__readonly-line">
-            ${escapeHtml(qqState.currency)}
-            ${escapeHtml(qqState.amount)}
-          </div>
-
-          <div class="lienzo-qheart-box__readonly-line">
-            ${escapeHtml(qqState.payDate)}
-          </div>
-
+        <div class="lv2-play-card__meta">
+          <span>${escapeHtml(qqState.concept || "")}</span>
         </div>
 
-        <div class="lienzo-qheart-box__actions">
+        <div class="lv2-play-card__meta">
+          <span>
+            ${escapeHtml(qqState.currency || "")}
+            ${escapeHtml(qqState.amount || "")}
+          </span>
+        </div>
 
-  ${showSend
-        ? `
-      <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
-        <img src="/assets/icons/buzon60.gif" alt="Enviar" />
-      </button>
-    `
-        : ""
-      }
+        <div class="lv2-play-card__meta">
+          <span>${escapeHtml(qqState.payDate || "")}</span>
+        </div>
 
-  ${showTargetActions
-        ? `
-      <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
-        <img src="/assets/icons/Sello40.gif" alt="Aceptar" />
-      </button>
+        <div class="lv2-play-card__actions">
 
-      <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
-        <img src="/assets/icons/stepback40.gif" alt="Rechazar" />
-      </button>
-    `
-        : ""
-      }
-      ${showValidatorActions
-        ? `
-    <button id="lienzo-validator-send-btn" class="icon-btn" title="Validar y enviar">
-      <img src="/assets/icons/buzon60.gif" alt="Validar y enviar" />
-    </button>
+          ${showSend
+            ? `
+              <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
+                <img src="/assets/icons/buzon60.gif" alt="Enviar" />
+              </button>
+            `
+            : ""
+          }
 
-    <button id="lienzo-validator-reject-btn" class="icon-btn" title="Rechazar validación">
-      <img src="/assets/icons/stepback40.gif" alt="Rechazar validación" />
-    </button>
-  `
-        : ""
-      }
+          ${showTargetActions
+            ? `
+              <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
+                <img src="/assets/icons/Sello40.gif" alt="Aceptar" />
+              </button>
 
-</div>
+              <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
+                <img src="/assets/icons/stepback40.gif" alt="Rechazar" />
+              </button>
+            `
+            : ""
+          }
 
+          ${showValidatorActions
+            ? `
+              <button id="lienzo-validator-send-btn" class="icon-btn" title="Validar y enviar">
+                <img src="/assets/icons/buzon60.gif" alt="Validar y enviar" />
+              </button>
+
+              <button id="lienzo-validator-reject-btn" class="icon-btn" title="Rechazar validación">
+                <img src="/assets/icons/stepback40.gif" alt="Rechazar validación" />
+              </button>
+            `
+            : ""
+          }
+
+        </div>
       </div>
     </div>
   `;
-  }
+}
 
   function renderSourceActions(play) {
     const status = String(play?.play_status || "").trim().toUpperCase();
@@ -2145,194 +2139,186 @@ ${renderCardCorners("Q", qqState.attachedSuit || "HEART")}
 
   }
 
-  function renderPlayCardBox(play, options = {}) {
-    const parentPlay = getPlayById(play?.parent_play_id);
+function renderPlayCardBox(play, options = {}) {
+  const parentPlay = getPlayById(play?.parent_play_id);
 
-    const rank = normalizeRank(options.rank || play?.card_rank || play?.rank);
-    const suit = normalizeSuit(options.suit || play?.card_suit || play?.suit);
+  const rank = normalizeRank(options.rank || play?.card_rank || play?.rank);
+  const suit = normalizeSuit(options.suit || play?.card_suit || play?.suit);
 
-    const title = getCardLabel(rank, suit);
+  const parentText = parentPlay?.play_text || "";
+  const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
+  const isDeadline = spadeMode === "DEADLINE";
 
-    const parentText = parentPlay?.play_text || "";
-    const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
-    const isDeadline = spadeMode === "DEADLINE";
+  const timeLabel = isDeadline
+    ? formatTimeLabel(parentPlay?.end_date)
+    : formatTimeLabel(parentPlay?.start_date);
 
-    const timeLabel = isDeadline
-      ? formatTimeLabel(parentPlay?.end_date)
-      : formatTimeLabel(parentPlay?.start_date);
+  const location = isDeadline
+    ? ""
+    : String(parentPlay?.location || "").trim();
 
-    const location = isDeadline
-      ? ""
-      : String(parentPlay?.location || "").trim();
+  return `
+    <div class="lv2-play-card">
+      ${renderCardCorners(rank, suit)}
 
-    return `
-<div
-  class="lienzo-play-card-box"
->
-  ${renderCardCorners(rank, suit)}
-      <div class="lienzo-play-card-box__row">
+      <div class="lv2-play-card__inner">
+        ${parentText ? `
+          <div class="lv2-play-card__title">
+            ${escapeHtml(parentText)}
+          </div>
+        ` : ""}
 
+        ${timeLabel ? `
+          <div class="lv2-play-card__meta">
+            <img
+              class="lv2-play-card__meta-icon"
+              src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}"
+              alt=""
+            />
+            <span>${escapeHtml(timeLabel)}</span>
+          </div>
+        ` : ""}
 
-        <div class="lienzo-card-inner">
-          ${parentText ? `<div class="play-text">${escapeHtml(parentText)}</div>` : ""}
-
-          ${timeLabel ? `
-            <div class="play-meta">
-              <img
-                class="play-meta__icon"
-                src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}"
-                alt=""
-              />
-              <span>${escapeHtml(timeLabel)}</span>
-            </div>
-          ` : ""}
-
-          ${location ? `
-            <div class="play-meta">
-              <img
-                class="play-meta__icon"
-                src="/assets/icons/LocGlobito80.gif"
-                alt=""
-              />
-              <span>${escapeHtml(location)}</span>
-            </div>
-          ` : ""}
-        </div>
-
+        ${location ? `
+          <div class="lv2-play-card__meta">
+            <img
+              class="lv2-play-card__meta-icon"
+              src="/assets/icons/LocGlobito80.gif"
+              alt=""
+            />
+            <span>${escapeHtml(location)}</span>
+          </div>
+        ` : ""}
       </div>
     </div>
   `;
-  }
+}
 
   function renderSourcePlayerPanel(play) {
-    const user = resolveSourceUser(play);
-    const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-    const userName =
-      user?.nickname || user?.full_name || user?.name || "Anfitrión";
+  const user = resolveSourceUser(play);
+  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+  const userName =
+    user?.nickname || user?.full_name || user?.name || "Anfitrión";
 
-    const scene = buildSourceCardsScene(play);
-    const showActionsHere = isCurrentUserSource(play);
+  const scene = buildSourceCardsScene(play);
+  const showActionsHere = isCurrentUserSource(play);
 
-    const qqState = getQQPicaState(play);
-    const attachedSuit = qqState?.attachedSuit || "HEART";
-    const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "COLOMBES");
-    const parentJSpadeText = getParentJSpadeText(play);
+  const qqState = getQQPicaState(play);
+  const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "COLOMBES");
+  const parentJSpadeText = getParentJSpadeText(play);
 
-
-    const qHeartBoxHtml =
-      qqState && getQQPicaDisplayedSide(play) === "COLOMBES"
-        ? `
+  const qHeartBoxHtml =
+    qqState && getQQPicaDisplayedSide(play) === "COLOMBES"
+      ? `
         <div class="lienzo-dropped-extra-slot">
           ${renderQQHeartSummaryBox(play, qqState)}
         </div>
       `
-        : "";
+      : "";
 
-    const topbar = buildPanelTopbar({
-      identityHtml: `
-        <div class="lienzo-source-header lienzo-source-header--top">
-          
-          <img
-            class="lienzo-source-header__photo"
-            src="${escapeHtml(userPhoto)}"
-            alt="${escapeHtml(userName)}"
-          />
-          <div class="lienzo-source-header__name">
-            ${escapeHtml(userName)}
-          </div>
-        </div>
-      `,
-      actionsHtml: (showActionsHere ? renderSourceActions(play) : "") + settlementTopbarIconHtml
-    });
+  const actionsHtml =
+    (showActionsHere ? renderSourceActions(play) : "") +
+    settlementTopbarIconHtml;
 
-    return `
-      <section class="lienzo-panel lienzo-panel--source panel--split-top">
-        ${topbar}
+  return `
+    <section class="lienzo-tribune lienzo-tribune--source">
 
-<div class="lienzo-source-cards">
-  <div class="lienzo-source-stack">
-    ${scene.backgroundCards.map(renderBackgroundCard).join("")}
-  </div>
-
-  ${parentJSpadeText
-        ? `
-      <div class="lienzo-parent-play-box lienzo-parent-play-box--inline">
-        ${renderPlayCardBox(play, {
-          rank: "J",
-          suit: "SPADE"
-        })}
+      <div class="lienzo-tribune__corporates">
+        ${scene.backgroundCards.map(renderBackgroundCard).join("")}
       </div>
-    `
-        : ""
-      }
 
-  ${qHeartBoxHtml}
-</div>
+      <div class="lienzo-tribune__identity">
+        <img
+          class="lienzo-tribune__avatar"
+          src="${escapeHtml(userPhoto)}"
+          alt="${escapeHtml(userName)}"
+        />
 
-      </section>
-    `;
-  }
+        <div class="lienzo-tribune__name">
+          ${escapeHtml(userName)}
+        </div>
+
+        ${actionsHtml ? `
+          <div class="lienzo-tribune__identity-actions">
+            ${actionsHtml}
+          </div>
+        ` : ""}
+      </div>
+
+      <div class="lienzo-tribune__stage">
+        ${parentJSpadeText
+          ? renderPlayCardBox(play, {
+              rank: "J",
+              suit: "SPADE"
+            })
+          : ""
+        }
+
+        ${qHeartBoxHtml}
+      </div>
+
+    </section>
+  `;
+}
 
   function renderTargetPlayerPanel(play) {
-    const user = resolveTargetUser(play);
-    const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-    const userName =
-      user?.nickname || user?.full_name || user?.name || "Invitado";
+  const user = resolveTargetUser(play);
+  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+  const userName =
+    user?.nickname || user?.full_name || user?.name || "Invitado";
 
-    const baseRank = normalizeRank(play?.card_rank || play?.rank);
-    const baseSuit = normalizeSuit(play?.card_suit || play?.suit);
-    const baseImageSrc = getCardImageSrc(baseRank, baseSuit);
-    const qqState = getQQPicaState(play);
-    const attachedSuit = qqState?.attachedSuit || "HEART";
-    const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "AMSTERDAM");
+  const baseRank = normalizeRank(play?.card_rank || play?.rank);
+  const baseSuit = normalizeSuit(play?.card_suit || play?.suit);
 
+  const qqState = getQQPicaState(play);
+  const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "AMSTERDAM");
 
-    const qHeartBoxHtml =
-      qqState && getQQPicaDisplayedSide(play) === "AMSTERDAM"
-        ? `
+  const qHeartBoxHtml =
+    qqState && getQQPicaDisplayedSide(play) === "AMSTERDAM"
+      ? `
         <div class="lienzo-target-extra-slot">
           ${renderQQHeartSummaryBox(play, qqState)}
         </div>
       `
-        : "";
+      : "";
 
-    const showActionsHere = isCurrentUserTarget(play);
+  return `
+    <section class="lienzo-tribune lienzo-tribune--target">
 
-    const topbar = buildPanelTopbar({
-      identityHtml: `
-        <div class="lienzo-target-header lienzo-target-header--top">
-          
-          <img
-            class="lienzo-target-header__photo"
-            src="${escapeHtml(userPhoto)}"
-            alt="${escapeHtml(userName)}"
-          />
-          <div class="lienzo-target-header__name">
-            ${escapeHtml(userName)}
-          </div>
-        </div>
-      `,
-      actionsHtml: settlementTopbarIconHtml
-    });
+      <div class="lienzo-tribune__corporates"></div>
 
-    return `
-      <section class="lienzo-panel lienzo-panel--target panel--split-top">
-        ${topbar}
+      <div class="lienzo-tribune__identity">
+        <img
+          class="lienzo-tribune__avatar"
+          src="${escapeHtml(userPhoto)}"
+          alt="${escapeHtml(userName)}"
+        />
 
-        <div class="lienzo-target-mainrow">
-          <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-            ${renderPlayCardBox(play, {
-      rank: baseRank,
-      suit: baseSuit
-    })}
-          </div>
-
-          ${qHeartBoxHtml}
+        <div class="lienzo-tribune__name">
+          ${escapeHtml(userName)}
         </div>
 
-      </section>
-    `;
-  }
+        ${settlementTopbarIconHtml ? `
+          <div class="lienzo-tribune__identity-actions">
+            ${settlementTopbarIconHtml}
+          </div>
+        ` : ""}
+      </div>
+
+      <div class="lienzo-tribune__stage">
+        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+          ${renderPlayCardBox(play, {
+            rank: baseRank,
+            suit: baseSuit
+          })}
+        </div>
+
+        ${qHeartBoxHtml}
+      </div>
+
+    </section>
+  `;
+}
 
   function compareCorporateCards(a, b) {
     const order = {
@@ -2433,7 +2419,7 @@ ${renderCardCorners("Q", qqState.attachedSuit || "HEART")}
 
     const validatorCount = getValidatorTribunesForPlay(play).length;
 
-    let gridClass = "";
+    let gridClass = "lienzo-v2-grid--2";
 
     const status = String(play?.play_status || "").trim().toUpperCase();
 
@@ -2441,26 +2427,26 @@ ${renderCardCorners("Q", qqState.attachedSuit || "HEART")}
       isCurrentUserTarget(play) &&
       ["SENT", "APPROVED", "REJECTED", "CANCELLED"].includes(status)
     ) {
-      gridClass = "lienzo-grid--qqpica-target";
+      gridClass = "lienzo-v2-grid--3";
     } else {
       if (validatorCount === 1) {
-        gridClass = "lienzo-grid--3cols";
+        gridClass = "lienzo-v2-grid--3";
       }
 
       if (validatorCount >= 2) {
-        gridClass = "lienzo-grid--4cols";
+        gridClass = "lienzo-v2-grid--4";
       }
     }
 
     container.innerHTML = `
       ${renderDeckHeader(deck)}
 
-      <div class="lienzo-grid ${gridClass}">
-        <div id="colombes" class="lienzo-grid__left">
+      <div class="lienzo-v2-grid ${gridClass}">
+        <div id="colombes" class="lienzo-v2-grid__left">
           ${renderColombesTribunes(play)}
         </div>
 
-        <div id="amsterdam" class="lienzo-grid__right">
+        <div id="amsterdam" class="lienzo-v2-grid__right">
           ${renderTargetPlayerPanel(play)}
         </div>
       </div>
