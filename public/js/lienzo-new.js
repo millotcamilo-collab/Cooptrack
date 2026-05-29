@@ -1246,7 +1246,7 @@ function renderUsersPanel() {
       <div class="lienzo-tribune__stage">
         ${delivered && isQSpade
   ? renderPlayCardBox(draft, {
-      showActions: false,
+      showActions: true,
       backgroundRank: "J",
       backgroundSuit: "SPADE"
     })
@@ -1254,7 +1254,7 @@ function renderUsersPanel() {
     ? ""
     : isQSpade
       ? renderPlayCardBox(draft, {
-          showActions: true,
+          showActions: false,
           id: "lienzo-source-card",
           backgroundRank: "J",
           backgroundSuit: "SPADE"
