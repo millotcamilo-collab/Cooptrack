@@ -450,6 +450,82 @@ body {
   justify-content: center;
 }
 
+.lienzo-v2-grid--with-talud {
+  grid-template-columns: 1fr 1fr 1fr 0.8fr 1fr;
+}
+
+.lienzo-talud {
+  position: relative;
+  min-height: 300px;
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  background: rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--lv2-radius);
+
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.lienzo-talud__header {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--lv2-text);
+  text-align: center;
+}
+
+.lienzo-talud__messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lienzo-talud__message {
+  padding: 7px 8px;
+  border-radius: 9px;
+
+  background: rgba(255, 255, 255, 0.88);
+  color: #111;
+
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.lienzo-talud__message-author {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.lienzo-talud__form {
+  display: flex;
+  gap: 6px;
+}
+
+.lienzo-talud__input {
+  flex: 1;
+  min-width: 0;
+
+  height: 30px;
+  padding: 4px 7px;
+
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 8px;
+
+  font-size: 13px;
+}
+
+.lienzo-talud__send {
+  flex: 0 0 auto;
+}
+
 /* ===== Responsive ===== */
 
 @media (max-width: 900px) {
