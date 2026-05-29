@@ -195,18 +195,18 @@
         };
     }
 
-    function renderBackgroundCard(card, index = 0) {
-        const src = getCardImageSrc(card?.card_rank, card?.card_suit);
+function renderBackgroundCard(card, index = 0) {
+  const src = getCardImageSrc(card?.card_rank, card?.card_suit);
 
-        return `
-      <img
-        class="lienzo-source-stack__card"
-        src="${escapeHtml(src)}"
-        alt=""
-        style="left:${index * 18}px;"
-      />
-    `;
-    }
+  return `
+    <img
+      class="lienzo-tribune__corporate-card"
+      src="${escapeHtml(src)}"
+      alt=""
+      style="left:${index * 18}px;"
+    />
+  `;
+}
 
     function escapeHtml(value) {
         return String(value ?? "")
@@ -479,38 +479,39 @@
   `;
     }
 
-    function renderSourcePlayerPanel(play) {
-        const sourceUser = resolveSourceUser(play);
-        const scene = buildSourceCardsScene(play);
-        const backgroundCards = Array.isArray(scene?.backgroundCards)
-            ? scene.backgroundCards
-            : [];
+function renderSourcePlayerPanel(play) {
+  const sourceUser = resolveSourceUser(play);
+  const scene = buildSourceCardsScene(play);
+  const backgroundCards = Array.isArray(scene?.backgroundCards)
+    ? scene.backgroundCards
+    : [];
 
-        return `
-    <section class="lienzo-panel lienzo-panel--source panel--split-top">
-      <div class="panel-topbar panel-topbar--single">
-        <div class="panel-topbar__col panel-topbar__col--identity">
-          <div class="lienzo-target-header lienzo-target-header--top">
-            
-            <img
-              class="lienzo-target-header__photo"
-              src="${escapeHtml(sourceUser.profile_photo_url)}"
-              alt="${escapeHtml(sourceUser.nickname)}"
-            />
-            <div class="lienzo-target-header__name">${escapeHtml(sourceUser.nickname)}</div>
-          </div>
-        </div>
+  return `
+    <section class="lienzo-tribune lienzo-tribune--source">
 
+      <div class="lienzo-tribune__corporates">
+        ${backgroundCards
+          .map((card, index) => renderBackgroundCard(card, index))
+          .join("")}
       </div>
 
-      <div class="lienzo-source-cards">
-        <div class="lienzo-source-stack">
-          ${backgroundCards.map((card, index) => renderBackgroundCard(card, index)).join("")}
+      <div class="lienzo-tribune__identity">
+        <img
+          class="lienzo-tribune__avatar"
+          src="${escapeHtml(sourceUser.profile_photo_url)}"
+          alt="${escapeHtml(sourceUser.nickname)}"
+        />
+
+        <div class="lienzo-tribune__name">
+          ${escapeHtml(sourceUser.nickname)}
         </div>
       </div>
+
+      <div class="lienzo-tribune__stage"></div>
+
     </section>
   `;
-    }
+}
 
     function renderTargetActions(play) {
         const uiState = getKUiState(play);
@@ -579,41 +580,46 @@
     `;
     }
 
-    function renderTargetPlayerPanel(play) {
-        const targetUser = resolveTargetUser(play);
+function renderTargetPlayerPanel(play) {
+  const targetUser = resolveTargetUser(play);
 
-        return `
-    <section class="lienzo-panel lienzo-panel--target panel--split-top">
-      <div class="panel-topbar">
-        <div class="panel-topbar__col panel-topbar__col--identity">
-          <div class="lienzo-target-header lienzo-target-header--top">
-            
-            <img
-              class="lienzo-target-header__photo"
-              src="${escapeHtml(targetUser.profile_photo_url)}"
-              alt="${escapeHtml(targetUser.nickname)}"
-            />
-            <div class="lienzo-target-header__name">${escapeHtml(targetUser.nickname)}</div>
-          </div>
+  return `
+    <section class="lienzo-tribune lienzo-tribune--target">
+
+      <div class="lienzo-tribune__corporates"></div>
+
+      <div class="lienzo-tribune__identity">
+        <img
+          class="lienzo-tribune__avatar"
+          src="${escapeHtml(targetUser.profile_photo_url)}"
+          alt="${escapeHtml(targetUser.nickname)}"
+        />
+
+        <div class="lienzo-tribune__name">
+          ${escapeHtml(targetUser.nickname)}
+        </div>
+      </div>
+
+      <div class="lienzo-tribune__stage">
+
+        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+          <img
+            class="lienzo-card-image"
+            src="${escapeHtml(getCardImageSrc(play?.card_rank, play?.card_suit))}"
+            alt="${escapeHtml(`K${getSuitSymbol(play?.card_suit)}`)}"
+          />
+        </div>
+
+        <div class="lienzo-target-actions">
+          ${renderSourceActions(play)}
+          ${renderTargetActions(play)}
         </div>
 
       </div>
 
-<div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-  <img
-    class="lienzo-card-image"
-    src="${escapeHtml(getCardImageSrc(play?.card_rank, play?.card_suit))}"
-    alt="${escapeHtml(`K${getSuitSymbol(play?.card_suit)}`)}"
-  />
-</div>
-
-<div class="lienzo-target-actions">
-  ${renderSourceActions(play)}
-  ${renderTargetActions(play)}
-</div>
     </section>
   `;
-    }
+}
 
     async function validatePlay(playId) {
         const token = localStorage.getItem("cooptrackToken");
@@ -895,33 +901,36 @@
         };
     }
 
-    function renderUserTribune(user, cards = []) {
-        const name = user?.nickname || "Usuario";
-        const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+function renderUserTribune(user, cards = []) {
+  const name = user?.nickname || "Usuario";
+  const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
 
-        return `
-    <section class="lienzo-panel lienzo-panel--source panel--split-top">
-      <div class="panel-topbar panel-topbar--single">
-        <div class="panel-topbar__col panel-topbar__col--identity">
-          <div class="lienzo-target-header lienzo-target-header--top">
-            <img
-              class="lienzo-target-header__photo"
-              src="${escapeHtml(photo)}"
-              alt="${escapeHtml(name)}"
-            />
-            <div class="lienzo-target-header__name">${escapeHtml(name)}</div>
-          </div>
+  return `
+    <section class="lienzo-tribune">
+
+      <div class="lienzo-tribune__corporates">
+        ${cards.map((card, index) =>
+          renderBackgroundCard(card, index)
+        ).join("")}
+      </div>
+
+      <div class="lienzo-tribune__identity">
+        <img
+          class="lienzo-tribune__avatar"
+          src="${escapeHtml(photo)}"
+          alt="${escapeHtml(name)}"
+        />
+
+        <div class="lienzo-tribune__name">
+          ${escapeHtml(name)}
         </div>
       </div>
 
-      <div class="lienzo-source-cards">
-        <div class="lienzo-source-stack">
-          ${cards.map((card, index) => renderBackgroundCard(card, index)).join("")}
-        </div>
-      </div>
+      <div class="lienzo-tribune__stage"></div>
+
     </section>
   `;
-    }
+}
 
     function renderColombesTribunes(play) {
         const sourceTribune = renderSourcePlayerPanel(play);
@@ -966,7 +975,7 @@
         container.innerHTML = `
       ${renderDeckHeader(deck)}
 
-      <div class="lienzo-grid">
+      <div class="lienzo-v2-grid lienzo-v2-grid--2">
         <div id="colombes" class="lienzo-grid__left">
           ${renderColombesTribunes(play)}
         </div>
