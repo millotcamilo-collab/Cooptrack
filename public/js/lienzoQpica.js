@@ -1598,58 +1598,58 @@ ${parentJSpadeText
     }
 
     function renderTargetPlayerPanel(play) {
-        const user = resolveTargetUser(play);
-        const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-        const userName =
-            user?.nickname || user?.full_name || user?.name || "Invitado";
+  const user = resolveTargetUser(play);
+  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+  const userName =
+    user?.nickname || user?.full_name || user?.name || "Invitado";
 
-        const showQHeartBox = isSelectedQHeartInZone("AMSTERDAM");
+  const showQHeartBox = isSelectedQHeartInZone("AMSTERDAM");
 
-        const deck = getCurrentDeck();
-        const currencyCode = getCurrencyCode(deck);
+  const deck = getCurrentDeck();
+  const currencyCode = getCurrencyCode(deck);
 
-        const parentPlay = getPlayById(play?.parent_play_id);
-        const defaultPayDate = formatDateForInput(
-            String(parentPlay?.spade_mode || "").trim().toUpperCase() === "DEADLINE"
-                ? parentPlay?.end_date
-                : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
-        );
+  const parentPlay = getPlayById(play?.parent_play_id);
+  const defaultPayDate = formatDateForInput(
+    String(parentPlay?.spade_mode || "").trim().toUpperCase() === "DEADLINE"
+      ? parentPlay?.end_date
+      : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
+  );
 
-        const qHeartDefaults = getQHeartDefaults(play, "AMSTERDAM");
+  const qHeartDefaults = getQHeartDefaults(play, "AMSTERDAM");
 
-        const qHeartBoxHtml = showQHeartBox
-            ? `
+  const qHeartBoxHtml = showQHeartBox
+    ? `
       <div class="lienzo-target-extra-slot">
         ${renderQHeartBudgetBox({
-                title: `Paga ${userName}`,
-                currencyCode,
-                defaultPayDate,
-                defaultConcept: qHeartDefaults.concept,
-                defaultAmount: qHeartDefaults.amount
-            })}
+          title: `Paga ${userName}`,
+          currencyCode,
+          defaultPayDate,
+          defaultConcept: qHeartDefaults.concept,
+          defaultAmount: qHeartDefaults.amount
+        })}
       </div>
     `
-            : "";
+    : "";
 
-        const topbar = buildPanelTopbar({
-            identityHtml: `
-      <div class="lienzo-target-header lienzo-target-header--top">
-        <img
-          class="lienzo-target-header__photo"
-          src="${escapeHtml(userPhoto)}"
-          alt="${escapeHtml(userName)}"
-        />
-        <div class="lienzo-target-header__name">
-          ${escapeHtml(userName)}
-        </div>
+  const identityHtml = `
+    <div class="lienzo-tribune__identity">
+      <img
+        class="lienzo-tribune__avatar"
+        src="${escapeHtml(userPhoto)}"
+        alt="${escapeHtml(userName)}"
+      />
+
+      <div class="lienzo-tribune__name">
+        ${escapeHtml(userName)}
       </div>
-    `,
-            actionsHtml: ""
-        });
+    </div>
+  `;
 
-        return `
-    <section class="lienzo-tribune lienzo-tribune--target panel--split-top">
-      ${topbar}
+  return `
+    <section class="lienzo-tribune lienzo-tribune--target">
+      <div class="lienzo-tribune__corporates"></div>
+
+      ${identityHtml}
 
       <div class="lienzo-tribune__stage">
         <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
@@ -1660,7 +1660,7 @@ ${parentJSpadeText
       </div>
     </section>
   `;
-    }
+}
 
     function buildQHeartDraftPayload(play) {
         const selection = getLienzoDropSelection();
