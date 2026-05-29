@@ -137,7 +137,16 @@ function renderUserTribune(user, cards = []) {
     </section>
   `;
 }
+function resolveLienzoPageForCard(rank, suit) {
+  const r = normalizeRank(rank);
+  const s = normalizeSuit(suit);
 
+  if (r === "K") return "/lienzoK.html";
+  if (r === "Q" && s === "SPADE") return "/lienzoQpica.html";
+  if (r === "A") return "/lienzo.html";
+
+  return "/lienzo.html";
+}
 
     async function handleSavePlay() {
         try {
@@ -697,13 +706,17 @@ function getSuitSymbol(suit) {
 function renderCardCorners(rank, suit) {
   const symbol = getSuitSymbol(suit);
 
+  const isRed =
+    normalizeSuit(suit) === "HEART" ||
+    normalizeSuit(suit) === "DIAMOND";
+
   return `
-    <div class="lv2-card-corner lv2-card-corner--tl">
+    <div class="lv2-card-corner lv2-card-corner--tl ${isRed ? "lv2-card-corner--red" : ""}">
       <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
       <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
 
-    <div class="lv2-card-corner lv2-card-corner--br">
+    <div class="lv2-card-corner lv2-card-corner--br ${isRed ? "lv2-card-corner--red" : ""}">
       <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
       <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
     </div>

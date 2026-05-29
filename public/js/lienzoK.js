@@ -482,13 +482,17 @@ function renderBackgroundCard(card, index = 0) {
 function renderCardCorners(rank, suit) {
   const symbol = getSuitSymbol(suit);
 
+  const isRed =
+    normalizeSuit(suit) === "HEART" ||
+    normalizeSuit(suit) === "DIAMOND";
+
   return `
-    <div class="lv2-card-corner lv2-card-corner--tl">
+    <div class="lv2-card-corner lv2-card-corner--tl ${isRed ? "lv2-card-corner--red" : ""}">
       <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
       <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
 
-    <div class="lv2-card-corner lv2-card-corner--br">
+    <div class="lv2-card-corner lv2-card-corner--br ${isRed ? "lv2-card-corner--red" : ""}">
       <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
       <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
