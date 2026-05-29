@@ -44,11 +44,11 @@
         return getAllPlays().find((play) => Number(play?.id || 0) === id) || null;
     }
 
-function renderCardCorners(rank, suit) {
-  const symbol = getSuitSymbol(suit);
-  const suitClass = `card-corner--${normalizeSuit(suit).toLowerCase()}`;
+    function renderCardCorners(rank, suit) {
+        const symbol = getSuitSymbol(suit);
+        const suitClass = `card-corner--${normalizeSuit(suit).toLowerCase()}`;
 
-  return `
+        return `
     <div class="card-corner card-corner--tl ${suitClass}">
       <span class="card-corner__rank">${escapeHtml(rank)}</span>
       <span class="card-corner__suit">${escapeHtml(symbol)}</span>
@@ -59,7 +59,7 @@ function renderCardCorners(rank, suit) {
       <span class="card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
   `;
-}
+    }
 
     function getSuitSymbol(suit) {
         const s = normalizeSuit(suit);
@@ -917,7 +917,7 @@ function renderCardCorners(rank, suit) {
             ? ""
             : String(parentPlay?.location || "").trim();
 
-return `
+        return `
   <div class="lv2-play-card">
     ${renderCardCorners(rank, suit)}
 
@@ -956,7 +956,7 @@ return `
     </div>
   </div>
 `;
-     
+
     }
     function renderSourceSessionDia(play) {
         if (!play || typeof window.renderDia !== "function") return "";
@@ -1242,10 +1242,10 @@ return `
     }
 
 
-function renderBackgroundCard(card, index) {
-  const src = getCardImageSrc(card?.card_rank, card?.card_suit);
+    function renderBackgroundCard(card, index) {
+        const src = getCardImageSrc(card?.card_rank, card?.card_suit);
 
-  return `
+        return `
     <img
       class="lienzo-tribune__corporate-card"
       src="${escapeHtml(src)}"
@@ -1253,7 +1253,7 @@ function renderBackgroundCard(card, index) {
       style="left:${index * 18}px;"
     />
   `;
-}
+    }
 
     function buildSourceCardsScene(play) {
         const sourceUser = resolveSourceUser(play);
@@ -1312,20 +1312,20 @@ function renderBackgroundCard(card, index) {
         };
     }
 
-function renderQHeartBudgetBox({
-  title,
-  currencyCode = "",
-  defaultPayDate = "",
-  defaultConcept = "",
-  defaultAmount = ""
-}) {
-  const safeTitle = escapeHtml(title || "Paga");
-  const safeCurrency = escapeHtml(currencyCode || "");
-  const safePayDate = escapeHtml(defaultPayDate || "");
-  const safeConcept = escapeHtml(defaultConcept || "");
-  const safeAmount = escapeHtml(defaultAmount || "");
+    function renderQHeartBudgetBox({
+        title,
+        currencyCode = "",
+        defaultPayDate = "",
+        defaultConcept = "",
+        defaultAmount = ""
+    }) {
+        const safeTitle = escapeHtml(title || "Paga");
+        const safeCurrency = escapeHtml(currencyCode || "");
+        const safePayDate = escapeHtml(defaultPayDate || "");
+        const safeConcept = escapeHtml(defaultConcept || "");
+        const safeAmount = escapeHtml(defaultAmount || "");
 
-  return `
+        return `
     <div class="lv2-play-card lv2-play-card--qheart">
 
       ${renderCardCorners("Q", "HEART")}
@@ -1386,7 +1386,7 @@ function renderQHeartBudgetBox({
 
     </div>
   `;
-}
+    }
 
     function renderSourceActions(play) {
         const status = String(play?.play_status || "").trim().toUpperCase();
@@ -1539,13 +1539,13 @@ ${qHeartMode
 <section class="lienzo-tribune lienzo-tribune--source">
   <div class="lienzo-tribune__corporates">
     ${scene.backgroundCards
-      .filter(card => {
-        const rank = normalizeRank(card.card_rank);
-        const suit = normalizeSuit(card.card_suit);
-        return !(rank === "J" && suit === "SPADE");
-      })
-      .map(renderBackgroundCard)
-      .join("")}
+                .filter(card => {
+                    const rank = normalizeRank(card.card_rank);
+                    const suit = normalizeSuit(card.card_suit);
+                    return !(rank === "J" && suit === "SPADE");
+                })
+                .map(renderBackgroundCard)
+                .join("")}
   </div>
 
   ${identityHtml}
@@ -1598,40 +1598,40 @@ ${parentJSpadeText
     }
 
     function renderTargetPlayerPanel(play) {
-  const user = resolveTargetUser(play);
-  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-  const userName =
-    user?.nickname || user?.full_name || user?.name || "Invitado";
+        const user = resolveTargetUser(play);
+        const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+        const userName =
+            user?.nickname || user?.full_name || user?.name || "Invitado";
 
-  const showQHeartBox = isSelectedQHeartInZone("AMSTERDAM");
+        const showQHeartBox = isSelectedQHeartInZone("AMSTERDAM");
 
-  const deck = getCurrentDeck();
-  const currencyCode = getCurrencyCode(deck);
+        const deck = getCurrentDeck();
+        const currencyCode = getCurrencyCode(deck);
 
-  const parentPlay = getPlayById(play?.parent_play_id);
-  const defaultPayDate = formatDateForInput(
-    String(parentPlay?.spade_mode || "").trim().toUpperCase() === "DEADLINE"
-      ? parentPlay?.end_date
-      : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
-  );
+        const parentPlay = getPlayById(play?.parent_play_id);
+        const defaultPayDate = formatDateForInput(
+            String(parentPlay?.spade_mode || "").trim().toUpperCase() === "DEADLINE"
+                ? parentPlay?.end_date
+                : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
+        );
 
-  const qHeartDefaults = getQHeartDefaults(play, "AMSTERDAM");
+        const qHeartDefaults = getQHeartDefaults(play, "AMSTERDAM");
 
-  const qHeartBoxHtml = showQHeartBox
-    ? `
+        const qHeartBoxHtml = showQHeartBox
+            ? `
       <div class="lienzo-target-extra-slot">
         ${renderQHeartBudgetBox({
-          title: `Paga ${userName}`,
-          currencyCode,
-          defaultPayDate,
-          defaultConcept: qHeartDefaults.concept,
-          defaultAmount: qHeartDefaults.amount
-        })}
+                title: `Paga ${userName}`,
+                currencyCode,
+                defaultPayDate,
+                defaultConcept: qHeartDefaults.concept,
+                defaultAmount: qHeartDefaults.amount
+            })}
       </div>
     `
-    : "";
+            : "";
 
-  const identityHtml = `
+        const identityHtml = `
     <div class="lienzo-tribune__identity">
       <img
         class="lienzo-tribune__avatar"
@@ -1645,7 +1645,7 @@ ${parentJSpadeText
     </div>
   `;
 
-  return `
+        return `
     <section class="lienzo-tribune lienzo-tribune--target">
       <div class="lienzo-tribune__corporates"></div>
 
@@ -1660,7 +1660,7 @@ ${parentJSpadeText
       </div>
     </section>
   `;
-}
+    }
 
     function buildQHeartDraftPayload(play) {
         const selection = getLienzoDropSelection();
@@ -2481,23 +2481,23 @@ ${parentJSpadeText
 
         const validatorCount = getValidatorTribunesForPlay(play).length;
 
-        let gridClass = "";
+        let gridClass = "lienzo-v2-grid--2";
 
         if (validatorCount === 1) {
-            gridClass = "lienzo-grid--3cols";
+            gridClass = "lienzo-v2-grid--3";
         }
 
         if (validatorCount >= 2) {
-            gridClass = "lienzo-grid--4cols";
+            gridClass = "lienzo-v2-grid--4";
         }
 
-        container.innerHTML = `
+container.innerHTML = `
   ${renderDeckHeader(deck)}
 
-  <div class="lienzo-grid ${gridClass}">
-<div id="colombes" class="lienzo-grid__left">
-  ${renderColombesTribunes(play)}
-</div>
+  <div class="lienzo-v2-grid ${gridClass}">
+    <div id="colombes" class="lienzo-grid__left">
+      ${renderColombesTribunes(play)}
+    </div>
 
     <div id="amsterdam" class="lienzo-grid__right">
       ${renderTargetPlayerPanel(play)}
