@@ -22,6 +22,7 @@
 
   --lv2-corporate-h: 120px;
   --lv2-action-h: 30px;
+  --lv2-tribune-h: 320px;
 }
 
 /* ===== Página ===== */
@@ -74,7 +75,7 @@ body {
   display: grid;
   grid-template-columns: repeat(var(--lv2-cols, 2), minmax(0, 1fr));
   gap: 0;
-  min-height: 300px;
+min-height: var(--lv2-tribune-h);
 }
 
 .lienzo-v2-grid--2 {
@@ -95,7 +96,7 @@ body {
   position: relative;
 
   min-width: 0;
-  min-height: 300px;
+  min-height: var(--lv2-tribune-h);
 
   padding: 18px;
 
@@ -456,7 +457,7 @@ body {
 
 .lienzo-talud {
   position: relative;
-  min-height: 300px;
+  min-height: var(--lv2-tribune-h);
   padding: 14px;
 
   display: flex;
@@ -534,6 +535,6 @@ body {
   }
 
   .lienzo-tribune {
-    min-height: 300px;
+     min-height: var(--lv2-tribune-h);
   }
 }

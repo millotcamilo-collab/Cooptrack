@@ -629,7 +629,7 @@ function animateCardToUser(user) {
 
     if (isQSpade) {
       dropzone.innerHTML = renderPlayCardBox(draft, {
-        showActions: true
+        showActions: false
       });
     }
 
@@ -1244,24 +1244,30 @@ function renderUsersPanel() {
       </div>
 
       <div class="lienzo-tribune__stage">
-        ${delivered
-          ? ""
-          : isQSpade
-            ? renderPlayCardBox(draft, {
-                showActions: false,
-                id: "lienzo-source-card",
-                backgroundRank: "J",
-                backgroundSuit: "SPADE"
-              })
-            : `
-              <img
-                id="lienzo-source-card"
-                class="lienzo-card-image"
-                src="${escapeHtml(getCardImageSrc(draft?.card_rank, draft?.card_suit))}"
-                alt=""
-              />
-            `
-        }
+        ${delivered && isQSpade
+  ? renderPlayCardBox(draft, {
+      showActions: false,
+      backgroundRank: "J",
+      backgroundSuit: "SPADE"
+    })
+  : delivered
+    ? ""
+    : isQSpade
+      ? renderPlayCardBox(draft, {
+          showActions: true,
+          id: "lienzo-source-card",
+          backgroundRank: "J",
+          backgroundSuit: "SPADE"
+        })
+      : `
+        <img
+          id="lienzo-source-card"
+          class="lienzo-card-image"
+          src="${escapeHtml(getCardImageSrc(draft?.card_rank, draft?.card_suit))}"
+          alt=""
+        />
+      `
+}
       </div>
 
     </section>
