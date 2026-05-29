@@ -586,3 +586,23 @@
   align-items: center;
   gap: 10px;
 }
+
+#colombes-panel .panel-topbar {
+  display: flex;
+  justify-content: center;
+}
+
+#colombes-panel .panel-topbar__col--identity {
+  width: auto;
+}
+
+#colombes-panel .lienzo-target-header--top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+#colombes-panel .lienzo-target-header__name {
+  text-align: center;
+}

@@ -551,18 +551,27 @@
         paintRecurrenceControls();
       }
 
-      function buildPayload() {
-        const { endDate } = getFieldValues();
+function localDateTimeToIso(value) {
+  if (!value) return "";
 
-        return {
-          playId,
-          text: getCurrentText(),
-          spadeMode: "DEADLINE",
-          startDate: "",
-          endDate,
-          location: "",
-        };
-      }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toISOString();
+}
+
+function buildPayload() {
+  const { startDate, endDate, location } = getFieldValues();
+
+  return {
+    playId,
+    text: getCurrentText(),
+    spadeMode: "APPOINTMENT",
+    startDate: localDateTimeToIso(startDate),
+    endDate: localDateTimeToIso(endDate),
+    location,
+  };
+}
 
       function buildRecurrencePayload() {
         return {
