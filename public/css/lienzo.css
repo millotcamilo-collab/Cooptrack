@@ -102,7 +102,7 @@ min-height: var(--lv2-tribune-h);
 
   display: grid;
   grid-template-rows:
-    126px 1fr;
+    54px 1fr;
 
   row-gap: 10px;
 
