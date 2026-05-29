@@ -479,6 +479,42 @@ function renderBackgroundCard(card, index = 0) {
   `;
     }
 
+function renderCardCorners(rank, suit) {
+  const symbol = getSuitSymbol(suit);
+
+  return `
+    <div class="lv2-card-corner lv2-card-corner--tl">
+      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
+    </div>
+
+    <div class="lv2-card-corner lv2-card-corner--br">
+      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
+    </div>
+  `;
+}
+
+function renderKCardBox(draft, showActions = false) {
+  return `
+    <div class="lv2-play-card lv2-play-card--k">
+      ${renderCardCorners("K", draft?.card_suit)}
+
+      <div class="lv2-play-card__inner">
+        <div class="lv2-play-card__title">
+          ${escapeHtml(`K${getSuitSymbol(draft?.card_suit)}`)}
+        </div>
+      </div>
+
+      ${showActions ? `
+        <div class="lv2-play-card__actions">
+          ${renderActionButtons()}
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
 function renderSourcePlayerPanel(play) {
   const sourceUser = resolveSourceUser(play);
   const scene = buildSourceCardsScene(play);
@@ -602,13 +638,9 @@ function renderTargetPlayerPanel(play) {
 
       <div class="lienzo-tribune__stage">
 
-        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-          <img
-            class="lienzo-card-image"
-            src="${escapeHtml(getCardImageSrc(play?.card_rank, play?.card_suit))}"
-            alt="${escapeHtml(`K${getSuitSymbol(play?.card_suit)}`)}"
-          />
-        </div>
+<div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+  ${renderKCardBox(play)}
+</div>
 
         <div class="lienzo-target-actions">
           ${renderSourceActions(play)}

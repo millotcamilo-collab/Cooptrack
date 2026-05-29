@@ -694,7 +694,41 @@ function renderAssignedTargetPanel(user) {
         });
     }
 
+function renderCardCorners(rank, suit) {
+  const symbol = getSuitSymbol(suit);
 
+  return `
+    <div class="lv2-card-corner lv2-card-corner--tl">
+      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
+    </div>
+
+    <div class="lv2-card-corner lv2-card-corner--br">
+      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
+    </div>
+  `;
+}
+
+function renderKCardBox(draft, showActions = false) {
+  return `
+    <div class="lv2-play-card lv2-play-card--k">
+      ${renderCardCorners("K", draft?.card_suit)}
+
+      <div class="lv2-play-card__inner">
+        <div class="lv2-play-card__title">
+          ${escapeHtml(`K${getSuitSymbol(draft?.card_suit)}`)}
+        </div>
+      </div>
+
+      ${showActions ? `
+        <div class="lv2-play-card__actions">
+          ${renderActionButtons()}
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
 
 function renderUsersPanel() {
   return `
