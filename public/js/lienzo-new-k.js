@@ -710,22 +710,21 @@ function renderCardCorners(rank, suit) {
   `;
 }
 
-function renderKCardBox(draft, showActions = false) {
+function renderKCardBox(draft, showActions = false, id = "") {
   return `
-    <div class="lv2-play-card lv2-play-card--k">
+    <div
+      ${id ? `id="${escapeHtml(id)}"` : ""}
+      class="lv2-play-card lv2-play-card--k"
+    >
       ${renderCardCorners("K", draft?.card_suit)}
 
       <div class="lv2-play-card__inner">
-        <div class="lv2-play-card__title">
-          ${escapeHtml(`K${getSuitSymbol(draft?.card_suit)}`)}
-        </div>
+        ${showActions ? `
+          <div class="lv2-play-card__actions">
+            ${renderActionButtons()}
+          </div>
+        ` : ""}
       </div>
-
-      ${showActions ? `
-        <div class="lv2-play-card__actions">
-          ${renderActionButtons()}
-        </div>
-      ` : ""}
     </div>
   `;
 }
@@ -832,7 +831,7 @@ function renderUsersPanel() {
         ${delivered
           ? ""
           : `
-            ${renderKCardBox(draft)}
+${renderKCardBox(draft, false, "lienzo-source-card")}
           `
         }
       </div>
