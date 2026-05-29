@@ -917,46 +917,41 @@ function renderCardCorners(rank, suit) {
             ? ""
             : String(parentPlay?.location || "").trim();
 
-return `
-  <div class="lv2-play-card">
-    ${renderCardCorners(rank, suit)}
+        return `
+<div
+  class="lienzo-play-card-box"
+>
+  ${renderCardCorners(rank, suit)}
 
-    <div class="lv2-play-card__inner">
-      ${parentText ? `
-        <div class="lv2-play-card__title">
-          ${escapeHtml(parentText)}
+      <div class="lienzo-play-card-box__row">
+
+  <div class="lienzo-card-inner">
+          ${parentText ? `<div class="play-text">${escapeHtml(parentText)}</div>` : ""}
+
+         ${timeLabel ? `
+  <div class="play-meta">
+    <img class="play-meta__icon" src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}" alt="" />
+    <span>${escapeHtml(timeLabel)}</span>
+  </div>
+` : ""}
+
+${location ? `
+  <div class="play-meta">
+    <img class="play-meta__icon" src="/assets/icons/LocGlobito80.gif" alt="" />
+    <span>${escapeHtml(location)}</span>
+  </div>
+` : ""}
         </div>
-      ` : ""}
 
-      ${timeLabel ? `
-        <div class="lv2-play-card__meta">
-          <img
-            class="lv2-play-card__meta-icon"
-            src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}"
-            alt=""
-          />
-          <span>${escapeHtml(timeLabel)}</span>
-        </div>
-      ` : ""}
+      </div>
 
-      ${location ? `
-        <div class="lv2-play-card__meta">
-          <img
-            class="lv2-play-card__meta-icon"
-            src="/assets/icons/LocGlobito80.gif"
-            alt=""
-          />
-          <span>${escapeHtml(location)}</span>
-        </div>
-      ` : ""}
-
-      <div class="lv2-play-card__actions">
+      <!-- ACCIONES ABAJO -->
+      <div class="lienzo-play-card-box__actions">
         ${renderPlayCardActions(play)}
       </div>
+
     </div>
-  </div>
-`;
-     
+  `;
     }
     function renderSourceSessionDia(play) {
         if (!play || typeof window.renderDia !== "function") return "";
@@ -1326,11 +1321,11 @@ function renderQHeartBudgetBox({
   const safeAmount = escapeHtml(defaultAmount || "");
 
   return `
-    <div class="lv2-play-card lv2-play-card--qheart">
+    <div class="lienzo-play-card-box lienzo-play-card-box--qheart">
 
       ${renderCardCorners("Q", "HEART")}
 
-      <div class="lv2-play-card__inner">
+      <div class="lienzo-card-inner">
 
         <div class="lienzo-qheart-box__title">
           ${safeTitle}
@@ -1369,7 +1364,7 @@ function renderQHeartBudgetBox({
 
       </div>
 
-      <div class="lv2-play-card__actions">
+      <div class="lienzo-play-card-box__actions">
 
         <button
           id="lienzo-save-btn"
@@ -1539,10 +1534,10 @@ ${qHeartMode
         });
 
         return `
-      <section class="lienzo-tribune lienzo-tribune--source panel--split-top">
+      <section class="lienzo-panel lienzo-panel--source panel--split-top">
         ${topbar}
 
-        <div class="lienzo-tribune__stage">
+        <div class="lienzo-source-cards">
 <div class="lienzo-source-stack">
   ${scene.backgroundCards
                 .filter(card => {
@@ -1559,7 +1554,7 @@ ${qHeartMode
 ${parentJSpadeText
                 ? `
 <div
-  class="lienzo-parent-play-box lienzo-parent-play-box--inline lv2-play-card"
+  class="lienzo-parent-play-box lienzo-parent-play-box--inline lienzo-play-card-box"
 >
   ${renderCardCorners("J", "SPADE")}
 
@@ -1651,10 +1646,10 @@ ${parentJSpadeText
         });
 
         return `
-    <section class="lienzo-tribune lienzo-tribune--target panel--split-top">
+    <section class="lienzo-panel lienzo-panel--target panel--split-top">
       ${topbar}
 
-      <div class="lienzo-tribune__stage">
+      <div class="lienzo-target-mainrow">
         <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
           ${renderPlayCardBox(play)}
         </div>
@@ -2147,7 +2142,7 @@ ${parentJSpadeText
     }
 
     function bindLienzoDropzones(play) {
-        const colombesZone = document.querySelector(".lienzo-tribune__stage");
+        const colombesZone = document.querySelector(".lienzo-source-cards");
         const amsterdamZone = document.getElementById("lienzo-target-dropzone");
 
         const zones = [
@@ -2403,9 +2398,9 @@ ${parentJSpadeText
 
 
         return `
-    <section class="lienzo-tribune lienzo-tribune--source panel--split-top">
-      <div class="lienzo-tribune__identity lienzo-tribune__identity--single">
-        <div class="lienzo-tribune__identity__col lienzo-tribune__identity__col--identity">
+    <section class="lienzo-panel lienzo-panel--source panel--split-top">
+      <div class="panel-topbar panel-topbar--single">
+        <div class="panel-topbar__col panel-topbar__col--identity">
           <div class="lienzo-source-header lienzo-source-header--top">
             
             <img
@@ -2418,8 +2413,8 @@ ${parentJSpadeText
         </div>
       </div>
 
-      <div class="lienzo-tribune__stage">
-        <div class="lienzo-tribune__stage">
+      <div class="lienzo-source-cards">
+        <div class="lienzo-source-stack">
           ${cards.map(renderBackgroundCard).join("")}
         </div>
       </div>

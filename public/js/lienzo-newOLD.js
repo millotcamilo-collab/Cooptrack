@@ -180,34 +180,33 @@
   `;
   }
 
-function renderUserTribune(user, cards = []) {
-  const name = user?.nickname || "Usuario";
-  const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+  function renderUserTribune(user, cards = []) {
+    const name = user?.nickname || "Usuario";
+    const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
 
-  return `
-    <section class="lienzo-tribune">
-
-      <div class="lienzo-tribune__corporates">
-        ${cards.map(renderV2CorporateCard).join("")}
-      </div>
-
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(photo)}"
-          alt="${escapeHtml(name)}"
-        />
-
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(name)}
+    return `
+    <section class="lienzo-panel lienzo-panel--source panel--split-top">
+      <div class="panel-topbar panel-topbar--single">
+        <div class="panel-topbar__col panel-topbar__col--identity">
+          <div class="lienzo-source-header lienzo-source-header--top">
+            <img
+              class="lienzo-source-header__photo"
+              src="${escapeHtml(photo)}"
+              alt="${escapeHtml(name)}"
+            />
+            <div class="lienzo-source-header__name">${escapeHtml(name)}</div>
+          </div>
         </div>
       </div>
 
-      <div class="lienzo-tribune__stage"></div>
-
+      <div class="lienzo-source-cards">
+        <div class="lienzo-source-stack">
+          ${cards.map(renderBackgroundCard).join("")}
+        </div>
+      </div>
     </section>
   `;
-}
+  }
 
   function getJSpadeText(play) {
     if (!play) return "";
@@ -374,22 +373,6 @@ function renderUserTribune(user, cards = []) {
     return (order[aKey] || 999) - (order[bKey] || 999);
   }
 
-function renderV2CardCorners(rank, suit) {
-  const symbol = getSuitSymbol(suit);
-
-  return `
-    <div class="lv2-card-corner lv2-card-corner--tl">
-      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
-    </div>
-
-    <div class="lv2-card-corner lv2-card-corner--br">
-      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
-    </div>
-  `;
-}
-
 function renderCardCorners(rank, suit) {
   const symbol = getSuitSymbol(suit);
   const suitClass = `card-corner--${normalizeSuit(suit).toLowerCase()}`;
@@ -440,19 +423,6 @@ function renderCardCorners(rank, suit) {
     };
   }
 
-function renderV2CorporateCard(card, index) {
-  const src = getCardImageSrc(card?.card_rank, card?.card_suit);
-
-  return `
-    <img
-      class="lienzo-tribune__corporate-card"
-      src="${escapeHtml(src)}"
-      alt=""
-      style="left:${index * 18}px;"
-    />
-  `;
-}
-
   function renderBackgroundCard(card, index) {
     const src = getCardImageSrc(card?.card_rank, card?.card_suit);
 
@@ -467,156 +437,147 @@ function renderV2CorporateCard(card, index) {
   }
 
   function renderPlayCardBox(draft, options = {}) {
-  const showActions = options.showActions !== false;
-  const parentPlay = draft?.parentPlay || null;
+    const showActions = options.showActions !== false;
+    const parentPlay = draft?.parentPlay || null;
 
-  const rank = normalizeRank(draft?.card_rank);
-  const suit = normalizeSuit(draft?.card_suit);
+    const rank = normalizeRank(draft?.card_rank);
+    const suit = normalizeSuit(draft?.card_suit);
+    const imageSrc = getCardImageSrc(rank, suit);
 
-  const backgroundRank = options.backgroundRank || rank;
-  const backgroundSuit = options.backgroundSuit || suit;
+    const backgroundRank = options.backgroundRank || rank;
+    const backgroundSuit = options.backgroundSuit || suit;
+    const backgroundLabel =
+      `${backgroundRank}${getSuitSymbol(backgroundSuit)}`;
+    const boxId = options.id ? `id="${escapeHtml(options.id)}"` : "";
+    const extraClass = options.extraClass ? ` ${escapeHtml(options.extraClass)}` : "";
 
-  const boxId = options.id ? `id="${escapeHtml(options.id)}"` : "";
-  const extraClass = options.extraClass ? ` ${escapeHtml(options.extraClass)}` : "";
+    const title = `${rank}${getSuitSymbol(suit)}`;
 
-  const isRed =
-    normalizeSuit(backgroundSuit) === "HEART" ||
-    normalizeSuit(backgroundSuit) === "DIAMOND";
+    const parentText = parentPlay?.play_text || "";
+    const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
+    const isDeadline = spadeMode === "DEADLINE";
 
-  const parentText = parentPlay?.play_text || "";
-  const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
-  const isDeadline = spadeMode === "DEADLINE";
+    const timeLabel = isDeadline
+      ? formatTimeLabel(parentPlay?.end_date)
+      : formatTimeLabel(parentPlay?.start_date);
 
-  const timeLabel = isDeadline
-    ? formatTimeLabel(parentPlay?.end_date)
-    : formatTimeLabel(parentPlay?.start_date);
+    const location = isDeadline
+      ? ""
+      : String(parentPlay?.location || "").trim();
 
-  const location = isDeadline
-    ? ""
-    : String(parentPlay?.location || "").trim();
+    return `
+<div
+  ${boxId}
+  class="lienzo-play-card-box${extraClass}"
+>
+  ${renderCardCorners(backgroundRank, backgroundSuit)}
+      <div class="lienzo-play-card-box__row">
+        <div class="lienzo-play-card-box__card">
+          <img
+            class="lienzo-card-image"
+            src="${escapeHtml(imageSrc)}"
+            alt="${escapeHtml(title)}"
+          />
+        </div>
 
-  return `
-    <div
-      ${boxId}
-      class="lv2-play-card ${isRed ? "lv2-play-card--red" : "lv2-play-card--black"}${extraClass}"
-    >
-      ${renderV2CardCorners(backgroundRank, backgroundSuit)}
+        <div class="lienzo-card-inner">
+          ${parentText ? `<div class="play-text">${escapeHtml(parentText)}</div>` : ""}
 
-      <div class="lv2-play-card__inner">
-        ${parentText ? `
-          <div class="lv2-play-card__title">
-            ${escapeHtml(parentText)}
-          </div>
-        ` : ""}
+          ${timeLabel ? `
+            <div class="play-meta">
+              <img class="play-meta__icon" src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}" alt="" />
+              <span>${escapeHtml(timeLabel)}</span>
+            </div>
+          ` : ""}
 
-        ${timeLabel ? `
-          <div class="lv2-play-card__meta">
-            <img
-              class="lv2-play-card__meta-icon"
-              src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}"
-              alt=""
-            />
-            <span>${escapeHtml(timeLabel)}</span>
-          </div>
-        ` : ""}
-
-        ${location ? `
-          <div class="lv2-play-card__meta">
-            <img
-              class="lv2-play-card__meta-icon"
-              src="/assets/icons/LocGlobito80.gif"
-              alt=""
-            />
-            <span>${escapeHtml(location)}</span>
-          </div>
-        ` : ""}
-
-        ${showActions ? `
-          <div class="lv2-play-card__actions">
-            ${renderActionButtons()}
-          </div>
-        ` : ""}
+          ${location ? `
+            <div class="play-meta">
+              <img class="play-meta__icon" src="/assets/icons/LocGlobito80.gif" alt="" />
+              <span>${escapeHtml(location)}</span>
+            </div>
+          ` : ""}
+        </div>
       </div>
+
+      ${showActions ? `
+        <div class="lienzo-play-card-box__actions">
+          ${renderActionButtons()}
+        </div>
+      ` : ""}
     </div>
   `;
-}
-
-function animateCardToUser(user) {
-  const source = document.getElementById("lienzo-source-card");
-
-  if (!source) {
-    console.warn("No hay carta origen");
-    return;
   }
 
-  const rect = source.getBoundingClientRect();
-
-  const ghostWrap = document.createElement("div");
-  ghostWrap.innerHTML = renderPlayCardBox(window.__lienzoNewDraft, {
-    showActions: false
-  });
-
-  const ghostNode = ghostWrap.firstElementChild;
-  if (!ghostNode) return;
-
-  ghostNode.style.position = "fixed";
-  ghostNode.style.left = rect.left + "px";
-  ghostNode.style.top = rect.top + "px";
-  ghostNode.style.width = rect.width + "px";
-  ghostNode.style.height = rect.height + "px";
-  ghostNode.style.margin = "0";
-  ghostNode.style.zIndex = "9999";
-  ghostNode.style.transition = "all 450ms ease";
-  ghostNode.style.pointerEvents = "none";
-
-  document.body.appendChild(ghostNode);
-
-  source.style.visibility = "hidden";
-  source.style.pointerEvents = "none";
-
-  const container =
-    document.querySelector("#amsterdam .lienzo-tribune__stage") ||
-    document.querySelector("#amsterdam") ||
-    document.querySelector(".lienzo-grid__right");
-
-  if (!container) return;
-
-  const targetRect = container.getBoundingClientRect();
-
-  const targetX = targetRect.left + targetRect.width / 2 - rect.width / 2;
-  const targetY = targetRect.top + targetRect.height / 2 - rect.height / 2;
-
-  requestAnimationFrame(() => {
-    ghostNode.style.left = targetX + "px";
-    ghostNode.style.top = targetY + "px";
-    ghostNode.style.transform = "scale(1.05)";
-  });
-
-  ghostNode.addEventListener("transitionend", () => {
-    if (!ghostNode.parentNode) return;
-
-    ghostNode.remove();
-
-    window.__lienzoAnimationState = {
-      ...(window.__lienzoAnimationState || {}),
-      sourceCardDelivered: true
-    };
-
-    const leftContainer = document.querySelector("#colombes");
-
-    if (leftContainer) {
-      leftContainer.innerHTML = renderColombesTribunes(window.__lienzoNewDraft);
+  function animateCardToUser(user) {
+    const source = document.getElementById("lienzo-source-card");
+    if (!source) {
+      console.warn("No hay carta origen");
+      return;
     }
 
-    renderAssignedTargetPanel(user);
+    const rect = source.getBoundingClientRect();
 
-    bindActionButtons();
+    // 👻 crear recuadro fantasma
+    const ghostWrap = document.createElement("div");
+    ghostWrap.innerHTML = renderPlayCardBox(window.__lienzoNewDraft, {
+      showActions: false
+    });
 
-    setTimeout(() => {
-      mountCardInTarget();
-    }, 50);
-  });
-}
+    const ghostNode = ghostWrap.firstElementChild;
+    if (!ghostNode) return;
+
+    ghostNode.style.position = "fixed";
+    ghostNode.style.left = rect.left + "px";
+    ghostNode.style.top = rect.top + "px";
+    ghostNode.style.width = "360px";
+    ghostNode.style.margin = "0";
+    ghostNode.style.zIndex = "9999";
+    ghostNode.style.transition = "all 450ms ease";
+    ghostNode.style.pointerEvents = "none";
+
+    document.body.appendChild(ghostNode);
+
+    source.style.visibility = "hidden";
+    source.style.pointerEvents = "none";
+
+    const container = document.querySelector(".lienzo-grid__right");
+    if (!container) return;
+
+    const targetRect = container.getBoundingClientRect();
+
+    const targetX = targetRect.left + targetRect.width / 2 - 180;
+    const targetY = targetRect.top + targetRect.height / 3;
+
+    requestAnimationFrame(() => {
+      ghostNode.style.left = targetX + "px";
+      ghostNode.style.top = targetY + "px";
+      ghostNode.style.transform = "scale(1.05)";
+    });
+
+    ghostNode.addEventListener("transitionend", () => {
+      if (!ghostNode.parentNode) return;
+
+      ghostNode.remove();
+
+      window.__lienzoAnimationState = {
+        ...(window.__lienzoAnimationState || {}),
+        sourceCardDelivered: true
+      };
+
+      const leftContainer = document.querySelector(".lienzo-grid__left");
+      if (leftContainer) {
+        leftContainer.innerHTML = renderColombesTribunes(window.__lienzoNewDraft);
+      }
+
+      renderAssignedTargetPanel(user);
+
+      bindActionButtons();
+
+      setTimeout(() => {
+        mountCardInTarget();
+      }, 50);
+    });
+  }
 
   function mountCardInTarget() {
     const dropzone = document.getElementById("lienzo-target-dropzone");
@@ -636,62 +597,55 @@ function animateCardToUser(user) {
     bindActionButtons();
   }
 
-function renderAssignedTargetPanel(user) {
-  const container = document.querySelector(".lienzo-grid__right");
-  if (!container) return;
+  function renderAssignedTargetPanel(user) {
+    const container = document.querySelector(".lienzo-grid__right");
+    if (!container) return;
 
-  const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+    const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+    const name =
+      user?.nickname ||
+      user?.full_name ||
+      user?.name ||
+      `Usuario ${user?.id || ""}`;
 
-  const name =
-    user?.nickname ||
-    user?.full_name ||
-    user?.name ||
-    `Usuario ${user?.id || ""}`;
-
-  const corporateCards = deriveOwnedCorporateCards(
-    getAllPlays(),
-    Number(user?.id || 0)
-  );
-
-  container.innerHTML = `
-    <section class="lienzo-tribune">
-
-      <div class="lienzo-tribune__corporates">
-        ${corporateCards.map(renderV2CorporateCard).join("")}
-      </div>
-
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(photo)}"
-          alt="${escapeHtml(name)}"
-        />
-
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(name)}
+    container.innerHTML = `
+    <section class="lienzo-panel lienzo-panel--target panel--split-top">
+      <div class="panel-topbar panel-topbar--single">
+        <div class="panel-topbar__col panel-topbar__col--identity">
+          <div class="lienzo-target-header lienzo-target-header--top">
+            <img
+              class="lienzo-target-header__photo"
+              src="${escapeHtml(photo)}"
+              alt="${escapeHtml(name)}"
+            />
+            <div class="lienzo-target-header__name">
+              ${escapeHtml(name)}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="lienzo-tribune__stage">
-        <div
-          id="lienzo-target-dropzone"
-          class="lienzo-target-dropzone"
-        ></div>
+      <div class="lienzo-target-mainrow">
+        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+          <!-- acá aterriza la carta -->
+        </div>
       </div>
-
     </section>
   `;
-}
+  }
 
-function renderActionButtons() {
-  const saveIcon = window.ICONS?.actions?.save || "/assets/icons/salvar40.gif";
+  function renderActionButtons() {
+    const saveIcon = window.ICONS?.actions?.save || "/assets/icons/salvar40.gif";
 
-  return `
-    <button id="lienzo-save-btn" class="icon-btn" title="Salvar">
-      <img src="${saveIcon}" alt="Salvar" />
-    </button>
+    return `
+    <div class="lienzo-actions">
+      <button id="lienzo-save-btn" class="icon-btn" title="Salvar">
+        <img src="${saveIcon}" alt="Salvar" />
+      </button>
+
+    </div>
   `;
-}
+  }
 
   function normalizeSuit(value) {
     return String(value || "").trim().toUpperCase();
@@ -964,35 +918,27 @@ function renderActionButtons() {
   `;
   }
 
-function renderUsersPanel() {
-  return `
-    <section class="lienzo-tribune">
+  function renderUsersPanel() {
+    return `
+    <section class="lienzo-panel lienzo-panel--target lienzo-panel--target-empty panel--split-top">
 
-      <div class="lienzo-tribune__corporates">
-      </div>
-
-      <div class="lienzo-tribune__identity">
+      <div class="lienzo-target-empty">
         <img
-          class="lienzo-tribune__avatar"
+          class="lienzo-target-empty__photo"
           src="/assets/icons/singeta120.gif"
           alt="Destinatario"
         />
 
-        <div class="lienzo-tribune__name">
+        <div class="lienzo-target-empty__label">
           Destinatario
         </div>
       </div>
 
-      <div class="lienzo-tribune__stage">
-        <div
-          id="lienzo-users-picker"
-          class="lienzo-users-picker"
-        ></div>
-      </div>
+      <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
 
     </section>
   `;
-}
+  }
 
   async function refreshCurrentUser() {
     try {
@@ -1208,65 +1154,70 @@ function renderUsersPanel() {
   }
 
   function renderSourcePlayerPanel(draft) {
-  const user = getCurrentUser();
-  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-  const userName =
-    user?.nickname ||
-    user?.full_name ||
-    user?.name ||
-    "Creador";
+    const user = getCurrentUser();
+    const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+    const userName =
+      user?.nickname ||
+      user?.full_name ||
+      user?.name ||
+      "Creador";
 
-  const scene = buildSourceCardsScene(draft);
-  const delivered =
-    window.__lienzoAnimationState?.sourceCardDelivered === true;
+    const scene = buildSourceCardsScene(draft);
+    const delivered =
+      window.__lienzoAnimationState?.sourceCardDelivered === true;
 
-  const isQSpade =
-    normalizeRank(draft?.card_rank) === "Q" &&
-    normalizeSuit(draft?.card_suit) === "SPADE";
 
-  return `
-    <section class="lienzo-tribune">
-
-      <div class="lienzo-tribune__corporates">
-        ${scene.backgroundCards.map(renderV2CorporateCard).join("")}
-      </div>
-
-      <div class="lienzo-tribune__identity">
+    const topbar = buildPanelTopbar({
+      identityHtml: `
+      <div class="lienzo-source-header lienzo-source-header--top">
         <img
-          class="lienzo-tribune__avatar"
+          class="lienzo-source-header__photo"
           src="${escapeHtml(userPhoto)}"
           alt="${escapeHtml(userName)}"
         />
-
-        <div class="lienzo-tribune__name">
+        <div class="lienzo-source-header__name">
           ${escapeHtml(userName)}
         </div>
       </div>
+    `,
+      actionsHtml: ""
+    });
 
-      <div class="lienzo-tribune__stage">
-        ${delivered
-          ? ""
-          : isQSpade
-            ? renderPlayCardBox(draft, {
-                showActions: false,
-                id: "lienzo-source-card",
-                backgroundRank: "J",
-                backgroundSuit: "SPADE"
-              })
-            : `
-              <img
-                id="lienzo-source-card"
-                class="lienzo-card-image"
-                src="${escapeHtml(getCardImageSrc(draft?.card_rank, draft?.card_suit))}"
-                alt=""
-              />
-            `
+    return `
+    <section class="lienzo-panel lienzo-panel--source panel--split-top">
+      ${topbar}
+
+      <div class="lienzo-source-cards">
+        <div class="lienzo-source-stack">
+  ${scene.backgroundCards.map(renderBackgroundCard).join("")}
+
+  ${delivered
+        ? ""
+        : `
+    ${normalizeRank(draft?.card_rank) === "Q" && normalizeSuit(draft?.card_suit) === "SPADE"
+          ? renderPlayCardBox(draft, {
+            showActions: false,
+            id: "lienzo-source-card",
+            extraClass: "lienzo-source-active",
+            backgroundRank: "J",
+            backgroundSuit: "SPADE"
+          })
+          : `
+        <img
+          id="lienzo-source-card"
+          class="lienzo-card-image lienzo-source-active"
+          src="${escapeHtml(getCardImageSrc(draft?.card_rank, draft?.card_suit))}"
+          alt=""
+        />
+      `
         }
+  `}
+</div>
       </div>
 
     </section>
   `;
-}
+  }
 
   function bindUsersPicker(draft) {
     const selectedBox = document.getElementById("lienzo-user-selected");
@@ -1419,12 +1370,12 @@ function renderUsersPanel() {
     container.innerHTML = `
   ${renderDeckHeader(deck)}
 
-  <div class="lienzo-v2-grid lienzo-v2-grid--2">
+  <div class="lienzo-grid">
     <div id="colombes" class="lienzo-grid__left">
       ${renderColombesTribunes(draft)}
     </div>
 
-    <div id="amsterdam" class="lienzo-grid__right">
+    <div id="amsterdam" class="lienzo-grid__right" id="lienzo-right-panel">
       ${renderUsersPanel()}
     </div>
   </div>
