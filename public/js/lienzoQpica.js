@@ -1242,18 +1242,18 @@ return `
     }
 
 
-    function renderBackgroundCard(card, index) {
-        const src = getCardImageSrc(card?.card_rank, card?.card_suit);
+function renderBackgroundCard(card, index) {
+  const src = getCardImageSrc(card?.card_rank, card?.card_suit);
 
-        return `
-      <img
-        class="lienzo-source-stack__card"
-        src="${escapeHtml(src)}"
-        alt=""
-        style="left:${index * 18}px;"
-      />
-    `;
-    }
+  return `
+    <img
+      class="lienzo-tribune__corporate-card"
+      src="${escapeHtml(src)}"
+      alt=""
+      style="left:${index * 18}px;"
+    />
+  `;
+}
 
     function buildSourceCardsScene(play) {
         const sourceUser = resolveSourceUser(play);
