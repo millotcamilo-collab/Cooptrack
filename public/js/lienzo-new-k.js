@@ -696,27 +696,31 @@ function renderAssignedTargetPanel(user) {
 
 
 
-    function renderUsersPanel() {
-        return `
-    <section class="lienzo-panel lienzo-panel--target lienzo-panel--target-empty panel--split-top">
+function renderUsersPanel() {
+  return `
+    <section class="lienzo-tribune lienzo-tribune--target lienzo-tribune--target-empty">
 
-      <div class="lienzo-target-empty">
+      <div class="lienzo-tribune__corporates"></div>
+
+      <div class="lienzo-tribune__identity">
         <img
-          class="lienzo-target-empty__photo"
+          class="lienzo-tribune__avatar"
           src="/assets/icons/singeta120.gif"
           alt="Destinatario"
         />
 
-        <div class="lienzo-target-empty__label">
+        <div class="lienzo-tribune__name">
           Destinatario
         </div>
       </div>
 
-      <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
+      <div class="lienzo-tribune__stage">
+        <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
+      </div>
 
     </section>
   `;
-    }
+}
 
     async function refreshCurrentUser() {
         try {
