@@ -571,3 +571,18 @@
     #amsterdam-panel .amsterdam-stage {
       width: auto;
     }
+
+    .lienzo-target-header__photo,
+.lienzo-source-header__photo {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.lienzo-target-header,
+.lienzo-source-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
