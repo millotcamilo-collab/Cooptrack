@@ -32,12 +32,10 @@ body {
 }
 
 body {
-  background: radial-gradient(
-    circle at center,
-    var(--lv2-bg-1) 0%,
-    var(--lv2-bg-2) 60%,
-    var(--lv2-bg-0) 100%
-  );
+  background: radial-gradient(circle at center,
+      var(--lv2-bg-1) 0%,
+      var(--lv2-bg-2) 60%,
+      var(--lv2-bg-0) 100%);
 }
 
 .lienzo-v2-page {
@@ -103,9 +101,7 @@ body {
 
   display: grid;
   grid-template-rows:
-    46px   /* layer 2: usuario */
-    34px   /* layer 4: acciones / historial */
-    1fr;   /* layer 3: carta en juego */
+    126px 1fr;
 
   row-gap: 10px;
 
@@ -150,10 +146,16 @@ body {
   position: relative;
   z-index: 2;
 
+  margin-left: 150px;
+
+  height: 126px;
+
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   gap: 10px;
+
+  padding-top: 0;
 
   min-width: 0;
 }
@@ -186,7 +188,7 @@ body {
 
 /* layer 3: carta activa */
 .lienzo-tribune__stage {
-  grid-row: 3;
+  grid-row: 2;
 
   position: relative;
   z-index: 2;
@@ -399,7 +401,9 @@ body {
 }
 
 @keyframes lv2-soft-shake {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateX(0) rotate(0deg);
   }
 
