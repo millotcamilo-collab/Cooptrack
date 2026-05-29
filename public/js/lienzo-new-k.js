@@ -385,18 +385,7 @@ function renderBackgroundCard(card, index) {
 
         const draft = window.__lienzoNewDraft;
 
-        dropzone.innerHTML = `
-    <img
-      class="lienzo-card-image"
-      src="${escapeHtml(getCardImageSrc(draft?.card_rank, draft?.card_suit))}"
-      alt=""
-    />
-
-    <div class="lienzo-actions">
-      ${renderActionButtons()}
-    </div>
-  `;
-
+        dropzone.innerHTML = renderKCardBox(draft, true);
         bindActionButtons();
     }
 
@@ -832,12 +821,7 @@ function renderUsersPanel() {
         ${delivered
           ? ""
           : `
-            <img
-              id="lienzo-source-card"
-              class="lienzo-card-image lienzo-source-active"
-              src="${escapeHtml(getCardImageSrc(draft?.card_rank, draft?.card_suit))}"
-              alt=""
-            />
+            ${renderKCardBox(draft)}
           `
         }
       </div>
