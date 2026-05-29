@@ -728,27 +728,27 @@ function renderCardCorners(rank, suit) {
     }
 
     function formatSessionDayHeader(date) {
-        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "—";
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "—";
 
-        const weekdayMap = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-        const monthMap = [
-            "Ene",
-            "Feb",
-            "Mar",
-            "Abr",
-            "May",
-            "Jun",
-            "Jul",
-            "Ago",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dic"
-        ];
+  const weekdayMap = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-        return `${weekdayMap[date.getDay()]} ${date.getDate()} ${monthMap[date.getMonth()]
-            } ${date.getFullYear()}`;
-    }
+  const monthMap = [
+    "Ene",
+    "Feb",
+    "Mar",
+    "Abr",
+    "May",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dic"
+  ];
+
+  return `${weekdayMap[date.getDay()]} ${date.getDate()} ${monthMap[date.getMonth()]}`;
+}
 
     function formatTimeLabel(value) {
         const date = parseLocalDateTime(value);
