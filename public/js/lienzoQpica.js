@@ -44,22 +44,21 @@
         return getAllPlays().find((play) => Number(play?.id || 0) === id) || null;
     }
 
-    function renderCardCorners(rank, suit) {
-        const symbol = getSuitSymbol(suit);
-        const suitClass = `card-corner--${normalizeSuit(suit).toLowerCase()}`;
+function renderCardCorners(rank, suit) {
+  const symbol = getSuitSymbol(suit);
 
-        return `
-    <div class="card-corner card-corner--tl ${suitClass}">
-      <span class="card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="card-corner__suit">${escapeHtml(symbol)}</span>
+  return `
+    <div class="lv2-card-corner lv2-card-corner--tl">
+      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
 
-    <div class="card-corner card-corner--br ${suitClass}">
-      <span class="card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="card-corner__suit">${escapeHtml(symbol)}</span>
+    <div class="lv2-card-corner lv2-card-corner--br">
+      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
   `;
-    }
+}
 
     function getSuitSymbol(suit) {
         const s = normalizeSuit(suit);
@@ -1554,41 +1553,46 @@ ${qHeartMode
 
 
 ${parentJSpadeText
-                ? `
+  ? `
 <div
   class="lienzo-parent-play-box lienzo-parent-play-box--inline lv2-play-card"
 >
   ${renderCardCorners("J", "SPADE")}
 
-      <div class="lienzo-card-inner">
-        <div class="play-text">
-          ${escapeHtml(parentJSpadeText)}
-        </div>
+  <div class="lv2-play-card__inner">
 
-        ${parentPlay?.start_date ? `
-          <div class="play-meta">
-            <img class="play-meta__icon"
-                 src="/assets/icons/reloj60.gif"
-                 alt="" />
-            <span>${escapeHtml(formatTimeLabel(parentPlay.start_date))}</span>
-          </div>
-        ` : ""}
-
-        ${parentPlay?.location ? `
-          <div class="play-meta">
-            <img class="play-meta__icon"
-                 src="/assets/icons/LocGlobito80.gif"
-                 alt="" />
-            <span>${escapeHtml(parentPlay.location)}</span>
-          </div>
-        ` : ""}
-
-      </div>
-
+    <div class="lv2-play-card__title">
+      ${escapeHtml(parentJSpadeText)}
     </div>
-  `
-                : ""
-            }
+
+    ${parentPlay?.start_date ? `
+      <div class="lv2-play-card__meta">
+        <img
+          class="lv2-play-card__meta-icon"
+          src="/assets/icons/reloj60.gif"
+          alt=""
+        />
+        <span>${escapeHtml(formatTimeLabel(parentPlay.start_date))}</span>
+      </div>
+    ` : ""}
+
+    ${parentPlay?.location ? `
+      <div class="lv2-play-card__meta">
+        <img
+          class="lv2-play-card__meta-icon"
+          src="/assets/icons/LocGlobito80.gif"
+          alt=""
+        />
+        <span>${escapeHtml(parentPlay.location)}</span>
+      </div>
+    ` : ""}
+
+  </div>
+
+</div>
+`
+  : ""
+}
 
   ${qHeartBoxHtml}
 </div>
