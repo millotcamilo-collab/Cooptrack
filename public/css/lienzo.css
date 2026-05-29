@@ -531,6 +531,31 @@ min-height: var(--lv2-tribune-h);
   color: #c40000;
 }
 
+/* Iconos dentro del día semanal bajo el lienzo */
+.lienzo-weekday .lienzo-session-dia__row,
+.lienzo-session-dia .lienzo-session-dia__row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.lienzo-weekday .lienzo-session-dia__icon,
+.lienzo-session-dia .lienzo-session-dia__icon {
+  height: 16px;
+  width: auto;
+  display: inline-block;
+  object-fit: contain;
+}
+
+.lienzo-weekday .lienzo-session-dia__time,
+.lienzo-weekday .lienzo-session-dia__location,
+.lienzo-session-dia .lienzo-session-dia__time,
+.lienzo-session-dia .lienzo-session-dia__location {
+  font-size: 11px;
+  line-height: 1.1;
+}
+
 /* ===== Responsive ===== */
 
 @media (max-width: 900px) {
