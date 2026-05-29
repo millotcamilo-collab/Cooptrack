@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>CoopTrack · Lienzo V2</title>
+
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="/css/topbar.css" />
+  <link rel="stylesheet" href="/css/placard.css" />
+  <link rel="stylesheet" href="/css/lienzo-v2.css" />
+</head>
+
+<body>
+  <div id="topbar"></div>
+
+  <main class="lienzo-v2-page">
+    <div class="lienzo-v2-shell">
+      <section class="lienzo-v2-main">
+
+        <div
+          id="lienzo-v2-placard"
+          class="lienzo-v2-placard"
+        ></div>
+
+        <section class="lienzo-v2-grid lienzo-v2-grid--2">
+
+          <article class="lienzo-tribune">
+            <div class="lienzo-tribune__corporates">
+              <img
+                class="lienzo-tribune__corporate-card"
+                style="left:0;"
+                src="/assets/icons/Atrebol.gif"
+                alt="A♣"
+              />
+              <img
+                class="lienzo-tribune__corporate-card"
+                style="left:18px;"
+                src="/assets/icons/Ktrebol.gif"
+                alt="K♣"
+              />
+            </div>
+
+            <div class="lienzo-tribune__identity">
+              <img
+                class="lienzo-tribune__avatar"
+                src="/assets/icons/singeta120.gif"
+                alt="Miloca Gue"
+              />
+              <div class="lienzo-tribune__name">Miloca Gue</div>
+            </div>
+
+            <div class="lienzo-tribune__stage">
+              <div class="lv2-play-card lv2-play-card--black">
+                <div class="lv2-card-corner lv2-card-corner--tl">
+                  <span class="lv2-card-corner__rank">J</span>
+                  <span class="lv2-card-corner__suit">♠</span>
+                </div>
+
+                <div class="lv2-card-corner lv2-card-corner--br">
+                  <span class="lv2-card-corner__rank">J</span>
+                  <span class="lv2-card-corner__suit">♠</span>
+                </div>
+
+                <div class="lv2-play-card__inner">
+                  <div class="lv2-play-card__title">Final</div>
+
+                  <div class="lv2-play-card__meta">
+                    <img
+                      class="lv2-play-card__meta-icon"
+                      src="/assets/icons/reloj60.gif"
+                      alt=""
+                    />
+                    <span>17:00</span>
+                  </div>
+
+                  <div class="lv2-play-card__meta">
+                    <img
+                      class="lv2-play-card__meta-icon"
+                      src="/assets/icons/LocGlobito80.gif"
+                      alt=""
+                    />
+                    <span>Andes 345</span>
+                  </div>
+
+                  <div class="lv2-play-card__actions">
+                    <button class="icon-btn" title="Cancelar">
+                      <img src="/assets/icons/stop60.gif" alt="Cancelar" />
+                    </button>
+
+                    <button class="icon-btn" title="Enviar">
+                      <img src="/assets/icons/buzon60.gif" alt="Enviar" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="lienzo-tribune">
+            <div class="lienzo-tribune__corporates">
+              <img
+                class="lienzo-tribune__corporate-card"
+                style="left:0;"
+                src="/assets/icons/Adiamante.gif"
+                alt="A♦"
+              />
+            </div>
+
+            <div class="lienzo-tribune__identity">
+              <img
+                class="lienzo-tribune__avatar"
+                src="/assets/icons/singeta120.gif"
+                alt="Dafoe"
+              />
+              <div class="lienzo-tribune__name">Dafoe</div>
+            </div>
+
+            <div class="lienzo-tribune__stage">
+              <img
+                class="lv2-transit-card lv2-transit-card--active"
+                src="/assets/icons/Dorso70.gif"
+                alt="Pendiente de validación"
+              />
+            </div>
+          </article>
+
+        </section>
+
+      </section>
+    </div>
+  </main>
+
+  <script src="/js/icons.js"></script>
+  <script src="/js/topbar.js"></script>
+  <script src="/js/placard.js"></script>
+</body>
+</html>

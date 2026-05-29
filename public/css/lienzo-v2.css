@@ -1,0 +1,459 @@
+/* =========================================================
+   CoopTrack — Lienzo V2
+   Modelo: tribuna = usuario + cartas + historia + jugada
+   ========================================================= */
+
+:root {
+  --lv2-bg-0: #02110c;
+  --lv2-bg-1: #072c20;
+  --lv2-bg-2: #093124;
+
+  --lv2-panel-bg: rgba(0, 0, 0, 0.20);
+  --lv2-panel-border: rgba(255, 255, 255, 0.12);
+
+  --lv2-text: #f5f5f5;
+  --lv2-muted: rgba(245, 245, 245, 0.72);
+
+  --lv2-radius: 14px;
+  --lv2-gap: 6px;
+
+  --lv2-card-w: 157px;
+  --lv2-card-h: 210px;
+
+  --lv2-corporate-h: 120px;
+  --lv2-action-h: 30px;
+}
+
+/* ===== Página ===== */
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: radial-gradient(
+    circle at center,
+    var(--lv2-bg-1) 0%,
+    var(--lv2-bg-2) 60%,
+    var(--lv2-bg-0) 100%
+  );
+}
+
+.lienzo-v2-page {
+  min-height: calc(100vh - var(--topbar-height, 0px));
+  padding: 0 0 40px;
+  box-sizing: border-box;
+  color: var(--lv2-text);
+}
+
+/* ===== Shell ===== */
+
+.lienzo-v2-shell {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.lienzo-v2-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lv2-gap);
+}
+
+/* ===== Placard host ===== */
+
+.lienzo-v2-placard {
+  border-radius: var(--lv2-radius);
+  overflow: hidden;
+}
+
+/* ===== Grilla de tribunas ===== */
+
+.lienzo-v2-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--lv2-cols, 2), minmax(0, 1fr));
+  gap: 0;
+  min-height: 300px;
+}
+
+.lienzo-v2-grid--2 {
+  --lv2-cols: 2;
+}
+
+.lienzo-v2-grid--3 {
+  --lv2-cols: 3;
+}
+
+.lienzo-v2-grid--4 {
+  --lv2-cols: 4;
+}
+
+/* ===== Tribuna ===== */
+
+.lienzo-tribune {
+  position: relative;
+
+  min-width: 0;
+  min-height: 300px;
+
+  padding: 18px;
+
+  display: grid;
+  grid-template-rows:
+    46px   /* layer 2: usuario */
+    34px   /* layer 4: acciones / historial */
+    1fr;   /* layer 3: carta en juego */
+
+  row-gap: 10px;
+
+  background: var(--lv2-panel-bg);
+  border: 1px solid var(--lv2-panel-border);
+  border-radius: var(--lv2-radius);
+
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* layer 1: cartas corporativas */
+.lienzo-tribune__corporates {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+
+  width: 150px;
+  height: 126px;
+
+  z-index: 1;
+
+  pointer-events: none;
+}
+
+.lienzo-tribune__corporate-card {
+  position: absolute;
+  top: 0;
+
+  height: var(--lv2-corporate-h);
+  width: auto;
+
+  border-radius: 6px;
+
+  object-fit: contain;
+}
+
+/* layer 2: identidad */
+.lienzo-tribune__identity {
+  grid-row: 1;
+
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  min-width: 0;
+}
+
+.lienzo-tribune__avatar {
+  width: 40px;
+  height: 40px;
+
+  display: block;
+  object-fit: cover;
+
+  border-radius: 4px;
+  background: transparent;
+}
+
+.lienzo-tribune__name {
+  min-width: 0;
+
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.15;
+
+  color: var(--lv2-text);
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* layer 3: carta activa */
+.lienzo-tribune__stage {
+  grid-row: 3;
+
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ===== Estados de drag/drop ===== */
+
+.lienzo-tribune.is-drag-valid {
+  outline: 2px dashed rgba(120, 210, 120, 0.9);
+  outline-offset: -8px;
+}
+
+.lienzo-tribune.is-drag-invalid {
+  outline: 2px dashed rgba(210, 80, 80, 0.9);
+  outline-offset: -8px;
+}
+
+/* ===== Naipe activo J/Q ===== */
+
+.lv2-play-card {
+  position: relative;
+
+  width: var(--lv2-card-w);
+  height: var(--lv2-card-h);
+
+  background: #fff;
+  color: #111;
+
+  border: 2px solid #111;
+  border-radius: 10px;
+
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.lv2-play-card--red {
+  color: #c00000;
+}
+
+.lv2-play-card--black {
+  color: #111;
+}
+
+/* esquinas */
+.lv2-card-corner {
+  position: absolute;
+
+  width: 22px;
+
+  text-align: center;
+  line-height: 1;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+
+  pointer-events: none;
+  z-index: 3;
+}
+
+.lv2-card-corner--tl {
+  top: 6px;
+  left: 4px;
+}
+
+.lv2-card-corner--br {
+  right: 4px;
+  bottom: 6px;
+  transform: rotate(180deg);
+}
+
+.lv2-card-corner__rank {
+  display: block;
+
+  font-size: 17px;
+
+  transform: scaleX(0.72);
+  transform-origin: center;
+}
+
+.lv2-card-corner__suit {
+  display: block;
+  font-size: 21px;
+}
+
+/* recuadro interno tipo naipe */
+.lv2-play-card__inner {
+  position: absolute;
+
+  top: 22px;
+  left: 22px;
+  right: 22px;
+  bottom: 22px;
+
+  padding: 7px 6px 32px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  border: 1px solid rgba(0, 0, 0, 0.26);
+  border-radius: 6px;
+
+  background: rgba(0, 0, 0, 0.035);
+
+  color: #111;
+
+  box-sizing: border-box;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.lv2-play-card__actions {
+  position: absolute;
+
+  right: 6px;
+  bottom: 5px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+
+  z-index: 5;
+}
+
+.lv2-play-card__title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.lv2-play-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  font-size: 13px;
+  line-height: 1.12;
+
+  color: rgba(0, 0, 0, 0.74);
+}
+
+.lv2-play-card__meta-icon {
+  height: 20px;
+  width: auto;
+
+  display: block;
+  object-fit: contain;
+}
+
+.lv2-play-card__field {
+  width: 100%;
+  height: 26px;
+
+  padding: 3px 6px;
+
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 6px;
+
+  background: rgba(255, 255, 255, 0.86);
+  color: #111;
+
+  font-size: 12px;
+  line-height: 1.2;
+
+  box-sizing: border-box;
+}
+
+.lv2-play-card__field-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lv2-play-card__currency {
+  min-width: 24px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111;
+}
+
+
+/* ===== Carta de dorso / tránsito ===== */
+
+.lv2-transit-card {
+  width: 52px;
+  height: auto;
+
+  display: block;
+
+  cursor: pointer;
+
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+
+.lv2-transit-card--historical {
+  cursor: default;
+  opacity: 0.66;
+}
+
+.lv2-transit-card--active {
+  animation: lv2-soft-shake 1.8s ease-in-out infinite;
+}
+
+@keyframes lv2-soft-shake {
+  0%, 100% {
+    transform: translateX(0) rotate(0deg);
+  }
+
+  20% {
+    transform: translateX(-1px) rotate(-1deg);
+  }
+
+  40% {
+    transform: translateX(1px) rotate(1deg);
+  }
+
+  60% {
+    transform: translateX(-1px) rotate(-0.5deg);
+  }
+
+  80% {
+    transform: translateX(1px) rotate(0.5deg);
+  }
+}
+
+/* ===== Almanaque inferior ===== */
+
+.lienzo-v2-week {
+  margin-top: var(--lv2-gap);
+}
+
+.lienzo-v2-week .semana {
+  gap: var(--lv2-gap);
+}
+
+/* ===== Utilidades ===== */
+
+.lv2-hidden {
+  display: none !important;
+}
+
+.lv2-muted {
+  color: var(--lv2-muted);
+}
+
+.lv2-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 900px) {
+  .lienzo-v2-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lienzo-tribune {
+    min-height: 300px;
+  }
+}
