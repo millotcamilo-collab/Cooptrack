@@ -144,25 +144,25 @@
     const s = normalizeSuit(suit);
 
     const map = {
-      A_HEART: "/assets/icons/Acorazon.gif",
-      A_SPADE: "/assets/icons/Apike.gif",
-      A_DIAMOND: "/assets/icons/Adiamante.gif",
-      A_CLUB: "/assets/icons/Atrebol.gif",
+      A_HEART: "/assets/icons/Acorazon.png",
+      A_SPADE: "/assets/icons/Apike.png",
+      A_DIAMOND: "/assets/icons/Adiamante.png",
+      A_CLUB: "/assets/icons/Atrebol.png",
 
-      K_HEART: "/assets/icons/Kcorazon.gif",
-      K_SPADE: "/assets/icons/Kpike.gif",
-      K_DIAMOND: "/assets/icons/Kdiamante.gif",
-      K_CLUB: "/assets/icons/Ktrebol.gif",
+      K_HEART: "/assets/icons/Kcorazon.png",
+      K_SPADE: "/assets/icons/Kpike.png",
+      K_DIAMOND: "/assets/icons/Kdiamante.png",
+      K_CLUB: "/assets/icons/Ktrebol.png",
 
-      Q_HEART: "/assets/icons/Qcorazon.gif",
-      Q_SPADE: "/assets/icons/Qpike.gif",
-      Q_DIAMOND: "/assets/icons/Qdiamante.gif",
-      Q_CLUB: "/assets/icons/Qtrebol.gif",
+      Q_HEART: "/assets/icons/Qcorazon.png",
+      Q_SPADE: "/assets/icons/Qpike.png",
+      Q_DIAMOND: "/assets/icons/Qdiamante.png",
+      Q_CLUB: "/assets/icons/Qtrebol.png",
 
-      J_HEART: "/assets/icons/Jcorazon.gif",
-      J_SPADE: "/assets/icons/Jpike.gif",
-      J_DIAMOND: "/assets/icons/Jdiamante.gif",
-      J_CLUB: "/assets/icons/Jtrebol.gif"
+      J_HEART: "/assets/icons/Jcorazon.png",
+      J_SPADE: "/assets/icons/Jpike.png",
+      J_DIAMOND: "/assets/icons/Jdiamante.png",
+      J_CLUB: "/assets/icons/Jtrebol.png"
     };
 
     return map[`${r}_${s}`] || "/assets/icons/Dorso70.gif";

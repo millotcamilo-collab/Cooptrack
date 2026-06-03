@@ -163,7 +163,7 @@
       <div class="lienzo-target-extra-slot">
         <div class="lienzo-qheart-box">
           <div class="lienzo-qheart-box__card">
-            <img class="lienzo-card-image" src="/assets/icons/Qcorazon.gif" alt="Q♥" />
+            <img class="lienzo-card-image" src="/assets/icons/Qcorazon.png" alt="Q♥" />
           </div>
 
           <div class="lienzo-qheart-box__content">

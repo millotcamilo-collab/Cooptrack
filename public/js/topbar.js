@@ -522,7 +522,7 @@
                 id="newDeckBtn"
                 title="El as de corazon constituye la primer jugada de un mazo. Comprende el nombre, la imagen y la moneda de referencia y solo se juega una vez"
               >
-                <img src="/assets/icons/Acorazon.gif" class="topbar__icon-img" />
+                <img src="/assets/icons/Acorazon.png" class="topbar__icon-img" />
               </button>
 
               ${userHasPendingApprovals
