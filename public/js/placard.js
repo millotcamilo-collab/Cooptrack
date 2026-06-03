@@ -73,20 +73,20 @@
 
     let src = "";
 
-    if (rank === "A" && suit === "HEART") src = "/assets/icons/Acorazon.gif";
-    if (rank === "A" && suit === "SPADE") src = "/assets/icons/Apike.gif";
-    if (rank === "A" && suit === "DIAMOND") src = "/assets/icons/Adiamante.gif";
-    if (rank === "A" && suit === "CLUB") src = "/assets/icons/Atrebol.gif";
+    if (rank === "A" && suit === "HEART") src = "/assets/icons/Acorazon.png";
+    if (rank === "A" && suit === "SPADE") src = "/assets/icons/Apike.png";
+    if (rank === "A" && suit === "DIAMOND") src = "/assets/icons/Adiamante.png";
+    if (rank === "A" && suit === "CLUB") src = "/assets/icons/Atrebol.png";
 
-    if (rank === "K" && suit === "HEART") src = "/assets/icons/Kcorazon.gif";
-    if (rank === "K" && suit === "SPADE") src = "/assets/icons/Kpike.gif";
-    if (rank === "K" && suit === "DIAMOND") src = "/assets/icons/Kdiamante.gif";
-    if (rank === "K" && suit === "CLUB") src = "/assets/icons/Ktrebol.gif";
+    if (rank === "K" && suit === "HEART") src = "/assets/icons/Kcorazon.png";
+    if (rank === "K" && suit === "SPADE") src = "/assets/icons/Kpike.png";
+    if (rank === "K" && suit === "DIAMOND") src = "/assets/icons/Kdiamante.png";
+    if (rank === "K" && suit === "CLUB") src = "/assets/icons/Ktrebol.png";
 
-    if (rank === "Q" && suit === "HEART") src = "/assets/icons/Qcorazon.gif";
-    if (rank === "Q" && suit === "SPADE") src = "/assets/icons/Qpike.gif";
-    if (rank === "Q" && suit === "DIAMOND") src = "/assets/icons/Qdiamante.gif";
-    if (rank === "Q" && suit === "CLUB") src = "/assets/icons/Qtrebol.gif";
+    if (rank === "Q" && suit === "HEART") src = "/assets/icons/Qcorazon.png";
+    if (rank === "Q" && suit === "SPADE") src = "/assets/icons/Qpike.png";
+    if (rank === "Q" && suit === "DIAMOND") src = "/assets/icons/Qdiamante.png";
+    if (rank === "Q" && suit === "CLUB") src = "/assets/icons/Qtrebol.png";
 
     const labelMap = {
       HEART: "♥",
@@ -525,7 +525,7 @@
     aria-label="Ir a administradores"
   >
     <img
-      src="/assets/icons/Acorazon.gif"
+      src="/assets/icons/Acorazon.png"
       alt="A♥"
       class="placard__maincard-image"
     />
