@@ -156,6 +156,24 @@ function renderCardCorners(rank, suit) {
 
         return data;
     }
+function getFigureImageSrc(rank, suit) {
+  const r = normalizeRank(rank);
+  const s = normalizeSuit(suit);
+
+  const map = {
+    J_HEART: "/assets/icons/JC.png",
+    J_SPADE: "/assets/icons/JP.png",
+    J_DIAMOND: "/assets/icons/JD.png",
+    J_CLUB: "/assets/icons/JT.png",
+
+    Q_HEART: "/assets/icons/QC.png",
+    Q_SPADE: "/assets/icons/QP.png",
+    Q_DIAMOND: "/assets/icons/QD.png",
+    Q_CLUB: "/assets/icons/QT.png"
+  };
+
+  return map[`${r}_${s}`] || "";
+}
 
     function findPreviousQHeartPayment(play) {
         const currentId = Number(play?.id || 0);
@@ -907,6 +925,7 @@ function renderCardCorners(rank, suit) {
         const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
 
         const isDeadline = spadeMode === "DEADLINE";
+        const figureSrc = getFigureImageSrc(rank, suit);
 
         const timeLabel = isDeadline
             ? formatTimeLabel(parentPlay?.end_date)
@@ -920,7 +939,10 @@ function renderCardCorners(rank, suit) {
   <div class="lv2-play-card">
     ${renderCardCorners(rank, suit)}
 
-    <div class="lv2-play-card__inner">
+    <div
+  class="lv2-play-card__inner lv2-play-card__inner--figure"
+  style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
+>
       ${parentText ? `
         <div class="lv2-play-card__title">
           ${escapeHtml(parentText)}
