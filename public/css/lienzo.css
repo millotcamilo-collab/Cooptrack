@@ -598,19 +598,17 @@ min-height: var(--lv2-tribune-h);
 .lv2-play-card__inner--figure::after {
   content: "";
   position: absolute;
+
   left: 0;
   right: 0;
   bottom: 0;
 
   height: 68%;
 
-  background-image: var(--lv2-figure-url);
-  background-repeat: no-repeat;
-  background-position: center top;
-  background-size: 100% auto;
+  background: rgba(245, 238, 220, 0.78);
 
-  filter: sepia(35%) saturate(75%) brightness(1.05);
-  opacity: .65;
+  backdrop-filter: sepia(45%) saturate(75%) brightness(1.08);
+  -webkit-backdrop-filter: sepia(45%) saturate(75%) brightness(1.08);
 
   z-index: 1;
 }
