@@ -361,3 +361,114 @@
   animation: placardPulseCard 0.55s ease-in-out 2;
   transform-origin: center center;
 }
+
+.placard__qheart-card {
+  position: relative;
+
+  width: 46px;
+  height: 66px;
+
+  background: #fff;
+  color: #c40000;
+
+  border: 1px solid #111;
+  border-radius: 6px;
+
+  box-sizing: border-box;
+  overflow: hidden;
+
+  cursor: grab;
+  flex: 0 0 auto;
+}
+
+.placard__qheart-card:active {
+  cursor: grabbing;
+}
+
+.placard__qheart-inner {
+  position: absolute;
+
+  top: 10px;
+  left: 8px;
+  right: 8px;
+  bottom: 10px;
+
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+
+  overflow: hidden;
+  background: #fff;
+}
+
+.placard__qheart-portrait {
+  position: absolute;
+  inset: 0;
+
+  background-image: url("/assets/icons/QC.png");
+  background-repeat: no-repeat;
+
+  /*
+    La imagen QC completa queda espejada y agrandada.
+    Ajustamos para ver sobre todo la cara/corona.
+  */
+  background-size: 190% auto;
+  background-position: 52% 0%;
+
+  transform: scaleX(-1);
+  transform-origin: center;
+}
+
+.placard__qheart-corner {
+  position: absolute;
+
+  width: 10px;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  line-height: 0.85;
+  text-align: center;
+
+  z-index: 3;
+  pointer-events: none;
+}
+
+.placard__qheart-corner span {
+  display: block;
+}
+
+.placard__qheart-corner--tl {
+  top: 3px;
+  left: 2px;
+}
+
+.placard__qheart-corner--br {
+  right: 2px;
+  bottom: 3px;
+  transform: rotate(180deg);
+}
+
+@keyframes placardQHeartWink {
+  0%, 84%, 100% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+
+  88% {
+    filter: brightness(1.18);
+    transform: scale(1.04);
+  }
+
+  92% {
+    filter: brightness(0.95);
+    transform: scale(0.98);
+  }
+
+  96% {
+    filter: brightness(1.12);
+    transform: scale(1.03);
+  }
+}
+
+.placard__qheart-card--pulse .placard__qheart-portrait {
+  animation: placardQHeartWink 2.8s ease-in-out infinite;
+}

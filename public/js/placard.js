@@ -97,6 +97,34 @@
 
     const label = `${rank}${labelMap[suit] || ""}`;
 
+if (rank === "Q" && suit === "HEART") {
+  return `
+    <div
+      class="placard__qheart-card placard__qheart-card--pulse"
+      title="${escapeHtml(label)}"
+      draggable="true"
+      data-rank="${escapeHtml(rank)}"
+      data-suit="${escapeHtml(suit)}"
+      data-card-id="${escapeHtml(card?.id || "")}"
+      data-virtual="${card?.isVirtual ? "true" : "false"}"
+    >
+      <div class="placard__qheart-corner placard__qheart-corner--tl">
+        <span>Q</span>
+        <span>♥</span>
+      </div>
+
+      <div class="placard__qheart-inner">
+        <div class="placard__qheart-portrait"></div>
+      </div>
+
+      <div class="placard__qheart-corner placard__qheart-corner--br">
+        <span>Q</span>
+        <span>♥</span>
+      </div>
+    </div>
+  `;
+}
+
     if (src) {
       return `
         <img
@@ -146,7 +174,7 @@
 
   function bindPlacardDrag(container) {
     container
-      .querySelectorAll(".placard__topcard-image, .placard__topcard-fallback")
+      .querySelectorAll(".placard__topcard-image, .placard__topcard-fallback, .placard__qheart-card")
       .forEach((cardEl) => {
         cardEl.addEventListener("dragstart", (event) => {
           const payload = {
