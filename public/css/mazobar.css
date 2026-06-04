@@ -446,3 +446,80 @@
   width: auto;
   display: block;
 }
+
+.mazobar__topcard-button {
+  position: relative;
+  width: 54px;
+  height: 80px;
+
+  background: #fff;
+  color: #111;
+
+  border: 1px solid #111;
+  border-radius: 6px;
+
+  box-sizing: border-box;
+  overflow: hidden;
+
+  cursor: grab;
+  flex: 0 0 auto;
+}
+
+.mazobar__topcard-button:active {
+  cursor: grabbing;
+}
+
+.mazobar__topcard-inner {
+  position: absolute;
+  top: 12px;
+  left: 9px;
+  right: 9px;
+  bottom: 12px;
+
+  border: 1px solid rgba(0,0,0,.25);
+  border-radius: 3px;
+
+  overflow: hidden;
+  background: #fff;
+}
+
+.mazobar__topcard-portrait {
+  position: absolute;
+  inset: 0;
+
+  background-image: var(--mazobar-card-figure);
+  background-repeat: no-repeat;
+  background-size: 190% auto;
+  background-position: 52% 0%;
+
+  transform: scaleX(-1);
+  transform-origin: center;
+}
+
+.mazobar__topcard-corner {
+  position: absolute;
+  width: 11px;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  line-height: .85;
+  text-align: center;
+
+  z-index: 3;
+  pointer-events: none;
+}
+
+.mazobar__topcard-corner span {
+  display: block;
+}
+
+.mazobar__topcard-corner--tl {
+  top: 3px;
+  left: 2px;
+}
+
+.mazobar__topcard-corner--br {
+  right: 2px;
+  bottom: 3px;
+  transform: rotate(180deg);
+}

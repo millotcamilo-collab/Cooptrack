@@ -19,6 +19,20 @@
     };
   }
 
+function getFigureImageSrc(rank, suit) {
+  const r = String(rank || "").toUpperCase();
+  const s = String(suit || "").toUpperCase();
+
+  const map = {
+    K_HEART: "/assets/icons/KC.png",
+    K_SPADE: "/assets/icons/KP.png",
+    K_DIAMOND: "/assets/icons/KD.png",
+    K_CLUB: "/assets/icons/KT.png"
+  };
+
+  return map[`${r}_${s}`] || "";
+}
+
   function goToAdministradoresPage() {
     const deckId = window.__currentDeck?.id;
     if (!deckId) return;
@@ -367,19 +381,50 @@
   }
 
   function buildTopCardsHTML(enabledCards) {
-    if (!enabledCards.length) {
-      return `<div class="mazobar__topcards-empty"></div>`;
+  if (!enabledCards.length) {
+    return `<div class="mazobar__topcards-empty"></div>`;
+  }
+
+  return enabledCards.map((card) => {
+    const imgSrc = getCardImageSrc(card.rank, card.suit);
+    const label = getCardLabel(card.rank, card.suit);
+
+    const rank = String(card.rank || "").toUpperCase();
+    const suit = String(card.suit || "").toUpperCase();
+    const playId = Number(card.id || 0);
+
+    if (rank === "K") {
+      const figureSrc = getFigureImageSrc(rank, suit);
+
+      return `
+        <div
+          class="mazobar__topcard-button mazobar__topcard-button--k"
+          title="${label}"
+          draggable="true"
+          data-play-id="${playId}"
+          data-rank="${rank}"
+          data-suit="${suit}"
+          style="--mazobar-card-figure: url('${figureSrc}');"
+        >
+          <div class="mazobar__topcard-corner mazobar__topcard-corner--tl">
+            <span>${rank}</span>
+            <span>${getSuitSymbol(suit)}</span>
+          </div>
+
+          <div class="mazobar__topcard-inner">
+            <div class="mazobar__topcard-portrait"></div>
+          </div>
+
+          <div class="mazobar__topcard-corner mazobar__topcard-corner--br">
+            <span>${rank}</span>
+            <span>${getSuitSymbol(suit)}</span>
+          </div>
+        </div>
+      `;
     }
 
-    return enabledCards.map((card) => {
-      const imgSrc = getCardImageSrc(card.rank, card.suit);
-      const label = getCardLabel(card.rank, card.suit);
-      const rank = String(card.rank || "").toUpperCase();
-      const suit = String(card.suit || "").toUpperCase();
-      const playId = Number(card.id || 0);
-
-      if (imgSrc) {
-        return `
+    if (imgSrc) {
+      return `
         <img
           src="${imgSrc}"
           alt="${label}"
@@ -391,9 +436,9 @@
           data-suit="${suit}"
         />
       `;
-      }
+    }
 
-      return `
+    return `
       <div
         class="mazobar__topcard-fallback"
         title="${label}"
@@ -405,8 +450,8 @@
         ${label}
       </div>
     `;
-    }).join("");
-  }
+  }).join("");
+}
 
   function hasPlayWithStatus(plays, statusList) {
     const expected = new Set(
@@ -1105,7 +1150,7 @@ ${isAdminPage ? `
       }
     });
 
-    document.querySelectorAll(".mazobar__topcard-image, .mazobar__topcard-fallback")
+    document.querySelectorAll(".mazobar__topcard-image, .mazobar__topcard-fallback, .mazobar__topcard-button")
       .forEach((cardEl) => {
         cardEl.addEventListener("dragstart", (event) => {
           const playId = Number(cardEl.dataset.playId || 0);
