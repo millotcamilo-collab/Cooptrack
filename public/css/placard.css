@@ -472,3 +472,26 @@
 .placard__qheart-card--pulse .placard__qheart-portrait {
   animation: placardQHeartWink 2.8s ease-in-out infinite;
 }
+
+.placard__qheart-corner {
+  width: 8px;
+  font-size: 10px;
+  line-height: 0.78;
+}
+
+.placard__qheart-corner--tl {
+  top: 3px;
+  left: 3px;
+}
+
+.placard__qheart-corner--br {
+  right: 3px;
+  bottom: 3px;
+}
+
+.placard__qheart-inner {
+  top: 12px;
+  left: 9px;
+  right: 9px;
+  bottom: 12px;
+}
