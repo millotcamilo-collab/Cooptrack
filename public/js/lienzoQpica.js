@@ -915,34 +915,34 @@ function getFigureImageSrc(rank, suit) {
     }
 
     function renderPlayCardBox(play) {
-        const parentPlay = getPlayById(play?.parent_play_id);
+    const parentPlay = getPlayById(play?.parent_play_id);
 
-        const rank = normalizeRank(play?.card_rank || play?.rank);
-        const suit = normalizeSuit(play?.card_suit || play?.suit);
+    const rank = normalizeRank(play?.card_rank || play?.rank);
+    const suit = normalizeSuit(play?.card_suit || play?.suit);
 
-        const parentText = parentPlay?.play_text || "";
+    const parentText = parentPlay?.play_text || "";
 
-        const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
+    const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
 
-        const isDeadline = spadeMode === "DEADLINE";
-        const figureSrc = getFigureImageSrc(rank, suit);
+    const isDeadline = spadeMode === "DEADLINE";
+    const figureSrc = getFigureImageSrc(rank, suit);
 
-        const timeLabel = isDeadline
-            ? formatTimeLabel(parentPlay?.end_date)
-            : formatTimeLabel(parentPlay?.start_date);
+    const timeLabel = isDeadline
+        ? formatTimeLabel(parentPlay?.end_date)
+        : formatTimeLabel(parentPlay?.start_date);
 
-        const location = isDeadline
-            ? ""
-            : String(parentPlay?.location || "").trim();
+    const location = isDeadline
+        ? ""
+        : String(parentPlay?.location || "").trim();
 
-        return `
+    return `
   <div class="lv2-play-card">
     ${renderCardCorners(rank, suit)}
 
     <div
-  class="lv2-play-card__inner lv2-play-card__inner--figure"
-  style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
->
+      class="lv2-play-card__inner lv2-play-card__inner--figure"
+      style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
+    >
       ${parentText ? `
         <div class="lv2-play-card__title">
           ${escapeHtml(parentText)}
@@ -974,11 +974,13 @@ function getFigureImageSrc(rank, suit) {
       <div class="lv2-play-card__actions">
         ${renderPlayCardActions(play)}
       </div>
+
+      <div class="lv2-play-card__veil"></div>
     </div>
   </div>
 `;
+}
 
-    }
     function renderSourceSessionDia(play) {
         if (!play || typeof window.renderDia !== "function") return "";
 
