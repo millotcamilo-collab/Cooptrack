@@ -568,66 +568,57 @@ min-height: var(--lv2-tribune-h);
 }
 
 .lv2-play-card__inner--figure {
-  position: relative;
+  padding: 7px 6px 38px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+
+  background: rgba(255, 255, 255, 0.04);
+
+  position: absolute;
   overflow: hidden;
 }
 
 .lv2-play-card__inner--figure::before {
   content: "";
-
   position: absolute;
   inset: 0;
 
   background-image: var(--lv2-figure-url);
   background-repeat: no-repeat;
   background-position: center top;
-  background-size: 112% auto;
+  background-size: 100% auto;
 
-  filter:
-    grayscale(100%)
-    sepia(30%)
-    contrast(0.9)
-    brightness(1.05);
-
-  opacity: .55;
+  filter: grayscale(100%);
+  opacity: .45;
 
   z-index: 0;
 }
 
 .lv2-play-card__inner--figure::after {
   content: "";
-
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: 24px;
 
-  height: 48%;
+  height: 46%;
 
   background: linear-gradient(
     to bottom,
-    rgba(255,255,255,0.05),
-    rgba(255,255,255,0.75)
+    rgba(255,255,255,0.04),
+    rgba(255,255,255,0.82)
   );
 
   z-index: 1;
 }
 
-
 .lv2-play-card__title,
 .lv2-play-card__meta {
   position: relative;
   z-index: 2;
-}
-
-.lv2-play-card__title {
-  font-size: 15px;
-  line-height: 1.05;
-}
-
-.lv2-play-card__meta {
-  font-size: 13px;
-  line-height: 1.05;
 }
 
 .lv2-play-card__actions {

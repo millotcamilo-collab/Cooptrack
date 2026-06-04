@@ -1581,7 +1581,10 @@ ${parentJSpadeText
 >
   ${renderCardCorners("J", "SPADE")}
 
-  <div class="lv2-play-card__inner">
+  <div
+  class="lv2-play-card__inner lv2-play-card__inner--figure"
+  style="--lv2-figure-url: url('/assets/icons/JP.png');"
+>
 
     <div class="lv2-play-card__title">
       ${escapeHtml(parentJSpadeText)}
