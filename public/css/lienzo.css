@@ -602,7 +602,7 @@ min-height: var(--lv2-tribune-h);
   right: 0;
   bottom: 0;
 
-  height: 55%;
+  height: 72%;
 
   background-image: var(--lv2-figure-url);
   background-repeat: no-repeat;
@@ -610,7 +610,7 @@ min-height: var(--lv2-tribune-h);
   background-size: 100% auto;
 
   filter: grayscale(100%);
-  opacity: .35;
+  opacity: .45;
 
   z-index: 1;
 }
