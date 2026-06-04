@@ -591,13 +591,28 @@ min-height: var(--lv2-tribune-h);
   background-position: center top;
   background-size: 100% auto;
 
-  filter:
-    grayscale(100%)
-    sepia(35%);
+  opacity: 1;
+  z-index: 0;
+}
 
+.lv2-play-card__inner--figure::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: 68%;
+
+  background-image: var(--lv2-figure-url);
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% auto;
+
+  filter: sepia(35%) saturate(75%) brightness(1.05);
   opacity: .45;
 
-  z-index: 0;
+  z-index: 1;
 }
 
 .lv2-play-card__title,

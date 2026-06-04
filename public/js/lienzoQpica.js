@@ -975,7 +975,6 @@ function getFigureImageSrc(rank, suit) {
         ${renderPlayCardActions(play)}
       </div>
 
-      <div class="lv2-play-card__veil"></div>
     </div>
   </div>
 `;
