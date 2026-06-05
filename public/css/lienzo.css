@@ -619,7 +619,7 @@ min-height: var(--lv2-tribune-h);
 .lienzo-qheart-box__amount,
 .lienzo-qheart-box__paydate {
   position: relative;
-  z-index: 4;
+  z-index: 5;
 }
 
 
@@ -652,8 +652,7 @@ min-height: var(--lv2-tribune-h);
 .lv2-play-card__decision-stamp {
   position: absolute;
   inset: 0;
-  height: 50px;
-  width: auto;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -663,9 +662,9 @@ min-height: var(--lv2-tribune-h);
 }
 
 .lv2-play-card__decision-stamp img {
-  width: 96px;
+  width: 50px;
   height: auto;
-  opacity: 0.92;
+  opacity: none;
 }
 
 /* ===== Responsive ===== */
