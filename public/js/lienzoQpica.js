@@ -163,9 +163,9 @@
         return data;
     }
 
-function isMobileViewport() {
-  return window.matchMedia("(max-width: 768px)").matches;
-}
+    function isMobileViewport() {
+        return window.matchMedia("(max-width: 768px)").matches;
+    }
 
     function getFigureImageSrc(rank, suit) {
         const r = normalizeRank(rank);
@@ -2471,54 +2471,55 @@ ${parentJSpadeText
         return flow.includes("pay:qheart");
     }
 
-function isMobileViewport() {
-  return window.matchMedia("(max-width: 768px)").matches;
-}
+    function isMobileViewport() {
+        return window.matchMedia("(max-width: 768px)").matches;
+    }
 
-function renderLienzo(play) {
-  const container = getLienzoContainer();
-  const deck = getCurrentDeck();
+    function renderLienzo(play) {
+        const container = getLienzoContainer();
+        const deck = getCurrentDeck();
 
-  if (!container || !play) return;
-console.log("MOBILE?", isMobileViewport());
-console.log("TARGET?", isCurrentUserTarget(play));
-console.log("AMSTERDAM?", typeof window.renderAmsterdamMobile);
-  if (
-    console.log("ENTRE EN MOBILE");
-    isMobileViewport() &&
-    isCurrentUserTarget(play) &&
-    typeof window.renderAmsterdamMobile === "function"
-  ) {
-    container.innerHTML = `
-      ${renderDeckHeader(deck)}
+        if (!container || !play) return;
+        console.log("MOBILE?", isMobileViewport());
+        console.log("TARGET?", isCurrentUserTarget(play));
+        console.log("AMSTERDAM?", typeof window.renderAmsterdamMobile);
 
-      <div class="lienzo-mobile">
-        ${window.renderAmsterdamMobile(play, {
-          resolveTargetUser,
-          renderPlayCardBox,
-          escapeHtml
-        })}
-      </div>
-    `;
+        if (
+            isMobileViewport() &&
+            isCurrentUserTarget(play) &&
+            typeof window.renderAmsterdamMobile === "function"
+        ) {
+            console.log("ENTRE EN MOBILE");
 
-    mountPlacardFromDataset();
-    bindLienzoActions(play);
-    return;
-  }
+            container.innerHTML = `
+    ${renderDeckHeader(deck)}
 
-  const validatorCount = getValidatorTribunesForPlay(play).length;
+    <div class="lienzo-mobile">
+      ${window.renderAmsterdamMobile(play, {
+                resolveTargetUser,
+                renderPlayCardBox,
+                escapeHtml
+            })}
+    </div>
+  `;
 
-  let gridClass = "lienzo-v2-grid--2";
+            mountPlacardFromDataset();
+            bindLienzoActions(play);
+            return;
+        }
+        const validatorCount = getValidatorTribunesForPlay(play).length;
 
-  if (validatorCount === 1) {
-    gridClass = "lienzo-v2-grid--3";
-  }
+        let gridClass = "lienzo-v2-grid--2";
 
-  if (validatorCount >= 2) {
-    gridClass = "lienzo-v2-grid--4";
-  }
+        if (validatorCount === 1) {
+            gridClass = "lienzo-v2-grid--3";
+        }
 
-  container.innerHTML = `
+        if (validatorCount >= 2) {
+            gridClass = "lienzo-v2-grid--4";
+        }
+
+        container.innerHTML = `
     ${renderDeckHeader(deck)}
 
     <div class="lienzo-v2-grid ${gridClass}">
@@ -2534,10 +2535,10 @@ console.log("AMSTERDAM?", typeof window.renderAmsterdamMobile);
     ${renderWeekRow(parsePlayReferenceDate(play), play)}
   `;
 
-  mountPlacardFromDataset();
-  bindLienzoActions(play);
-  bindLienzoDropzones(play);
-}list
+        mountPlacardFromDataset();
+        bindLienzoActions(play);
+        bindLienzoDropzones(play);
+    } list
 
     async function openLienzoByPlayId(playId) {
         const play = getPlayById(playId);
