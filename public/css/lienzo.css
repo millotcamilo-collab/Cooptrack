@@ -555,19 +555,11 @@ min-height: var(--lv2-tribune-h);
   font-size: 11px;
   line-height: 1.1;
 }
-
+/* ===== BustoJQ ===== */
 .lv2-play-card__inner--figure {
-  padding: 7px 6px 34px;
+  position: absolute;
+  overflow: hidden;
 
-  justify-content: flex-end;
-
-  background-image: var(--lv2-figure-url);
-  background-repeat: no-repeat;
-  background-position: center top;
-  background-size: 112% auto;
-}
-
-.lv2-play-card__inner--figure {
   padding: 7px 6px 38px;
 
   display: flex;
@@ -576,9 +568,6 @@ min-height: var(--lv2-tribune-h);
   gap: 4px;
 
   background: rgba(255, 255, 255, 0.04);
-
-  position: absolute;
-  overflow: hidden;
 }
 
 .lv2-play-card__inner--figure::before {
@@ -595,7 +584,13 @@ min-height: var(--lv2-tribune-h);
   z-index: 0;
 }
 
+/* Ya no usamos el velo dentro del recuadro */
 .lv2-play-card__inner--figure::after {
+  display: none;
+}
+
+/* Velo sobre toda la carta */
+.lv2-play-card:has(.lv2-play-card__inner--figure)::after {
   content: "";
   position: absolute;
 
@@ -611,6 +606,28 @@ min-height: var(--lv2-tribune-h);
   -webkit-backdrop-filter: sepia(45%) saturate(75%) brightness(1.08);
 
   z-index: 1;
+  pointer-events: none;
+}
+
+/* Texto y formularios arriba del velo */
+.lv2-play-card__title,
+.lv2-play-card__meta,
+.lienzo-qheart-box__body,
+.lienzo-qheart-box__concept,
+.lienzo-qheart-box__amount-row,
+.lienzo-qheart-box__currency,
+.lienzo-qheart-box__amount,
+.lienzo-qheart-box__paydate {
+  position: relative;
+  z-index: 3;
+}
+
+.lv2-play-card__actions {
+  z-index: 4;
+}
+
+.lv2-card-corner {
+  z-index: 5;
 }
 
 .lv2-play-card__title,
@@ -634,18 +651,6 @@ min-height: var(--lv2-tribune-h);
   z-index: 3;
 }
 
-/* ===== Responsive ===== */
-
-@media (max-width: 900px) {
-  .lienzo-v2-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .lienzo-tribune {
-     min-height: var(--lv2-tribune-h);
-  }
-}
-
 .lienzo-qheart-box__amount-row {
   display: flex;
   align-items: center;
@@ -665,4 +670,17 @@ min-height: var(--lv2-tribune-h);
 .lienzo-qheart-box__amount {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+
+/* ===== Responsive ===== */
+
+@media (max-width: 900px) {
+  .lienzo-v2-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lienzo-tribune {
+     min-height: var(--lv2-tribune-h);
+  }
 }
