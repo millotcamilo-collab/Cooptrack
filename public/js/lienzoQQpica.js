@@ -139,10 +139,6 @@
     return `${normalizeRank(rank)}${getSuitSymbol(suit)}`;
   }
 
-
-  return map[`${r}_${s}`] || "";
-}
-
   function getCardImageSrc(rank, suit) {
     const r = normalizeRank(rank);
     const s = normalizeSuit(suit);
@@ -343,36 +339,36 @@
   }
 
 
-function renderUserTribune(user, cards = []) {
-  const plays = getAllPlays();
-  const userId = Number(user?.userId || user?.id || 0);
+  function renderUserTribune(user, cards = []) {
+    const plays = getAllPlays();
+    const userId = Number(user?.userId || user?.id || 0);
 
-  const ownerPlay = plays.find((p) => {
-    const isCreator = Number(p?.created_by_user_id || 0) === userId;
-    const isTarget = Number(p?.target_user_id || 0) === userId;
+    const ownerPlay = plays.find((p) => {
+      const isCreator = Number(p?.created_by_user_id || 0) === userId;
+      const isTarget = Number(p?.target_user_id || 0) === userId;
 
-    if (isCreator && p?.created_by_profile_photo_url) return true;
-    if (isTarget && p?.target_user_profile_photo_url) return true;
+      if (isCreator && p?.created_by_profile_photo_url) return true;
+      if (isTarget && p?.target_user_profile_photo_url) return true;
 
-    return false;
-  });
+      return false;
+    });
 
-  const name =
-    user?.nickname ||
-    ownerPlay?.target_user_nickname ||
-    ownerPlay?.created_by_nickname ||
-    "Usuario";
+    const name =
+      user?.nickname ||
+      ownerPlay?.target_user_nickname ||
+      ownerPlay?.created_by_nickname ||
+      "Usuario";
 
-  const photo =
-    user?.profile_photo_url ||
-    (
-      Number(ownerPlay?.created_by_user_id || 0) === userId
-        ? ownerPlay?.created_by_profile_photo_url
-        : ownerPlay?.target_user_profile_photo_url
-    ) ||
-    "/assets/icons/singeta120.gif";
+    const photo =
+      user?.profile_photo_url ||
+      (
+        Number(ownerPlay?.created_by_user_id || 0) === userId
+          ? ownerPlay?.created_by_profile_photo_url
+          : ownerPlay?.target_user_profile_photo_url
+      ) ||
+      "/assets/icons/singeta120.gif";
 
-  return `
+    return `
     <section class="lienzo-tribune">
 
       <div class="lienzo-tribune__corporates">
@@ -395,7 +391,7 @@ function renderUserTribune(user, cards = []) {
 
     </section>
   `;
-}
+  }
 
   function resolveAuthorityTribuneForTarget(play) {
     const aceClubTribune = getAceOwnerTribune("CLUB");
@@ -1239,10 +1235,10 @@ function renderUserTribune(user, cards = []) {
     });
   }
 
-function renderBackgroundCard(card, index) {
-  const src = getCardImageSrc(card?.card_rank, card?.card_suit);
+  function renderBackgroundCard(card, index) {
+    const src = getCardImageSrc(card?.card_rank, card?.card_suit);
 
-  return `
+    return `
     <img
       class="lienzo-tribune__corporate-card"
       src="${escapeHtml(src)}"
@@ -1250,7 +1246,7 @@ function renderBackgroundCard(card, index) {
       style="left:${index * 18}px;"
     />
   `;
-}
+  }
 
   function buildSourceCardsScene(play) {
     const sourceUser = resolveSourceUser(play);
@@ -1327,39 +1323,39 @@ function renderBackgroundCard(card, index) {
   }
 
   function renderQQHeartSummaryBox(play, qqState) {
-  if (!qqState) return "";
+    if (!qqState) return "";
 
-  const settlement = getQQPicaSettlementState(play);
+    const settlement = getQQPicaSettlementState(play);
 
-  let title = `Paga ${qqState.payerLabel}`;
+    let title = `Paga ${qqState.payerLabel}`;
 
-  if (settlement?.status === "PAID") {
-    title = `Pagó ${qqState.payerLabel}`;
-  } else if (settlement?.status === "COMPLAINED") {
-    title = `Incumplió ${qqState.payerLabel}`;
-  }
+    if (settlement?.status === "PAID") {
+      title = `Pagó ${qqState.payerLabel}`;
+    } else if (settlement?.status === "COMPLAINED") {
+      title = `Incumplió ${qqState.payerLabel}`;
+    }
 
-  const status = String(play?.play_status || "").trim().toUpperCase();
+    const status = String(play?.play_status || "").trim().toUpperCase();
 
-  const showSend =
-    isCurrentUserSource(play) &&
-    status !== "SENT" &&
-    status !== "APPROVED" &&
-    status !== "REJECTED" &&
-    status !== "CANCELLED";
+    const showSend =
+      isCurrentUserSource(play) &&
+      status !== "SENT" &&
+      status !== "APPROVED" &&
+      status !== "REJECTED" &&
+      status !== "CANCELLED";
 
-  const showTargetActions =
-    isCurrentUserTarget(play) &&
-    shouldShowTargetDecisionButtons(play);
+    const showTargetActions =
+      isCurrentUserTarget(play) &&
+      shouldShowTargetDecisionButtons(play);
 
-  const showValidatorActions =
-    isCurrentUserValidator(play) &&
-    status === "PENDING";
+    const showValidatorActions =
+      isCurrentUserValidator(play) &&
+      status === "PENDING";
 
-const attachedSuit = qqState.attachedSuit || "HEART";
-const figureSrc = window.CartaTipo.getFigureImageSrc("Q", attachedSuit);
+    const attachedSuit = qqState.attachedSuit || "HEART";
+    const figureSrc = window.CartaTipo.getFigureImageSrc("Q", attachedSuit);
 
-  return `
+    return `
     <div class="lv2-play-card lv2-play-card--qheart">
       ${window.CartaTipo.renderCardCorners("Q", attachedSuit)}
 
@@ -1390,16 +1386,16 @@ const figureSrc = window.CartaTipo.getFigureImageSrc("Q", attachedSuit);
         <div class="lv2-play-card__actions">
 
           ${showSend
-            ? `
+        ? `
               <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
                 <img src="/assets/icons/buzon60.gif" alt="Enviar" />
               </button>
             `
-            : ""
-          }
+        : ""
+      }
 
           ${showTargetActions
-            ? `
+        ? `
               <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
                 <img src="/assets/icons/Sello40.gif" alt="Aceptar" />
               </button>
@@ -1408,11 +1404,11 @@ const figureSrc = window.CartaTipo.getFigureImageSrc("Q", attachedSuit);
                 <img src="/assets/icons/stepback40.gif" alt="Rechazar" />
               </button>
             `
-            : ""
-          }
+        : ""
+      }
 
           ${showValidatorActions
-            ? `
+        ? `
               <button id="lienzo-validator-send-btn" class="icon-btn" title="Validar y enviar">
                 <img src="/assets/icons/buzon60.gif" alt="Validar y enviar" />
               </button>
@@ -1421,14 +1417,14 @@ const figureSrc = window.CartaTipo.getFigureImageSrc("Q", attachedSuit);
                 <img src="/assets/icons/stepback40.gif" alt="Rechazar validación" />
               </button>
             `
-            : ""
-          }
+        : ""
+      }
 
         </div>
       </div>
     </div>
   `;
-}
+  }
 
   function renderSourceActions(play) {
     const status = String(play?.play_status || "").trim().toUpperCase();
@@ -2135,88 +2131,74 @@ const figureSrc = window.CartaTipo.getFigureImageSrc("Q", attachedSuit);
   }
 
 
-  if (status === "REJECTED") {
-    return `
-      <div class="lv2-play-card__decision-stamp">
-        <img
-          src="/assets/icons/stepback80.gif"
-          alt="Rechazada"
-        />
-      </div>
-    `;
-  }
+  function renderPlayCardBox(play, options = {}) {
+    const parentPlay = getPlayById(play?.parent_play_id);
 
-  return "";
-}
+    const rank = normalizeRank(options.rank || play?.card_rank || play?.rank);
+    const suit = normalizeSuit(options.suit || play?.card_suit || play?.suit);
 
-function renderPlayCardBox(play, options = {}) {
-  const parentPlay = getPlayById(play?.parent_play_id);
+    const parentText = parentPlay?.play_text || "";
+    const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
+    const isDeadline = spadeMode === "DEADLINE";
 
-  const rank = normalizeRank(options.rank || play?.card_rank || play?.rank);
-  const suit = normalizeSuit(options.suit || play?.card_suit || play?.suit);
+    const timeLabel = isDeadline
+      ? formatTimeLabel(parentPlay?.end_date)
+      : formatTimeLabel(parentPlay?.start_date);
 
-  const parentText = parentPlay?.play_text || "";
-  const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
-  const isDeadline = spadeMode === "DEADLINE";
+    const location = isDeadline
+      ? ""
+      : String(parentPlay?.location || "").trim();
 
-  const timeLabel = isDeadline
-    ? formatTimeLabel(parentPlay?.end_date)
-    : formatTimeLabel(parentPlay?.start_date);
-
-  const location = isDeadline
-    ? ""
-    : String(parentPlay?.location || "").trim();
-
-  return window.CartaTipo.renderPlayCardBox({
-    rank,
-    suit,
-    title: parentText,
-    status: play?.play_status,
-    metas: [
-      timeLabel
-        ? {
+    return window.CartaTipo.renderPlayCardBox({
+      rank,
+      suit,
+      title: parentText,
+      status: play?.play_status,
+      metas: [
+        timeLabel
+          ? {
             icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
             text: timeLabel
           }
-        : null,
-      location
-        ? {
+          : null,
+        location
+          ? {
             icon: "/assets/icons/LocGlobito80.gif",
             text: location
           }
-        : null
-    ].filter(Boolean)
-  });
-}
+          : null
+      ].filter(Boolean)
+    });
+  }
 
 
   function renderSourcePlayerPanel(play) {
-  const user = resolveSourceUser(play);
-  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-  const userName =
-    user?.nickname || user?.full_name || user?.name || "Anfitrión";
+    const user = resolveSourceUser(play);
+    const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+    const userName =
+      user?.nickname || user?.full_name || user?.name || "Anfitrión";
 
-  const scene = buildSourceCardsScene(play);
-  const showActionsHere = isCurrentUserSource(play);
+    const scene = buildSourceCardsScene(play);
+    const showActionsHere = isCurrentUserSource(play);
 
-  const qqState = getQQPicaState(play);
-  const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "COLOMBES");
-  const parentJSpadeText = getParentJSpadeText(play);
+    const qqState = getQQPicaState(play);
+    const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "COLOMBES");
+    const parentJSpadeText = getParentJSpadeText(play);
 
-  const qHeartBoxHtml =
-    qqState && getQQPicaDisplayedSide(play) === "COLOMBES"
-      ? `
+    const qHeartBoxHtml =
+      qqState && getQQPicaDisplayedSide(play) === "COLOMBES"
+        ? `
         <div class="lienzo-dropped-extra-slot">
           ${renderQQHeartSummaryBox(play, qqState)}
         </div>
       `
-      : "";
+        : "";
 
-  const actionsHtml =
-    (showActionsHere ? renderSourceActions(play) : "") +
-    settlementTopbarIconHtml;
+    const actionsHtml =
+      (showActionsHere ? renderSourceActions(play) : "") +
+      settlementTopbarIconHtml;
 
-  return `
+    return `
     <section class="lienzo-tribune lienzo-tribune--source">
 
       <div class="lienzo-tribune__corporates">
@@ -2243,42 +2225,42 @@ function renderPlayCardBox(play, options = {}) {
 
       <div class="lienzo-tribune__stage">
         ${parentJSpadeText
-          ? renderPlayCardBox(play, {
-              rank: "J",
-              suit: "SPADE"
-            })
-          : ""
-        }
+        ? renderPlayCardBox(play, {
+          rank: "J",
+          suit: "SPADE"
+        })
+        : ""
+      }
 
         ${qHeartBoxHtml}
       </div>
 
     </section>
   `;
-}
+  }
 
   function renderTargetPlayerPanel(play) {
-  const user = resolveTargetUser(play);
-  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-  const userName =
-    user?.nickname || user?.full_name || user?.name || "Invitado";
+    const user = resolveTargetUser(play);
+    const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+    const userName =
+      user?.nickname || user?.full_name || user?.name || "Invitado";
 
-  const baseRank = normalizeRank(play?.card_rank || play?.rank);
-  const baseSuit = normalizeSuit(play?.card_suit || play?.suit);
+    const baseRank = normalizeRank(play?.card_rank || play?.rank);
+    const baseSuit = normalizeSuit(play?.card_suit || play?.suit);
 
-  const qqState = getQQPicaState(play);
-  const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "AMSTERDAM");
+    const qqState = getQQPicaState(play);
+    const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "AMSTERDAM");
 
-  const qHeartBoxHtml =
-    qqState && getQQPicaDisplayedSide(play) === "AMSTERDAM"
-      ? `
+    const qHeartBoxHtml =
+      qqState && getQQPicaDisplayedSide(play) === "AMSTERDAM"
+        ? `
         <div class="lienzo-target-extra-slot">
           ${renderQQHeartSummaryBox(play, qqState)}
         </div>
       `
-      : "";
+        : "";
 
-  return `
+    return `
     <section class="lienzo-tribune lienzo-tribune--target">
 
       <div class="lienzo-tribune__corporates"></div>
@@ -2304,9 +2286,9 @@ function renderPlayCardBox(play, options = {}) {
       <div class="lienzo-tribune__stage">
         <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
           ${renderPlayCardBox(play, {
-            rank: baseRank,
-            suit: baseSuit
-          })}
+      rank: baseRank,
+      suit: baseSuit
+    })}
         </div>
 
         ${qHeartBoxHtml}
@@ -2314,7 +2296,7 @@ function renderPlayCardBox(play, options = {}) {
 
     </section>
   `;
-}
+  }
 
   function compareCorporateCards(a, b) {
     const order = {

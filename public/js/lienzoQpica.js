@@ -44,32 +44,16 @@
         return getAllPlays().find((play) => Number(play?.id || 0) === id) || null;
     }
 
+    function renderCardCorners(rank, suit) {
+        const symbol = getSuitSymbol(suit);
+        const normalizedSuit = normalizeSuit(suit);
 
+        const redClass =
+            normalizedSuit === "HEART" || normalizedSuit === "DIAMOND"
+                ? " lv2-card-corner--red"
+                : "";
 
-  if (status === "REJECTED") {
-    return `
-      <div class="lv2-play-card__decision-stamp">
-        <img
-          src="/assets/icons/stepback80.gif"
-          alt="Rechazada"
-        />
-      </div>
-    `;
-  }
-
-  return "";
-}
-
-function renderCardCorners(rank, suit) {
-  const symbol = getSuitSymbol(suit);
-  const normalizedSuit = normalizeSuit(suit);
-
-  const redClass =
-    normalizedSuit === "HEART" || normalizedSuit === "DIAMOND"
-      ? " lv2-card-corner--red"
-      : "";
-
-  return `
+        return `
     <div class="lv2-card-corner lv2-card-corner--tl${redClass}">
       <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
       <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
@@ -80,7 +64,7 @@ function renderCardCorners(rank, suit) {
       <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
   `;
-}
+    }
 
     function getSuitSymbol(suit) {
         const s = normalizeSuit(suit);
@@ -179,24 +163,24 @@ function renderCardCorners(rank, suit) {
         return data;
     }
 
-function getFigureImageSrc(rank, suit) {
-  const r = normalizeRank(rank);
-  const s = normalizeSuit(suit);
+    function getFigureImageSrc(rank, suit) {
+        const r = normalizeRank(rank);
+        const s = normalizeSuit(suit);
 
-  const map = {
-    J_HEART: "/assets/icons/JC.png",
-    J_SPADE: "/assets/icons/JP.png",
-    J_DIAMOND: "/assets/icons/JD.png",
-    J_CLUB: "/assets/icons/JT.png",
+        const map = {
+            J_HEART: "/assets/icons/JC.png",
+            J_SPADE: "/assets/icons/JP.png",
+            J_DIAMOND: "/assets/icons/JD.png",
+            J_CLUB: "/assets/icons/JT.png",
 
-    Q_HEART: "/assets/icons/QC.png",
-    Q_SPADE: "/assets/icons/QP.png",
-    Q_DIAMOND: "/assets/icons/QD.png",
-    Q_CLUB: "/assets/icons/QT.png"
-  };
+            Q_HEART: "/assets/icons/QC.png",
+            Q_SPADE: "/assets/icons/QP.png",
+            Q_DIAMOND: "/assets/icons/QD.png",
+            Q_CLUB: "/assets/icons/QT.png"
+        };
 
-  return map[`${r}_${s}`] || "";
-}
+        return map[`${r}_${s}`] || "";
+    }
 
     function findPreviousQHeartPayment(play) {
         const currentId = Number(play?.id || 0);
@@ -769,27 +753,27 @@ function getFigureImageSrc(rank, suit) {
     }
 
     function formatSessionDayHeader(date) {
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "—";
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "—";
 
-  const weekdayMap = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+        const weekdayMap = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-  const monthMap = [
-    "Ene",
-    "Feb",
-    "Mar",
-    "Abr",
-    "May",
-    "Jun",
-    "Jul",
-    "Ago",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dic"
-  ];
+        const monthMap = [
+            "Ene",
+            "Feb",
+            "Mar",
+            "Abr",
+            "May",
+            "Jun",
+            "Jul",
+            "Ago",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dic"
+        ];
 
-  return `${weekdayMap[date.getDay()]} ${date.getDate()} ${monthMap[date.getMonth()]}`;
-}
+        return `${weekdayMap[date.getDay()]} ${date.getDate()} ${monthMap[date.getMonth()]}`;
+    }
 
     function formatTimeLabel(value) {
         const date = parseLocalDateTime(value);
@@ -937,48 +921,48 @@ function getFigureImageSrc(rank, suit) {
         return "";
     }
 
-function renderPlayCardBox(play) {
-  const parentPlay = getPlayById(play?.parent_play_id);
+    function renderPlayCardBox(play) {
+        const parentPlay = getPlayById(play?.parent_play_id);
 
-  const rank = normalizeRank(play?.card_rank || play?.rank);
-  const suit = normalizeSuit(play?.card_suit || play?.suit);
+        const rank = normalizeRank(play?.card_rank || play?.rank);
+        const suit = normalizeSuit(play?.card_suit || play?.suit);
 
-  const parentText = parentPlay?.play_text || "";
-  const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
+        const parentText = parentPlay?.play_text || "";
+        const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
 
-  const isDeadline = spadeMode === "DEADLINE";
+        const isDeadline = spadeMode === "DEADLINE";
 
-  const timeLabel = isDeadline
-    ? formatTimeLabel(parentPlay?.end_date)
-    : formatTimeLabel(parentPlay?.start_date);
+        const timeLabel = isDeadline
+            ? formatTimeLabel(parentPlay?.end_date)
+            : formatTimeLabel(parentPlay?.start_date);
 
-  const location = isDeadline
-    ? ""
-    : String(parentPlay?.location || "").trim();
+        const location = isDeadline
+            ? ""
+            : String(parentPlay?.location || "").trim();
 
-  return window.CartaTipo.renderPlayCardBox({
-    rank,
-    suit,
-    title: parentText,
-    status: play?.play_status,
-    metas: [
-      timeLabel
-        ? {
-            icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
-            text: timeLabel
-          }
-        : null,
+        return window.CartaTipo.renderPlayCardBox({
+            rank,
+            suit,
+            title: parentText,
+            status: play?.play_status,
+            metas: [
+                timeLabel
+                    ? {
+                        icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
+                        text: timeLabel
+                    }
+                    : null,
 
-      location
-        ? {
-            icon: "/assets/icons/LocGlobito80.gif",
-            text: location
-          }
-        : null
-    ].filter(Boolean),
-    actionsHtml: renderPlayCardActions(play)
-  });
-}
+                location
+                    ? {
+                        icon: "/assets/icons/LocGlobito80.gif",
+                        text: location
+                    }
+                    : null
+            ].filter(Boolean),
+            actionsHtml: renderPlayCardActions(play)
+        });
+    }
 
     function renderSourceSessionDia(play) {
         if (!play || typeof window.renderDia !== "function") return "";
@@ -1578,27 +1562,27 @@ ${qHeartMode
 
 
 ${parentJSpadeText
-  ? window.CartaTipo.renderPlayCardBox({
-      rank: "J",
-      suit: "SPADE",
-      title: parentJSpadeText,
-      metas: [
-        parentPlay?.start_date
-          ? {
-              icon: "/assets/icons/reloj60.gif",
-              text: formatTimeLabel(parentPlay.start_date)
+                ? window.CartaTipo.renderPlayCardBox({
+                    rank: "J",
+                    suit: "SPADE",
+                    title: parentJSpadeText,
+                    metas: [
+                        parentPlay?.start_date
+                            ? {
+                                icon: "/assets/icons/reloj60.gif",
+                                text: formatTimeLabel(parentPlay.start_date)
+                            }
+                            : null,
+                        parentPlay?.location
+                            ? {
+                                icon: "/assets/icons/LocGlobito80.gif",
+                                text: parentPlay.location
+                            }
+                            : null
+                    ].filter(Boolean)
+                })
+                : ""
             }
-          : null,
-        parentPlay?.location
-          ? {
-              icon: "/assets/icons/LocGlobito80.gif",
-              text: parentPlay.location
-            }
-          : null
-      ].filter(Boolean)
-    })
-  : ""
-}
 
   ${qHeartBoxHtml}
 </div>
@@ -2501,7 +2485,7 @@ ${parentJSpadeText
             gridClass = "lienzo-v2-grid--4";
         }
 
-container.innerHTML = `
+        container.innerHTML = `
   ${renderDeckHeader(deck)}
 
   <div class="lienzo-v2-grid ${gridClass}">
