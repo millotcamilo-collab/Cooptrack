@@ -163,6 +163,10 @@
         return data;
     }
 
+function isMobileViewport() {
+  return window.matchMedia("(max-width: 768px)").matches;
+}
+
     function getFigureImageSrc(rank, suit) {
         const r = normalizeRank(rank);
         const s = normalizeSuit(suit);
@@ -2467,44 +2471,70 @@ ${parentJSpadeText
         return flow.includes("pay:qheart");
     }
 
-    function renderLienzo(play) {
-        const container = getLienzoContainer();
-        const deck = getCurrentDeck();
+function isMobileViewport() {
+  return window.matchMedia("(max-width: 768px)").matches;
+}
 
-        if (!container || !play) return;
+function renderLienzo(play) {
+  const container = getLienzoContainer();
+  const deck = getCurrentDeck();
 
-        const validatorCount = getValidatorTribunesForPlay(play).length;
+  if (!container || !play) return;
 
-        let gridClass = "lienzo-v2-grid--2";
+  if (
+    isMobileViewport() &&
+    isCurrentUserTarget(play) &&
+    typeof window.renderAmsterdamMobile === "function"
+  ) {
+    container.innerHTML = `
+      ${renderDeckHeader(deck)}
 
-        if (validatorCount === 1) {
-            gridClass = "lienzo-v2-grid--3";
-        }
+      <div class="lienzo-mobile">
+        ${window.renderAmsterdamMobile(play, {
+          resolveTargetUser,
+          renderPlayCardBox,
+          escapeHtml
+        })}
+      </div>
+    `;
 
-        if (validatorCount >= 2) {
-            gridClass = "lienzo-v2-grid--4";
-        }
+    mountPlacardFromDataset();
+    bindLienzoActions(play);
+    return;
+  }
 
-        container.innerHTML = `
-  ${renderDeckHeader(deck)}
+  const validatorCount = getValidatorTribunesForPlay(play).length;
 
-  <div class="lienzo-v2-grid ${gridClass}">
-    <div id="colombes" class="lienzo-grid__left">
-      ${renderColombesTribunes(play)}
+  let gridClass = "lienzo-v2-grid--2";
+
+  if (validatorCount === 1) {
+    gridClass = "lienzo-v2-grid--3";
+  }
+
+  if (validatorCount >= 2) {
+    gridClass = "lienzo-v2-grid--4";
+  }
+
+  container.innerHTML = `
+    ${renderDeckHeader(deck)}
+
+    <div class="lienzo-v2-grid ${gridClass}">
+      <div id="colombes" class="lienzo-grid__left">
+        ${renderColombesTribunes(play)}
+      </div>
+
+      <div id="amsterdam" class="lienzo-grid__right">
+        ${renderTargetPlayerPanel(play)}
+      </div>
     </div>
 
-    <div id="amsterdam" class="lienzo-grid__right">
-      ${renderTargetPlayerPanel(play)}
-    </div>
-  </div>
+    ${renderWeekRow(parsePlayReferenceDate(play), play)}
+  `;
 
-  ${renderWeekRow(parsePlayReferenceDate(play), play)}
-`;
-
-        mountPlacardFromDataset();
-        bindLienzoActions(play);
-        bindLienzoDropzones(play);
-    }
+  mountPlacardFromDataset();
+  bindLienzoActions(play);
+  bindLienzoDropzones(play);
+}
 
     async function openLienzoByPlayId(playId) {
         const play = getPlayById(playId);
