@@ -653,7 +653,7 @@ function animateCardToUser(user) {
 
     if (isQSpade) {
       dropzone.innerHTML = renderPlayCardBox(draft, {
-        showActions: false
+        showActions: true
       });
     }
 
@@ -1270,7 +1270,7 @@ function renderUsersPanel() {
       <div class="lienzo-tribune__stage">
         ${delivered && isQSpade
   ? renderPlayCardBox(draft, {
-      showActions: true,
+      showActions: false,
       backgroundRank: "J",
       backgroundSuit: "SPADE"
     })

@@ -1386,11 +1386,17 @@ function renderBackgroundCard(card, index) {
     isCurrentUserValidator(play) &&
     status === "PENDING";
 
+const attachedSuit = qqState.attachedSuit || "HEART";
+const figureSrc = getFigureImageSrc("Q", attachedSuit);
+
   return `
     <div class="lv2-play-card lv2-play-card--qheart">
-      ${renderCardCorners("Q", qqState.attachedSuit || "HEART")}
+      ${renderCardCorners("Q", attachedSuit)}
 
-      <div class="lv2-play-card__inner">
+     <div
+  class="lv2-play-card__inner lv2-play-card__inner--figure"
+  style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
+>
 
         <div class="lv2-play-card__title">
           ${escapeHtml(title)}
@@ -2176,11 +2182,13 @@ function renderPlayCardBox(play, options = {}) {
     ? ""
     : String(parentPlay?.location || "").trim();
 
+const figureSrc = getFigureImageSrc(rank, suit);
+
   return `
     <div class="lv2-play-card">
       ${renderCardCorners(rank, suit)}
 
-      <div class="lv2-play-card__inner">
+      <div class="lv2-play-card__inner lv2-play-card__inner--figure" style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');">
         ${parentText ? `
           <div class="lv2-play-card__title">
             ${escapeHtml(parentText)}
