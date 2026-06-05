@@ -525,9 +525,9 @@
 }
 
 .mazobar__topcard-corner {
-  width: 8px;
-  font-size: 10px;
-  line-height: 0.78;
+  width: 7px;
+  font-size: 9px;
+  line-height: 0.75;
 }
 
 .mazobar__topcard-corner--tl {
@@ -541,8 +541,8 @@
 }
 
 .mazobar__topcard-inner {
-  top: 13px;
-  left: 10px;
-  right: 10px;
-  bottom: 13px;
+  top: 11px;
+  left: 7px;
+  right: 7px;
+  bottom: 11px;
 }

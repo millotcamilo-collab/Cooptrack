@@ -2,7 +2,7 @@
 
 .placard {
   min-height: var(--placard-height);
-  padding: 14px var(--page-padding-x);
+  padding: 14px var(--page-padding-x) 10px;
   background: var(--lienzo-veil-bg);
   border: 1px solid var(--lienzo-veil-border);
   color: #f5f5f5;
@@ -31,7 +31,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 66px;
+  min-height: 80px;
 }
 
 .placard__photo-wrap {
@@ -41,7 +41,7 @@
 }
 
 .placard__photo {
-  height: 66px;
+  height: 80px;
   width: auto;
   max-width: none;
 
@@ -171,7 +171,7 @@
 /* TOPCARDS */
 .placard__topcard-image {
   width: auto;
-  height: 66px;
+  height: 80px;
   display: block;
   object-fit: contain;
 }
@@ -213,7 +213,7 @@
 }
 
 .placard__maincard-image {
-  height: 66px;
+  height: 80px;
   width: auto;
   object-fit: contain;
   display: block;
@@ -365,8 +365,8 @@
 .placard__qheart-card {
   position: relative;
 
-  width: 46px;
-  height: 66px;
+  width: 54px;
+  height: 80px;
 
   background: #fff;
   color: #c40000;
@@ -388,10 +388,10 @@
 .placard__qheart-inner {
   position: absolute;
 
-  top: 10px;
-  left: 8px;
-  right: 8px;
-  bottom: 10px;
+  top: 11px;
+  left: 7px;
+  right: 7px;
+  bottom: 11px;
 
   border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 3px;
@@ -421,11 +421,12 @@
 .placard__qheart-corner {
   position: absolute;
 
-  width: 10px;
+  width: 7px;
+  font-size: 10px;
 
   font-family: Georgia, "Times New Roman", serif;
   font-weight: 700;
-  line-height: 0.85;
+  line-height: 0.78;
   text-align: center;
 
   z-index: 3;

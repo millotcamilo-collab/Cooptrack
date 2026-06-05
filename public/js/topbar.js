@@ -528,7 +528,7 @@
               ${userHasPendingApprovals
           ? `
                 <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
-                <img src="/assets/icons/Dorso70.gif" class="topbar__icon-img" />
+                <img src="/assets/icons/DorsoAzul.png" class="topbar__icon-img" />
                 </button>
                 `
           : ""
@@ -537,7 +537,7 @@
         ${userHasReadNotifications
           ? `
           <button class="topbar__icon-btn" id="reedBtn" title="Lecturas pendientes">
-            <img src="/assets/icons/DorsoRojo70.gif" class="topbar__icon-img" />
+            <img src="/assets/icons/DorsoRojo.png" class="topbar__icon-img" />
           </button>
           `
           : ""
