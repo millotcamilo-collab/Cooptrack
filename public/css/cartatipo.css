@@ -1,0 +1,195 @@
+/* ===== CartaTipo: J/Q activas ===== */
+
+.lv2-play-card {
+  position: relative;
+  width: var(--lv2-card-w, 157px);
+  height: var(--lv2-card-h, 210px);
+  background: #fff;
+  color: #111;
+  border: 2px solid #111;
+  border-radius: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.lv2-card-corner {
+  position: absolute;
+  width: 22px;
+  text-align: center;
+  line-height: 1;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.lv2-card-corner--tl {
+  top: 6px;
+  left: 4px;
+}
+
+.lv2-card-corner--br {
+  right: 4px;
+  bottom: 6px;
+  transform: rotate(180deg);
+}
+
+.lv2-card-corner__rank {
+  display: block;
+  font-size: 17px;
+  transform: scaleX(0.72);
+  transform-origin: center;
+}
+
+.lv2-card-corner__suit {
+  display: block;
+  font-size: 21px;
+}
+
+.lv2-card-corner--red {
+  color: #c40000;
+}
+
+.lv2-play-card__inner {
+  position: absolute;
+  top: 22px;
+  left: 22px;
+  right: 22px;
+  bottom: 22px;
+  padding: 7px 6px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.26);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.035);
+  color: #111;
+  box-sizing: border-box;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.lv2-play-card__inner--figure {
+  position: absolute;
+  overflow: hidden;
+  padding: 7px 6px 38px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.lv2-play-card__inner--figure::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--lv2-figure-url);
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% auto;
+  opacity: 1;
+  z-index: 1;
+}
+
+.lv2-play-card__inner--figure::after {
+  display: none;
+}
+
+.lv2-play-card:has(.lv2-play-card__inner--figure)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 68%;
+  background: rgba(245, 238, 220, 0.78);
+  backdrop-filter: sepia(45%) saturate(75%) brightness(1.08);
+  -webkit-backdrop-filter: sepia(45%) saturate(75%) brightness(1.08);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.lv2-play-card__title,
+.lv2-play-card__meta,
+.lienzo-qheart-box__body,
+.lienzo-qheart-box__concept,
+.lienzo-qheart-box__amount-row,
+.lienzo-qheart-box__currency,
+.lienzo-qheart-box__amount,
+.lienzo-qheart-box__paydate {
+  position: relative;
+  z-index: 5;
+}
+
+.lv2-play-card__title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.lv2-play-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  line-height: 1.12;
+  color: rgba(0, 0, 0, 0.74);
+}
+
+.lv2-play-card__meta-icon {
+  height: 20px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.lv2-play-card__actions {
+  position: absolute;
+  right: 6px;
+  bottom: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  z-index: 7;
+}
+
+.lv2-play-card__decision-stamp {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.lv2-play-card__decision-stamp img {
+  width: 96px;
+  height: auto;
+  opacity: 0.92;
+}
+
+/* Q♥ económica */
+
+.lienzo-qheart-box__amount-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.lienzo-qheart-box__currency {
+  flex: 0 0 18px;
+  min-width: 18px;
+  max-width: 18px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.lienzo-qheart-box__amount {
+  flex: 1 1 auto;
+  min-width: 0;
+}
