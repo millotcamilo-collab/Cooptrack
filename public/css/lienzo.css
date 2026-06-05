@@ -622,33 +622,13 @@ min-height: var(--lv2-tribune-h);
   z-index: 4;
 }
 
-.lv2-play-card__actions {
-  z-index: 5;
-}
-
 .lv2-card-corner {
   z-index: 2;
 }
 
-.lv2-play-card__title,
-.lv2-play-card__meta {
-  position: relative;
-  z-index: 3;
-}
 
 .lv2-play-card__actions {
   z-index: 4;
-}
-
-
-.lienzo-qheart-box__body,
-.lienzo-qheart-box__concept,
-.lienzo-qheart-box__amount-row,
-.lienzo-qheart-box__currency,
-.lienzo-qheart-box__amount,
-.lienzo-qheart-box__paydate {
-  position: relative;
-  z-index: 3;
 }
 
 .lienzo-qheart-box__amount-row {
