@@ -561,15 +561,15 @@ function localDateTimeToIso(value) {
 }
 
 function buildPayload() {
-  const { startDate, endDate, location } = getFieldValues();
+  const { endDate } = getFieldValues();
 
   return {
     playId,
     text: getCurrentText(),
-    spadeMode: "APPOINTMENT",
-    startDate: localDateTimeToIso(startDate),
+    spadeMode: "DEADLINE",
+    startDate: "",
     endDate: localDateTimeToIso(endDate),
-    location,
+    location: "",
   };
 }
 
