@@ -139,21 +139,6 @@
     return `${normalizeRank(rank)}${getSuitSymbol(suit)}`;
   }
 
-  function getFigureImageSrc(rank, suit) {
-  const r = normalizeRank(rank);
-  const s = normalizeSuit(suit);
-
-  const map = {
-    J_HEART: "/assets/icons/JC.png",
-    J_SPADE: "/assets/icons/JP.png",
-    J_DIAMOND: "/assets/icons/JD.png",
-    J_CLUB: "/assets/icons/JT.png",
-
-    Q_HEART: "/assets/icons/QC.png",
-    Q_SPADE: "/assets/icons/QP.png",
-    Q_DIAMOND: "/assets/icons/QD.png",
-    Q_CLUB: "/assets/icons/QT.png"
-  };
 
   return map[`${r}_${s}`] || "";
 }
@@ -293,21 +278,6 @@
     };
   }
 
-function renderCardCorners(rank, suit) {
-  const symbol = getSuitSymbol(suit);
-
-  return `
-    <div class="lv2-card-corner lv2-card-corner--tl">
-      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
-    </div>
-
-    <div class="lv2-card-corner lv2-card-corner--br">
-      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
-    </div>
-  `;
-}
 
   function getValidatorTribunesForPlay(play) {
     const rank = normalizeRank(play?.card_rank || play?.rank);
@@ -1387,7 +1357,7 @@ function renderBackgroundCard(card, index) {
     status === "PENDING";
 
 const attachedSuit = qqState.attachedSuit || "HEART";
-const figureSrc = getFigureImageSrc("Q", attachedSuit);
+const figureSrc = window.CartaTipo.getFigureImageSrc("Q", attachedSuit);
 
   return `
     <div class="lv2-play-card lv2-play-card--qheart">
@@ -2164,19 +2134,6 @@ const figureSrc = getFigureImageSrc("Q", attachedSuit);
 
   }
 
-function renderDecisionStamp(play) {
-  const status = String(play?.play_status || "").trim().toUpperCase();
-
-  if (status === "APPROVED") {
-    return `
-      <div class="lv2-play-card__decision-stamp">
-        <img
-          src="/assets/icons/Sello40.gif"
-          alt="Aprobada"
-        />
-      </div>
-    `;
-  }
 
   if (status === "REJECTED") {
     return `

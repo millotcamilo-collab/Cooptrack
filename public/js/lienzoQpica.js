@@ -45,19 +45,6 @@
     }
 
 
-    function renderDecisionStamp(play) {
-  const status = String(play?.play_status || "").trim().toUpperCase();
-
-  if (status === "APPROVED") {
-    return `
-      <div class="lv2-play-card__decision-stamp">
-        <img
-          src="/assets/icons/Sello40.gif"
-          alt="Aprobada"
-        />
-      </div>
-    `;
-  }
 
   if (status === "REJECTED") {
     return `
@@ -1359,12 +1346,13 @@ function renderPlayCardBox(play) {
         const safePayDate = escapeHtml(defaultPayDate || "");
         const safeConcept = escapeHtml(defaultConcept || "");
         const safeAmount = escapeHtml(defaultAmount || "");
-        const figureSrc = getFigureImageSrc("Q", "HEART");
+        const figureSrc =
+            window.CartaTipo.getFigureImageSrc("Q", "HEART");
 
         return `
     <div class="lv2-play-card lv2-play-card--qheart">
 
-      ${renderCardCorners("Q", "HEART")}
+      ${window.CartaTipo.renderCardCorners("Q", "HEART")}
 
       <div class="lv2-play-card__inner lv2-play-card__inner--figure" style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');">
 

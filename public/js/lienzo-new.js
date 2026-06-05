@@ -116,8 +116,6 @@
     };
   }
 
-
-
   function getValidatorTribunesForDraft(draft) {
     const rank = normalizeRank(draft?.card_rank);
     const suit = normalizeSuit(draft?.card_suit);
@@ -137,24 +135,6 @@
     return validators.filter(Boolean);
   }
 
-function getFigureImageSrc(rank, suit) {
-  const r = normalizeRank(rank);
-  const s = normalizeSuit(suit);
-
-  const map = {
-    J_HEART: "/assets/icons/JC.png",
-    J_SPADE: "/assets/icons/JP.png",
-    J_DIAMOND: "/assets/icons/JD.png",
-    J_CLUB: "/assets/icons/JT.png",
-
-    Q_HEART: "/assets/icons/QC.png",
-    Q_SPADE: "/assets/icons/QP.png",
-    Q_DIAMOND: "/assets/icons/QD.png",
-    Q_CLUB: "/assets/icons/QT.png"
-  };
-
-  return map[`${r}_${s}`] || "";
-}
 
   function getValidatorRoleCards(validator) {
     const role = String(validator?.role || "").trim().toUpperCase();
@@ -393,38 +373,6 @@ function renderUserTribune(user, cards = []) {
     return (order[aKey] || 999) - (order[bKey] || 999);
   }
 
-function renderV2CardCorners(rank, suit) {
-  const symbol = getSuitSymbol(suit);
-
-  return `
-    <div class="lv2-card-corner lv2-card-corner--tl">
-      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
-    </div>
-
-    <div class="lv2-card-corner lv2-card-corner--br">
-      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
-    </div>
-  `;
-}
-
-function renderCardCorners(rank, suit) {
-  const symbol = getSuitSymbol(suit);
-  const suitClass = `card-corner--${normalizeSuit(suit).toLowerCase()}`;
-
-  return `
-    <div class="card-corner card-corner--tl ${suitClass}">
-      <span class="card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="card-corner__suit">${escapeHtml(symbol)}</span>
-    </div>
-
-    <div class="card-corner card-corner--br ${suitClass}">
-      <span class="card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="card-corner__suit">${escapeHtml(symbol)}</span>
-    </div>
-  `;
-}
 
   function buildSourceCardsScene(draft) {
     const ownedCards = getCurrentUserCorporateCards();
