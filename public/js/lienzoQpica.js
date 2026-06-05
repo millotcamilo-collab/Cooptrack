@@ -46,19 +46,22 @@
 
 function renderCardCorners(rank, suit) {
   const symbol = getSuitSymbol(suit);
+  const normalizedSuit = normalizeSuit(suit);
 
   const redClass =
-    suit === "HEART" || suit === "DIAMOND"
+    normalizedSuit === "HEART" || normalizedSuit === "DIAMOND"
       ? " lv2-card-corner--red"
       : "";
 
   return `
     <div class="lv2-card-corner lv2-card-corner--tl${redClass}">
-      ...
+      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
 
     <div class="lv2-card-corner lv2-card-corner--br${redClass}">
-      ...
+      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
+      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
     </div>
   `;
 }
