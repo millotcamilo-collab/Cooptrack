@@ -581,7 +581,7 @@ min-height: var(--lv2-tribune-h);
   background-size: 100% auto;
 
   opacity: 1;
-  z-index: 0;
+  z-index: 1;
 }
 
 /* Ya no usamos el velo dentro del recuadro */
@@ -605,7 +605,7 @@ min-height: var(--lv2-tribune-h);
   backdrop-filter: sepia(45%) saturate(75%) brightness(1.08);
   -webkit-backdrop-filter: sepia(45%) saturate(75%) brightness(1.08);
 
-  z-index: 1;
+  z-index: 3;
   pointer-events: none;
 }
 
@@ -619,15 +619,15 @@ min-height: var(--lv2-tribune-h);
 .lienzo-qheart-box__amount,
 .lienzo-qheart-box__paydate {
   position: relative;
-  z-index: 3;
-}
-
-.lv2-play-card__actions {
   z-index: 4;
 }
 
-.lv2-card-corner {
+.lv2-play-card__actions {
   z-index: 5;
+}
+
+.lv2-card-corner {
+  z-index: 2;
 }
 
 .lv2-play-card__title,
