@@ -156,6 +156,7 @@ function renderCardCorners(rank, suit) {
 
         return data;
     }
+    
 function getFigureImageSrc(rank, suit) {
   const r = normalizeRank(rank);
   const s = normalizeSuit(suit);

@@ -139,6 +139,25 @@
     return `${normalizeRank(rank)}${getSuitSymbol(suit)}`;
   }
 
+  function getFigureImageSrc(rank, suit) {
+  const r = normalizeRank(rank);
+  const s = normalizeSuit(suit);
+
+  const map = {
+    J_HEART: "/assets/icons/JC.png",
+    J_SPADE: "/assets/icons/JP.png",
+    J_DIAMOND: "/assets/icons/JD.png",
+    J_CLUB: "/assets/icons/JT.png",
+
+    Q_HEART: "/assets/icons/QC.png",
+    Q_SPADE: "/assets/icons/QP.png",
+    Q_DIAMOND: "/assets/icons/QD.png",
+    Q_CLUB: "/assets/icons/QT.png"
+  };
+
+  return map[`${r}_${s}`] || "";
+}
+
   function getCardImageSrc(rank, suit) {
     const r = normalizeRank(rank);
     const s = normalizeSuit(suit);

@@ -137,6 +137,25 @@
     return validators.filter(Boolean);
   }
 
+function getFigureImageSrc(rank, suit) {
+  const r = normalizeRank(rank);
+  const s = normalizeSuit(suit);
+
+  const map = {
+    J_HEART: "/assets/icons/JC.png",
+    J_SPADE: "/assets/icons/JP.png",
+    J_DIAMOND: "/assets/icons/JD.png",
+    J_CLUB: "/assets/icons/JT.png",
+
+    Q_HEART: "/assets/icons/QC.png",
+    Q_SPADE: "/assets/icons/QP.png",
+    Q_DIAMOND: "/assets/icons/QD.png",
+    Q_CLUB: "/assets/icons/QT.png"
+  };
+
+  return map[`${r}_${s}`] || "";
+}
+
   function getValidatorRoleCards(validator) {
     const role = String(validator?.role || "").trim().toUpperCase();
 
@@ -495,6 +514,8 @@ function renderV2CorporateCard(card, index) {
     ? ""
     : String(parentPlay?.location || "").trim();
 
+    const figureSrc = getFigureImageSrc(backgroundRank, backgroundSuit);
+
   return `
     <div
       ${boxId}
@@ -502,7 +523,10 @@ function renderV2CorporateCard(card, index) {
     >
       ${renderV2CardCorners(backgroundRank, backgroundSuit)}
 
-      <div class="lv2-play-card__inner">
+      <div
+  class="lv2-play-card__inner lv2-play-card__inner--figure"
+  style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
+>
         ${parentText ? `
           <div class="lv2-play-card__title">
             ${escapeHtml(parentText)}
