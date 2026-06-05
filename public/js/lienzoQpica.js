@@ -2480,8 +2480,11 @@ function renderLienzo(play) {
   const deck = getCurrentDeck();
 
   if (!container || !play) return;
-
+console.log("MOBILE?", isMobileViewport());
+console.log("TARGET?", isCurrentUserTarget(play));
+console.log("AMSTERDAM?", typeof window.renderAmsterdamMobile);
   if (
+    console.log("ENTRE EN MOBILE");
     isMobileViewport() &&
     isCurrentUserTarget(play) &&
     typeof window.renderAmsterdamMobile === "function"
@@ -2534,7 +2537,7 @@ function renderLienzo(play) {
   mountPlacardFromDataset();
   bindLienzoActions(play);
   bindLienzoDropzones(play);
-}
+}list
 
     async function openLienzoByPlayId(playId) {
         const play = getPlayById(playId);
