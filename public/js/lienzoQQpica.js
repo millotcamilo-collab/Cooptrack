@@ -1391,7 +1391,7 @@ const figureSrc = getFigureImageSrc("Q", attachedSuit);
 
   return `
     <div class="lv2-play-card lv2-play-card--qheart">
-      ${renderCardCorners("Q", attachedSuit)}
+      ${window.CartaTipo.renderCardCorners("Q", attachedSuit)}
 
      <div
   class="lv2-play-card__inner lv2-play-card__inner--figure"
@@ -2210,49 +2210,28 @@ function renderPlayCardBox(play, options = {}) {
     ? ""
     : String(parentPlay?.location || "").trim();
 
-  const figureSrc = getFigureImageSrc(rank, suit);
-
-  return `
-    <div class="lv2-play-card">
-      ${renderCardCorners(rank, suit)}
-
-      <div
-        class="lv2-play-card__inner lv2-play-card__inner--figure"
-        style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
-      >
-        ${parentText ? `
-          <div class="lv2-play-card__title">
-            ${escapeHtml(parentText)}
-          </div>
-        ` : ""}
-
-        ${timeLabel ? `
-          <div class="lv2-play-card__meta">
-            <img
-              class="lv2-play-card__meta-icon"
-              src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}"
-              alt=""
-            />
-            <span>${escapeHtml(timeLabel)}</span>
-          </div>
-        ` : ""}
-
-        ${location ? `
-          <div class="lv2-play-card__meta">
-            <img
-              class="lv2-play-card__meta-icon"
-              src="/assets/icons/LocGlobito80.gif"
-              alt=""
-            />
-            <span>${escapeHtml(location)}</span>
-          </div>
-        ` : ""}
-
-        ${renderDecisionStamp(play)}
-      </div>
-    </div>
-  `;
+  return window.CartaTipo.renderPlayCardBox({
+    rank,
+    suit,
+    title: parentText,
+    status: play?.play_status,
+    metas: [
+      timeLabel
+        ? {
+            icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
+            text: timeLabel
+          }
+        : null,
+      location
+        ? {
+            icon: "/assets/icons/LocGlobito80.gif",
+            text: location
+          }
+        : null
+    ].filter(Boolean)
+  });
 }
+
 
   function renderSourcePlayerPanel(play) {
   const user = resolveSourceUser(play);

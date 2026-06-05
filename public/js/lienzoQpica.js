@@ -1590,47 +1590,25 @@ ${qHeartMode
 
 
 ${parentJSpadeText
-  ? `
-<div
-  class="lienzo-parent-play-box lienzo-parent-play-box--inline lv2-play-card"
->
-  ${renderCardCorners("J", "SPADE")}
-
-  <div
-  class="lv2-play-card__inner lv2-play-card__inner--figure"
-  style="--lv2-figure-url: url('/assets/icons/JP.png');"
->
-
-    <div class="lv2-play-card__title">
-      ${escapeHtml(parentJSpadeText)}
-    </div>
-
-    ${parentPlay?.start_date ? `
-      <div class="lv2-play-card__meta">
-        <img
-          class="lv2-play-card__meta-icon"
-          src="/assets/icons/reloj60.gif"
-          alt=""
-        />
-        <span>${escapeHtml(formatTimeLabel(parentPlay.start_date))}</span>
-      </div>
-    ` : ""}
-
-    ${parentPlay?.location ? `
-      <div class="lv2-play-card__meta">
-        <img
-          class="lv2-play-card__meta-icon"
-          src="/assets/icons/LocGlobito80.gif"
-          alt=""
-        />
-        <span>${escapeHtml(parentPlay.location)}</span>
-      </div>
-    ` : ""}
-
-  </div>
-
-</div>
-`
+  ? window.CartaTipo.renderPlayCardBox({
+      rank: "J",
+      suit: "SPADE",
+      title: parentJSpadeText,
+      metas: [
+        parentPlay?.start_date
+          ? {
+              icon: "/assets/icons/reloj60.gif",
+              text: formatTimeLabel(parentPlay.start_date)
+            }
+          : null,
+        parentPlay?.location
+          ? {
+              icon: "/assets/icons/LocGlobito80.gif",
+              text: parentPlay.location
+            }
+          : null
+      ].filter(Boolean)
+    })
   : ""
 }
 

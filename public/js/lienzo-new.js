@@ -495,13 +495,6 @@ function renderV2CorporateCard(card, index) {
   const backgroundRank = options.backgroundRank || rank;
   const backgroundSuit = options.backgroundSuit || suit;
 
-  const boxId = options.id ? `id="${escapeHtml(options.id)}"` : "";
-  const extraClass = options.extraClass ? ` ${escapeHtml(options.extraClass)}` : "";
-
-  const isRed =
-    normalizeSuit(backgroundSuit) === "HEART" ||
-    normalizeSuit(backgroundSuit) === "DIAMOND";
-
   const parentText = parentPlay?.play_text || "";
   const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
   const isDeadline = spadeMode === "DEADLINE";
@@ -514,55 +507,42 @@ function renderV2CorporateCard(card, index) {
     ? ""
     : String(parentPlay?.location || "").trim();
 
-    const figureSrc = getFigureImageSrc(backgroundRank, backgroundSuit);
+  let html = window.CartaTipo.renderPlayCardBox({
+    rank: backgroundRank,
+    suit: backgroundSuit,
+    title: parentText,
+    metas: [
+      timeLabel
+        ? {
+            icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
+            text: timeLabel
+          }
+        : null,
+      location
+        ? {
+            icon: "/assets/icons/LocGlobito80.gif",
+            text: location
+          }
+        : null
+    ].filter(Boolean),
+    actionsHtml: showActions ? renderActionButtons() : ""
+  });
 
-  return `
-    <div
-      ${boxId}
-      class="lv2-play-card ${isRed ? "lv2-play-card--red" : "lv2-play-card--black"}${extraClass}"
-    >
-      ${renderV2CardCorners(backgroundRank, backgroundSuit)}
+  if (options.id) {
+    html = html.replace(
+      '<div class="lv2-play-card">',
+      `<div id="${escapeHtml(options.id)}" class="lv2-play-card">`
+    );
+  }
 
-      <div
-  class="lv2-play-card__inner lv2-play-card__inner--figure"
-  style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
->
-        ${parentText ? `
-          <div class="lv2-play-card__title">
-            ${escapeHtml(parentText)}
-          </div>
-        ` : ""}
+  if (options.extraClass) {
+    html = html.replace(
+      'class="lv2-play-card"',
+      `class="lv2-play-card ${escapeHtml(options.extraClass)}"`
+    );
+  }
 
-        ${timeLabel ? `
-          <div class="lv2-play-card__meta">
-            <img
-              class="lv2-play-card__meta-icon"
-              src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}"
-              alt=""
-            />
-            <span>${escapeHtml(timeLabel)}</span>
-          </div>
-        ` : ""}
-
-        ${location ? `
-          <div class="lv2-play-card__meta">
-            <img
-              class="lv2-play-card__meta-icon"
-              src="/assets/icons/LocGlobito80.gif"
-              alt=""
-            />
-            <span>${escapeHtml(location)}</span>
-          </div>
-        ` : ""}
-
-        ${showActions ? `
-          <div class="lv2-play-card__actions">
-            ${renderActionButtons()}
-          </div>
-        ` : ""}
-      </div>
-    </div>
-  `;
+  return html;
 }
 
 function animateCardToUser(user) {
