@@ -44,6 +44,35 @@
         return getAllPlays().find((play) => Number(play?.id || 0) === id) || null;
     }
 
+
+    function renderDecisionStamp(play) {
+  const status = String(play?.play_status || "").trim().toUpperCase();
+
+  if (status === "APPROVED") {
+    return `
+      <div class="lv2-play-card__decision-stamp">
+        <img
+          src="/assets/icons/Sello40.gif"
+          alt="Aprobada"
+        />
+      </div>
+    `;
+  }
+
+  if (status === "REJECTED") {
+    return `
+      <div class="lv2-play-card__decision-stamp">
+        <img
+          src="/assets/icons/stepback80.gif"
+          alt="Rechazada"
+        />
+      </div>
+    `;
+  }
+
+  return "";
+}
+
 function renderCardCorners(rank, suit) {
   const symbol = getSuitSymbol(suit);
   const normalizedSuit = normalizeSuit(suit);
@@ -921,70 +950,70 @@ function getFigureImageSrc(rank, suit) {
         return "";
     }
 
-    function renderPlayCardBox(play) {
-    const parentPlay = getPlayById(play?.parent_play_id);
+function renderPlayCardBox(play) {
+  const parentPlay = getPlayById(play?.parent_play_id);
 
-    const rank = normalizeRank(play?.card_rank || play?.rank);
-    const suit = normalizeSuit(play?.card_suit || play?.suit);
+  const rank = normalizeRank(play?.card_rank || play?.rank);
+  const suit = normalizeSuit(play?.card_suit || play?.suit);
 
-    const parentText = parentPlay?.play_text || "";
+  const parentText = parentPlay?.play_text || "";
+  const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
 
-    const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
+  const isDeadline = spadeMode === "DEADLINE";
+  const figureSrc = getFigureImageSrc(rank, suit);
 
-    const isDeadline = spadeMode === "DEADLINE";
-    const figureSrc = getFigureImageSrc(rank, suit);
+  const timeLabel = isDeadline
+    ? formatTimeLabel(parentPlay?.end_date)
+    : formatTimeLabel(parentPlay?.start_date);
 
-    const timeLabel = isDeadline
-        ? formatTimeLabel(parentPlay?.end_date)
-        : formatTimeLabel(parentPlay?.start_date);
+  const location = isDeadline
+    ? ""
+    : String(parentPlay?.location || "").trim();
 
-    const location = isDeadline
-        ? ""
-        : String(parentPlay?.location || "").trim();
+  return `
+    <div class="lv2-play-card">
+      ${renderCardCorners(rank, suit)}
 
-    return `
-  <div class="lv2-play-card">
-    ${renderCardCorners(rank, suit)}
+      <div
+        class="lv2-play-card__inner lv2-play-card__inner--figure"
+        style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
+      >
+        ${parentText ? `
+          <div class="lv2-play-card__title">
+            ${escapeHtml(parentText)}
+          </div>
+        ` : ""}
 
-    <div
-      class="lv2-play-card__inner lv2-play-card__inner--figure"
-      style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
-    >
-      ${parentText ? `
-        <div class="lv2-play-card__title">
-          ${escapeHtml(parentText)}
+        ${timeLabel ? `
+          <div class="lv2-play-card__meta">
+            <img
+              class="lv2-play-card__meta-icon"
+              src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}"
+              alt=""
+            />
+            <span>${escapeHtml(timeLabel)}</span>
+          </div>
+        ` : ""}
+
+        ${location ? `
+          <div class="lv2-play-card__meta">
+            <img
+              class="lv2-play-card__meta-icon"
+              src="/assets/icons/LocGlobito80.gif"
+              alt=""
+            />
+            <span>${escapeHtml(location)}</span>
+          </div>
+        ` : ""}
+
+        ${renderDecisionStamp(play)}
+
+        <div class="lv2-play-card__actions">
+          ${renderPlayCardActions(play)}
         </div>
-      ` : ""}
-
-      ${timeLabel ? `
-        <div class="lv2-play-card__meta">
-          <img
-            class="lv2-play-card__meta-icon"
-            src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}"
-            alt=""
-          />
-          <span>${escapeHtml(timeLabel)}</span>
-        </div>
-      ` : ""}
-
-      ${location ? `
-        <div class="lv2-play-card__meta">
-          <img
-            class="lv2-play-card__meta-icon"
-            src="/assets/icons/LocGlobito80.gif"
-            alt=""
-          />
-          <span>${escapeHtml(location)}</span>
-        </div>
-      ` : ""}
-
-      <div class="lv2-play-card__actions">
-        ${renderPlayCardActions(play)}
       </div>
-
     </div>
-  </div>
-`;
+  `;
 }
 
     function renderSourceSessionDia(play) {

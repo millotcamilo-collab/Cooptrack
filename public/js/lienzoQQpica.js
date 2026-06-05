@@ -2164,6 +2164,34 @@ const figureSrc = getFigureImageSrc("Q", attachedSuit);
 
   }
 
+function renderDecisionStamp(play) {
+  const status = String(play?.play_status || "").trim().toUpperCase();
+
+  if (status === "APPROVED") {
+    return `
+      <div class="lv2-play-card__decision-stamp">
+        <img
+          src="/assets/icons/Sello40.gif"
+          alt="Aprobada"
+        />
+      </div>
+    `;
+  }
+
+  if (status === "REJECTED") {
+    return `
+      <div class="lv2-play-card__decision-stamp">
+        <img
+          src="/assets/icons/stepback80.gif"
+          alt="Rechazada"
+        />
+      </div>
+    `;
+  }
+
+  return "";
+}
+
 function renderPlayCardBox(play, options = {}) {
   const parentPlay = getPlayById(play?.parent_play_id);
 
@@ -2182,13 +2210,16 @@ function renderPlayCardBox(play, options = {}) {
     ? ""
     : String(parentPlay?.location || "").trim();
 
-const figureSrc = getFigureImageSrc(rank, suit);
+  const figureSrc = getFigureImageSrc(rank, suit);
 
   return `
     <div class="lv2-play-card">
       ${renderCardCorners(rank, suit)}
 
-      <div class="lv2-play-card__inner lv2-play-card__inner--figure" style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');">
+      <div
+        class="lv2-play-card__inner lv2-play-card__inner--figure"
+        style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
+      >
         ${parentText ? `
           <div class="lv2-play-card__title">
             ${escapeHtml(parentText)}
@@ -2216,6 +2247,8 @@ const figureSrc = getFigureImageSrc(rank, suit);
             <span>${escapeHtml(location)}</span>
           </div>
         ` : ""}
+
+        ${renderDecisionStamp(play)}
       </div>
     </div>
   `;
