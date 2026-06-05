@@ -47,15 +47,18 @@
 function renderCardCorners(rank, suit) {
   const symbol = getSuitSymbol(suit);
 
+  const redClass =
+    suit === "HEART" || suit === "DIAMOND"
+      ? " lv2-card-corner--red"
+      : "";
+
   return `
-    <div class="lv2-card-corner lv2-card-corner--tl">
-      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
+    <div class="lv2-card-corner lv2-card-corner--tl${redClass}">
+      ...
     </div>
 
-    <div class="lv2-card-corner lv2-card-corner--br">
-      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
+    <div class="lv2-card-corner lv2-card-corner--br${redClass}">
+      ...
     </div>
   `;
 }
@@ -156,7 +159,7 @@ function renderCardCorners(rank, suit) {
 
         return data;
     }
-    
+
 function getFigureImageSrc(rank, suit) {
   const r = normalizeRank(rank);
   const s = normalizeSuit(suit);
@@ -1347,17 +1350,16 @@ function getFigureImageSrc(rank, suit) {
         const safePayDate = escapeHtml(defaultPayDate || "");
         const safeConcept = escapeHtml(defaultConcept || "");
         const safeAmount = escapeHtml(defaultAmount || "");
+        const figureSrc = getFigureImageSrc("Q", "HEART");
 
         return `
     <div class="lv2-play-card lv2-play-card--qheart">
 
       ${renderCardCorners("Q", "HEART")}
 
-      <div class="lv2-play-card__inner">
+      <div class="lv2-play-card__inner lv2-play-card__inner--figure" style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');">
 
-        <div class="lienzo-qheart-box__title">
-          ${safeTitle}
-        </div>
+
 
         <div class="lienzo-qheart-box__body">
 
@@ -1393,7 +1395,9 @@ function getFigureImageSrc(rank, suit) {
       </div>
 
       <div class="lv2-play-card__actions">
-
+        <div class="lienzo-qheart-box__title">
+          ${safeTitle}
+        </div>
         <button
           id="lienzo-save-btn"
           class="icon-btn lienzo-qheart-box__save"
