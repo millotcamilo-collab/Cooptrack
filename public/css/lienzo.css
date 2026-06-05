@@ -253,7 +253,7 @@ min-height: var(--lv2-tribune-h);
   font-weight: 700;
 
   pointer-events: none;
-  z-index: 3;
+  z-index: 2;
 }
 
 .lv2-card-corner--tl {
@@ -622,10 +622,6 @@ min-height: var(--lv2-tribune-h);
   z-index: 4;
 }
 
-.lv2-card-corner {
-  z-index: 2;
-}
-
 
 .lv2-play-card__actions {
   z-index: 4;
@@ -656,13 +652,14 @@ min-height: var(--lv2-tribune-h);
 .lv2-play-card__decision-stamp {
   position: absolute;
   inset: 0;
-
+  height: 50px;
+  width: auto;
   display: flex;
   align-items: center;
   justify-content: center;
 
   pointer-events: none;
-  z-index: 4;
+  z-index: 5;
 }
 
 .lv2-play-card__decision-stamp img {
