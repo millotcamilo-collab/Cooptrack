@@ -164,7 +164,8 @@
     }
 
     function isMobileViewport() {
-        return window.matchMedia("(max-width: 768px)").matches;
+       // return window.matchMedia("(max-width: 768px)").matches;
+       true
     }
 
     function getFigureImageSrc(rank, suit) {
