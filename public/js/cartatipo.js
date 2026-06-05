@@ -1,0 +1,152 @@
+(function () {
+  function normalizeRank(value) {
+    return String(value || "").trim().toUpperCase();
+  }
+
+  function normalizeSuit(value) {
+    return String(value || "").trim().toUpperCase();
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function getSuitSymbol(suit) {
+    const s = normalizeSuit(suit);
+    if (s === "HEART") return "♥";
+    if (s === "SPADE") return "♠";
+    if (s === "DIAMOND") return "♦";
+    if (s === "CLUB") return "♣";
+    return "";
+  }
+
+  function getFigureImageSrc(rank, suit) {
+    const r = normalizeRank(rank);
+    const s = normalizeSuit(suit);
+
+    const map = {
+      J_HEART: "/assets/icons/JC.png",
+      J_SPADE: "/assets/icons/JP.png",
+      J_DIAMOND: "/assets/icons/JD.png",
+      J_CLUB: "/assets/icons/JT.png",
+
+      Q_HEART: "/assets/icons/QC.png",
+      Q_SPADE: "/assets/icons/QP.png",
+      Q_DIAMOND: "/assets/icons/QD.png",
+      Q_CLUB: "/assets/icons/QT.png"
+    };
+
+    return map[`${r}_${s}`] || "";
+  }
+
+  function renderCardCorners(rank, suit) {
+    const symbol = getSuitSymbol(suit);
+    const normalizedSuit = normalizeSuit(suit);
+
+    const redClass =
+      normalizedSuit === "HEART" || normalizedSuit === "DIAMOND"
+        ? " lv2-card-corner--red"
+        : "";
+
+    return `
+      <div class="lv2-card-corner lv2-card-corner--tl${redClass}">
+        <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
+        <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
+      </div>
+
+      <div class="lv2-card-corner lv2-card-corner--br${redClass}">
+        <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
+        <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
+      </div>
+    `;
+  }
+
+  function renderDecisionStamp(status) {
+    const safeStatus = String(status || "").trim().toUpperCase();
+
+    if (safeStatus === "APPROVED") {
+      return `
+        <div class="lv2-play-card__decision-stamp">
+          <img src="/assets/icons/Sello40.gif" alt="Aprobada" />
+        </div>
+      `;
+    }
+
+    if (safeStatus === "REJECTED") {
+      return `
+        <div class="lv2-play-card__decision-stamp">
+          <img src="/assets/icons/stepback80.gif" alt="Rechazada" />
+        </div>
+      `;
+    }
+
+    return "";
+  }
+
+  function renderPlayCardBox({
+    rank,
+    suit,
+    title = "",
+    metas = [],
+    status = "",
+    actionsHtml = ""
+  }) {
+    const safeRank = normalizeRank(rank);
+    const safeSuit = normalizeSuit(suit);
+    const figureSrc = getFigureImageSrc(safeRank, safeSuit);
+
+    return `
+      <div class="lv2-play-card">
+        ${renderCardCorners(safeRank, safeSuit)}
+
+        <div
+          class="lv2-play-card__inner lv2-play-card__inner--figure"
+          style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
+        >
+          ${title ? `
+            <div class="lv2-play-card__title">
+              ${escapeHtml(title)}
+            </div>
+          ` : ""}
+
+          ${metas.map((meta) => `
+            <div class="lv2-play-card__meta">
+              ${meta.icon ? `
+                <img
+                  class="lv2-play-card__meta-icon"
+                  src="${escapeHtml(meta.icon)}"
+                  alt=""
+                />
+              ` : ""}
+              <span>${escapeHtml(meta.text || "")}</span>
+            </div>
+          `).join("")}
+
+          ${renderDecisionStamp(status)}
+
+          ${actionsHtml ? `
+            <div class="lv2-play-card__actions">
+              ${actionsHtml}
+            </div>
+          ` : ""}
+        </div>
+      </div>
+    `;
+  }
+
+  window.CartaTipo = {
+    normalizeRank,
+    normalizeSuit,
+    escapeHtml,
+    getSuitSymbol,
+    getFigureImageSrc,
+    renderCardCorners,
+    renderDecisionStamp,
+    renderPlayCardBox
+  };
+})();

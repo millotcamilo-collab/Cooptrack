@@ -960,7 +960,6 @@ function renderPlayCardBox(play) {
   const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
 
   const isDeadline = spadeMode === "DEADLINE";
-  const figureSrc = getFigureImageSrc(rank, suit);
 
   const timeLabel = isDeadline
     ? formatTimeLabel(parentPlay?.end_date)
@@ -970,50 +969,28 @@ function renderPlayCardBox(play) {
     ? ""
     : String(parentPlay?.location || "").trim();
 
-  return `
-    <div class="lv2-play-card">
-      ${renderCardCorners(rank, suit)}
+  return window.CartaTipo.renderPlayCardBox({
+    rank,
+    suit,
+    title: parentText,
+    status: play?.play_status,
+    metas: [
+      timeLabel
+        ? {
+            icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
+            text: timeLabel
+          }
+        : null,
 
-      <div
-        class="lv2-play-card__inner lv2-play-card__inner--figure"
-        style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
-      >
-        ${parentText ? `
-          <div class="lv2-play-card__title">
-            ${escapeHtml(parentText)}
-          </div>
-        ` : ""}
-
-        ${timeLabel ? `
-          <div class="lv2-play-card__meta">
-            <img
-              class="lv2-play-card__meta-icon"
-              src="/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}"
-              alt=""
-            />
-            <span>${escapeHtml(timeLabel)}</span>
-          </div>
-        ` : ""}
-
-        ${location ? `
-          <div class="lv2-play-card__meta">
-            <img
-              class="lv2-play-card__meta-icon"
-              src="/assets/icons/LocGlobito80.gif"
-              alt=""
-            />
-            <span>${escapeHtml(location)}</span>
-          </div>
-        ` : ""}
-
-        ${renderDecisionStamp(play)}
-
-        <div class="lv2-play-card__actions">
-          ${renderPlayCardActions(play)}
-        </div>
-      </div>
-    </div>
-  `;
+      location
+        ? {
+            icon: "/assets/icons/LocGlobito80.gif",
+            text: location
+          }
+        : null
+    ].filter(Boolean),
+    actionsHtml: renderPlayCardActions(play)
+  });
 }
 
     function renderSourceSessionDia(play) {
