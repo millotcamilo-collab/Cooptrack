@@ -163,10 +163,15 @@
         return data;
     }
 
-    function isMobileViewport() {
-       // return window.matchMedia("(max-width: 768px)").matches;
-       true
-    }
+function isMobileViewport() {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get("mobile") === "1") {
+    return true;
+  }
+
+  return window.matchMedia("(max-width: 768px)").matches;
+}
 
     function getFigureImageSrc(rank, suit) {
         const r = normalizeRank(rank);

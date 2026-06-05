@@ -86,7 +86,18 @@
     const statusText = String(play.play_status || "").trim() || "Pendiente";
     const playId = Number(play.id || 0);
     const deckId = Number(play.deck_id || 0);
-    const targetHref = `/lienzo.html?deckId=${deckId}&playId=${playId}`;
+    const rank = String(play.card_rank || "").trim().toUpperCase();
+const suit = String(play.card_suit || "").trim().toUpperCase();
+
+let targetHref = `/lienzo.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+
+if (rank === "Q" && suit === "SPADE") {
+  targetHref = `/lienzoQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+}
+
+if (rank === "K") {
+  targetHref = `/lienzoK.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+}
 
     return `
       <article class="ahora-card">

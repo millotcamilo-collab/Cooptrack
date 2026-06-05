@@ -548,20 +548,20 @@
         }
       }
 
-function canLaunchQspade(play) {
-  const limitValue = play?.end_date || play?.start_date;
-  if (!limitValue) return false;
+      function canLaunchQspade(play) {
+        const limitValue = play?.end_date || play?.start_date;
+        if (!limitValue) return false;
 
-  const limit = new Date(limitValue);
+        const limit = new Date(limitValue);
 
-  if (Number.isNaN(limit.getTime())) {
-    return false;
-  }
+        if (Number.isNaN(limit.getTime())) {
+          return false;
+        }
 
-  const margen = 30 * 60 * 1000;
+        const margen = 30 * 60 * 1000;
 
-  return (limit.getTime() + margen) > Date.now();
-}
+        return (limit.getTime() + margen) > Date.now();
+      }
 
       function canPublishNews(play) {
         if (!play?.start_date) return false;
@@ -693,27 +693,27 @@ function canLaunchQspade(play) {
       }
 
 
-function localDateTimeToIso(value) {
-  if (!value) return "";
+      function localDateTimeToIso(value) {
+        if (!value) return "";
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
 
-  return date.toISOString();
-}
+        return date.toISOString();
+      }
 
-function buildPayload() {
-  const { startDate, endDate, location } = getFieldValues();
+      function buildPayload() {
+        const { startDate, endDate, location } = getFieldValues();
 
-  return {
-    playId,
-    text: getCurrentText(),
-    spadeMode: "APPOINTMENT",
-    startDate: localDateTimeToIso(startDate),
-    endDate: localDateTimeToIso(endDate),
-    location,
-  };
-}
+        return {
+          playId,
+          text: getCurrentText(),
+          spadeMode: "APPOINTMENT",
+          startDate: localDateTimeToIso(startDate),
+          endDate: localDateTimeToIso(endDate),
+          location,
+        };
+      }
 
       function buildRecurrencePayload() {
         return {
@@ -1310,11 +1310,82 @@ function buildPayload() {
 `;
   }
 
+  function renderJpikeDeadlineFallback(play, context = {}) {
+    const helpers = context.helpers || {};
+    const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
+
+    const rowId = `tablero-row-${play?.id}`;
+    const safeText = escapeHtml(String(play?.play_text || ""));
+    const endDate = play?.end_date ? toInputDateTimeValue(play.end_date) : "";
+
+    setTimeout(() => {
+      const row = document.getElementById(rowId);
+      if (!row || row.dataset.bound === "true") return;
+      row.dataset.bound = "true";
+
+      const input = row.querySelector('[data-role="deadline-date"]');
+      const btnSave = row.querySelector('[data-action="save-deadline"]');
+
+      btnSave?.addEventListener("click", () => {
+        const value = String(input?.value || "").trim();
+
+        if (!value) {
+          alert("La bomba necesita fecha límite.");
+          return;
+        }
+
+        context.dispatch("tablero:save-play", {
+          playId: play?.id,
+          text: String(play?.play_text || "").trim(),
+          spadeMode: "DEADLINE",
+          startDate: "",
+          endDate: localDateTimeToIso(value),
+          location: "",
+        });
+      });
+    }, 0);
+
+    return `
+    <article class="tablero-row tablero-row--jpike tablero-row--deadline" id="${rowId}">
+      <div class="tablero-row__left">
+        <div class="tablero-row__card">J♠</div>
+      </div>
+
+      <div class="tablero-row__center">
+        <div class="tablero-row__field-inline tablero-row__field-inline--title">
+          <span>${safeText || "Sin texto"}</span>
+        </div>
+
+        <div class="tablero-row__field-inline">
+          <span>💣</span>
+          <input
+            type="datetime-local"
+            data-role="deadline-date"
+            value="${endDate}"
+          />
+        </div>
+      </div>
+
+      <div class="tablero-row__right">
+        <button type="button" data-action="save-deadline" title="Salvar bomba">
+          💾
+        </button>
+      </div>
+    </article>
+  `;
+  }
+
   function renderJpike(play, context = {}) {
     const spadeMode = String(play?.spade_mode || "").toUpperCase();
 
-    if (spadeMode === "DEADLINE" && typeof window.renderJpikeBomba === "function") {
-      return window.renderJpikeBomba(play, context);
+    if (spadeMode === "DEADLINE") {
+      if (typeof window.renderJpikeBomba === "function") {
+        return window.renderJpikeBomba(play, context);
+      }
+
+      // fallback provisorio: si no está JpicaBomba.js cargado,
+      // al menos no vuelve al chooser ni a cita
+      return renderJpikeDeadlineFallback(play, context);
     }
 
     if (spadeMode === "APPOINTMENT") {
