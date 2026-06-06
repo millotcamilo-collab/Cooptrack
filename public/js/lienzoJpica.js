@@ -103,57 +103,58 @@
   }
 
   function renderColombes(play) {
-    const user = getSourceUser(play);
+  const user = getSourceUser(play);
 
-    return `
-      <section class="lienzo-panel lienzo-panel--source">
-        <div class="panel-topbar">
-          <div class="panel-topbar__col panel-topbar__col--identity">
-            <div class="lienzo-source-header lienzo-source-header--top">
-              <img
-                class="lienzo-source-header__photo"
-                src="${escapeHtml(user.profile_photo_url)}"
-                alt="${escapeHtml(user.nickname)}"
-              />
-              <div class="lienzo-source-header__name">
-                ${escapeHtml(user.nickname)}
-              </div>
-            </div>
-          </div>
+  return `
+    <section class="lienzo-tribune lienzo-tribune--source">
+
+      <div class="lienzo-tribune__corporates"></div>
+
+      <div class="lienzo-tribune__identity">
+        <img
+          class="lienzo-tribune__avatar"
+          src="${escapeHtml(user.profile_photo_url)}"
+          alt="${escapeHtml(user.nickname)}"
+        />
+
+        <div class="lienzo-tribune__name">
+          ${escapeHtml(user.nickname)}
         </div>
+      </div>
 
-        <div class="lienzo-source-cards">
-<div
-  id="lienzo-jpica-card"
-  class="lienzo-parent-play-box lienzo-parent-play-box--inline lienzo-play-card-box"
-  data-card-label="J
-♠"
-  draggable="true"
-  data-rank="J"
-  data-suit="SPADE"
->
-            <div class="lienzo-play-card-box__info">
-              <div class="play-text">${escapeHtml(play.play_text || "Sin texto")}</div>
-
-              ${play.start_date ? `
-                <div class="play-meta">
-                  <img class="play-meta__icon" src="/assets/icons/reloj60.gif" alt="" />
-                  <span>${escapeHtml(formatTime(play.start_date))}</span>
-                </div>
-              ` : ""}
-
-              ${play.location ? `
-                <div class="play-meta">
-                  <img class="play-meta__icon" src="/assets/icons/LocGlobito80.gif" alt="" />
-                  <span>${escapeHtml(play.location)}</span>
-                </div>
-              ` : ""}
-            </div>
-          </div>
+      <div class="lienzo-tribune__stage">
+        <div
+          id="lienzo-jpica-card"
+          draggable="true"
+          data-rank="J"
+          data-suit="SPADE"
+          title="Arrastrar J♠ hacia Publicar"
+        >
+          ${window.CartaTipo.renderPlayCardBox({
+            rank: "J",
+            suit: "SPADE",
+            title: play.play_text || "Sin texto",
+            metas: [
+              play.start_date
+                ? {
+                    icon: "/assets/icons/reloj60.gif",
+                    text: formatTime(play.start_date)
+                  }
+                : null,
+              play.location
+                ? {
+                    icon: "/assets/icons/LocGlobito80.gif",
+                    text: play.location
+                  }
+                : null
+            ].filter(Boolean)
+          })}
         </div>
-      </section>
-    `;
-  }
+      </div>
+
+    </section>
+  `;
+}
 
   function renderQHeartBox(play) {
     const deck = getCurrentDeck();
@@ -228,77 +229,57 @@ function bindSourceDrag(play) {
 }
   function renderAmsterdam(play) {
   return `
-    <section class="lienzo-panel lienzo-panel--target">
-      <div class="panel-topbar">
-        <div class="panel-topbar__col panel-topbar__col--identity">
-          <div class="lienzo-target-header lienzo-target-header--top">
-            <img
-              class="lienzo-target-header__photo"
-              src="/assets/icons/Extra120.gif"
-              alt="Publicar"
-            />
-            <div class="lienzo-target-header__name">
-              Publicar
-            </div>
-          </div>
+    <section class="lienzo-tribune lienzo-tribune--target">
+
+      <div class="lienzo-tribune__corporates"></div>
+
+      <div class="lienzo-tribune__identity">
+        <img
+          class="lienzo-tribune__avatar"
+          src="/assets/icons/Extra120.gif"
+          alt="Publicar"
+        />
+
+        <div class="lienzo-tribune__name">
+          Publicar
         </div>
       </div>
 
-      <div class="lienzo-publicar-copy">
-        <div class="play-text">
-          Vas a publicar esta actividad como noticia.
+      <div class="lienzo-tribune__stage">
+        <div id="lienzo-jpica-dropzone" class="lienzo-target-dropzone">
+          ${
+            hasDroppedJSpade()
+              ? window.CartaTipo.renderPlayCardBox({
+                  rank: "J",
+                  suit: "SPADE",
+                  title: play.play_text || "Sin texto",
+                  metas: [
+                    play.start_date
+                      ? {
+                          icon: "/assets/icons/reloj60.gif",
+                          text: formatTime(play.start_date)
+                        }
+                      : null,
+                    play.location
+                      ? {
+                          icon: "/assets/icons/LocGlobito80.gif",
+                          text: play.location
+                        }
+                      : null
+                  ].filter(Boolean),
+                  actionsHtml: `
+                    <button id="lienzo-publish-simple-btn" class="icon-btn" title="Publicar">
+                      <img src="/assets/icons/Extra120.gif" alt="Publicar" />
+                    </button>
+                  `
+                })
+              : `<div class="lienzo-drop-hint">Soltá la J♠ acá para preparar la publicación</div>`
+          }
         </div>
-
-        <div class="play-meta">
-          A partir de la publicación, todos los usuarios de CoopTrack podrán leer su contenido y verla en Noticias.
-        </div>
-
-        <div class="play-meta">
-          Si querés convertirla en una publicación con valor económico, bajá una Q♥ a esta tribuna.
-        </div>
-      </div>
-
-      <div class="lienzo-target-mainrow">
-<div id="lienzo-jpica-dropzone" class="lienzo-target-dropzone">
-  ${
-    hasDroppedJSpade()
-      ? `
-        <div
-          class="lienzo-parent-play-box lienzo-parent-play-box--inline lienzo-play-card-box"
-          data-card-label="J
-♠"
-        >
-          <div class="lienzo-play-card-box__info">
-            <div class="play-text">${escapeHtml(play.play_text || "Sin texto")}</div>
-
-            ${play.start_date ? `
-              <div class="play-meta">
-                <img class="play-meta__icon" src="/assets/icons/reloj60.gif" alt="" />
-                <span>${escapeHtml(formatTime(play.start_date))}</span>
-              </div>
-            ` : ""}
-
-            ${play.location ? `
-              <div class="play-meta">
-                <img class="play-meta__icon" src="/assets/icons/LocGlobito80.gif" alt="" />
-                <span>${escapeHtml(play.location)}</span>
-              </div>
-            ` : ""}
-          </div>
-
-          <div class="lienzo-play-card-box__actions">
-            <button id="lienzo-publish-simple-btn" class="icon-btn" title="Publicar">
-              <img src="/assets/icons/Extra120.gif" alt="Publicar" />
-            </button>
-          </div>
-        </div>
-      `
-      : `<div class="lienzo-drop-hint">Soltá la J♠ acá para preparar la publicación</div>`
-  }
-</div>
 
         ${hasDroppedQHeart() ? renderQHeartBox(play) : ""}
       </div>
+
     </section>
   `;
 }
@@ -418,26 +399,39 @@ function setDroppedJSpade(value) {
     });
   }
 
-  function renderLienzoJpica(play) {
-    const container = getLienzoContainer();
-    const deck = getCurrentDeck();
+function renderLienzoJpica(play) {
+  const container = getLienzoContainer();
+  const deck = getCurrentDeck();
 
-    if (!container) return;
+  if (!container) return;
 
-    container.innerHTML = `
+  container.innerHTML = `
+    <div class="lienzo-v2-page">
       ${renderDeckHeader(deck)}
 
-      <section class="lienzo-grid">
-        ${renderColombes(play)}
-        ${renderAmsterdam(play)}
-      </section>
-    `;
+      <div class="lienzo-v2-shell">
+        <div class="lienzo-v2-main">
 
-    mountPlacard(play);
-    bindSourceDrag(play);
-    bindDropzone(play);
-    bindActions(play);
-  }
+          <div class="lienzo-v2-grid lienzo-v2-grid--2">
+            <div id="colombes">
+              ${renderColombes(play)}
+            </div>
+
+            <div id="amsterdam">
+              ${renderAmsterdam(play)}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  `;
+
+  mountPlacard(play);
+  bindSourceDrag(play);
+  bindDropzone(play);
+  bindActions(play);
+}lis
 
   window.openLienzoJpicaByPlayId = function (playId) {
   const play = getPlayById(playId);

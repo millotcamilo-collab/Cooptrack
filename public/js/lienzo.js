@@ -129,7 +129,7 @@
 
     return `
       <img
-        class="lienzo-source-stack__card"
+        class="lienzo-tribune__corporate-card"
         src="${escapeHtml(src)}"
         alt=""
         style="left:${index * 18}px;"
@@ -396,26 +396,26 @@
       : [];
 
     return `
-    <section class="lienzo-panel lienzo-panel--source panel--split-top">
-      <div class="panel-topbar panel-topbar--single">
-        <div class="panel-topbar__col panel-topbar__col--identity">
-          <div class="lienzo-target-header lienzo-target-header--top">
-            
-            <img
-              class="lienzo-target-header__photo"
-              src="${escapeHtml(sourceUser.profile_photo_url)}"
-              alt="${escapeHtml(sourceUser.nickname)}"
-            />
-            <div class="lienzo-target-header__name">${escapeHtml(sourceUser.nickname)}</div>
-          </div>
+    <section class="lienzo-tribune lienzo-tribune--source">
+
+      <div class="lienzo-tribune__corporates">
+        ${backgroundCards.map((card, index) => renderBackgroundCard(card, index)).join("")}
+      </div>
+
+      <div class="lienzo-tribune__identity">
+        <img
+          class="lienzo-tribune__avatar"
+          src="${escapeHtml(sourceUser.profile_photo_url)}"
+          alt="${escapeHtml(sourceUser.nickname)}"
+        />
+
+        <div class="lienzo-tribune__name">
+          ${escapeHtml(sourceUser.nickname)}
         </div>
       </div>
 
-      <div class="lienzo-source-cards">
-        <div class="lienzo-source-stack">
-          ${backgroundCards.map((card, index) => renderBackgroundCard(card, index)).join("")}
-        </div>
-      </div>
+      <div class="lienzo-tribune__stage"></div>
+
     </section>
   `;
   }
@@ -475,25 +475,28 @@
       : renderSourceActions(play);
 
     return `
-    <section class="lienzo-panel lienzo-panel--target panel--split-top">
-      <div class="panel-topbar panel-topbar--single">
-        <div class="panel-topbar__col panel-topbar__col--identity">
-          <div class="lienzo-target-header lienzo-target-header--top">
-            
-            <img
-              class="lienzo-target-header__photo"
-              src="${escapeHtml(targetUser.profile_photo_url)}"
-              alt="${escapeHtml(targetUser.nickname)}"
-            />
-            <div class="lienzo-target-header__name">${escapeHtml(targetUser.nickname)}</div>
-          </div>
-          
+    <section class="lienzo-tribune lienzo-tribune--target">
+
+      <div class="lienzo-tribune__corporates"></div>
+
+      <div class="lienzo-tribune__identity">
+        <img
+          class="lienzo-tribune__avatar"
+          src="${escapeHtml(targetUser.profile_photo_url)}"
+          alt="${escapeHtml(targetUser.nickname)}"
+        />
+
+        <div class="lienzo-tribune__name">
+          ${escapeHtml(targetUser.nickname)}
         </div>
       </div>
 
-      <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-        ${renderTransferredAceBox(play, actionsHtml)}
+      <div class="lienzo-tribune__stage">
+        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+          ${renderTransferredAceBox(play, actionsHtml)}
+        </div>
       </div>
+
     </section>
   `;
   }
@@ -639,31 +642,39 @@
     }
   }
 
-  function renderLienzo(play) {
-    console.count("renderLienzo");
+function renderLienzo(play) {
+  console.count("renderLienzo");
 
-    const container = getLienzoContainer();
-    const deck = getCurrentDeck();
+  const container = getLienzoContainer();
+  const deck = getCurrentDeck();
 
-    if (!container || !play) return;
+  if (!container || !play) return;
 
-    container.innerHTML = `
+  container.innerHTML = `
+    <div class="lienzo-v2-page">
       ${renderDeckHeader(deck)}
 
-      <div class="lienzo-grid">
-        <div id="colombes" class="lienzo-grid__left">
-          ${renderSourcePlayerPanel(play)}
-        </div>
+      <div class="lienzo-v2-shell">
+        <div class="lienzo-v2-main">
 
-        <div id="amsterdam" class="lienzo-grid__right">
-          ${renderTargetPlayerPanel(play)}
+          <div class="lienzo-v2-grid lienzo-v2-grid--2">
+            <div id="colombes">
+              ${renderSourcePlayerPanel(play)}
+            </div>
+
+            <div id="amsterdam">
+              ${renderTargetPlayerPanel(play)}
+            </div>
+          </div>
+
         </div>
       </div>
-    `;
+    </div>
+  `;
 
-    mountPlacardFromDataset();
-    bindLienzoActions(play);
-  }
+  mountPlacardFromDataset();
+  bindLienzoActions(play);
+}
 
   function openLienzoByPlayId(playId) {
     const play = getPlayById(playId);

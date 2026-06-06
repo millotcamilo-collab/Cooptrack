@@ -479,40 +479,18 @@ function renderBackgroundCard(card, index = 0) {
   `;
     }
 
-function renderCardCorners(rank, suit) {
-  const symbol = getSuitSymbol(suit);
-
-  const isRed =
-    normalizeSuit(suit) === "HEART" ||
-    normalizeSuit(suit) === "DIAMOND";
-
-  return `
-    <div class="lv2-card-corner lv2-card-corner--tl ${isRed ? "lv2-card-corner--red" : ""}">
-      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
-    </div>
-
-    <div class="lv2-card-corner lv2-card-corner--br ${isRed ? "lv2-card-corner--red" : ""}">
-      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
-    </div>
-  `;
-}
 
 function renderKCardBox(play, actionsHtml = "") {
-  return `
-    <div class="lv2-play-card lv2-play-card--k">
-      ${renderCardCorners("K", play?.card_suit)}
+    const rank = normalizeRank(play?.card_rank || play?.rank || "K");
+    const suit = normalizeSuit(play?.card_suit || play?.suit);
 
-      <div class="lv2-play-card__inner">
-        ${actionsHtml ? `
-          <div class="lv2-play-card__actions">
-            ${actionsHtml}
-          </div>
-        ` : ""}
-      </div>
-    </div>
-  `;
+    return window.CartaTipo.renderPlayCardBox({
+        rank,
+        suit,
+        title: "",
+        status: play?.play_status || "",
+        actionsHtml
+    });
 }
 
 function renderSourcePlayerPanel(play) {
