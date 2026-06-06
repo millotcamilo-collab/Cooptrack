@@ -2544,7 +2544,7 @@ ${parentJSpadeText
         mountPlacardFromDataset();
         bindLienzoActions(play);
         bindLienzoDropzones(play);
-    } list
+    } 
 
     async function openLienzoByPlayId(playId) {
         const play = getPlayById(playId);
