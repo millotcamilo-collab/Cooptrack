@@ -431,7 +431,7 @@ function renderLienzoJpica(play) {
   bindSourceDrag(play);
   bindDropzone(play);
   bindActions(play);
-}lis
+}
 
   window.openLienzoJpicaByPlayId = function (playId) {
   const play = getPlayById(playId);
