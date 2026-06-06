@@ -45,28 +45,28 @@
         const s = normalizeSuit(suit);
 
         const map = {
-            A_HEART: "/assets/icons/Acorazon.gif",
-            A_SPADE: "/assets/icons/Apike.gif",
-            A_DIAMOND: "/assets/icons/Adiamante.gif",
-            A_CLUB: "/assets/icons/Atrebol.gif",
+            A_HEART: "/assets/icons/Acorazon.png",
+            A_SPADE: "/assets/icons/Apike.png",
+            A_DIAMOND: "/assets/icons/Adiamante.png",
+            A_CLUB: "/assets/icons/Atrebol.png",
 
-            K_HEART: "/assets/icons/Kcorazon.gif",
-            K_SPADE: "/assets/icons/Kpike.gif",
-            K_DIAMOND: "/assets/icons/Kdiamante.gif",
-            K_CLUB: "/assets/icons/Ktrebol.gif",
+            K_HEART: "/assets/icons/Kcorazon.png",
+            K_SPADE: "/assets/icons/Kpike.png",
+            K_DIAMOND: "/assets/icons/Kdiamante.png",
+            K_CLUB: "/assets/icons/Ktrebol.png",
 
-            Q_HEART: "/assets/icons/Qcorazon.gif",
-            Q_SPADE: "/assets/icons/Qpike.gif",
-            Q_DIAMOND: "/assets/icons/Qdiamante.gif",
-            Q_CLUB: "/assets/icons/Qtrebol.gif",
+            Q_HEART: "/assets/icons/Qcorazon.png",
+            Q_SPADE: "/assets/icons/Qpike.png",
+            Q_DIAMOND: "/assets/icons/Qdiamante.png",
+            Q_CLUB: "/assets/icons/Qtrebol.png",
 
-            J_HEART: "/assets/icons/Jcorazon.gif",
-            J_SPADE: "/assets/icons/Jpike.gif",
-            J_DIAMOND: "/assets/icons/Jdiamante.gif",
-            J_CLUB: "/assets/icons/Jtrebol.gif"
+            J_HEART: "/assets/icons/Jcorazon.png",
+            J_SPADE: "/assets/icons/Jpike.png",
+            J_DIAMOND: "/assets/icons/Jdiamante.png",
+            J_CLUB: "/assets/icons/Jtrebol.png"
         };
 
-        return map[`${r}_${s}`] || "/assets/icons/Dorso70.gif";
+        return map[`${r}_${s}`] || "/assets/icons/DorsoAzul.png";
     }
 
     function getSuitSymbol(suit) {
@@ -246,8 +246,22 @@
     }
 
     function isCurrentUserHeartAceHolder() {
-        const aceHolder = resolveHeartAceHolder();
+        const aceHolder = resolveHeartAceHolder() || {
+            id: 0,
+            nickname: "A♥ no encontrado",
+            profile_photo_url: "/assets/icons/singeta120.gif"
+        };
         return Number(aceHolder?.id || 0) === getCurrentUserId();
+    }
+
+    function renderJHeartPlayCard(play, actionsHtml = "") {
+        return window.CartaTipo.renderPlayCardBox({
+            rank: "J",
+            suit: "HEART",
+            title: String(play?.play_text || "").trim(),
+            status: play?.play_status || "",
+            actionsHtml
+        });
     }
 
     function renderApprovalActions(play) {
@@ -292,6 +306,93 @@
     `;
     }
 
+    function renderSourcePlayerPanel(play) {
+        const sourceUser = resolveSourceUser(play);
+        const sourceCards = getCardsOwnedByUser(sourceUser.id);
+
+        return `
+      <section class="lienzo-tribune">
+
+        <div class="lienzo-tribune__corporates">
+          ${sourceCards.map((card, index) => `
+            <img
+              class="lienzo-tribune__corporate-card"
+              src="${escapeHtml(getCardImageSrc(card.rank, card.suit))}"
+              style="left:${index * 18}px;"
+            />
+          `).join("")}
+        </div>
+
+        <div class="lienzo-tribune__identity">
+          <img
+            class="lienzo-tribune__avatar"
+            src="${escapeHtml(sourceUser.profile_photo_url)}"
+          />
+          <div class="lienzo-tribune__name">
+            ${escapeHtml(sourceUser.nickname)}
+          </div>
+        </div>
+
+        <div class="lienzo-tribune__stage">
+          <div
+  id="jheart-draggable-card"
+  draggable="true"
+  data-rank="J"
+  data-suit="HEART"
+  data-play-id="${Number(play?.id || 0)}"
+  title="Arrastrar J♥ hacia A♥"
+>
+  ${renderJHeartPlayCard(play)}
+</div>
+        </div>
+
+      </section>
+    `;
+    }
+
+    function renderTargetPlayerPanel(play) {
+        const aceHolder = resolveHeartAceHolder();
+
+        return `
+      <section class="lienzo-tribune">
+
+        <div class="lienzo-tribune__corporates"></div>
+
+        <div class="lienzo-tribune__identity">
+          <img
+            class="lienzo-tribune__avatar"
+            src="${escapeHtml(aceHolder.profile_photo_url)}"
+          />
+          <div class="lienzo-tribune__name">
+            ${escapeHtml(aceHolder.nickname)}
+          </div>
+        </div>
+
+        <div class="lienzo-tribune__stage">
+          <div
+            id="lienzo-jheart-target-dropzone"
+            class="lienzo-target-dropzone"
+          >
+            ${hasDroppedJHeart(play)
+? renderJHeartPlayCard(
+    play,
+    window.__jheartDropSelection && normalizeRank(play?.play_status || play?.status) !== "SENT"
+        ? `
+          <button id="jheart-send-btn" class="icon-btn" title="Enviar a A♥">
+            <img src="/assets/icons/buzon60.gif" alt="Enviar" />
+          </button>
+        `
+        : renderApprovalActions(play)
+  )
+                : '<div class="lienzo-drop-hint">Soltar J♥ aquí</div>'
+            }
+          </div>
+        </div>
+
+      </section>
+    `;
+    }
+
     function mountPlacardFromDataset(play) {
         const placardHost = document.getElementById("lienzo-placard");
         if (!placardHost) return;
@@ -310,166 +411,32 @@
         });
     }
 
-    function renderCardStack(cards) {
-        if (!cards.length) return "";
 
-        return `
-      <div class="lienzo-source-stack">
-        ${cards.map((card, index) => `
-          <img
-            class="lienzo-source-stack__card"
-            src="${escapeHtml(getCardImageSrc(card.rank, card.suit))}"
-            alt="${escapeHtml(getCardLabel(card.rank, card.suit))}"
-            title="${escapeHtml(getCardLabel(card.rank, card.suit))}"
-            style="left:${index * 18}px;"
-          />
-        `).join("")}
-      </div>
-    `;
+
+
+    function hasDroppedJHeart(play) {
+        const status = normalizeRank(play?.play_status || play?.status);
+
+        if (
+            status === "SENT" ||
+            status === "APPROVED" ||
+            status === "REJECTED" ||
+            status === "CANCELLED" ||
+            status === "ACKNOWLEDGED"
+        ) {
+            return true;
+        }
+
+        const selection = window.__jheartDropSelection || null;
+        return selection && selection.rank === "J" && selection.suit === "HEART";
     }
 
-    function buildPanelTopbar({ user, actionsHtml = "" }) {
-        return `
-      <div class="panel-topbar panel-topbar--single">
-        <div class="panel-topbar__col panel-topbar__col--identity">
-          <div class="lienzo-source-header lienzo-source-header--top">
-
-            <img
-              class="lienzo-source-header__photo"
-              src="${escapeHtml(user?.profile_photo_url || "/assets/icons/singeta120.gif")}"
-              alt="${escapeHtml(user?.nickname || "Usuario")}"
-            />
-            <div class="lienzo-source-header__name">
-              ${escapeHtml(user?.nickname || "Usuario")}
-            </div>
-          </div>
-        </div>
-
-        <div class="panel-topbar__col panel-topbar__col--actions">
-          ${actionsHtml}
-        </div>
-      </div>
-    `;
+    function renderSourceActions(play) {
+        return "";
     }
 
-function hasDroppedJHeart(play) {
-    const status = normalizeRank(play?.play_status || play?.status);
 
-    if (
-        status === "SENT" ||
-        status === "APPROVED" ||
-        status === "REJECTED" ||
-        status === "CANCELLED" ||
-        status === "ACKNOWLEDGED"
-    ) {
-        return true;
-    }
 
-    const selection = window.__jheartDropSelection || null;
-    return selection && selection.rank === "J" && selection.suit === "HEART";
-}
-
-function renderSourceActions(play) {
-    return "";
-}
-
-    function renderSourcePanel(play) {
-        const sourceUser = resolveSourceUser(play);
-        const sourceCards = getCardsOwnedByUser(sourceUser.id);
-
-        const jHeartImage = getCardImageSrc("J", "HEART");
-        const jText = String(play?.play_text || "").trim();
-
-        return `
-    <section class="lienzo-panel lienzo-panel--source panel--split-top">
-      ${buildPanelTopbar({
-            user: sourceUser,
-            actionsHtml: renderSourceActions(play)
-        })}
-
-      <div class="lienzo-source-cards">
-        ${renderCardStack(sourceCards)}
-
-        ${!hasDroppedJHeart(play) ? `
-          <div
-            id="jheart-draggable-card"
-            class="lienzo-jheart-envelope"
-            draggable="true"
-            data-rank="J"
-            data-suit="HEART"
-            data-play-id="${Number(play?.id || 0)}"
-            title="Arrastrar J♥ hacia A♥"
-          >
-            <img
-              class="lienzo-jheart-envelope__card"
-              src="${escapeHtml(jHeartImage)}"
-              alt="J♥"
-            />
-
-            <div class="lienzo-jheart-envelope__text">
-              ${escapeHtml(jText || "Sin texto")}
-            </div>
-          </div>
-        ` : ""}
-      </div>
-    </section>
-  `;
-    }
-
-    function renderTargetPanel(play) {
-        const aceHolder = resolveHeartAceHolder();
-        const targetUser = aceHolder || {
-            id: 0,
-            nickname: "A♥ no encontrado",
-            profile_photo_url: "/assets/icons/singeta120.gif"
-        };
-
-        const targetCards = getCardsOwnedByUser(targetUser.id);
-        const dropped = hasDroppedJHeart(play);
-
-        return `
-      <section class="lienzo-panel lienzo-panel--target panel--split-top">
-        ${buildPanelTopbar({
-            user: targetUser,
-            actionsHtml: renderApprovalActions(play)
-        })}
-
-        <div class="lienzo-target-mainrow">
-          <div
-            id="lienzo-jheart-target-dropzone"
-            class="lienzo-target-dropzone ${dropped ? "is-drop-complete" : ""}"
-          >
-            ${renderCardStack(targetCards)}
-
-            ${dropped ? `
-  <div class="lienzo-jheart-envelope lienzo-jheart-envelope--received">
-    <img
-      class="lienzo-jheart-envelope__card"
-      src="${escapeHtml(getCardImageSrc("J", "HEART"))}"
-      alt="J♥"
-      title="J♥ enviada a revisión"
-    />
-
-    <div class="lienzo-jheart-envelope__text">
-      ${escapeHtml(String(play?.play_text || "").trim() || "Sin texto")}
-    </div>
-
-${window.__jheartDropSelection && normalizeRank(play?.play_status || play?.status) !== "SENT" ? `
-  <button id="jheart-send-btn" class="icon-btn lienzo-jheart-envelope__send" title="Enviar a A♥">
-    <img src="/assets/icons/buzon60.gif" alt="Enviar" />
-  </button>
-` : ""}
-  </div>
-` : `
-  <div class="lienzo-drop-hint">
-    Soltar J♥ aquí
-  </div>
-`}
-          </div>
-        </div>
-      </section>
-    `;
-    }
 
     async function handleSendPlay(play) {
         try {
@@ -679,15 +646,23 @@ ${window.__jheartDropSelection && normalizeRank(play?.play_status || play?.statu
         if (!container || !play) return;
 
         container.innerHTML = `
-      ${renderDeckHeader(deck)}
+      <div class="lienzo-v2-page">
+        ${renderDeckHeader(deck)}
 
-      <div class="lienzo-grid">
-        <div id="colombes" class="lienzo-grid__left">
-          ${renderSourcePanel(play)}
-        </div>
+        <div class="lienzo-v2-shell">
+          <div class="lienzo-v2-main">
 
-        <div id="amsterdam" class="lienzo-grid__right">
-          ${renderTargetPanel(play)}
+            <div class="lienzo-v2-grid lienzo-v2-grid--2">
+              <div id="colombes">
+                ${renderSourcePlayerPanel(play)}
+              </div>
+
+              <div id="amsterdam">
+                ${renderTargetPlayerPanel(play)}
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     `;
