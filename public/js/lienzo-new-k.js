@@ -703,43 +703,26 @@ function getSuitSymbol(suit) {
         });
     }
 
-function renderCardCorners(rank, suit) {
-  const symbol = getSuitSymbol(suit);
-
-  const isRed =
-    normalizeSuit(suit) === "HEART" ||
-    normalizeSuit(suit) === "DIAMOND";
-
-  return `
-    <div class="lv2-card-corner lv2-card-corner--tl ${isRed ? "lv2-card-corner--red" : ""}">
-      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
-    </div>
-
-    <div class="lv2-card-corner lv2-card-corner--br ${isRed ? "lv2-card-corner--red" : ""}">
-      <span class="lv2-card-corner__rank">${escapeHtml(rank)}</span>
-      <span class="lv2-card-corner__suit">${escapeHtml(symbol)}</span>
-    </div>
-  `;
-}
 
 function renderKCardBox(draft, showActions = false, id = "") {
-  return `
-    <div
-      ${id ? `id="${escapeHtml(id)}"` : ""}
-      class="lv2-play-card lv2-play-card--k"
-    >
-      ${renderCardCorners("K", draft?.card_suit)}
+    const rank = normalizeRank(draft?.card_rank || "K");
+    const suit = normalizeSuit(draft?.card_suit);
 
-      <div class="lv2-play-card__inner">
-        ${showActions ? `
-          <div class="lv2-play-card__actions">
-            ${renderActionButtons()}
-          </div>
-        ` : ""}
+    const cardHtml = window.CartaTipo.renderPlayCardBox({
+        rank,
+        suit,
+        title: "",
+        status: draft?.status || "",
+        actionsHtml: showActions ? renderActionButtons() : ""
+    });
+
+    if (!id) return cardHtml;
+
+    return `
+      <div id="${escapeHtml(id)}">
+        ${cardHtml}
       </div>
-    </div>
-  `;
+    `;
 }
 
 function renderUsersPanel() {
