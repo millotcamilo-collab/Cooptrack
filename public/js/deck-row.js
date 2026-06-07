@@ -1,17 +1,17 @@
 function getCardImageSrc(cardCode) {
   const map = {
-    A_HEART: "/assets/icons/Acorazon.gif",
-    A_SPADE: "/assets/icons/Apike.gif",
-    A_DIAMOND: "/assets/icons/Adiamante.gif",
-    A_CLUB: "/assets/icons/Atrebol.gif",
+    A_HEART: "/assets/icons/Acorazon.png",
+    A_SPADE: "/assets/icons/Apike.png",
+    A_DIAMOND: "/assets/icons/Adiamante.png",
+    A_CLUB: "/assets/icons/Atrebol.png",
 
-    K_HEART: "/assets/icons/Kcorazon.gif",
-    K_SPADE: "/assets/icons/Kpike.gif",
-    K_DIAMOND: "/assets/icons/Kdiamante.gif",
-    K_CLUB: "/assets/icons/Ktrebol.gif",
+    K_HEART: "/assets/icons/Kcorazon.png",
+    K_SPADE: "/assets/icons/Kpike.png",
+    K_DIAMOND: "/assets/icons/Kdiamante.png",
+    K_CLUB: "/assets/icons/Ktrebol.png",
 
-    Q_SPADE: "/assets/icons/Qpike.gif",
-    Q_CLUB: "/assets/icons/Qtrebol.gif"
+    Q_SPADE: "/assets/icons/Qpike.png",
+    Q_CLUB: "/assets/icons/Qtrebol.png"
   };
 
   return map[String(cardCode || "").toUpperCase()] || null;
