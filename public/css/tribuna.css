@@ -59,6 +59,49 @@
   gap: 12px;
 }
 
+.mobile-tribune {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.mobile-tribune__identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.mobile-tribune__avatar {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.mobile-tribune__name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111;
+  text-align: center;
+}
+
+.mobile-tribune__stage {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.tribuna-error {
+  padding: 16px;
+  color: #7d0000;
+  text-align: center;
+}
+
 @media (min-width: 900px) {
   .tribuna-page {
     padding-left: 24px;
