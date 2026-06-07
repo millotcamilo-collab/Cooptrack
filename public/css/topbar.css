@@ -146,3 +146,20 @@
   font-weight: 500;
   white-space: nowrap;
 }
+
+/* ================================
+   RESPONSIVE: Mobile (max-width 680px)
+   ================================ */
+@media (max-width: 680px) {
+  .topbar__desktop-only {
+    display: none !important;
+  }
+
+  .topbar__inner {
+    justify-content: space-between;
+  }
+
+  .topbar__right {
+    gap: 8px;
+  }
+}

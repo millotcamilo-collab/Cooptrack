@@ -314,6 +314,44 @@
     return "/lienzo.html";
   }
 
+  function resolveResponsePageForPlay(play, currentUserId) {
+    if (!play || !currentUserId) return null;
+
+    const targetUserId = Number(play?.target_user_id || 0);
+    const validatorUserId = Number(play?.validator_user_id || 0);
+    const createdByUserId = Number(play?.created_by_user_id || 0);
+
+    const isTarget = targetUserId === Number(currentUserId);
+    const isValidator = validatorUserId === Number(currentUserId);
+    const isSource = createdByUserId === Number(currentUserId);
+
+    const status = normalizeText(play?.play_status || play?.status);
+
+    // 1) TARGET: Si es destinatario y hay acción pendiente (SENT/PENDING)
+    if (isTarget && (status === "SENT" || status === "PENDING")) {
+      return "/amsterdam.html";
+    }
+
+    // 2) VALIDATOR with A_DIAMOND: Si es validador con rol A_DIAMOND
+    if (isValidator) {
+      const validatorRole = String(play?.validator_role || "").toUpperCase().trim();
+      if (validatorRole === "A_DIAMOND") {
+        return "/olimpica.html";
+      }
+      if (validatorRole === "A_CLUB") {
+        return "/america.html";
+      }
+    }
+
+    // 3) CREATOR: Si es creador y hay acción pendiente real
+    if (isSource && status === "PENDING") {
+      return "/colombes.html";
+    }
+
+    // 4) Sin acción pendiente real
+    return null;
+  }
+
   async function hasUserJPlays(userId) {
     try {
       const token = localStorage.getItem("cooptrackToken");
@@ -438,7 +476,21 @@
         }
       }
 
-      const nextPage = resolveLienzoPageForPlay(playForRouting);
+      // Get current user to check tribuna eligibility
+      const currentUser = await getLoggedUser();
+      const currentUserId = currentUser?.id;
+
+      // Try tribuna route first
+      let nextPage = null;
+      if (currentUserId) {
+        nextPage = resolveResponsePageForPlay(playForRouting, currentUserId);
+      }
+
+      // Fallback to full lienzo if no tribuna
+      if (!nextPage) {
+        nextPage = resolveLienzoPageForPlay(playForRouting);
+      }
+
       window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
     } catch (error) {
       console.error("Error resolviendo notificación:", error);
@@ -512,13 +564,13 @@
 
             <nav class="topbar__right">
 
-              <a href="/profile.html" class="topbar__profile">
+              <a href="/profile.html" class="topbar__profile topbar__desktop-only">
                 <span class="topbar__nickname">${user.nickname || ""}</span>
                 <img src="${getProfileImage(user)}" class="topbar__icon-img topbar__icon-img--profile" />
               </a>
 
               <button
-                class="topbar__icon-btn"
+                class="topbar__icon-btn topbar__desktop-only"
                 id="newDeckBtn"
                 title="El as de corazon constituye la primer jugada de un mazo. Comprende el nombre, la imagen y la moneda de referencia y solo se juega una vez"
               >
@@ -547,7 +599,7 @@
           ? `
                     <a
                       href="${onMazosPage ? "/index.html" : "/mazos.html"}"
-                      class="topbar__icon-btn"
+                      class="topbar__icon-btn topbar__desktop-only"
                       title="Aqui estan los mazos"
                     >
                       <img
@@ -565,7 +617,7 @@
               ${userHasArchivedDecks
           ? `
                     <button
-                      class="topbar__icon-btn"
+                      class="topbar__icon-btn topbar__desktop-only"
                       id="archivoBtn"
                       title="archivo"
                     >
@@ -578,7 +630,7 @@
               ${userHasJPlays
           ? `
                     <button
-                      class="topbar__icon-btn"
+                      class="topbar__icon-btn topbar__desktop-only"
                       id="bitacoraBtn"
                       title="log de jotas"
                     >
@@ -586,7 +638,7 @@
                     </button>
 
                     <button
-                      class="topbar__icon-btn"
+                      class="topbar__icon-btn topbar__desktop-only"
                       id="contabilidadBtn"
                       title="contabilidad"
                     >
@@ -598,7 +650,7 @@
 
               <a
                 href="/almanaque.html"
-                class="topbar__icon-btn"
+                class="topbar__icon-btn topbar__desktop-only"
                 title="Almanaque"
               >
                 <img src="/assets/icons/Schedule80.gif" class="topbar__icon-img" />
@@ -606,7 +658,7 @@
 
               <a
                 href="/noticias.html"
-                class="topbar__icon-btn"
+                class="topbar__icon-btn topbar__desktop-only"
                 title="Noticias"
               >
                 <img src="/assets/icons/Extra120.gif" class="topbar__icon-img" />
@@ -614,7 +666,7 @@
 
               <a
                 href="/help.html"
-                class="topbar__icon-btn"
+                class="topbar__icon-btn topbar__desktop-only"
                 title="help"
               >
                 <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
@@ -624,7 +676,7 @@
           ? `
                     <a
                       href="/protected-pages/administradores.html"
-                      class="topbar__icon-btn"
+                      class="topbar__icon-btn topbar__desktop-only"
                       title="Administración de usuarios"
                     >
                       <img src="/assets/icons/Tools120.gif" class="topbar__icon-img" />
@@ -633,7 +685,7 @@
           : ""
         }
 
-              <button class="topbar__icon-btn" id="logoutBtn">
+              <button class="topbar__icon-btn topbar__desktop-only" id="logoutBtn">
                 <img src="/assets/icons/exit80.gif" class="topbar__icon-img topbar__icon-img--exit" />
               </button>
 
@@ -655,7 +707,7 @@
             <nav class="topbar__right">
               <a
                 href="/almanaque.html"
-                class="topbar__icon-btn"
+                class="topbar__icon-btn topbar__desktop-only"
                 title="Aqui esta el calendario aun no te programe"
               >
                 <img src="/assets/icons/Schedule80.gif" class="topbar__icon-img" />
@@ -663,7 +715,7 @@
 
               <a
                 href="/help.html"
-                class="topbar__icon-btn"
+                class="topbar__icon-btn topbar__desktop-only"
                 title="help"
               >
                 <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />

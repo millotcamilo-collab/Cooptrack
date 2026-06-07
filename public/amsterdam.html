@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tribuna Amsterdam - CoopTrack</title>
+
+  <!-- Global styles -->
+  <link rel="stylesheet" href="/css/global.css" />
+
+  <!-- Tribuna page specific styles (future) -->
+  <link rel="stylesheet" href="/css/tribuna.css" />
+
+  <!-- Card type render -->
+  <link rel="stylesheet" href="/css/cartatipo.css" />
+
+  <!-- Placard styles -->
+  <link rel="stylesheet" href="/css/placard.css" />
+</head>
+
+<body>
+  <!-- Topbar container (rendered by topbar.js) -->
+  <div id="topbar-container"></div>
+
+  <!-- Main tribuna page content -->
+  <main class="tribuna-page tribuna-page--amsterdam">
+    <section id="tribuna-root" class="tribuna-page__root">
+      <!-- Placard container (optional) -->
+      <div id="tribuna-placard" class="tribuna__placard-zone"></div>
+
+      <!-- Tribuna content (rendered by amsterdam.js) -->
+      <div id="tribuna-content" class="tribuna__content-zone"></div>
+
+      <!-- Actions container -->
+      <div id="tribuna-actions" class="tribuna__actions-zone"></div>
+
+      <!-- Chat/Talud container (future) -->
+      <!-- <div id="tribuna-talud" class="tribuna__talud-zone"></div> -->
+    </section>
+  </main>
+
+  <!-- Scripts -->
+  <!-- Topbar (required for all pages) -->
+  <script src="/js/topbar.js"></script>
+
+  <!-- Card type helper (used in tribuna render) -->
+  <script src="/js/cartatipo.js"></script>
+
+  <!-- Placard helper -->
+  <script src="/js/placard.js"></script>
+
+  <!-- Chat helper (future) -->
+  <!-- <script src="/js/chat.js"></script> -->
+
+  <!-- Amsterdam tribuna module -->
+  <script src="/js/amsterdam.js"></script>
+
+  <!-- Tribuna initialization script (future: move to tribuna-core.js) -->
+  <script>
+    (function () {
+      // Read URL params: deckId, playId
+      const urlParams = new URLSearchParams(window.location.search);
+      const deckId = urlParams.get("deckId");
+      const playId = urlParams.get("playId");
+
+      // Initialize topbar
+      if (typeof window.renderTopbar === "function") {
+        window.renderTopbar({
+          containerId: "topbar-container",
+          deckId: deckId
+        });
+      }
+
+      // Initialize Amsterdam tribuna
+      if (typeof window.AmsterdamTribuna === "undefined" && typeof window.renderAmsterdamMobile === "function") {
+        // Legacy amsterdam.js uses renderAmsterdamMobile
+        console.log("Amsterdam tribuna legacy render");
+      }
+
+      // Load and render play for Amsterdam tribuna
+      if (playId) {
+        // Placeholder: Fetch play data from backend
+        // const play = await fetch(`/api/plays/${playId}`).then(r => r.json());
+        // Then render using amsterdam.js helpers
+      }
+    })();
+  </script>
+</body>
+
+</html>
