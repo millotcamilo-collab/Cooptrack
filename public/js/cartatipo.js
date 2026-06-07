@@ -128,13 +128,12 @@
           `).join("")}
 
           ${renderDecisionStamp(status)}
-
-          ${actionsHtml ? `
-            <div class="lv2-play-card__actions">
-              ${actionsHtml}
-            </div>
-          ` : ""}
         </div>
+        ${actionsHtml ? `
+          <div class="lv2-play-card__actions">
+            ${actionsHtml}
+          </div>
+        ` : ""}
       </div>
     `;
   }

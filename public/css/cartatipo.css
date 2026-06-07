@@ -193,3 +193,21 @@
   flex: 1 1 auto;
   min-width: 0;
 }
+
+/* Fuerza visual de las acciones: siempre sobre el velo y sin efectos */
+.lv2-play-card__actions {
+  z-index: 7;
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  pointer-events: auto !important;
+}
+
+.lv2-play-card__actions .icon-btn,
+.lv2-play-card__actions .icon-btn img,
+.lv2-play-card__actions button,
+.lv2-play-card__actions button img {
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
