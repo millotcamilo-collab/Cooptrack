@@ -80,16 +80,15 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
-.lv2-play-card__inner--figure::before {
-  content: "";
+.lv2-play-card__figure {
   position: absolute;
-  inset: 0;
+  inset: 22px;
   background-image: var(--lv2-figure-url);
   background-repeat: no-repeat;
   background-position: center top;
   background-size: 100% auto;
-  opacity: 1;
   z-index: 1;
+  pointer-events: none;
 }
 
 .lv2-play-card__inner--figure::after {
