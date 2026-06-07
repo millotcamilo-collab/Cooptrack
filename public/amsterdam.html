@@ -187,6 +187,8 @@ function renderPlayCardBox(play) {
                 });
 
                 const data = await response.json();
+                console.log("PLAY CARGADA");
+console.log(data);
 
                 if (!response.ok || !data.ok || !data.play) {
                     document.getElementById("tribuna-content").innerHTML =
