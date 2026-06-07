@@ -207,11 +207,12 @@ async function updatePlayStatus(play, status) {
   window.location.href = `/mazo.html?id=${play.deck_id}`;
 }
 
-function renderTribunaPlacard(play) {
+function renderTribunaPlacard(play, deckState) {
   const host = document.getElementById("tribuna-placard");
   if (!host || typeof window.renderPlacard !== "function") return;
 
   const parent = play?.parent_play || null;
+  const deck = deckState?.mazo || deckState?.deck || {};
 
   window.renderPlacard(host, {
     page: "tribuna-amsterdam",
@@ -219,14 +220,20 @@ function renderTribunaPlacard(play) {
     play,
     currentUserId: Number(play?.target_user_id || 0),
 
-    photoUrl: play?.deck_image_url || "",
+    deckId: play?.deck_id,
+    deck,
+    mazo: deck,
+
+    photoUrl: deck?.deck_image_url || play?.deck_image_url || "",
     rank: "A",
     suit: "HEART",
-    title: play?.deck_name || "Mazo",
+    title: deck?.name || play?.deck_name || "Mazo",
 
     showCurrency: false,
     leftCards: [],
-    plays: [parent, play].filter(Boolean)
+    plays: Array.isArray(deckState?.plays)
+      ? deckState.plays
+      : [parent, play].filter(Boolean)
   });
 }
 
@@ -248,7 +255,19 @@ function renderTribunaPlacard(play) {
                         Authorization: `Bearer ${token}`
                     }
                 });
+let deckState = null;
 
+const stateResponse = await fetch(`${API_BASE_URL}/mazos/${play.deck_id}/state`, {
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});
+
+const stateData = await stateResponse.json().catch(() => null);
+
+if (stateResponse.ok && stateData?.ok) {
+  deckState = stateData;
+}
                 const data = await response.json();
 
                 if (!response.ok || !data.ok || !data.play) {
@@ -281,7 +300,7 @@ if (play.parent_play_id) {
                 });
 
                 document.getElementById("tribuna-content").innerHTML = html;
-                renderTribunaPlacard(play);
+renderTribunaPlacard(play, deckState);
                 bindTargetActions(play);
             }
 
