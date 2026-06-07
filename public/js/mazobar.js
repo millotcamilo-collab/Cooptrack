@@ -124,22 +124,27 @@
 
     if (!r || !suitPart) return null;
 
-    return `/assets/icons/${r}${suitPart}.gif`;
+    return `/assets/icons/${r}${suitPart}.png`;
   }
 
-  function getSuitButtonImageSrc(suit) {
-    const suitPart = getSuitFilePart(suit);
-    if (!suitPart) return null;
+function getCardImageSrc(rank, suit) {
+  const r = String(rank || "").toUpperCase();
+  const s = String(suit || "").toUpperCase();
 
-    const map = {
-      corazon: "/assets/icons/cor40.gif",
-      pike: "/assets/icons/pik40.gif",
-      diamante: "/assets/icons/dia40.gif",
-      trebol: "/assets/icons/tre40.gif"
-    };
+  const map = {
+    A_HEART: "/assets/icons/Acorazon.png",
+    A_SPADE: "/assets/icons/Apike.png",
+    A_DIAMOND: "/assets/icons/Adiamante.png",
+    A_CLUB: "/assets/icons/Atrebol.png",
 
-    return map[suitPart] || null;
-  }
+    K_HEART: "/assets/icons/Kcorazon.png",
+    K_SPADE: "/assets/icons/Kpike.png",
+    K_DIAMOND: "/assets/icons/Kdiamante.png",
+    K_CLUB: "/assets/icons/Ktrebol.png"
+  };
+
+  return map[`${r}_${s}`] || null;
+}
 
   function getDeckAvatarSrc(deck) {
     const raw = String(deck?.deck_image_url || "").trim();
