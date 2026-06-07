@@ -1,13 +1,15 @@
 /* ===== PLACARD (modo lectura) ===== */
 
 .placard {
+  width: 100%;
   min-height: var(--placard-height);
   padding: 14px var(--page-padding-x) 10px;
-  background: var(--lienzo-veil-bg);
-  border: 1px solid var(--lienzo-veil-border);
+  background: var(--lv2-panel-bg, rgba(0, 0, 0, 0.20));
+  border: 1px solid var(--lv2-panel-border, rgba(255, 255, 255, 0.12));
   color: #f5f5f5;
-  border-radius: 14px;
+  border-radius: var(--lv2-radius, 14px);
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .placard__row {

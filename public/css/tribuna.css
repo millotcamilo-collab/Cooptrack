@@ -102,6 +102,26 @@
   text-align: center;
 }
 
+.tribuna-page {
+  padding-left: var(--page-padding-x);
+  padding-right: var(--page-padding-x);
+}
+
+.tribuna-page__root {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.tribuna__placard-zone,
+.tribuna__content-zone {
+  width: 100%;
+}
+
+.tribuna-single {
+  width: 100%;
+}
+
 @media (min-width: 900px) {
   .tribuna-page {
     padding-left: 24px;
