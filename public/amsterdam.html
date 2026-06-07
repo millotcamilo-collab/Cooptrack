@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tribuna Amsterdam - CoopTrack</title>
-      <link rel="icon" type="image/png" href="/assets/icons/bigote.png" />
+    <link rel="icon" type="image/png" href="/assets/icons/bigote.png" />
 
     <!-- Global styles -->
     <link rel="stylesheet" href="/css/global.css" />
@@ -87,23 +87,23 @@
                 };
             }
 
-function normalizeText(value) {
-  return String(value || "").trim().toUpperCase();
-}
+            function normalizeText(value) {
+                return String(value || "").trim().toUpperCase();
+            }
 
-function formatTimeLabel(value) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-}
+            function formatTimeLabel(value) {
+                if (!value) return "";
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) return "";
+                return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+            }
 
-function renderTargetActions(play) {
-  const status = normalizeText(play?.play_status || play?.status);
+            function renderTargetActions(play) {
+                const status = normalizeText(play?.play_status || play?.status);
 
-  if (status !== "SENT" && status !== "PENDING") return "";
+                if (status !== "SENT" && status !== "PENDING") return "";
 
-  return `
+                return `
     <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
       <img src="/assets/icons/Sello40.gif" alt="Aceptar" />
     </button>
@@ -112,130 +112,130 @@ function renderTargetActions(play) {
       <img src="/assets/icons/stepback40.gif" alt="Rechazar" />
     </button>
   `;
-}
+            }
 
-function renderPlayCardBox(play) {
-  const parent = play?.parent_play || play?.parent || null;
+            function renderPlayCardBox(play) {
+                const parent = play?.parent_play || play?.parent || null;
 
-  const title =
-    parent?.play_text ||
-    play?.parent_play_text ||
-    play?.play_text ||
-    "";
+                const title =
+                    parent?.play_text ||
+                    play?.parent_play_text ||
+                    play?.play_text ||
+                    "";
 
-  const spadeMode = normalizeText(parent?.spade_mode || play?.spade_mode);
-  const isDeadline = spadeMode === "DEADLINE";
+                const spadeMode = normalizeText(parent?.spade_mode || play?.spade_mode);
+                const isDeadline = spadeMode === "DEADLINE";
 
-  const timeValue = isDeadline
-    ? (parent?.end_date || play?.end_date)
-    : (parent?.start_date || play?.start_date);
+                const timeValue = isDeadline
+                    ? (parent?.end_date || play?.end_date)
+                    : (parent?.start_date || play?.start_date);
 
-  const location = isDeadline
-    ? ""
-    : String(parent?.location || play?.location || "").trim();
+                const location = isDeadline
+                    ? ""
+                    : String(parent?.location || play?.location || "").trim();
 
-  const metas = [
-    timeValue
-      ? {
-          icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
-          text: formatTimeLabel(timeValue)
-        }
-      : null,
+                const metas = [
+                    timeValue
+                        ? {
+                            icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
+                            text: formatTimeLabel(timeValue)
+                        }
+                        : null,
 
-    location
-      ? {
-          icon: "/assets/icons/LocGlobito80.gif",
-          text: location
-        }
-      : null
-  ].filter(Boolean);
+                    location
+                        ? {
+                            icon: "/assets/icons/LocGlobito80.gif",
+                            text: location
+                        }
+                        : null
+                ].filter(Boolean);
 
-  if (window.CartaTipo?.renderPlayCardBox) {
-    return window.CartaTipo.renderPlayCardBox({
-      rank: play?.card_rank,
-      suit: play?.card_suit,
-      title,
-      status: play?.play_status || "",
-      metas,
-      actionsHtml: renderTargetActions(play)
-    });
-  }
+                if (window.CartaTipo?.renderPlayCardBox) {
+                    return window.CartaTipo.renderPlayCardBox({
+                        rank: play?.card_rank,
+                        suit: play?.card_suit,
+                        title,
+                        status: play?.play_status || "",
+                        metas,
+                        actionsHtml: renderTargetActions(play)
+                    });
+                }
 
-  return `
+                return `
     <div class="tribuna-card-fallback">
       ${escapeHtml(play?.card_rank || "")}${escapeHtml(play?.card_suit || "")}
     </div>
   `;
-}
+            }
 
-function bindTargetActions(play) {
-  const acceptBtn = document.getElementById("lienzo-accept-btn");
-  const rejectBtn = document.getElementById("lienzo-reject-btn");
+            function bindTargetActions(play) {
+                const acceptBtn = document.getElementById("lienzo-accept-btn");
+                const rejectBtn = document.getElementById("lienzo-reject-btn");
 
-  if (acceptBtn) {
-    acceptBtn.addEventListener("click", async () => {
-      await updatePlayStatus(play, "APPROVED");
-    });
-  }
+                if (acceptBtn) {
+                    acceptBtn.addEventListener("click", async () => {
+                        await updatePlayStatus(play, "APPROVED");
+                    });
+                }
 
-  if (rejectBtn) {
-    rejectBtn.addEventListener("click", async () => {
-      await updatePlayStatus(play, "REJECTED");
-    });
-  }
-}
+                if (rejectBtn) {
+                    rejectBtn.addEventListener("click", async () => {
+                        await updatePlayStatus(play, "REJECTED");
+                    });
+                }
+            }
 
-async function updatePlayStatus(play, status) {
-  const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({
-      play_status: status
-    })
-  });
+            async function updatePlayStatus(play, status) {
+                const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        play_status: status
+                    })
+                });
 
-  const data = await response.json().catch(() => null);
+                const data = await response.json().catch(() => null);
 
-  if (!response.ok || !data?.ok) {
-    alert("No se pudo actualizar la jugada.");
-    return;
-  }
+                if (!response.ok || !data?.ok) {
+                    alert("No se pudo actualizar la jugada.");
+                    return;
+                }
 
-  window.location.href = `/mazo.html?id=${play.deck_id}`;
-}
+                window.location.href = `/mazo.html?id=${play.deck_id}`;
+            }
 
-function renderTribunaPlacard(play, deckState) {
-  const host = document.getElementById("tribuna-placard");
-  if (!host || typeof window.renderPlacard !== "function") return;
+            function renderTribunaPlacard(play, deckState) {
+                const host = document.getElementById("tribuna-placard");
+                if (!host || typeof window.renderPlacard !== "function") return;
 
-  const parent = play?.parent_play || null;
-  const deck = deckState?.mazo || deckState?.deck || {};
+                const parent = play?.parent_play || null;
+                const deck = deckState?.mazo || deckState?.deck || {};
 
-  window.renderPlacard(host, {
-    page: "tribuna-amsterdam",
-    mode: "AMSTERDAM",
-    play,
-    currentUserId: Number(play?.target_user_id || 0),
+                window.renderPlacard(host, {
+                    page: "tribuna-amsterdam",
+                    mode: "AMSTERDAM",
+                    play,
+                    currentUserId: Number(play?.target_user_id || 0),
 
-    deckId: play?.deck_id,
-    deck,
-    mazo: deck,
+                    deckId: play?.deck_id,
+                    deck,
+                    mazo: deck,
 
-    photoUrl: deck?.deck_image_url || play?.deck_image_url || "",
-    rank: "A",
-    suit: "HEART",
-    title: deck?.name || play?.deck_name || "Mazo",
+                    photoUrl: deck?.deck_image_url || play?.deck_image_url || "",
+                    rank: "A",
+                    suit: "HEART",
+                    title: deck?.name || play?.deck_name || "Mazo",
 
-    showCurrency: false,
-    leftCards: [],
-    plays: Array.isArray(deckState?.plays)
-      ? deckState.plays
-      : [parent, play].filter(Boolean)
-  });
-}
+                    showCurrency: false,
+                    leftCards: [],
+                    plays: Array.isArray(deckState?.plays)
+                        ? deckState.plays
+                        : [parent, play].filter(Boolean)
+                });
+            }
 
             async function loadPlay() {
                 if (!playId) {
@@ -255,19 +255,7 @@ function renderTribunaPlacard(play, deckState) {
                         Authorization: `Bearer ${token}`
                     }
                 });
-let deckState = null;
 
-const stateResponse = await fetch(`${API_BASE_URL}/mazos/${play.deck_id}/state`, {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
-
-const stateData = await stateResponse.json().catch(() => null);
-
-if (stateResponse.ok && stateData?.ok) {
-  deckState = stateData;
-}
                 const data = await response.json();
 
                 if (!response.ok || !data.ok || !data.play) {
@@ -275,24 +263,38 @@ if (stateResponse.ok && stateData?.ok) {
                         `<div class="tribuna-error">No se pudo cargar la jugada.</div>`;
                     return;
                 }
-let play = data.play;
+                let play = data.play;
+                let deckState = null;
 
-if (play.parent_play_id) {
-  const parentResponse = await fetch(`${API_BASE_URL}/plays/${play.parent_play_id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
+                const stateResponse = await fetch(`${API_BASE_URL}/mazos/${play.deck_id}/state`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
 
-  const parentData = await parentResponse.json();
 
-  if (parentResponse.ok && parentData.ok && parentData.play) {
-    play = {
-      ...play,
-      parent_play: parentData.play
-    };
-  }
-}
+                const stateData = await stateResponse.json().catch(() => null);
+
+                if (stateResponse.ok && stateData?.ok) {
+                    deckState = stateData;
+                }
+
+                if (play.parent_play_id) {
+                    const parentResponse = await fetch(`${API_BASE_URL}/plays/${play.parent_play_id}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+
+                    const parentData = await parentResponse.json();
+
+                    if (parentResponse.ok && parentData.ok && parentData.play) {
+                        play = {
+                            ...play,
+                            parent_play: parentData.play
+                        };
+                    }
+                }
                 const html = window.renderAmsterdamMobile(play, {
                     resolveTargetUser,
                     renderPlayCardBox,
@@ -300,7 +302,7 @@ if (play.parent_play_id) {
                 });
 
                 document.getElementById("tribuna-content").innerHTML = html;
-renderTribunaPlacard(play, deckState);
+                renderTribunaPlacard(play, deckState);
                 bindTargetActions(play);
             }
 
