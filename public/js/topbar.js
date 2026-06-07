@@ -352,6 +352,28 @@
     return null;
   }
 
+function resolveReadOnlyPageForPlay(play, currentUserId) {
+  if (!play || !currentUserId) return null;
+
+  const rank = normalizeText(play?.card_rank || play?.rank);
+  const suit = normalizeText(play?.card_suit || play?.suit);
+  const status = normalizeText(play?.play_status || play?.status);
+
+  const isSource =
+    Number(play?.created_by_user_id || 0) === Number(currentUserId);
+
+  if (
+    rank === "Q" &&
+    suit === "SPADE" &&
+    isSource &&
+    ["APPROVED", "REJECTED", "CANCELLED"].includes(status)
+  ) {
+    return "/amsterdam.html";
+  }
+
+  return null;
+}
+
   async function hasUserJPlays(userId) {
     try {
       const token = localStorage.getItem("cooptrackToken");
@@ -481,10 +503,13 @@
       const currentUserId = currentUser?.id;
 
       // Try tribuna route first
-      let nextPage = null;
-      if (currentUserId) {
-        nextPage = resolveResponsePageForPlay(playForRouting, currentUserId);
-      }
+let nextPage = null;
+
+if (currentUserId) {
+  nextPage =
+    resolveResponsePageForPlay(playForRouting, currentUserId) ||
+    resolveReadOnlyPageForPlay(playForRouting, currentUserId);
+}
 
       // Fallback to full lienzo if no tribuna
       if (!nextPage) {
