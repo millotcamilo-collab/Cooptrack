@@ -86,23 +86,86 @@
                 };
             }
 
-            function renderPlayCardBox(play) {
-                if (window.CartaTipo?.renderPlayCardBox) {
-                    return window.CartaTipo.renderPlayCardBox({
-                        rank: play?.card_rank,
-                        suit: play?.card_suit,
-                        title: play?.play_text || "",
-                        status: play?.play_status || "",
-                        metas: []
-                    });
-                }
+function normalizeText(value) {
+  return String(value || "").trim().toUpperCase();
+}
 
-                return `
-          <div class="tribuna-card-fallback">
-            ${escapeHtml(play?.card_rank || "")}${escapeHtml(play?.card_suit || "")}
-          </div>
-        `;
-            }
+function formatTimeLabel(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+function renderTargetActions(play) {
+  const status = normalizeText(play?.play_status || play?.status);
+
+  if (status !== "SENT" && status !== "PENDING") return "";
+
+  return `
+    <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
+      <img src="/assets/icons/Sello40.gif" alt="Aceptar" />
+    </button>
+
+    <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
+      <img src="/assets/icons/stepback40.gif" alt="Rechazar" />
+    </button>
+  `;
+}
+
+function renderPlayCardBox(play) {
+  const parent = play?.parent_play || play?.parent || null;
+
+  const title =
+    parent?.play_text ||
+    play?.parent_play_text ||
+    play?.play_text ||
+    "";
+
+  const spadeMode = normalizeText(parent?.spade_mode || play?.spade_mode);
+  const isDeadline = spadeMode === "DEADLINE";
+
+  const timeValue = isDeadline
+    ? (parent?.end_date || play?.end_date)
+    : (parent?.start_date || play?.start_date);
+
+  const location = isDeadline
+    ? ""
+    : String(parent?.location || play?.location || "").trim();
+
+  const metas = [
+    timeValue
+      ? {
+          icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
+          text: formatTimeLabel(timeValue)
+        }
+      : null,
+
+    location
+      ? {
+          icon: "/assets/icons/LocGlobito80.gif",
+          text: location
+        }
+      : null
+  ].filter(Boolean);
+
+  if (window.CartaTipo?.renderPlayCardBox) {
+    return window.CartaTipo.renderPlayCardBox({
+      rank: play?.card_rank,
+      suit: play?.card_suit,
+      title,
+      status: play?.play_status || "",
+      metas,
+      actionsHtml: renderTargetActions(play)
+    });
+  }
+
+  return `
+    <div class="tribuna-card-fallback">
+      ${escapeHtml(play?.card_rank || "")}${escapeHtml(play?.card_suit || "")}
+    </div>
+  `;
+}
 
             async function loadPlay() {
                 if (!playId) {
