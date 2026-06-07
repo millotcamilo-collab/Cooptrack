@@ -104,8 +104,8 @@
   bottom: 0;
   height: 68%;
   background: rgba(245, 238, 220, 0.78);
-  backdrop-filter: sepia(45%) saturate(75%) brightness(1.08);
-  -webkit-backdrop-filter: sepia(45%) saturate(75%) brightness(1.08);
+  backdrop-filter: sepia(85%) saturate(55%) brightness(1.02);
+  -webkit-backdrop-filter: sepia(85%) saturate(55%) brightness(1.02);
   z-index: 3;
   pointer-events: none;
 }
