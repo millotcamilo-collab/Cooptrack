@@ -88,55 +88,58 @@
     return "";
   }
 
-  function renderPlayCardBox({
-    rank,
-    suit,
-    title = "",
-    metas = [],
-    status = "",
-    actionsHtml = ""
-  }) {
-    const safeRank = normalizeRank(rank);
-    const safeSuit = normalizeSuit(suit);
-    const figureSrc = getFigureImageSrc(safeRank, safeSuit);
+function renderPlayCardBox({
+  rank,
+  suit,
+  title = "",
+  metas = [],
+  status = "",
+  actionsHtml = ""
+}) {
+  const safeRank = normalizeRank(rank);
+  const safeSuit = normalizeSuit(suit);
+  const figureSrc = getFigureImageSrc(safeRank, safeSuit);
 
-    return `
-      <div class="lv2-play-card">
-        ${renderCardCorners(safeRank, safeSuit)}
+  return `
+    <div class="lv2-play-card">
+      ${renderCardCorners(safeRank, safeSuit)}
 
-        <div
-          class="lv2-play-card__inner lv2-play-card__inner--figure"
-          style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
-        >
-          ${title ? `
-            <div class="lv2-play-card__title">
-              ${escapeHtml(title)}
-            </div>
-          ` : ""}
+      <div
+        class="lv2-play-card__figure"
+        style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
+      ></div>
 
-          ${metas.map((meta) => `
-            <div class="lv2-play-card__meta">
-              ${meta.icon ? `
-                <img
-                  class="lv2-play-card__meta-icon"
-                  src="${escapeHtml(meta.icon)}"
-                  alt=""
-                />
-              ` : ""}
-              <span>${escapeHtml(meta.text || "")}</span>
-            </div>
-          `).join("")}
-
-          ${renderDecisionStamp(status)}
-        </div>
-        ${actionsHtml ? `
-          <div class="lv2-play-card__actions">
-            ${actionsHtml}
+      <div class="lv2-play-card__inner lv2-play-card__inner--figure">
+        ${title ? `
+          <div class="lv2-play-card__title">
+            ${escapeHtml(title)}
           </div>
         ` : ""}
+
+        ${metas.map((meta) => `
+          <div class="lv2-play-card__meta">
+            ${meta.icon ? `
+              <img
+                class="lv2-play-card__meta-icon"
+                src="${escapeHtml(meta.icon)}"
+                alt=""
+              />
+            ` : ""}
+            <span>${escapeHtml(meta.text || "")}</span>
+          </div>
+        `).join("")}
+
+        ${renderDecisionStamp(status)}
       </div>
-    `;
-  }
+
+      ${actionsHtml ? `
+        <div class="lv2-play-card__actions">
+          ${actionsHtml}
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
 
   window.CartaTipo = {
     normalizeRank,
