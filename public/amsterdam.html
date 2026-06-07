@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tribuna Amsterdam - CoopTrack</title>
+      <link rel="icon" type="image/png" href="/assets/icons/bigote.png" />
 
     <!-- Global styles -->
     <link rel="stylesheet" href="/css/global.css" />
@@ -206,6 +207,29 @@ async function updatePlayStatus(play, status) {
   window.location.href = `/mazo.html?id=${play.deck_id}`;
 }
 
+function renderTribunaPlacard(play) {
+  const host = document.getElementById("tribuna-placard");
+  if (!host || typeof window.renderPlacard !== "function") return;
+
+  const parent = play?.parent_play || null;
+
+  window.renderPlacard(host, {
+    page: "tribuna-amsterdam",
+    mode: "AMSTERDAM",
+    play,
+    currentUserId: Number(play?.target_user_id || 0),
+
+    photoUrl: play?.deck_image_url || "",
+    rank: "A",
+    suit: "HEART",
+    title: play?.deck_name || "Mazo",
+
+    showCurrency: false,
+    leftCards: [],
+    plays: [parent, play].filter(Boolean)
+  });
+}
+
             async function loadPlay() {
                 if (!playId) {
                     document.getElementById("tribuna-content").innerHTML =
@@ -257,6 +281,7 @@ if (play.parent_play_id) {
                 });
 
                 document.getElementById("tribuna-content").innerHTML = html;
+                renderTribunaPlacard(play);
                 bindTargetActions(play);
             }
 
