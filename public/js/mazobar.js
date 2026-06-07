@@ -19,19 +19,19 @@
     };
   }
 
-function getFigureImageSrc(rank, suit) {
-  const r = String(rank || "").toUpperCase();
-  const s = String(suit || "").toUpperCase();
+  function getFigureImageSrc(rank, suit) {
+    const r = String(rank || "").toUpperCase();
+    const s = String(suit || "").toUpperCase();
 
-  const map = {
-    K_HEART: "/assets/icons/KC.png",
-    K_SPADE: "/assets/icons/KP.png",
-    K_DIAMOND: "/assets/icons/KD.png",
-    K_CLUB: "/assets/icons/KT.png"
-  };
+    const map = {
+      K_HEART: "/assets/icons/KC.png",
+      K_SPADE: "/assets/icons/KP.png",
+      K_DIAMOND: "/assets/icons/KD.png",
+      K_CLUB: "/assets/icons/KT.png"
+    };
 
-  return map[`${r}_${s}`] || "";
-}
+    return map[`${r}_${s}`] || "";
+  }
 
   function goToAdministradoresPage() {
     const deckId = window.__currentDeck?.id;
@@ -380,78 +380,73 @@ function getFigureImageSrc(rank, suit) {
     return ["HEART", "SPADE", "DIAMOND", "CLUB"];
   }
 
-  function buildTopCardsHTML(enabledCards) {
-  if (!enabledCards.length) {
-    return `<div class="mazobar__topcards-empty"></div>`;
-  }
-
-  return enabledCards.map((card) => {
-    const imgSrc = getCardImageSrc(card.rank, card.suit);
-    const label = getCardLabel(card.rank, card.suit);
-
-    const rank = String(card.rank || "").toUpperCase();
-    const suit = String(card.suit || "").toUpperCase();
-    const playId = Number(card.id || 0);
-
-    if (rank === "K") {
-      const figureSrc = getFigureImageSrc(rank, suit);
-
-      return `
-        <div
-          class="mazobar__topcard-button mazobar__topcard-button--k"
-          title="${label}"
-          draggable="true"
-          data-play-id="${playId}"
-          data-rank="${rank}"
-          data-suit="${suit}"
-          style="--mazobar-card-figure: url('${figureSrc}');"
-        >
-          <div class="mazobar__topcard-corner mazobar__topcard-corner--tl">
-            <span>${rank}</span>
-            <span>${getSuitSymbol(suit)}</span>
-          </div>
-
-          <div class="mazobar__topcard-inner">
-            <div class="mazobar__topcard-portrait"></div>
-          </div>
-
-          <div class="mazobar__topcard-corner mazobar__topcard-corner--br">
-            <span>${rank}</span>
-            <span>${getSuitSymbol(suit)}</span>
-          </div>
-        </div>
-      `;
+  function buildTopCardsHTML(cards, options = {}) {
+    const draggable = options.draggable === true;
+    if (!cards.length) {
+      return `<div class="mazobar__topcards-empty"></div>`;
     }
 
-    if (imgSrc) {
-      return `
+    return cards.map((card) => {
+      const imgSrc = getCardImageSrc(card.rank, card.suit);
+      const label = getCardLabel(card.rank, card.suit);
+
+      const rank = String(card.rank || "").toUpperCase();
+      const suit = String(card.suit || "").toUpperCase();
+      const playId = Number(card.id || 0);
+
+      if (rank === "K") {
+        const figureSrc = getFigureImageSrc(rank, suit);
+
+        return `
+  <div
+    class="mazobar__topcard-button mazobar__topcard-button--k ${draggable ? "is-draggable" : "is-static"}"
+    title="${label}"
+    ${draggable ? 'draggable="true"' : 'draggable="false"'}
+    ${draggable ? `data-play-id="${playId}" data-rank="${rank}" data-suit="${suit}"` : ""}
+    style="--mazobar-card-figure: url('${figureSrc}');"
+  >
+    <div class="mazobar__topcard-corner mazobar__topcard-corner--tl">
+      <span>${rank}</span>
+      <span>${getSuitSymbol(suit)}</span>
+    </div>
+
+    <div class="mazobar__topcard-inner">
+      <div class="mazobar__topcard-portrait"></div>
+    </div>
+
+    <div class="mazobar__topcard-corner mazobar__topcard-corner--br">
+      <span>${rank}</span>
+      <span>${getSuitSymbol(suit)}</span>
+    </div>
+  </div>
+`;
+      }
+
+      if (imgSrc) {
+        return `
         <img
           src="${imgSrc}"
           alt="${label}"
           title="${label}"
-          class="mazobar__topcard-image"
-          draggable="true"
-          data-play-id="${playId}"
-          data-rank="${rank}"
-          data-suit="${suit}"
+          class="mazobar__topcard-image ${draggable ? "is-draggable" : "is-static"}"
+          ${draggable ? 'draggable="true"' : 'draggable="false"'}
+${draggable ? `data-play-id="${playId}" data-rank="${rank}" data-suit="${suit}"` : ""}
         />
       `;
-    }
+      }
 
-    return `
+      return `
       <div
-        class="mazobar__topcard-fallback"
+        class="mazobar__topcard-fallback ${draggable ? "is-draggable" : "is-static"}"
         title="${label}"
-        draggable="true"
-        data-play-id="${playId}"
-        data-rank="${rank}"
-        data-suit="${suit}"
+       ${draggable ? 'draggable="true"' : 'draggable="false"'}
+${draggable ? `data-play-id="${playId}" data-rank="${rank}" data-suit="${suit}"` : ""}
       >
         ${label}
       </div>
     `;
-  }).join("");
-}
+    }).join("");
+  }
 
   function hasPlayWithStatus(plays, statusList) {
     const expected = new Set(
@@ -737,10 +732,13 @@ function getFigureImageSrc(rank, suit) {
 
             <div class="mazobar__top-left">
               <div class="mazobar__topcards">
-                ${isAdminPage
-        ? buildTopCardsHTML(enabledCards)
-        : buildTopCardsHTML(corporateCards)
-      }
+${isAdminPage
+  ? buildTopCardsHTML(
+      enabledCards.filter((card) => String(card.rank || "").toUpperCase() === "K"),
+      { draggable: true }
+    )
+  : buildTopCardsHTML(corporateCards, { draggable: false })
+}
               </div>
               ${buildPageHeroIconHTML(normalizedPlays, currentUserId)}
               ${buildDeckPhotoHTML(deck, normalizedPlays, currentUserId)}
@@ -822,30 +820,30 @@ function getFigureImageSrc(rank, suit) {
     });
   }
 
-function hasArchivedPlays(plays) {
-  return plays.some((play) => {
-    const rank = String(play?.rank || "").toUpperCase();
-    const status = String(play?.status || "").toUpperCase();
+  function hasArchivedPlays(plays) {
+    return plays.some((play) => {
+      const rank = String(play?.rank || "").toUpperCase();
+      const status = String(play?.status || "").toUpperCase();
 
-    if (rank === "J") {
-      return ["CANCELLED", "REJECTED", "DELETED"].includes(status);
-    }
+      if (rank === "J") {
+        return ["CANCELLED", "REJECTED", "DELETED"].includes(status);
+      }
 
-    if (rank === "Q") {
-      return ["REJECTED", "CANCELLED"].includes(status);
-    }
+      if (rank === "Q") {
+        return ["REJECTED", "CANCELLED"].includes(status);
+      }
 
-    if (rank === "K") {
-      return ["QUIT", "FIRED", "REJECTED", "CANCELLED"].includes(status);
-    }
+      if (rank === "K") {
+        return ["QUIT", "FIRED", "REJECTED", "CANCELLED"].includes(status);
+      }
 
-    if (rank === "A") {
-      return ["REJECTED", "CANCELLED", "TRANSFERRED"].includes(status);
-    }
+      if (rank === "A") {
+        return ["REJECTED", "CANCELLED", "TRANSFERRED"].includes(status);
+      }
 
-    return false;
-  });
-}
+      return false;
+    });
+  }
 
   function buildCommandButtonsHTML(plays, currentUserId) {
     const pageType = getCurrentPageType();
@@ -858,7 +856,7 @@ function hasArchivedPlays(plays) {
 
     const mazoArchiveButton =
       isMazoPage && hasArchive
-      ? `
+        ? `
     <button
       id="btnMazoArchive"
       type="button"
@@ -873,7 +871,7 @@ function hasArchivedPlays(plays) {
       />
     </button>
   `
-      : "";
+        : "";
 
     const adminArchiveButton = isAdminPage
       ? `
@@ -1150,7 +1148,9 @@ ${isAdminPage ? `
       }
     });
 
-    document.querySelectorAll(".mazobar__topcard-image, .mazobar__topcard-fallback, .mazobar__topcard-button")
+    document.querySelectorAll(
+  ".mazobar__topcard-image.is-draggable, .mazobar__topcard-fallback.is-draggable, .mazobar__topcard-button.is-draggable"
+)
       .forEach((cardEl) => {
         cardEl.addEventListener("dragstart", (event) => {
           const playId = Number(cardEl.dataset.playId || 0);
