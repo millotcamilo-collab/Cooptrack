@@ -3,8 +3,8 @@
    para una única tribuna en las nuevas páginas de respuesta. */
 
 .tribuna-page {
-  min-height: calc(100vh - 72px);
-  padding: 92px 16px 20px;
+  min-height: calc(100vh - var(--topbar-height, 72px));
+  padding: 0 var(--page-padding-x) 20px;
   box-sizing: border-box;
   width: 100%;
 }
@@ -12,11 +12,31 @@
 .tribuna-page__root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--lv2-gap, 6px);
   width: 100%;
-  max-width: 980px;
+  max-width: 1200px;
   margin: 0 auto;
   box-sizing: border-box;
+}
+
+.tribuna__placard-zone {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tribuna__placard-zone .placard {
+  width: 100%;
+  display: block;
+}
+
+.tribuna__content-zone {
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
+}
+
+.tribuna-single {
+  width: 100%;
 }
 
 .tribuna__placard-zone,
@@ -40,11 +60,6 @@
   width: 100%;
 }
 
-.tribuna__content-zone .lv2-play-card,
-.tribuna__content-zone .lienzo-tribune,
-.tribuna__content-zone .lienzo-v2-placard {
-  margin: 0 auto;
-}
 
 .tribuna__actions-zone {
   display: flex;
@@ -102,16 +117,8 @@
   text-align: center;
 }
 
-.tribuna-page {
-  padding-left: var(--page-padding-x);
-  padding-right: var(--page-padding-x);
-}
 
-.tribuna-page__root {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-}
+
 
 .tribuna__placard-zone,
 .tribuna__content-zone {
