@@ -12,7 +12,7 @@
 .tribuna-page__root {
   display: flex;
   flex-direction: column;
-  gap: var(--lv2-gap, 6px);
+  gap: 0;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
