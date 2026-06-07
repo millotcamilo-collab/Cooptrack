@@ -185,6 +185,46 @@
                 }
             }
 
+function isMobileViewport() {
+  return window.matchMedia("(max-width: 900px)").matches;
+}
+
+function resolveAfterAmsterdamActionUrl(play, status) {
+  const deckId = Number(play?.deck_id || 0);
+  const rank = normalizeText(play?.card_rank || play?.rank);
+  const suit = normalizeText(play?.card_suit || play?.suit);
+  const normalizedStatus = normalizeText(status);
+
+  const deckQuery = deckId ? `?id=${deckId}` : "";
+
+  if (!isMobileViewport()) {
+    return `/mazo.html${deckQuery}`;
+  }
+
+  // Todo rechazo va al archivo
+  if (
+    ["REJECTED", "CANCELLED", "QUIT", "FIRED"].includes(normalizedStatus)
+  ) {
+    return deckId
+      ? `/mazoArchivo.html?id=${deckId}`
+      : "/archivo.html";
+  }
+
+  if (rank === "Q" && suit === "SPADE") {
+    return "/almanaque.html";
+  }
+
+  if (rank === "K") {
+    return `/mazo.html${deckQuery}`;
+  }
+
+  if (rank === "A") {
+    return `/mazoAdministradores.html${deckQuery}`;
+  }
+
+  return `/mazo.html${deckQuery}`;
+}
+
             async function updatePlayStatus(play, status) {
                 const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
                     method: "PATCH",
