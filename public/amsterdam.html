@@ -195,8 +195,25 @@ console.log(data);
                         `<div class="tribuna-error">No se pudo cargar la jugada.</div>`;
                     return;
                 }
+let play = data.play;
 
-                const html = window.renderAmsterdamMobile(data.play, {
+if (play.parent_play_id) {
+  const parentResponse = await fetch(`${API_BASE_URL}/plays/${play.parent_play_id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const parentData = await parentResponse.json();
+
+  if (parentResponse.ok && parentData.ok && parentData.play) {
+    play = {
+      ...play,
+      parent_play: parentData.play
+    };
+  }
+}
+                const html = window.renderAmsterdamMobile(play, {
                     resolveTargetUser,
                     renderPlayCardBox,
                     escapeHtml
