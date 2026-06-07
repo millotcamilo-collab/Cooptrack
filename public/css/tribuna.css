@@ -135,3 +135,8 @@
     padding-right: 24px;
   }
 }
+
+.tribuna-page--amsterdam {
+  --lv2-card-w: 205px;
+  --lv2-card-h: 274px;
+}
