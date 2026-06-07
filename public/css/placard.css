@@ -134,9 +134,20 @@
 }
 
 .placard__currency-suit {
-  height: 18px;
+  font-size: 0.92rem;
+  line-height: 1;
   width: auto;
-  object-fit: contain;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placard__currency-suit--red {
+  color: #c00000;
+}
+
+.placard__currency-suit--black {
+  color: #111;
 }
 
 .placard__currency-code {

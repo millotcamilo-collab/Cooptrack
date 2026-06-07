@@ -19,20 +19,6 @@
     }
   }
 
-  function getSuitButtonImageSrc(suit) {
-    const suitPart = getSuitFilePart(suit);
-    if (!suitPart) return null;
-
-    const map = {
-      corazon: "/assets/icons/cor40.gif",
-      pike: "/assets/icons/pik40.gif",
-      diamante: "/assets/icons/dia40.gif",
-      trebol: "/assets/icons/tre40.gif"
-    };
-
-    return map[suitPart] || null;
-  }
-
   function getBarConfig() {
     const custom = window.transversalBarConfig || {};
 
@@ -56,22 +42,7 @@
 
   function buildSuitButtonsHTML(config) {
     return config.suits.map((suit) => {
-      const imgSrc = getSuitButtonImageSrc(suit);
       const symbol = getSuitSymbol(suit);
-
-      if (imgSrc) {
-        return `
-          <button
-            type="button"
-            class="mazobar__cmd-btn mazobar__cmd-btn--suit bitacorabar__filter-btn"
-            data-${config.filterPrefix}-suit="${suit}"
-            title="${symbol}"
-            aria-label="${symbol}"
-          >
-            <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
-          </button>
-        `;
-      }
 
       return `
         <button

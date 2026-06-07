@@ -118,14 +118,7 @@
     return `${rank}${getSuitSymbol(suit)}`;
   }
 
-  function getCardImageSrc(rank, suit) {
-    const r = String(rank || "").toUpperCase();
-    const suitPart = getSuitFilePart(suit);
 
-    if (!r || !suitPart) return null;
-
-    return `/assets/icons/${r}${suitPart}.png`;
-  }
 
 function getCardImageSrc(rank, suit) {
   const r = String(rank || "").toUpperCase();
@@ -622,27 +615,12 @@ ${draggable ? `data-play-id="${playId}" data-rank="${rank}" data-suit="${suit}"`
   }
 
   function buildAdminSuitButtonsHTML() {
-    const suits = ["HEART", "SPADE", "DIAMOND", "CLUB"];
+  const suits = ["HEART", "SPADE", "DIAMOND", "CLUB"];
 
-    return suits.map((suit) => {
-      const imgSrc = getSuitButtonImageSrc(suit);
-      const symbol = getSuitSymbol(suit);
+  return suits.map((suit) => {
+    const symbol = getSuitSymbol(suit);
 
-      if (imgSrc) {
-        return `
-        <button
-          type="button"
-          class="mazobar__cmd-btn mazobar__cmd-btn--suit mazobar__cmd-btn--admin-suit"
-          data-admin-suit="${suit}"
-          title="${symbol}"
-          aria-label="${symbol}"
-        >
-          <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
-        </button>
-      `;
-      }
-
-      return `
+    return `
       <button
         type="button"
         class="mazobar__cmd-btn mazobar__cmd-btn--suit mazobar__cmd-btn--admin-suit"
@@ -653,8 +631,8 @@ ${draggable ? `data-play-id="${playId}" data-rank="${rank}" data-suit="${suit}"`
         ${symbol}
       </button>
     `;
-    }).join("");
-  }
+  }).join("");
+}
 
   function buildDeckPhotoHTML(deck, plays, currentUserId) {
     const avatarSrc = getDeckAvatarSrc(deck);
@@ -780,17 +758,9 @@ ${isAdminPage
             <div class="mazobar__top-center">
               <div class="mazobar__titleline">
                 <span class="mazobar__title-rank">A</span>
-                <img
-                  src="/assets/icons/cor40.gif"
-                  alt="♥"
-                  class="mazobar__title-suit"
-                />
+                <span class="mazobar__title-suit" aria-hidden="true">♥</span>
                 <span class="mazobar__title-name">${deckName}</span>
-                <img
-                  src="/assets/icons/dia40.gif"
-                  alt="♦"
-                  class="mazobar__balance-icon"
-                />
+                <span class="mazobar__balance-icon" aria-hidden="true">♦</span>
                 <span class="mazobar__balance-currency">${currencyCode}</span>
                 <span class="mazobar__balance-value">${balance}</span>
               </div>
@@ -930,22 +900,7 @@ ${isAdminPage
     const suitButtons = isMazoPage
       ? getVisibleCommandSuits()
         .map((suit) => {
-          const imgSrc = getSuitButtonImageSrc(suit);
           const symbol = getSuitSymbol(suit);
-
-          if (imgSrc) {
-            return `
-              <button
-                type="button"
-                class="mazobar__cmd-btn mazobar__cmd-btn--suit"
-                data-command-suit="${suit}"
-                title="${symbol}"
-                aria-label="${symbol}"
-              >
-                <img src="${imgSrc}" alt="${symbol}" class="mazobar__cmd-icon" />
-              </button>
-            `;
-          }
 
           return `
             <button

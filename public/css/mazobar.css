@@ -135,10 +135,17 @@
   color: #7d0000;
 }
 
-.mazobar__title-suit {
-  height: 22px;
+.mazobar__title-suit,
+.mazobar__balance-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  line-height: 1;
   width: auto;
-  display: block;
+  height: auto;
+  margin: 0 4px;
+  color: #c00000;
 }
 
 .mazobar__title-name {
@@ -148,11 +155,6 @@
   line-height: 1.2;
 }
 
-.mazobar__balance-icon {
-  height: 18px;
-  width: auto;
-  display: block;
-  margin-left: 8px;
 }
 
 .mazobar__balance-currency {
@@ -213,15 +215,35 @@
 }
 
 .mazobar__cmd-btn--suit {
-  height: 24px;
-  width: auto;
-  padding: 4px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 1rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
 }
 
 .mazobar__cmd-icon {
   height: 24px;
   width: auto;
   display: block;
+}
+
+[data-command-suit="HEART"],
+[data-command-suit="DIAMOND"],
+[data-admin-suit="HEART"],
+[data-admin-suit="DIAMOND"] {
+  color: #c00000;
+}
+
+[data-command-suit="SPADE"],
+[data-command-suit="CLUB"],
+[data-admin-suit="SPADE"],
+[data-admin-suit="CLUB"] {
+  color: #111;
 }
 
 /* DERECHA: jokers */

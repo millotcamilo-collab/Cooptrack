@@ -12,28 +12,17 @@
     return String(value || "").trim().toUpperCase();
   }
 
-  function getSuitIconSrc(suit) {
-    const s = normalizeSuit(suit);
-
-    if (s === "HEART") return "/assets/icons/cor40.gif";
-    if (s === "SPADE") return "/assets/icons/pik40.gif";
-    if (s === "DIAMOND") return "/assets/icons/dia40.gif";
-    if (s === "CLUB") return "/assets/icons/tre40.gif";
-
-    return "";
-  }
-
   function buildCurrencyHTML(currencySuit, currencyCode, currencyName) {
     if (!currencyCode && !currencyName) return "";
 
-    const iconSrc = getSuitIconSrc(currencySuit || "DIAMOND");
+    const symbol = getSuitSymbol(currencySuit || "DIAMOND");
+    const colorClass = ["HEART", "DIAMOND"].includes(normalizeSuit(currencySuit))
+      ? "placard__currency-suit--red"
+      : "placard__currency-suit--black";
 
     return `
       <div class="placard__currency">
-        ${iconSrc
-        ? `<img src="${escapeHtml(iconSrc)}" alt="♦" class="placard__currency-suit" />`
-        : ""
-      }
+        <span class="placard__currency-suit ${colorClass}">${escapeHtml(symbol)}</span>
         ${currencyCode
         ? `<span class="placard__currency-code">${escapeHtml(currencyCode)}</span>`
         : ""
@@ -472,7 +461,6 @@ if (rank === "Q" && suit === "HEART") {
 
     const rank = String(config?.rank || "").trim() || "A";
     const suit = normalizeSuit(config?.suit || "HEART");
-    const suitIcon = getSuitIconSrc(suit);
     const title = String(config?.title || "").trim() || "Mazo";
 
     const currencyCode = String(config?.currencyCode || "").trim();
