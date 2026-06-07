@@ -52,7 +52,7 @@
 
     const parsed = play.parsed || parsePlayCode(play.play_code);
 
-    return {
+    const normalized = {
       id: play.id || null,
       rank: parsed.rank || play.card_rank || "",
       suit: parsed.suit || play.card_suit || "",
@@ -66,6 +66,22 @@
       parsed,
       raw: play.play_code || ""
     };
+
+    // [DEBUG] si quieres ver detalles de cada play normalizado, descomentar:
+    // if (String(normalized.rank || "").toUpperCase() === "K") {
+    //   console.log("[normalizePlay] K detectada:", {
+    //     id: normalized.id,
+    //     rank: normalized.rank,
+    //     suit: normalized.suit,
+    //     action: normalized.action,
+    //     status: normalized.status,
+    //     created_by: normalized.created_by_user_id,
+    //     target_user: normalized.target_user_id,
+    //     flow: normalized.parsed?.flow
+    //   });
+    // }
+
+    return normalized;
   }
 
   function getSuitSymbol(suit) {
@@ -229,12 +245,15 @@
   function getEnabledTopCards(plays) {
     return plays.filter((p) => {
       const rank = String(p.rank || "").toUpperCase();
-      const action = String(p.action || "").toLowerCase();
+      const action = String(p.action || "").toLowerCase().trim();
       const status = String(p.status || "").toUpperCase();
 
       if (status !== "ACTIVE") return false;
 
-      return (rank === "A" || rank === "K") && action === "puedejugar";
+      // Detecta si action es "puedejugar" (case-insensitive)
+      const isPuedeJugar = action === "puedejugar" || action === "puede jugar";
+
+      return (rank === "A" || rank === "K") && isPuedeJugar;
     });
   }
 
@@ -257,7 +276,8 @@
         if (finalStatuses.includes(status)) return false;
 
         if (flow === "acl") return false;
-        if (action === "puedejugar") return false;
+        // Excluye cartas que tienen accion puedejugar (case-insensitive)
+        if (action === "puedejugar" || action === "puede jugar") return false;
 
         let ownerId = 0;
 
@@ -723,6 +743,14 @@ ${draggable ? `data-play-id="${playId}" data-rank="${rank}" data-suit="${suit}"`
     const currencyCode = getCurrencyCode(deck);
     const balance = getApprovedClubTotal(normalizedPlays);
     const isAdminPage = getCurrentPageType() === "administradores";
+
+    // [DEBUG LOGS]
+    console.log("[buildMazobarHTML] pageType:", getCurrentPageType());
+    console.log("[buildMazobarHTML] currentUserId:", currentUserId);
+    console.log("[buildMazobarHTML] normalizedPlays count:", normalizedPlays.length);
+    console.log("[buildMazobarHTML] enabledCards (puedejugar K/A):", enabledCards);
+    console.log("[buildMazobarHTML] corporateCards (A/K del usuario):", corporateCards);
+    console.log("[buildMazobarHTML] isAdminPage:", isAdminPage);
 
     return `
     <section class="mazobar">
