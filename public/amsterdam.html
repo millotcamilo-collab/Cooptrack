@@ -167,6 +167,45 @@ function renderPlayCardBox(play) {
   `;
 }
 
+function bindTargetActions(play) {
+  const acceptBtn = document.getElementById("lienzo-accept-btn");
+  const rejectBtn = document.getElementById("lienzo-reject-btn");
+
+  if (acceptBtn) {
+    acceptBtn.addEventListener("click", async () => {
+      await updatePlayStatus(play, "APPROVED");
+    });
+  }
+
+  if (rejectBtn) {
+    rejectBtn.addEventListener("click", async () => {
+      await updatePlayStatus(play, "REJECTED");
+    });
+  }
+}
+
+async function updatePlayStatus(play, status) {
+  const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      play_status: status
+    })
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok || !data?.ok) {
+    alert("No se pudo actualizar la jugada.");
+    return;
+  }
+
+  window.location.href = `/mazo.html?id=${play.deck_id}`;
+}
+
             async function loadPlay() {
                 if (!playId) {
                     document.getElementById("tribuna-content").innerHTML =
@@ -187,8 +226,6 @@ function renderPlayCardBox(play) {
                 });
 
                 const data = await response.json();
-                console.log("PLAY CARGADA");
-console.log(data);
 
                 if (!response.ok || !data.ok || !data.play) {
                     document.getElementById("tribuna-content").innerHTML =
@@ -220,6 +257,7 @@ if (play.parent_play_id) {
                 });
 
                 document.getElementById("tribuna-content").innerHTML = html;
+                bindTargetActions(play);
             }
 
             await loadPlay();
