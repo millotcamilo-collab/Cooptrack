@@ -229,12 +229,12 @@
   function getEnabledTopCards(plays) {
     return plays.filter((p) => {
       const rank = String(p.rank || "").toUpperCase();
-      const action = String(p.action || "");
+      const action = String(p.action || "").toLowerCase();
       const status = String(p.status || "").toUpperCase();
 
       if (status !== "ACTIVE") return false;
 
-      return (rank === "A" || rank === "K") && action === "puedeJugar";
+      return (rank === "A" || rank === "K") && action === "puedejugar";
     });
   }
 
