@@ -451,23 +451,36 @@
   position: relative;
   width: 54px;
   height: 80px;
-
   background: #fff;
   color: #111;
-
   border: 1px solid #111;
   border-radius: 6px;
-
   box-sizing: border-box;
   overflow: hidden;
-
-  cursor: grab;
   flex: 0 0 auto;
+  cursor: default;
 }
 
-.mazobar__topcard-button:active {
+.mazobar__topcard-button.is-draggable {
+  cursor: grab;
+}
+
+.mazobar__topcard-button.is-draggable:active {
   cursor: grabbing;
 }
+
+.mazobar__topcard-image.is-static,
+.mazobar__topcard-fallback.is-static,
+.mazobar__topcard-button.is-static {
+  cursor: default;
+}
+
+.mazobar__topcard-image.is-draggable,
+.mazobar__topcard-fallback.is-draggable,
+.mazobar__topcard-button.is-draggable {
+  cursor: grab;
+}
+
 
 .mazobar__topcard-inner {
   position: absolute;
