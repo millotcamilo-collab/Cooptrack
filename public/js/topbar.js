@@ -362,12 +362,25 @@ function resolveReadOnlyPageForPlay(play, currentUserId) {
   const isSource =
     Number(play?.created_by_user_id || 0) === Number(currentUserId);
 
-  if (
-    rank === "Q" &&
-    suit === "SPADE" &&
-    isSource &&
-    ["APPROVED", "REJECTED", "CANCELLED"].includes(status)
-  ) {
+  if (!isSource) return null;
+
+  const finalStates = [
+    "APPROVED",
+    "REJECTED",
+    "CANCELLED",
+    "QUIT",
+    "FIRED"
+  ];
+
+  if (rank === "Q" && suit === "SPADE" && finalStates.includes(status)) {
+    return "/amsterdam.html";
+  }
+
+  if (rank === "K" && finalStates.includes(status)) {
+    return "/amsterdam.html";
+  }
+
+  if (rank === "A" && finalStates.includes(status)) {
     return "/amsterdam.html";
   }
 
