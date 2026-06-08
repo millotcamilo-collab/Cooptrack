@@ -932,60 +932,67 @@
     }
 
     function getCorporateCardsForCurrentUser(plays, currentUserId) {
-        const viewerId = Number(currentUserId || 0);
-        if (!viewerId) return [];
+  const viewerId = Number(currentUserId || 0);
+  if (!viewerId) return [];
 
-        const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
+  const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
 
-        return plays
-            .filter((p) => {
-const parsed = p.parsed || parsePlayCode(p.play_code || "");
+  return plays
+    .filter((p) => {
+      const parsed = p.parsed || parsePlayCode(p.play_code || "");
 
-const rank = normalizeRank(p.card_rank || p.rank || parsed.rank);
-const suit = normalizeSuit(p.card_suit || p.suit || parsed.suit);
-const status = normalizeRank(p.play_status || p.status);
-const flow = String(parsed.flow || "").toLowerCase();
-const action = String(parsed.action || p.action || "").toLowerCase();
+      const rank = normalizeRank(p.card_rank || p.rank || parsed.rank);
+      const suit = normalizeSuit(p.card_suit || p.suit || parsed.suit);
+      const status = normalizeRank(p.play_status || p.status);
+      const flow = String(parsed.flow || "").toLowerCase();
+      const action = String(parsed.action || p.action || "").toLowerCase();
 
-                if (!["A", "K"].includes(rank)) return false;
-                if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
-                if (finalStatuses.includes(status)) return false;
+      if (!["A", "K"].includes(rank)) return false;
+      if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+      if (finalStatuses.includes(status)) return false;
+      if (flow === "acl") return false;
+      if (action === "puedejugar" || action === "puede jugar") return false;
 
-                if (flow === "acl") return false;
-                // Excluye cartas que tienen accion puedejugar (case-insensitive)
-                if (action === "puedejugar" || action === "puede jugar") return false;
+      let ownerId = 0;
 
-                let ownerId = 0;
+      if (rank === "A") {
+        ownerId =
+          Number(p.target_user_id || 0) ||
+          Number(p.created_by_user_id || 0) ||
+          Number(parsed.userId || 0);
 
-                if (rank === "A") {
-                    ownerId =
-                        Number(p.target_user_id || 0) ||
-                        Number(p.created_by_user_id || 0) ||
-                        Number(p.parsed?.userId || 0);
+        return ownerId === viewerId;
+      }
 
-                    return ownerId === viewerId;
-                }
+      if (rank === "K") {
+        ownerId =
+          Number(p.target_user_id || 0) ||
+          Number(p.created_by_user_id || 0) ||
+          Number(parsed.userId || 0);
 
-                if (rank === "K") {
-                    ownerId = Number(
-                        p.target_user_id ||
-                        p.created_by_user_id ||
-                        p.parsed?.userId ||
-                        0
-                    );
+        return ["ACTIVE", "APPROVED", "SENT", "PENDING"].includes(status) &&
+          ownerId === viewerId;
+      }
 
-                    return ["ACTIVE", "APPROVED", "SENT", "PENDING"].includes(status) &&
-                        ownerId === viewerId;
-                }
+      return false;
+    })
+    .map((p) => {
+      const parsed = p.parsed || parsePlayCode(p.play_code || "");
 
-                return false;
-            })
-
-            .filter((card, index, self) => {
-                const key = `${normalizeRank(card.card_rank || card.rank)}_${normalizeSuit(card.card_suit || card.suit)}`;
-                return index === self.findIndex((c) => `${c.rank}_${c.suit}` === key);
-            });
-    }
+      return {
+        id: p.id,
+        card_rank: normalizeRank(p.card_rank || p.rank || parsed.rank),
+        card_suit: normalizeSuit(p.card_suit || p.suit || parsed.suit)
+      };
+    })
+    .filter((card, index, self) => {
+      const key = `${card.card_rank}_${card.card_suit}`;
+      return index === self.findIndex((c) => {
+        return `${c.card_rank}_${c.card_suit}` === key;
+      });
+    })
+    .sort(compareCorporateCards);
+}
 
 
     function renderPlayCardBox(play) {
