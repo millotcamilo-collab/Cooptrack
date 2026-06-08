@@ -151,12 +151,16 @@
                 ].filter(Boolean);
 
                 if (window.CartaTipo?.renderPlayCardBox) {
+                    const ownerUser = resolveTargetUser(play);
+
                     return window.CartaTipo.renderPlayCardBox({
                         rank: play?.card_rank,
                         suit: play?.card_suit,
                         title,
                         status: play?.play_status || "",
                         metas,
+                        ownerUser,
+                        ownerCards: [],
                         actionsHtml: renderTargetActions(play)
                     });
                 }
@@ -185,45 +189,45 @@
                 }
             }
 
-function isMobileViewport() {
-  return window.matchMedia("(max-width: 900px)").matches;
-}
+            function isMobileViewport() {
+                return window.matchMedia("(max-width: 900px)").matches;
+            }
 
-function resolveAfterAmsterdamActionUrl(play, status) {
-  const deckId = Number(play?.deck_id || 0);
-  const rank = normalizeText(play?.card_rank || play?.rank);
-  const suit = normalizeText(play?.card_suit || play?.suit);
-  const normalizedStatus = normalizeText(status);
+            function resolveAfterAmsterdamActionUrl(play, status) {
+                const deckId = Number(play?.deck_id || 0);
+                const rank = normalizeText(play?.card_rank || play?.rank);
+                const suit = normalizeText(play?.card_suit || play?.suit);
+                const normalizedStatus = normalizeText(status);
 
-  const deckQuery = deckId ? `?id=${deckId}` : "";
+                const deckQuery = deckId ? `?id=${deckId}` : "";
 
-  if (!isMobileViewport()) {
-    return `/mazo.html${deckQuery}`;
-  }
+                if (!isMobileViewport()) {
+                    return `/mazo.html${deckQuery}`;
+                }
 
-  // Todo rechazo va al archivo
-  if (
-    ["REJECTED", "CANCELLED", "QUIT", "FIRED"].includes(normalizedStatus)
-  ) {
-    return deckId
-      ? `/mazoArchivo.html?id=${deckId}`
-      : "/archivo.html";
-  }
+                // Todo rechazo va al archivo
+                if (
+                    ["REJECTED", "CANCELLED", "QUIT", "FIRED"].includes(normalizedStatus)
+                ) {
+                    return deckId
+                        ? `/mazoArchivo.html?id=${deckId}`
+                        : "/archivo.html";
+                }
 
-  if (rank === "Q" && suit === "SPADE") {
-    return "/almanaque.html";
-  }
+                if (rank === "Q" && suit === "SPADE") {
+                    return "/almanaque.html";
+                }
 
-  if (rank === "K") {
-    return `/mazo.html${deckQuery}`;
-  }
+                if (rank === "K") {
+                    return `/mazo.html${deckQuery}`;
+                }
 
-  if (rank === "A") {
-    return `/mazoAdministradores.html${deckQuery}`;
-  }
+                if (rank === "A") {
+                    return `/mazoAdministradores.html${deckQuery}`;
+                }
 
-  return `/mazo.html${deckQuery}`;
-}
+                return `/mazo.html${deckQuery}`;
+            }
 
             async function updatePlayStatus(play, status) {
                 const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
