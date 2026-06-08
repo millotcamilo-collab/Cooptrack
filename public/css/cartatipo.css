@@ -2,8 +2,8 @@
 
 .lv2-play-card {
   position: relative;
-  width: var(--lv2-card-w, 157px);
-  height: var(--lv2-card-h, 210px);
+  width: var(--lv2-card-w, 200px);
+  height: var(--lv2-card-h, 279px);
   background: #fff;
   color: #111;
   border: 2px solid #111;
