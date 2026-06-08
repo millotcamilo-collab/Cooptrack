@@ -19,7 +19,7 @@ window.renderAmsterdamMobile = function renderAmsterdamMobile(play, helpers = {}
     <div class="qqpica-card-stack__bottom">
       <div id="qq-heart-slot">
   ${typeof renderQHeartBox === "function" ? renderQHeartBox(play) : ""}
-</div>X
+</div>
     </div>
 
   </div>
