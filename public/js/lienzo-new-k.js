@@ -324,7 +324,7 @@ function renderBackgroundCard(card, index) {
         const ghostWrap = document.createElement("div");
         const draft = window.__lienzoNewDraft;
 
-        ghostWrap.innerHTML = `
+ghostWrap.innerHTML = `
   <img
     class="lienzo-card-image"
     src="${escapeHtml(getCardImageSrc(draft?.card_rank, draft?.card_suit))}"
@@ -704,27 +704,24 @@ function getSuitSymbol(suit) {
         });
     }
 
-    function getDraftOwnerUser(draft) {
-        if (Number(draft?.target_user_id || 0)) {
-            return {
-                id: Number(draft.target_user_id),
-                nickname: draft.target_user_nickname || `Usuario ${draft.target_user_id}`,
-                profile_photo_url:
-                    draft.target_user_profile_photo_url || "/assets/icons/singeta120.gif"
-            };
-        }
+function getDraftOwnerUser(draft) {
 
-        if (Number(draft?.created_by_user_id || 0)) {
-            return {
-                id: Number(draft.created_by_user_id),
-                nickname: draft.created_by_nickname || `Usuario ${draft.created_by_user_id}`,
-                profile_photo_url:
-                    draft.created_by_profile_photo_url || "/assets/icons/singeta120.gif"
-            };
-        }
+  if (draft?.target_user) {
+    return draft.target_user;
+  }
 
-        return getCurrentUser();
-    }
+  if (Number(draft?.created_by_user_id || 0)) {
+    return {
+      id: Number(draft.created_by_user_id),
+      nickname: draft.created_by_nickname || `Usuario ${draft.created_by_user_id}`,
+      profile_photo_url:
+        draft.created_by_profile_photo_url ||
+        "/assets/icons/singeta120.gif"
+    };
+  }
+
+  return getCurrentUser();
+}
 
     function getDraftOwnerCards(draft) {
         const ownerUser = getDraftOwnerUser(draft);
@@ -738,7 +735,7 @@ function renderKSourceCardImage(draft, id = "") {
 
   const html = `
     <img
-      class="lienzo-card-image"
+      class="lienzo-card-image lienzo-source-card-image"
       src="${escapeHtml(src)}"
       alt=""
     />
