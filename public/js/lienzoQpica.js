@@ -931,6 +931,61 @@
         return "";
     }
 
+    function getCorporateCardsForCurrentUser(plays, currentUserId) {
+        const viewerId = Number(currentUserId || 0);
+        if (!viewerId) return [];
+
+        const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
+
+        return plays
+            .filter((p) => {
+                const rank = String(p.rank || "").toUpperCase();
+                const suit = String(p.suit || "").toUpperCase();
+                const status = String(p.status || "").toUpperCase();
+                const flow = String(p.parsed?.flow || "").toLowerCase();
+                const action = String(p.action || "").toLowerCase();
+
+                if (!["A", "K"].includes(rank)) return false;
+                if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+                if (finalStatuses.includes(status)) return false;
+
+                if (flow === "acl") return false;
+                // Excluye cartas que tienen accion puedejugar (case-insensitive)
+                if (action === "puedejugar" || action === "puede jugar") return false;
+
+                let ownerId = 0;
+
+                if (rank === "A") {
+                    ownerId =
+                        Number(p.target_user_id || 0) ||
+                        Number(p.created_by_user_id || 0) ||
+                        Number(p.parsed?.userId || 0);
+
+                    return ownerId === viewerId;
+                }
+
+                if (rank === "K") {
+                    ownerId = Number(
+                        p.target_user_id ||
+                        p.created_by_user_id ||
+                        p.parsed?.userId ||
+                        0
+                    );
+
+                    return ["ACTIVE", "APPROVED", "SENT", "PENDING"].includes(status) &&
+                        ownerId === viewerId;
+                }
+
+                return false;
+            })
+
+            .filter((card, index, self) => {
+                const key = `${card.rank}_${card.suit}`;
+                return index === self.findIndex((c) => `${c.rank}_${c.suit}` === key);
+            });
+    }
+
+
     function renderPlayCardBox(play) {
         const parentPlay = getPlayById(play?.parent_play_id);
 
@@ -956,7 +1011,7 @@
                 : resolveSourceUser(play);
 
         const ownerCards = ownerUser?.id
-            ? deriveOwnedCorporateCards(getAllPlays(), Number(ownerUser.id))
+            ? getCorporateCardsForUser(getAllPlays(), Number(ownerUser.id))
             : [];
 
         return window.CartaTipo.renderPlayCardBox({
@@ -1587,6 +1642,11 @@ ${parentJSpadeText
                     rank: "J",
                     suit: "SPADE",
                     title: parentJSpadeText,
+                    ownerUser: user,
+                    ownerCards: getCorporateCardsForCurrentUser(
+                        getAllPlays(),
+                        Number(user?.id || 0)
+                    ),
                     metas: [
                         parentPlay?.start_date
                             ? {
