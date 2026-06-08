@@ -401,3 +401,10 @@ min-height: var(--lv2-tribune-h);
      min-height: var(--lv2-tribune-h);
   }
 }
+
+.lienzo-card-image {
+  width: var(--lv2-card-w);
+  height: var(--lv2-card-h);
+  object-fit: contain;
+  display: block;
+}

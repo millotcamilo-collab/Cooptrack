@@ -338,7 +338,8 @@ function renderBackgroundCard(card, index) {
         ghostNode.style.position = "fixed";
         ghostNode.style.left = rect.left + "px";
         ghostNode.style.top = rect.top + "px";
-        ghostNode.style.width = "360px";
+        ghostNode.style.width = "var(--lv2-card-w)";
+ghostNode.style.height = "var(--lv2-card-h)";
         ghostNode.style.margin = "0";
         ghostNode.style.zIndex = "9999";
         ghostNode.style.transition = "all 450ms ease";
