@@ -163,15 +163,15 @@
         return data;
     }
 
-function isMobileViewport() {
-  const params = new URLSearchParams(window.location.search);
+    function isMobileViewport() {
+        const params = new URLSearchParams(window.location.search);
 
-  if (params.get("mobile") === "1") {
-    return true;
-  }
+        if (params.get("mobile") === "1") {
+            return true;
+        }
 
-  return window.matchMedia("(max-width: 768px)").matches;
-}
+        return window.matchMedia("(max-width: 768px)").matches;
+    }
 
     function getFigureImageSrc(rank, suit) {
         const r = normalizeRank(rank);
@@ -955,6 +955,7 @@ function isMobileViewport() {
             suit,
             title: parentText,
             status: play?.play_status,
+            ownerUser,
             metas: [
                 timeLabel
                     ? {
@@ -2544,7 +2545,7 @@ ${parentJSpadeText
         mountPlacardFromDataset();
         bindLienzoActions(play);
         bindLienzoDropzones(play);
-    } 
+    }
 
     async function openLienzoByPlayId(playId) {
         const play = getPlayById(playId);

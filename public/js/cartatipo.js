@@ -25,29 +25,29 @@
     return "";
   }
 
-function getFigureImageSrc(rank, suit) {
-  const r = normalizeRank(rank);
-  const s = normalizeSuit(suit);
+  function getFigureImageSrc(rank, suit) {
+    const r = normalizeRank(rank);
+    const s = normalizeSuit(suit);
 
-  const map = {
-    J_HEART: "/assets/icons/JC.png",
-    J_SPADE: "/assets/icons/JP.png",
-    J_DIAMOND: "/assets/icons/JD.png",
-    J_CLUB: "/assets/icons/JT.png",
+    const map = {
+      J_HEART: "/assets/icons/JC.png",
+      J_SPADE: "/assets/icons/JP.png",
+      J_DIAMOND: "/assets/icons/JD.png",
+      J_CLUB: "/assets/icons/JT.png",
 
-    Q_HEART: "/assets/icons/QC.png",
-    Q_SPADE: "/assets/icons/QP.png",
-    Q_DIAMOND: "/assets/icons/QD.png",
-    Q_CLUB: "/assets/icons/QT.png",
+      Q_HEART: "/assets/icons/QC.png",
+      Q_SPADE: "/assets/icons/QP.png",
+      Q_DIAMOND: "/assets/icons/QD.png",
+      Q_CLUB: "/assets/icons/QT.png",
 
-    K_HEART: "/assets/icons/KC.png",
-    K_SPADE: "/assets/icons/KP.png",
-    K_DIAMOND: "/assets/icons/KD.png",
-    K_CLUB: "/assets/icons/KT.png"
-  };
+      K_HEART: "/assets/icons/KC.png",
+      K_SPADE: "/assets/icons/KP.png",
+      K_DIAMOND: "/assets/icons/KD.png",
+      K_CLUB: "/assets/icons/KT.png"
+    };
 
-  return map[`${r}_${s}`] || "";
-}
+    return map[`${r}_${s}`] || "";
+  }
 
   function renderCardCorners(rank, suit) {
     const symbol = getSuitSymbol(suit);
@@ -93,47 +93,52 @@ function getFigureImageSrc(rank, suit) {
     return "";
   }
 
-function renderPlayCardBox({
-  rank,
-  suit,
-  title = "",
-  metas = [],
-  status = "",
-  ownerUser = null,
-  actionsHtml = ""
-}) {
-  const safeRank = normalizeRank(rank);
-  const safeSuit = normalizeSuit(suit);
-  const figureSrc = getFigureImageSrc(safeRank, safeSuit);
+  function renderPlayCardBox({
+    rank,
+    suit,
+    title = "",
+    metas = [],
+    status = "",
+    ownerUser = null,
+    actionsHtml = ""
+  }) {
+    const safeRank = normalizeRank(rank);
+    const safeSuit = normalizeSuit(suit);
+    const figureSrc = getFigureImageSrc(safeRank, safeSuit);
+    
+    const ownerUser =
+      Number(play?.target_user_id || 0)
+        ? resolveTargetUser(play)
+        : resolveSourceUser(play);
 
-const ownerHtml = ownerUser ? `
+    const ownerHtml = ownerUser ? `
   <div class="lv2-play-card__owner">
     <img
       class="lv2-play-card__owner-avatar"
       src="${escapeHtml(
-        ownerUser.profile_photo_url ||
-        "/assets/icons/singeta120.gif"
-      )}"
+      ownerUser.profile_photo_url ||
+      "/assets/icons/singeta120.gif"
+    )}"
       alt="${escapeHtml(
-        ownerUser.nickname ||
-        ownerUser.full_name ||
-        ownerUser.name ||
-        "Usuario"
-      )}"
+      ownerUser.nickname ||
+      ownerUser.full_name ||
+      ownerUser.name ||
+      "Usuario"
+    )}"
     />
 
     <span class="lv2-play-card__owner-name">
       ${escapeHtml(
-        ownerUser.nickname ||
-        ownerUser.full_name ||
-        ownerUser.name ||
-        "Usuario"
-      )}
+      ownerUser.nickname ||
+      ownerUser.full_name ||
+      ownerUser.name ||
+      "Usuario"
+    )}
     </span>
   </div>
 ` : "";
 
-  return `
+    return `
     <div class="lv2-play-card">
       ${renderCardCorners(safeRank, safeSuit)}
 
@@ -174,7 +179,7 @@ ${ownerHtml}
       ` : ""}
     </div>
   `;
-}
+  }
 
   window.CartaTipo = {
     normalizeRank,
