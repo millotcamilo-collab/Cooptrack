@@ -755,8 +755,7 @@ function getSourceKImageSrc(rank, suit) {
     }
 
     function renderKSourceCardImage(draft, id = "") {
-        const src = getCardImageSrc(draft?.card_rank || "K", draft?.card_suit);
-        //const src = "/assets/icons/Kpike.png";
+        const src = getSourceKImageSrc(draft?.card_rank || "K", draft?.card_suit);
 
         const html = `
     <img
