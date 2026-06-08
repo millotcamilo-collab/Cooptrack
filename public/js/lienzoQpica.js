@@ -955,6 +955,9 @@
                 ? resolveTargetUser(play)
                 : resolveSourceUser(play);
 
+        const ownerCards = ownerUser?.id
+            ? deriveOwnedCorporateCards(getAllPlays(), Number(ownerUser.id))
+            : [];
 
         return window.CartaTipo.renderPlayCardBox({
             rank,
@@ -962,6 +965,7 @@
             title: parentText,
             status: play?.play_status,
             ownerUser,
+            ownerCards,
             metas: [
                 timeLabel
                     ? {
