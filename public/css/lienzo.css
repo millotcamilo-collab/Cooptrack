@@ -20,7 +20,7 @@
   --lv2-card-w: 200px;
   --lv2-card-h: 279px;
 
-  --lv2-corporate-h: 120px;
+  --lv2-corporate-h: var(--lv2-card-h);
   --lv2-action-h: 30px;
   --lv2-tribune-h: 320px;
 }
@@ -119,13 +119,13 @@ min-height: var(--lv2-tribune-h);
 .lienzo-tribune__corporates {
   position: absolute;
   top: 18px;
-  left: 18px;
+  left: 50%;
+  transform: translateX(-50%);
 
-  width: 150px;
-  height: 126px;
+  width: var(--lv2-card-w);
+  height: var(--lv2-card-h);
 
   z-index: 1;
-
   pointer-events: none;
 }
 
@@ -133,11 +133,10 @@ min-height: var(--lv2-tribune-h);
   position: absolute;
   top: 0;
 
-  height: var(--lv2-corporate-h);
-  width: auto;
+  width: var(--lv2-card-w);
+  height: var(--lv2-card-h);
 
   border-radius: 6px;
-
   object-fit: contain;
 }
 

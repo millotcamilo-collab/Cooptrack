@@ -305,7 +305,7 @@ function renderBackgroundCard(card, index) {
       class="lienzo-tribune__corporate-card"
       src="${escapeHtml(src)}"
       alt=""
-      style="left:${index * 18}px;"
+      style="left:${index * 10}px;"
     />
   `;
 }
