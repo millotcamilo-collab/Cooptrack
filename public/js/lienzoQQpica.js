@@ -1372,10 +1372,12 @@
     <div class="lv2-play-card lv2-play-card--qheart">
       ${window.CartaTipo.renderCardCorners("Q", attachedSuit)}
 
-     <div
-  class="lv2-play-card__inner lv2-play-card__inner--figure"
+<div
+  class="lv2-play-card__figure"
   style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
->
+></div>
+
+<div class="lv2-play-card__inner lv2-play-card__inner--figure">
 
         <div class="lv2-play-card__title">
           ${escapeHtml(title)}
@@ -2255,10 +2257,7 @@
   }
 
   function renderTargetPlayerPanel(play) {
-    const user = resolveTargetUser(play);
-    const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-    const userName =
-      user?.nickname || user?.full_name || user?.name || "Invitado";
+
 
     const baseRank = normalizeRank(play?.card_rank || play?.rank);
     const baseSuit = normalizeSuit(play?.card_suit || play?.suit);
@@ -2280,23 +2279,6 @@
 
       <div class="lienzo-tribune__corporates"></div>
 
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(userPhoto)}"
-          alt="${escapeHtml(userName)}"
-        />
-
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(userName)}
-        </div>
-
-        ${settlementTopbarIconHtml ? `
-          <div class="lienzo-tribune__identity-actions">
-            ${settlementTopbarIconHtml}
-          </div>
-        ` : ""}
-      </div>
 
       <div class="lienzo-tribune__stage">
         <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
