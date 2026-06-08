@@ -87,6 +87,22 @@
                 };
             }
 
+function renderQHeartBox(play) {
+  return window.CartaTipo.renderPlayCardBox({
+    rank: "Q",
+    suit: "HEART",
+    title: "Paga Suarez",
+    metas: [
+      { text: "Ticket" },
+      { text: "UYU 500" },
+      { text: "2026-05-30" }
+    ],
+    ownerUser: resolveTargetUser(play),
+    ownerCards: [],
+    actionsHtml: renderTargetActions(play)
+  });
+}
+
             function normalizeText(value) {
                 return String(value || "").trim().toUpperCase();
             }
@@ -342,6 +358,7 @@
                 const html = window.renderAmsterdamMobile(play, {
                     resolveTargetUser,
                     renderPlayCardBox,
+                    renderQHeartBox,
                     escapeHtml
                 });
 

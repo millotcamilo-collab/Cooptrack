@@ -1,6 +1,7 @@
 window.renderAmsterdamMobile = function renderAmsterdamMobile(play, helpers = {}) {
   const {
-    renderPlayCardBox
+    renderPlayCardBox,
+    renderQHeartBox
   } = helpers;
 
   return `
@@ -16,7 +17,9 @@ window.renderAmsterdamMobile = function renderAmsterdamMobile(play, helpers = {}
     </div>
 
     <div class="qqpica-card-stack__bottom">
-      <div id="qq-heart-slot"></div>
+      <div id="qq-heart-slot">
+  ${typeof renderQHeartBox === "function" ? renderQHeartBox(play) : ""}
+</div>X
     </div>
 
   </div>
