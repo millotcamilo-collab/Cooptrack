@@ -200,6 +200,9 @@ ${(actionsHtml || decisionHtml) ? `
     ${actionsHtml}
   </div>
 ` : ""}
+    </div>
+  `;
+  }
 
   window.CartaTipo = {
     normalizeRank,
