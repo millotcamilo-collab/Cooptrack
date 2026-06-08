@@ -216,7 +216,7 @@
   position: relative;
   z-index: 5;
 
-  margin-top: auto;
+  margin-top: 4px;
   margin-bottom: 22px;
 
   display: flex;
