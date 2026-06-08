@@ -76,18 +76,22 @@
 
     if (safeStatus === "APPROVED") {
       return `
-        <div class="lv2-play-card__decision-stamp">
-          <img src="/assets/icons/Sello80.gif" alt="Aprobada" />
-        </div>
-      `;
+      <img
+        class="lv2-play-card__decision-icon"
+        src="/assets/icons/Sello80.gif"
+        alt="Aprobada"
+      />
+    `;
     }
 
     if (safeStatus === "REJECTED") {
       return `
-        <div class="lv2-play-card__decision-stamp">
-          <img src="/assets/icons/stepback80.gif" alt="Rechazada" />
-        </div>
-      `;
+      <img
+        class="lv2-play-card__decision-icon"
+        src="/assets/icons/stepback80.gif"
+        alt="Rechazada"
+      />
+    `;
     }
 
     return "";
@@ -100,25 +104,25 @@
     metas = [],
     status = "",
     ownerUser = null,
-      ownerCards = [],
+    ownerCards = [],
     actionsHtml = ""
   }) {
     const safeRank = normalizeRank(rank);
     const safeSuit = normalizeSuit(suit);
     const figureSrc = getFigureImageSrc(safeRank, safeSuit);
 
-const ownerCardsHtml = Array.isArray(ownerCards) && ownerCards.length
-  ? `
+    const ownerCardsHtml = Array.isArray(ownerCards) && ownerCards.length
+      ? `
     <div class="lv2-play-card__owner-cards">
       ${ownerCards.map((card) => {
         const r = normalizeRank(card.card_rank || card.rank);
         const s = normalizeSuit(card.card_suit || card.suit);
-const redClass =
-  s === "HEART" || s === "DIAMOND"
-    ? " lv2-play-card__owner-card--red"
-    : "";
+        const redClass =
+          s === "HEART" || s === "DIAMOND"
+            ? " lv2-play-card__owner-card--red"
+            : "";
 
-return `
+        return `
   <span class="lv2-play-card__owner-card${redClass}">
     ${escapeHtml(r)}${escapeHtml(getSuitSymbol(s))}
   </span>
@@ -126,7 +130,7 @@ return `
       }).join("")}
     </div>
   `
-  : "";
+      : "";
 
     const ownerHtml = ownerUser ? `
   <div class="lv2-play-card__owner">
@@ -186,13 +190,12 @@ return `
           </div>
         `).join("")}
 
-        ${renderDecisionStamp(status)}
-
 ${ownerHtml}
       </div>
 
       ${actionsHtml ? `
         <div class="lv2-play-card__actions">
+                ${renderDecisionStamp(status)}
           ${actionsHtml}
         </div>
       ` : ""}
