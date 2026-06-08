@@ -254,12 +254,24 @@
         return Number(aceHolder?.id || 0) === getCurrentUserId();
     }
 
+    function getPlayOwnerUser(play) {
+        if (Number(play?.target_user_id || 0)) {
+            return resolveUser(play.target_user_id, `Usuario ${play.target_user_id || ""}`);
+        }
+
+        return resolveSourceUser(play);
+    }
+
     function renderJHeartPlayCard(play, actionsHtml = "") {
+        const ownerUser = getPlayOwnerUser(play);
+
         return window.CartaTipo.renderPlayCardBox({
             rank: "J",
             suit: "HEART",
             title: String(play?.play_text || "").trim(),
             status: play?.play_status || "",
+            ownerUser,
+            ownerCards: getCardsOwnedByUser(ownerUser.id),
             actionsHtml
         });
     }

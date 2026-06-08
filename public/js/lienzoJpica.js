@@ -60,6 +60,65 @@
     };
   }
 
+  function resolveTargetUser(play) {
+    return {
+      id: Number(play?.target_user_id || 0),
+      nickname: play?.target_user_nickname || "Destinatario",
+      profile_photo_url:
+        play?.target_user_profile_photo_url || "/assets/icons/singeta120.gif"
+    };
+  }
+
+  function getPlayOwnerUser(play) {
+    return Number(play?.target_user_id || 0)
+      ? resolveTargetUser(play)
+      : getSourceUser(play);
+  }
+
+  function compareCorporateCards(a, b) {
+    const order = {
+      A_HEART: 1,
+      A_SPADE: 2,
+      A_DIAMOND: 3,
+      A_CLUB: 4,
+      K_HEART: 5,
+      K_SPADE: 6,
+      K_DIAMOND: 7,
+      K_CLUB: 8
+    };
+
+    const aKey = `${normalizeRank(a?.card_rank)}_${normalizeSuit(a?.card_suit)}`;
+    const bKey = `${normalizeRank(b?.card_rank)}_${normalizeSuit(b?.card_suit)}`;
+
+    return (order[aKey] || 999) - (order[bKey] || 999);
+  }
+
+  function getCardsOwnedByUser(userId) {
+    const ownerId = Number(userId || 0);
+    if (!ownerId) return [];
+
+    return getAllPlays()
+      .map((play) => ({
+        rank: normalizeRank(play?.card_rank || play?.rank),
+        suit: normalizeSuit(play?.card_suit || play?.suit),
+        ownerId:
+          Number(play?.target_user_id || 0) || Number(play?.created_by_user_id || 0)
+      }))
+      .filter((card) => {
+        return (
+          ["A", "K"].includes(card.rank) &&
+          ["HEART", "SPADE", "DIAMOND", "CLUB"].includes(card.suit) &&
+          card.ownerId === ownerId
+        );
+      })
+      .map((card) => ({ card_rank: card.rank, card_suit: card.suit }))
+      .filter((card, index, self) => {
+        const key = `${card.card_rank}_${card.card_suit}`;
+        return index === self.findIndex((c) => `${c.card_rank}_${c.card_suit}` === key);
+      })
+      .sort(compareCorporateCards);
+  }
+
   function hasDroppedQHeart() {
     const selection = window.__lienzoJpicaDropSelection || null;
     return selection?.rank === "Q" && selection?.suit === "HEART";
@@ -134,6 +193,8 @@
             rank: "J",
             suit: "SPADE",
             title: play.play_text || "Sin texto",
+            ownerUser: getPlayOwnerUser(play),
+            ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
             metas: [
               play.start_date
                 ? {
@@ -253,6 +314,8 @@ function bindSourceDrag(play) {
                   rank: "J",
                   suit: "SPADE",
                   title: play.play_text || "Sin texto",
+                  ownerUser: getPlayOwnerUser(play),
+                  ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
                   metas: [
                     play.start_date
                       ? {

@@ -404,6 +404,19 @@ function renderBackgroundCard(card, index = 0) {
         return "ACTIVE";
     }
 
+    function getPlayOwnerUser(play) {
+        return Number(play?.target_user_id || 0)
+            ? resolveTargetUser(play)
+            : resolveSourceUser(play);
+    }
+
+    function getPlayOwnerCards(play) {
+        const ownerUser = getPlayOwnerUser(play);
+        if (!ownerUser?.id) return [];
+
+        return deriveOwnedCorporateCards(getAllPlays(), Number(ownerUser.id)).sort(compareCorporateCards);
+    }
+
     function getActionIcon(name) {
         return window.ICONS?.actions?.[name] || "";
     }
@@ -483,12 +496,15 @@ function renderBackgroundCard(card, index = 0) {
 function renderKCardBox(play, actionsHtml = "") {
     const rank = normalizeRank(play?.card_rank || play?.rank || "K");
     const suit = normalizeSuit(play?.card_suit || play?.suit);
+    const ownerUser = getPlayOwnerUser(play);
 
     return window.CartaTipo.renderPlayCardBox({
         rank,
         suit,
         title: "",
         status: play?.play_status || "",
+        ownerUser,
+        ownerCards: getPlayOwnerCards(play),
         actionsHtml
     });
 }

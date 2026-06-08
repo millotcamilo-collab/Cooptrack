@@ -534,6 +534,19 @@
     };
   }
 
+  function getPlayOwnerUser(play) {
+    return Number(play?.target_user_id || 0)
+      ? resolveTargetUser(play)
+      : resolveSourceUser(play);
+  }
+
+  function getPlayOwnerCards(play) {
+    const ownerUser = getPlayOwnerUser(play);
+    if (!ownerUser?.id) return [];
+
+    return deriveOwnedCorporateCards(getAllPlays(), Number(ownerUser.id)).sort(compareCorporateCards);
+  }
+
   function isCurrentUserSource(play) {
     const currentUser = getCurrentUser();
     const currentUserId = Number(currentUser?.id || 0);
@@ -2154,6 +2167,8 @@
       suit,
       title: parentText,
       status: play?.play_status,
+      ownerUser: getPlayOwnerUser(play),
+      ownerCards: getPlayOwnerCards(play),
       metas: [
         timeLabel
           ? {

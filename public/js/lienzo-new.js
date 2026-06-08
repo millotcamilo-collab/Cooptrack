@@ -433,6 +433,34 @@ function renderV2CorporateCard(card, index) {
   `;
   }
 
+  function getDraftOwnerUser(draft) {
+    if (Number(draft?.target_user_id || 0)) {
+      return {
+        id: Number(draft.target_user_id),
+        nickname: draft.target_user_nickname || `Usuario ${draft.target_user_id}`,
+        profile_photo_url:
+          draft.target_user_profile_photo_url || "/assets/icons/singeta120.gif"
+      };
+    }
+
+    if (Number(draft?.created_by_user_id || 0)) {
+      return {
+        id: Number(draft.created_by_user_id),
+        nickname: draft.created_by_nickname || `Usuario ${draft.created_by_user_id}`,
+        profile_photo_url:
+          draft.created_by_profile_photo_url || "/assets/icons/singeta120.gif"
+      };
+    }
+
+    return getCurrentUser();
+  }
+
+  function getDraftOwnerCards(draft) {
+    const ownerUser = getDraftOwnerUser(draft);
+    if (!ownerUser?.id) return [];
+    return deriveOwnedCorporateCards(getAllPlays(), Number(ownerUser.id)).sort(compareCorporateCards);
+  }
+
   function renderPlayCardBox(draft, options = {}) {
   const showActions = options.showActions !== false;
   const parentPlay = draft?.parentPlay || null;
@@ -459,6 +487,8 @@ function renderV2CorporateCard(card, index) {
     rank: backgroundRank,
     suit: backgroundSuit,
     title: parentText,
+    ownerUser: getDraftOwnerUser(draft),
+    ownerCards: getDraftOwnerCards(draft),
     metas: [
       timeLabel
         ? {
