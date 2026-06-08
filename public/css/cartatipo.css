@@ -210,3 +210,36 @@
   filter: none !important;
   mix-blend-mode: normal !important;
 }
+
+.lv2-play-card__owner {
+  position: relative;
+  z-index: 5;
+
+  margin-top: auto;
+  margin-bottom: 22px;
+
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  min-width: 0;
+}
+
+.lv2-play-card__owner-avatar {
+  width: 22px;
+  height: 22px;
+  object-fit: cover;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.lv2-play-card__owner-name {
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.1;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
