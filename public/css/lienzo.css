@@ -408,3 +408,21 @@ min-height: var(--lv2-tribune-h);
   object-fit: contain;
   display: block;
 }
+
+.qqpica-card-stack {
+  position: relative;
+  width: var(--lv2-card-w);
+  min-height: calc(var(--lv2-card-h) * 1.7);
+}
+
+.qqpica-card-stack__top {
+  position: relative;
+  z-index: 2;
+}
+
+.qqpica-card-stack__bottom {
+  position: absolute;
+  left: 0;
+  top: calc(var(--lv2-card-h) * 0.55);
+  z-index: 1;
+}
