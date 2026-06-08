@@ -105,11 +105,7 @@
     const safeRank = normalizeRank(rank);
     const safeSuit = normalizeSuit(suit);
     const figureSrc = getFigureImageSrc(safeRank, safeSuit);
-    
-    const ownerUser =
-      Number(play?.target_user_id || 0)
-        ? resolveTargetUser(play)
-        : resolveSourceUser(play);
+
 
     const ownerHtml = ownerUser ? `
   <div class="lv2-play-card__owner">

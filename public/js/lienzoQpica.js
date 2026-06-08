@@ -950,6 +950,12 @@
             ? ""
             : String(parentPlay?.location || "").trim();
 
+        const ownerUser =
+            Number(play?.target_user_id || 0)
+                ? resolveTargetUser(play)
+                : resolveSourceUser(play);
+
+
         return window.CartaTipo.renderPlayCardBox({
             rank,
             suit,
