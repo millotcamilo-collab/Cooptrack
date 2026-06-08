@@ -158,29 +158,26 @@
 .tribuna-page--amsterdam .qqpica-card-stack {
   position: relative;
   width: var(--lv2-card-w);
-  min-height: calc(var(--lv2-card-h) * 1.58);
+  min-height: calc(var(--lv2-card-h) * 1.68);
   margin: 0 auto;
 }
 
 .tribuna-page--amsterdam .qqpica-card-stack__top {
   position: relative;
   z-index: 1;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.tribuna-page--amsterdam .qqpica-card-stack__top.is-peeking {
+  cursor: grabbing;
 }
 
 .tribuna-page--amsterdam .qqpica-card-stack__bottom {
   position: absolute;
   left: 0;
-  top: calc(var(--lv2-card-h) * 0.50);
-  z-index: 2;
-}
-
-.qqpica-card-stack__top {
-  z-index: 3;
-  touch-action: pan-y;
-  cursor: grab;
-}
-
-.qqpica-card-stack__bottom {
+  top: calc(var(--lv2-card-h) * 0.68);
   z-index: 2;
   pointer-events: none;
 }
