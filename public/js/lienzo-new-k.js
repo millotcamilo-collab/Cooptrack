@@ -335,7 +335,7 @@
 const sourceImg = source.querySelector("img");
 const sourceSrc =
   sourceImg?.getAttribute("src") ||
-  getCardImageSrc(draft?.card_rank, draft?.card_suit);
+  getSourceKImageSrc(draft?.card_rank, draft?.card_suit);
 
 ghostWrap.innerHTML = `
   <img
@@ -610,6 +610,17 @@ ghostWrap.innerHTML = `
         return map[`${r}_${s}`] || "/assets/icons/DorsoAzul.png";
     }
 
+function getSourceKImageSrc(rank, suit) {
+  const r = normalizeRank(rank);
+  const s = normalizeSuit(suit);
+
+  if (r === "K" && s === "SPADE") {
+    return "/assets/icons/Kpike.png";
+  }
+
+  return getCardImageSrc(r, s);
+}
+
     function getDeckAvatarSrc(deck) {
         console.log("deck completo =", deck);
         console.log("posibles campos imagen =", {
@@ -744,7 +755,7 @@ ghostWrap.innerHTML = `
     }
 
     function renderKSourceCardImage(draft, id = "") {
-        const src = getCardImageSrc(draft?.card_rank || "K", draft?.card_suit);
+        const src = getSourceKImageSrc(draft?.card_rank || "K", draft?.card_suit);
 
         const html = `
     <img
