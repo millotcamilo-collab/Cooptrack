@@ -737,13 +737,15 @@ function renderKCardBox(draft, showActions = false, id = "") {
     const rank = normalizeRank(draft?.card_rank || "K");
     const suit = normalizeSuit(draft?.card_suit);
 
-    const cardHtml = window.CartaTipo.renderPlayCardBox({
-        rank,
-        suit,
-        title: "",
-        status: draft?.status || "",
-        actionsHtml: showActions ? renderActionButtons() : ""
-    });
+const cardHtml = window.CartaTipo.renderPlayCardBox({
+  rank,
+  suit,
+  title: "",
+  status: draft?.status || "",
+  ownerUser: getDraftOwnerUser(draft),
+  ownerCards: getDraftOwnerCards(draft),
+  actionsHtml: showActions ? renderActionButtons() : ""
+});
 
     if (!id) return cardHtml;
 
