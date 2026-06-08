@@ -332,10 +332,15 @@
         const ghostWrap = document.createElement("div");
         const draft = window.__lienzoNewDraft;
 
-        ghostWrap.innerHTML = `
+const sourceImg = source.querySelector("img");
+const sourceSrc =
+  sourceImg?.getAttribute("src") ||
+  getCardImageSrc(draft?.card_rank, draft?.card_suit);
+
+ghostWrap.innerHTML = `
   <img
-    class="lienzo-card-image"
-    src="${escapeHtml(getCardImageSrc(draft?.card_rank, draft?.card_suit))}"
+    class="lienzo-card-image lienzo-source-card-image"
+    src="${escapeHtml(sourceSrc)}"
     alt=""
   />
 `;
