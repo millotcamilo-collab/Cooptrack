@@ -99,11 +99,39 @@ function renderPlayCardBox({
   title = "",
   metas = [],
   status = "",
+  ownerUser = null,
   actionsHtml = ""
 }) {
   const safeRank = normalizeRank(rank);
   const safeSuit = normalizeSuit(suit);
   const figureSrc = getFigureImageSrc(safeRank, safeSuit);
+
+const ownerHtml = ownerUser ? `
+  <div class="lv2-play-card__owner">
+    <img
+      class="lv2-play-card__owner-avatar"
+      src="${escapeHtml(
+        ownerUser.profile_photo_url ||
+        "/assets/icons/singeta120.gif"
+      )}"
+      alt="${escapeHtml(
+        ownerUser.nickname ||
+        ownerUser.full_name ||
+        ownerUser.name ||
+        "Usuario"
+      )}"
+    />
+
+    <span class="lv2-play-card__owner-name">
+      ${escapeHtml(
+        ownerUser.nickname ||
+        ownerUser.full_name ||
+        ownerUser.name ||
+        "Usuario"
+      )}
+    </span>
+  </div>
+` : "";
 
   return `
     <div class="lv2-play-card">
@@ -135,6 +163,8 @@ function renderPlayCardBox({
         `).join("")}
 
         ${renderDecisionStamp(status)}
+
+${ownerHtml}
       </div>
 
       ${actionsHtml ? `
