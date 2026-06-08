@@ -173,3 +173,14 @@
   top: calc(var(--lv2-card-h) * 0.50);
   z-index: 2;
 }
+
+.qqpica-card-stack__top {
+  z-index: 3;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.qqpica-card-stack__bottom {
+  z-index: 2;
+  pointer-events: none;
+}

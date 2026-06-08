@@ -431,3 +431,23 @@ min-height: var(--lv2-tribune-h);
   display: flex;
   justify-content: center;
 }
+
+.tribuna-page--amsterdam .lienzo-tribune {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  width: 100%;
+  min-height: calc(var(--lv2-card-h) * 1.75 + 40px);
+  height: auto;
+
+  overflow: visible;
+}
+
+.tribuna-page--amsterdam .lienzo-tribune__stage {
+  width: 100%;
+  min-height: calc(var(--lv2-card-h) * 1.75);
+  display: flex;
+  justify-content: center;
+  overflow: visible;
+}

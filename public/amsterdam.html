@@ -87,21 +87,21 @@
                 };
             }
 
-function renderQHeartBox(play) {
-  return window.CartaTipo.renderPlayCardBox({
-    rank: "Q",
-    suit: "HEART",
-    title: "Paga Suarez",
-    metas: [
-      { text: "Ticket" },
-      { text: "UYU 500" },
-      { text: "2026-05-30" }
-    ],
-    ownerUser: resolveTargetUser(play),
-    ownerCards: [],
-    actionsHtml: renderTargetActions(play)
-  });
-}
+            function renderQHeartBox(play) {
+                return window.CartaTipo.renderPlayCardBox({
+                    rank: "Q",
+                    suit: "HEART",
+                    title: "Paga Suarez",
+                    metas: [
+                        { text: "Ticket" },
+                        { text: "UYU 500" },
+                        { text: "2026-05-30" }
+                    ],
+                    ownerUser: resolveTargetUser(play),
+                    ownerCards: [],
+                    actionsHtml: renderTargetActions(play)
+                });
+            }
 
             function normalizeText(value) {
                 return String(value || "").trim().toUpperCase();
@@ -363,6 +363,9 @@ function renderQHeartBox(play) {
                 });
 
                 document.getElementById("tribuna-content").innerHTML = html;
+                if (typeof window.enableAmsterdamPeek === "function") {
+                    window.enableAmsterdamPeek();
+                }
                 renderTribunaPlacard(play, deckState);
                 bindTargetActions(play);
             }
