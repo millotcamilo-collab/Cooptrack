@@ -732,28 +732,47 @@ function getSuitSymbol(suit) {
         return deriveOwnedCorporateCards(getAllPlays(), Number(ownerUser.id)).sort(compareCorporateCards);
     }
 
+function renderKSourceCardImage(draft, id = "") {
+  const src = getCardImageSrc(draft?.card_rank || "K", draft?.card_suit);
+
+  const html = `
+    <img
+      class="lienzo-card-image"
+      src="${escapeHtml(src)}"
+      alt=""
+    />
+  `;
+
+  if (!id) return html;
+
+  return `
+    <div id="${escapeHtml(id)}">
+      ${html}
+    </div>
+  `;
+}
 
 function renderKCardBox(draft, showActions = false, id = "") {
-    const rank = normalizeRank(draft?.card_rank || "K");
-    const suit = normalizeSuit(draft?.card_suit);
+  const rank = normalizeRank(draft?.card_rank || "K");
+  const suit = normalizeSuit(draft?.card_suit);
 
-const cardHtml = window.CartaTipo.renderPlayCardBox({
-  rank,
-  suit,
-  title: "",
-  status: draft?.status || "",
-  ownerUser: getDraftOwnerUser(draft),
-  ownerCards: getDraftOwnerCards(draft),
-  actionsHtml: showActions ? renderActionButtons() : ""
-});
+  const cardHtml = window.CartaTipo.renderPlayCardBox({
+    rank,
+    suit,
+    title: "",
+    status: draft?.status || "",
+    ownerUser: getDraftOwnerUser(draft),
+    ownerCards: getDraftOwnerCards(draft),
+    actionsHtml: showActions ? renderActionButtons() : ""
+  });
 
-    if (!id) return cardHtml;
+  if (!id) return cardHtml;
 
-    return `
-      <div id="${escapeHtml(id)}">
-        ${cardHtml}
-      </div>
-    `;
+  return `
+    <div id="${escapeHtml(id)}">
+      ${cardHtml}
+    </div>
+  `;
 }
 
 function renderUsersPanel() {
@@ -858,7 +877,7 @@ function renderUsersPanel() {
         ${delivered
           ? ""
           : `
-${renderKCardBox(draft, false, "lienzo-source-card")}
+${renderKSourceCardImage(draft, "lienzo-source-card")}
           `
         }
       </div>
