@@ -939,11 +939,13 @@
 
         return plays
             .filter((p) => {
-                const rank = String(p.rank || "").toUpperCase();
-                const suit = String(p.suit || "").toUpperCase();
-                const status = String(p.status || "").toUpperCase();
-                const flow = String(p.parsed?.flow || "").toLowerCase();
-                const action = String(p.action || "").toLowerCase();
+const parsed = p.parsed || parsePlayCode(p.play_code || "");
+
+const rank = normalizeRank(p.card_rank || p.rank || parsed.rank);
+const suit = normalizeSuit(p.card_suit || p.suit || parsed.suit);
+const status = normalizeRank(p.play_status || p.status);
+const flow = String(parsed.flow || "").toLowerCase();
+const action = String(parsed.action || p.action || "").toLowerCase();
 
                 if (!["A", "K"].includes(rank)) return false;
                 if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
@@ -980,7 +982,7 @@
             })
 
             .filter((card, index, self) => {
-                const key = `${card.rank}_${card.suit}`;
+                const key = `${normalizeRank(card.card_rank || card.rank)}_${normalizeSuit(card.card_suit || card.suit)}`;
                 return index === self.findIndex((c) => `${c.rank}_${c.suit}` === key);
             });
     }
