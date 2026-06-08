@@ -87,21 +87,46 @@
                 };
             }
 
-            function renderQHeartBox(play) {
-                return window.CartaTipo.renderPlayCardBox({
-                    rank: "Q",
-                    suit: "HEART",
-                    title: "Paga Suarez",
-                    metas: [
-                        { text: "Ticket" },
-                        { text: "UYU 500" },
-                        { text: "2026-05-30" }
-                    ],
-                    ownerUser: resolveTargetUser(play),
-                    ownerCards: [],
-                    actionsHtml: renderTargetActions(play)
-                });
-            }
+function renderSenderCard(play) {
+  const parent = play?.parent_play;
+
+  if (!parent) return "";
+
+  return window.CartaTipo.renderPlayCardBox({
+    rank: parent.card_rank,
+    suit: parent.card_suit,
+
+    title: parent.play_text || "",
+
+    metas: [],
+
+    ownerUser: null,
+    ownerCards: [],
+
+    actionsHtml: ""
+  });
+}
+
+function renderEconomicCard(play) {
+  const rank = normalizeText(play?.card_rank || play?.rank);
+  const suit = normalizeText(play?.card_suit || play?.suit);
+
+  if (!(rank === "Q" && suit === "SPADE")) return "";
+
+  return window.CartaTipo.renderPlayCardBox({
+    rank: "Q",
+    suit: "HEART",
+    title: "Paga Suarez",
+    metas: [
+      { text: "Ticket" },
+      { text: "UYU 500" },
+      { text: "2026-05-30" }
+    ],
+    ownerUser: resolveTargetUser(play),
+    ownerCards: [],
+    actionsHtml: renderTargetActions(play)
+  });
+}
 
             function normalizeText(value) {
                 return String(value || "").trim().toUpperCase();
@@ -358,7 +383,8 @@
                 const html = window.renderAmsterdamMobile(play, {
                     resolveTargetUser,
                     renderPlayCardBox,
-                    renderQHeartBox,
+                    renderEconomicCard,
+                    renderSenderCard,
                     escapeHtml
                 });
 
