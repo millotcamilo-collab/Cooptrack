@@ -109,11 +109,11 @@
   `;
     }
 
-function renderUserTribune(user, cards = []) {
-  const name = user?.nickname || "Usuario";
-  const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+    function renderUserTribune(user, cards = []) {
+        const name = user?.nickname || "Usuario";
+        const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
 
-  return `
+        return `
     <section class="lienzo-tribune">
 
       <div class="lienzo-tribune__corporates">
@@ -136,17 +136,17 @@ function renderUserTribune(user, cards = []) {
 
     </section>
   `;
-}
-function resolveLienzoPageForCard(rank, suit) {
-  const r = normalizeRank(rank);
-  const s = normalizeSuit(suit);
+    }
+    function resolveLienzoPageForCard(rank, suit) {
+        const r = normalizeRank(rank);
+        const s = normalizeSuit(suit);
 
-  if (r === "K") return "/lienzoK.html";
-  if (r === "Q" && s === "SPADE") return "/lienzoQpica.html";
-  if (r === "A") return "/lienzo.html";
+        if (r === "K") return "/lienzoK.html";
+        if (r === "Q" && s === "SPADE") return "/lienzoQpica.html";
+        if (r === "A") return "/lienzo.html";
 
-  return "/lienzo.html";
-}
+        return "/lienzo.html";
+    }
 
     async function handleSavePlay() {
         try {
@@ -288,19 +288,27 @@ function resolveLienzoPageForCard(rank, suit) {
     function buildSourceCardsScene(draft) {
         const ownedCards = getCurrentUserCorporateCards();
 
+        const activeRank = normalizeRank(draft?.card_rank);
+        const activeSuit = normalizeSuit(draft?.card_suit);
+
         return {
-            backgroundCards: ownedCards,
+            backgroundCards: ownedCards.filter((card) => {
+                const rank = normalizeRank(card?.card_rank);
+                const suit = normalizeSuit(card?.card_suit);
+
+                return !(rank === activeRank && suit === activeSuit);
+            }),
             activeCard: {
-                card_rank: normalizeRank(draft?.card_rank),
-                card_suit: normalizeSuit(draft?.card_suit)
+                card_rank: activeRank,
+                card_suit: activeSuit
             }
         };
     }
 
-function renderBackgroundCard(card, index) {
-  const src = getCardImageSrc(card?.card_rank, card?.card_suit);
+    function renderBackgroundCard(card, index) {
+        const src = getCardImageSrc(card?.card_rank, card?.card_suit);
 
-  return `
+        return `
     <img
       class="lienzo-tribune__corporate-card"
       src="${escapeHtml(src)}"
@@ -308,7 +316,7 @@ function renderBackgroundCard(card, index) {
       style="left:${index * 10}px;"
     />
   `;
-}
+    }
 
 
     function animateCardToUser(user) {
@@ -324,7 +332,7 @@ function renderBackgroundCard(card, index) {
         const ghostWrap = document.createElement("div");
         const draft = window.__lienzoNewDraft;
 
-ghostWrap.innerHTML = `
+        ghostWrap.innerHTML = `
   <img
     class="lienzo-card-image"
     src="${escapeHtml(getCardImageSrc(draft?.card_rank, draft?.card_suit))}"
@@ -339,7 +347,7 @@ ghostWrap.innerHTML = `
         ghostNode.style.left = rect.left + "px";
         ghostNode.style.top = rect.top + "px";
         ghostNode.style.width = "var(--lv2-card-w)";
-ghostNode.style.height = "var(--lv2-card-h)";
+        ghostNode.style.height = "var(--lv2-card-h)";
         ghostNode.style.margin = "0";
         ghostNode.style.zIndex = "9999";
         ghostNode.style.transition = "all 450ms ease";
@@ -399,18 +407,18 @@ ghostNode.style.height = "var(--lv2-card-h)";
         bindActionButtons();
     }
 
-function renderAssignedTargetPanel(user) {
-  const container = document.querySelector(".lienzo-grid__right");
-  if (!container) return;
+    function renderAssignedTargetPanel(user) {
+        const container = document.querySelector(".lienzo-grid__right");
+        if (!container) return;
 
-  const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-  const name =
-    user?.nickname ||
-    user?.full_name ||
-    user?.name ||
-    `Usuario ${user?.id || ""}`;
+        const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+        const name =
+            user?.nickname ||
+            user?.full_name ||
+            user?.name ||
+            `Usuario ${user?.id || ""}`;
 
-  container.innerHTML = `
+        container.innerHTML = `
     <section class="lienzo-tribune lienzo-tribune--target">
 
       <div class="lienzo-tribune__corporates"></div>
@@ -434,7 +442,7 @@ function renderAssignedTargetPanel(user) {
 
     </section>
   `;
-}
+    }
 
     function renderActionButtons() {
         const saveIcon = window.ICONS?.actions?.save || "/assets/icons/salvar40.gif";
@@ -453,16 +461,16 @@ function renderAssignedTargetPanel(user) {
         return String(value || "").trim().toUpperCase();
     }
 
-function getSuitSymbol(suit) {
-  const s = normalizeSuit(suit);
+    function getSuitSymbol(suit) {
+        const s = normalizeSuit(suit);
 
-  if (s === "HEART") return "♥";
-  if (s === "SPADE") return "♠";
-  if (s === "DIAMOND") return "♦";
-  if (s === "CLUB") return "♣";
+        if (s === "HEART") return "♥";
+        if (s === "SPADE") return "♠";
+        if (s === "DIAMOND") return "♦";
+        if (s === "CLUB") return "♣";
 
-  return "";
-}
+        return "";
+    }
 
     function escapeHtml(value) {
         return String(value ?? "")
@@ -704,24 +712,24 @@ function getSuitSymbol(suit) {
         });
     }
 
-function getDraftOwnerUser(draft) {
+    function getDraftOwnerUser(draft) {
 
-  if (draft?.target_user) {
-    return draft.target_user;
-  }
+        if (draft?.target_user) {
+            return draft.target_user;
+        }
 
-  if (Number(draft?.created_by_user_id || 0)) {
-    return {
-      id: Number(draft.created_by_user_id),
-      nickname: draft.created_by_nickname || `Usuario ${draft.created_by_user_id}`,
-      profile_photo_url:
-        draft.created_by_profile_photo_url ||
-        "/assets/icons/singeta120.gif"
-    };
-  }
+        if (Number(draft?.created_by_user_id || 0)) {
+            return {
+                id: Number(draft.created_by_user_id),
+                nickname: draft.created_by_nickname || `Usuario ${draft.created_by_user_id}`,
+                profile_photo_url:
+                    draft.created_by_profile_photo_url ||
+                    "/assets/icons/singeta120.gif"
+            };
+        }
 
-  return getCurrentUser();
-}
+        return getCurrentUser();
+    }
 
     function getDraftOwnerCards(draft) {
         const ownerUser = getDraftOwnerUser(draft);
@@ -730,10 +738,10 @@ function getDraftOwnerUser(draft) {
         return deriveOwnedCorporateCards(getAllPlays(), Number(ownerUser.id)).sort(compareCorporateCards);
     }
 
-function renderKSourceCardImage(draft, id = "") {
-  const src = getCardImageSrc(draft?.card_rank || "K", draft?.card_suit);
+    function renderKSourceCardImage(draft, id = "") {
+        const src = getCardImageSrc(draft?.card_rank || "K", draft?.card_suit);
 
-  const html = `
+        const html = `
     <img
       class="lienzo-card-image lienzo-source-card-image"
       src="${escapeHtml(src)}"
@@ -741,40 +749,40 @@ function renderKSourceCardImage(draft, id = "") {
     />
   `;
 
-  if (!id) return html;
+        if (!id) return html;
 
-  return `
+        return `
     <div id="${escapeHtml(id)}">
       ${html}
     </div>
   `;
-}
+    }
 
-function renderKCardBox(draft, showActions = false, id = "") {
-  const rank = normalizeRank(draft?.card_rank || "K");
-  const suit = normalizeSuit(draft?.card_suit);
+    function renderKCardBox(draft, showActions = false, id = "") {
+        const rank = normalizeRank(draft?.card_rank || "K");
+        const suit = normalizeSuit(draft?.card_suit);
 
-  const cardHtml = window.CartaTipo.renderPlayCardBox({
-    rank,
-    suit,
-    title: "",
-    status: draft?.status || "",
-    ownerUser: getDraftOwnerUser(draft),
-    ownerCards: getDraftOwnerCards(draft),
-    actionsHtml: showActions ? renderActionButtons() : ""
-  });
+        const cardHtml = window.CartaTipo.renderPlayCardBox({
+            rank,
+            suit,
+            title: "",
+            status: draft?.status || "",
+            ownerUser: getDraftOwnerUser(draft),
+            ownerCards: getDraftOwnerCards(draft),
+            actionsHtml: showActions ? renderActionButtons() : ""
+        });
 
-  if (!id) return cardHtml;
+        if (!id) return cardHtml;
 
-  return `
+        return `
     <div id="${escapeHtml(id)}">
       ${cardHtml}
     </div>
   `;
-}
+    }
 
-function renderUsersPanel() {
-  return `
+    function renderUsersPanel() {
+        return `
     <section class="lienzo-tribune lienzo-tribune--target lienzo-tribune--target-empty">
 
       <div class="lienzo-tribune__corporates"></div>
@@ -797,7 +805,7 @@ function renderUsersPanel() {
 
     </section>
   `;
-}
+    }
 
     async function refreshCurrentUser() {
         try {
@@ -840,19 +848,19 @@ function renderUsersPanel() {
 
 
     function renderSourcePlayerPanel(draft) {
-  const user = getCurrentUser();
-  const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-  const userName =
-    user?.nickname ||
-    user?.full_name ||
-    user?.name ||
-    "Creador";
+        const user = getCurrentUser();
+        const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
+        const userName =
+            user?.nickname ||
+            user?.full_name ||
+            user?.name ||
+            "Creador";
 
-  const scene = buildSourceCardsScene(draft);
-  const delivered =
-    window.__lienzoAnimationState?.sourceCardDelivered === true;
+        const scene = buildSourceCardsScene(draft);
+        const delivered =
+            window.__lienzoAnimationState?.sourceCardDelivered === true;
 
-  return `
+        return `
     <section class="lienzo-tribune lienzo-tribune--source">
 
       <div class="lienzo-tribune__corporates">
@@ -873,16 +881,16 @@ function renderUsersPanel() {
 
       <div class="lienzo-tribune__stage">
         ${delivered
-          ? ""
-          : `
+                ? ""
+                : `
 ${renderKSourceCardImage(draft, "lienzo-source-card")}
           `
-        }
+            }
       </div>
 
     </section>
   `;
-}
+    }
 
 
     function bindUsersPicker(draft) {
