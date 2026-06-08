@@ -110,6 +110,7 @@
     const safeRank = normalizeRank(rank);
     const safeSuit = normalizeSuit(suit);
     const figureSrc = getFigureImageSrc(safeRank, safeSuit);
+    const decisionHtml = renderDecisionStamp(status);
 
     const ownerCardsHtml = Array.isArray(ownerCards) && ownerCards.length
       ? `
@@ -193,15 +194,12 @@
 ${ownerHtml}
       </div>
 
-      ${actionsHtml ? `
-        <div class="lv2-play-card__actions">
-                ${renderDecisionStamp(status)}
-          ${actionsHtml}
-        </div>
-      ` : ""}
-    </div>
-  `;
-  }
+${(actionsHtml || decisionHtml) ? `
+  <div class="lv2-play-card__actions">
+    ${decisionHtml}
+    ${actionsHtml}
+  </div>
+` : ""}
 
   window.CartaTipo = {
     normalizeRank,
