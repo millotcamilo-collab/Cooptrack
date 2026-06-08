@@ -77,7 +77,7 @@ function getFigureImageSrc(rank, suit) {
     if (safeStatus === "APPROVED") {
       return `
         <div class="lv2-play-card__decision-stamp">
-          <img src="/assets/icons/Sello40.gif" alt="Aprobada" />
+          <img src="/assets/icons/Sello80.gif" alt="Aprobada" />
         </div>
       `;
     }
