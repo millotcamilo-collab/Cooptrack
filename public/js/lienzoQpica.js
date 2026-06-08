@@ -1010,9 +1010,9 @@
                 ? resolveTargetUser(play)
                 : resolveSourceUser(play);
 
-        const ownerCards = ownerUser?.id
-            ? getCorporateCardsForUser(getAllPlays(), Number(ownerUser.id))
-            : [];
+const ownerCards = ownerUser?.id
+  ? getCorporateCardsForCurrentUser(getAllPlays(), Number(ownerUser.id))
+  : [];
 
         return window.CartaTipo.renderPlayCardBox({
             rank,
