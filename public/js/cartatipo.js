@@ -113,11 +113,16 @@ const ownerCardsHtml = Array.isArray(ownerCards) && ownerCards.length
       ${ownerCards.map((card) => {
         const r = normalizeRank(card.card_rank || card.rank);
         const s = normalizeSuit(card.card_suit || card.suit);
-        return `
-          <span class="lv2-play-card__owner-card">
-            ${escapeHtml(r)}${escapeHtml(getSuitSymbol(s))}
-          </span>
-        `;
+const redClass =
+  s === "HEART" || s === "DIAMOND"
+    ? " lv2-play-card__owner-card--red"
+    : "";
+
+return `
+  <span class="lv2-play-card__owner-card${redClass}">
+    ${escapeHtml(r)}${escapeHtml(getSuitSymbol(s))}
+  </span>
+`;
       }).join("")}
     </div>
   `

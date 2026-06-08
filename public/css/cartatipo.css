@@ -211,6 +211,7 @@
   mix-blend-mode: normal !important;
 }
 
+
 .lv2-play-card__owner {
   position: relative;
   z-index: 5;
@@ -220,7 +221,7 @@
 
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
 
   min-width: 0;
 }
@@ -233,8 +234,17 @@
   flex: 0 0 auto;
 }
 
-.lv2-play-card__owner-name {
+.lv2-play-card__owner-info {
+  flex: 1 1 auto;
   min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.lv2-play-card__owner-name {
   font-size: 12px;
   font-weight: 700;
   line-height: 1.1;
@@ -244,25 +254,19 @@
   white-space: nowrap;
 }
 
-.lv2-play-card__owner {
-  flex-wrap: wrap;
-}
-
-.lv2-play-card__owner-name {
-  flex: 1 1 auto;
-}
-
 .lv2-play-card__owner-cards {
-  flex: 0 0 100%;
   display: flex;
+  align-items: center;
   gap: 4px;
   flex-wrap: wrap;
-  padding-left: 48px;
-  margin-top: -6px;
 }
 
 .lv2-play-card__owner-card {
   font-size: 11px;
   font-weight: 700;
   line-height: 1;
+}
+
+.lv2-play-card__owner-card--red {
+  color: #c40000;
 }
