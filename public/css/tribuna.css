@@ -140,3 +140,36 @@
   --lv2-card-w: 270px;
   --lv2-card-h: 359px;
 }
+
+.tribuna-page--amsterdam .lienzo-tribune {
+  width: 100%;
+  min-height: auto;
+  height: auto;
+  overflow: visible;
+}
+
+.tribuna-page--amsterdam .lienzo-target-dropzone {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: visible;
+}
+
+.tribuna-page--amsterdam .qqpica-card-stack {
+  position: relative;
+  width: var(--lv2-card-w);
+  min-height: calc(var(--lv2-card-h) * 1.58);
+  margin: 0 auto;
+}
+
+.tribuna-page--amsterdam .qqpica-card-stack__top {
+  position: relative;
+  z-index: 1;
+}
+
+.tribuna-page--amsterdam .qqpica-card-stack__bottom {
+  position: absolute;
+  left: 0;
+  top: calc(var(--lv2-card-h) * 0.50);
+  z-index: 2;
+}

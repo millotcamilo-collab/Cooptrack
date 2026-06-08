@@ -409,23 +409,7 @@ min-height: var(--lv2-tribune-h);
   display: block;
 }
 
-.qqpica-card-stack {
-  position: relative;
-  width: var(--lv2-card-w);
-  min-height: calc(var(--lv2-card-h) * 1.7);
-}
 
-.qqpica-card-stack__top {
-  position: relative;
-  z-index: 1;
-}
-
-.qqpica-card-stack__bottom {
-  position: absolute;
-  left: 0;
-  top: calc(var(--lv2-card-h) * 0.55);
-  z-index: 2;
-}
 
 .tribuna-page--amsterdam .lienzo-tribune {
   min-height: auto;
@@ -438,8 +422,11 @@ min-height: var(--lv2-tribune-h);
 }
 
 .tribuna-page--amsterdam .lienzo-target-dropzone {
+    display: flex;
+  justify-content: center;
   overflow: visible;
 }
+
 .tribuna-page--amsterdam .tribuna__content-zone {
   display: flex;
   justify-content: center;
