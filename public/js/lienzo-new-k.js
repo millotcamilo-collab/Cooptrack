@@ -412,33 +412,14 @@ ghostWrap.innerHTML = `
         bindActionButtons();
     }
 
-    function renderAssignedTargetPanel(user) {
-        const container = document.querySelector(".lienzo-grid__right");
-        if (!container) return;
+function renderAssignedTargetPanel(user) {
+  const container = document.querySelector(".lienzo-grid__right");
+  if (!container) return;
 
-        const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-        const name =
-            user?.nickname ||
-            user?.full_name ||
-            user?.name ||
-            `Usuario ${user?.id || ""}`;
-
-        container.innerHTML = `
+  container.innerHTML = `
     <section class="lienzo-tribune lienzo-tribune--target">
 
       <div class="lienzo-tribune__corporates"></div>
-
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(photo)}"
-          alt="${escapeHtml(name)}"
-        />
-
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(name)}
-        </div>
-      </div>
 
       <div class="lienzo-tribune__stage">
         <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
@@ -447,20 +428,7 @@ ghostWrap.innerHTML = `
 
     </section>
   `;
-    }
-
-    function renderActionButtons() {
-        const saveIcon = window.ICONS?.actions?.save || "/assets/icons/salvar40.gif";
-
-        return `
-    <div class="lienzo-actions">
-      <button id="lienzo-save-btn" class="icon-btn" title="Salvar">
-        <img src="${saveIcon}" alt="Salvar" />
-      </button>
-
-    </div>
-  `;
-    }
+}
 
     function normalizeSuit(value) {
         return String(value || "").trim().toUpperCase();
