@@ -107,28 +107,28 @@
                 });
             }
 
-            function renderEconomicCard(play) {
-                const rank = normalizeText(play?.card_rank || play?.rank);
-                const suit = normalizeText(play?.card_suit || play?.suit);
+            return window.CartaTipo.renderPlayCardBox({
+  rank: "Q",
+  suit: "HEART",
 
-                if (!(rank === "Q" && suit === "SPADE")) return "";
+  title: "",
 
-                return window.CartaTipo.renderPlayCardBox({
-                    rank: "Q",
-                    suit: "HEART",
-                    title: "Paga Suarez",
-                    metas: [
-                        { text: "Ticket" },
-                        { text: "UYU 500" },
-                        { text: "2026-05-30" }
-                    ],
-                    ownerUser: resolveTargetUser(play),
-                    ownerCards: [],
-                    actionsHtml: renderTargetActions(play),
-                    showOwner: true,
-                    showActions: true
-                });
-            }
+  metas: [
+    { text: "Ticket" },
+    { text: "UYU 500" },
+    { text: "2026-05-30" }
+  ],
+
+  ownerUser: resolveTargetUser(play),
+
+  ownerLabel: `Paga ${resolveTargetUser(play).nickname}`,
+
+  ownerCards: [],
+  actionsHtml: renderTargetActions(play),
+
+  showOwner: true,
+  showActions: true
+});
 
             function normalizeText(value) {
                 return String(value || "").trim().toUpperCase();

@@ -161,11 +161,7 @@
   )}
 </span>
 
-${ownerLabel ? `
-  <span class="lv2-play-card__owner-label">
-    ${escapeHtml(ownerLabel)}
-  </span>
-` : ""}
+
 
     ${ownerCardsHtml}
   </div>
@@ -204,10 +200,15 @@ ${ownerHtml}
       </div>
 
 ${showActions && (actionsHtml || decisionHtml) ? `
-  <div class="lv2-play-card__actions">
-    ${decisionHtml}
-    ${actionsHtml}
-  </div>
+<div class="lv2-play-card__actions">
+  ${ownerLabel ? `
+    <span class="lv2-play-card__action-label">
+      ${escapeHtml(ownerLabel)}
+    </span>
+  ` : ""}
+  ${decisionHtml}
+  ${actionsHtml}
+</div>
 ` : ""}
     </div>
   `;
