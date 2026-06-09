@@ -75,7 +75,7 @@
   padding: 7px 6px 38px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 4px;
   background: rgba(255, 255, 255, 0.04);
 }
