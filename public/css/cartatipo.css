@@ -72,12 +72,14 @@
 .lv2-play-card__inner--figure {
   position: absolute;
   overflow: hidden;
-  padding: 7px 6px 38px;
+
+  padding: calc(var(--lv2-card-h) * 0.42) 6px 38px;
+
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-padding-top: calc(var(--lv2-card-h) * 0.42);
   gap: 4px;
+
   background: rgba(255, 255, 255, 0.04);
 }
 
