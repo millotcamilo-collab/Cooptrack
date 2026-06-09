@@ -107,59 +107,38 @@
                 });
             }
 
-            return window.CartaTipo.renderPlayCardBox({
-                rank: "Q",
-                suit: "HEART",
 
-                title: "",
 
-                metas: [
-                    { text: "Ticket" },
-                    { text: "UYU 500" },
-                    { text: "2026-05-30" }
-                ],
+            function renderEconomicCard(play) {
+                const rank = normalizeText(play?.card_rank || play?.rank);
+                const suit = normalizeText(play?.card_suit || play?.suit);
 
-                ownerUser: resolveTargetUser(play),
+                if (!(rank === "Q" && suit === "SPADE")) return "";
 
-                ownerLabel: `Paga ${resolveTargetUser(play).nickname}`,
+                const targetUser = resolveTargetUser(play);
+                console.log("QQPICA PLAY", play);
+                return window.CartaTipo.renderPlayCardBox({
+                    rank: "Q",
+                    suit: "HEART",
 
-                ownerCards: [],
-                actionsHtml: renderTargetActions(play),
+                    title: "",
 
-                showOwner: true,
-                showActions: true
-            });
+                    metas: [
+                        { text: play?.payment_concept || play?.concept || "Ticket" },
+                        { text: play?.amount ? `UYU ${play.amount}` : "" },
+                        { text: play?.pay_date || play?.payment_date || "" }
+                    ].filter((m) => m.text),
 
-function renderEconomicCard(play) {
-  const rank = normalizeText(play?.card_rank || play?.rank);
-  const suit = normalizeText(play?.card_suit || play?.suit);
+                    ownerUser: targetUser,
+                    ownerLabel: `Paga ${targetUser.nickname}`,
 
-  if (!(rank === "Q" && suit === "SPADE")) return "";
+                    ownerCards: [],
+                    actionsHtml: renderTargetActions(play),
 
-  const targetUser = resolveTargetUser(play);
-console.log("QQPICA PLAY", play);
-  return window.CartaTipo.renderPlayCardBox({
-    rank: "Q",
-    suit: "HEART",
-
-    title: "",
-
-    metas: [
-      { text: play?.payment_concept || play?.concept || "Ticket" },
-      { text: play?.amount ? `UYU ${play.amount}` : "" },
-      { text: play?.pay_date || play?.payment_date || "" }
-    ].filter((m) => m.text),
-
-    ownerUser: targetUser,
-    ownerLabel: `Paga ${targetUser.nickname}`,
-
-    ownerCards: [],
-    actionsHtml: renderTargetActions(play),
-
-    showOwner: true,
-    showActions: true
-  });
-}
+                    showOwner: true,
+                    showActions: true
+                });
+            }
 
             function normalizeText(value) {
                 return String(value || "").trim().toUpperCase();
