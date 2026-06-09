@@ -161,7 +161,8 @@
 
                 const parsed = parsePlayCode(play?.play_code);
                 const payment = parseFlowPayment(parsed.flow);
-
+console.log("FLOW QQPICA", parsed.flow);
+console.log("PAYMENT QQPICA", payment);
                 if (!payment) return "";
 
                 const targetUser = resolveTargetUser(play);
