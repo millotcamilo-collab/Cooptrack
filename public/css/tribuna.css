@@ -189,28 +189,31 @@
   margin: 0 auto;
 }
 
-.tribuna-page--amsterdam .amsterdam-card-stack__primary {
-  position: relative;
-  z-index: 1;
-  touch-action: none;
-  cursor: grab;
-  user-select: none;
-}
-
 .tribuna-page--amsterdam .amsterdam-card-stack__primary.is-peeking {
   cursor: grabbing;
-}
-
-.tribuna-page--amsterdam .amsterdam-card-stack__economic {
-  position: absolute;
-  left: 0;
-  top: calc(var(--lv2-card-h) * 0.68);
-  z-index: 2;
 }
 
 .tribuna-page--amsterdam .amsterdam-card-stack__sender {
   position: absolute;
   left: 0;
-  top: calc(var(--lv2-card-h) * 1.36);
+  top: 0;
+  z-index: 0;
+}
+
+.tribuna-page--amsterdam .amsterdam-card-stack__primary {
+  position: absolute;
+  left: 0;
+  top: calc(var(--lv2-card-h) * 0.38);
+  z-index: 2;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.tribuna-page--amsterdam .amsterdam-card-stack__economic {
+  position: absolute;
+  left: 0;
+  top: calc(var(--lv2-card-h) * 1.06);
   z-index: 3;
 }
+
