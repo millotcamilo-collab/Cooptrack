@@ -104,6 +104,7 @@
     metas = [],
     status = "",
     ownerUser = null,
+    ownerLabel = "",
     ownerCards = [],
     actionsHtml = "",
       showOwner = true,
@@ -151,14 +152,20 @@
     )}"
     />
 
-    <span class="lv2-play-card__owner-name">
-      ${escapeHtml(
-      ownerUser.nickname ||
-      ownerUser.full_name ||
-      ownerUser.name ||
-      "Usuario"
-    )}
-    </span>
+   <span class="lv2-play-card__owner-name">
+  ${escapeHtml(
+    ownerUser.nickname ||
+    ownerUser.full_name ||
+    ownerUser.name ||
+    "Usuario"
+  )}
+</span>
+
+${ownerLabel ? `
+  <span class="lv2-play-card__owner-label">
+    ${escapeHtml(ownerLabel)}
+  </span>
+` : ""}
 
     ${ownerCardsHtml}
   </div>

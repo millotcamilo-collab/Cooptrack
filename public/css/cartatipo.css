@@ -266,3 +266,9 @@
 .lv2-play-card__owner-card--red {
   color: #c40000;
 }
+
+.lv2-play-card__owner-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(0,0,0,.7);
+}
