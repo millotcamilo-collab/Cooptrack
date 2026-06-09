@@ -107,7 +107,51 @@
                 });
             }
 
+            function parsePlayCode(code) {
+                const parts = String(code || "").split("§");
 
+                return {
+                    deckId: parts[0] || "",
+                    userId: parts[1] || "",
+                    date: parts[2] || "",
+                    rank: parts[3] || "",
+                    suit: parts[4] || "",
+                    action: parts[5] || "",
+                    authorized: parts[6] || "",
+                    flow: parts[7] || "",
+                    recipients: parts[8] || ""
+                };
+            }
+
+            function parseFlowPayment(flowValue) {
+                const chunks = String(flowValue || "")
+                    .split(";")
+                    .map((item) => item.trim())
+                    .filter(Boolean);
+
+                for (const chunk of chunks) {
+                    if (!chunk.toLowerCase().startsWith("pay:qheart")) continue;
+
+                    const parts = chunk.split("|");
+                    const payment = {};
+
+                    parts.forEach((part, index) => {
+                        if (index === 0) return;
+
+                        const separatorIndex = part.indexOf(":");
+                        if (separatorIndex === -1) return;
+
+                        const key = part.slice(0, separatorIndex).trim();
+                        const value = part.slice(separatorIndex + 1).trim();
+
+                        if (key) payment[key] = value;
+                    });
+
+                    return payment;
+                }
+
+                return null;
+            }
 
             function renderEconomicCard(play) {
                 const rank = normalizeText(play?.card_rank || play?.rank);
@@ -115,8 +159,18 @@
 
                 if (!(rank === "Q" && suit === "SPADE")) return "";
 
+                const parsed = parsePlayCode(play?.play_code);
+                const payment = parseFlowPayment(parsed.flow);
+
+                if (!payment) return "";
+
                 const targetUser = resolveTargetUser(play);
-                console.log("QQPICA PLAY", play);
+
+                const payerLabel =
+                    String(payment.side || "").toUpperCase() === "AMSTERDAM"
+                        ? targetUser.nickname
+                        : play?.deck_name || "Mazo";
+
                 return window.CartaTipo.renderPlayCardBox({
                     rank: "Q",
                     suit: "HEART",
@@ -124,13 +178,13 @@
                     title: "",
 
                     metas: [
-                        { text: play?.payment_concept || play?.concept || "Ticket" },
-                        { text: play?.amount ? `UYU ${play.amount}` : "" },
-                        { text: play?.pay_date || play?.payment_date || "" }
+                        { text: payment.concept || "" },
+                        { text: `${payment.currency || ""} ${payment.amount || ""}`.trim() },
+                        { text: payment.payDate || "" }
                     ].filter((m) => m.text),
 
                     ownerUser: targetUser,
-                    ownerLabel: `Paga ${targetUser.nickname}`,
+                    ownerLabel: `Paga ${payerLabel}`,
 
                     ownerCards: [],
                     actionsHtml: renderTargetActions(play),
