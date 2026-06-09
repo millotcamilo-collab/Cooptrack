@@ -87,48 +87,48 @@
                 };
             }
 
-function renderSenderCard(play) {
-  const parent = play?.parent_play;
+            function renderSenderCard(play) {
+                const parent = play?.parent_play;
 
-  if (!parent) return "";
+                if (!parent) return "";
 
-  return window.CartaTipo.renderPlayCardBox({
-    rank: parent.card_rank,
-    suit: parent.card_suit,
+                return window.CartaTipo.renderPlayCardBox({
+                    rank: parent.card_rank,
+                    suit: parent.card_suit,
 
-    title: parent.play_text || "",
+                    title: parent.play_text || "",
 
-    metas: [],
+                    metas: [],
 
-    ownerUser: null,
-    ownerCards: [],
+                    ownerUser: null,
+                    ownerCards: [],
 
-    actionsHtml: ""
-  });
-}
+                    actionsHtml: ""
+                });
+            }
 
-function renderEconomicCard(play) {
-  const rank = normalizeText(play?.card_rank || play?.rank);
-  const suit = normalizeText(play?.card_suit || play?.suit);
+            function renderEconomicCard(play) {
+                const rank = normalizeText(play?.card_rank || play?.rank);
+                const suit = normalizeText(play?.card_suit || play?.suit);
 
-  if (!(rank === "Q" && suit === "SPADE")) return "";
+                if (!(rank === "Q" && suit === "SPADE")) return "";
 
-  return window.CartaTipo.renderPlayCardBox({
-    rank: "Q",
-    suit: "HEART",
-    title: "Paga Suarez",
-    metas: [
-      { text: "Ticket" },
-      { text: "UYU 500" },
-      { text: "2026-05-30" }
-    ],
-    ownerUser: resolveTargetUser(play),
-    ownerCards: [],
-    actionsHtml: renderTargetActions(play),
-    showOwner: true,
-showActions: true
-  });
-}
+                return window.CartaTipo.renderPlayCardBox({
+                    rank: "Q",
+                    suit: "HEART",
+                    title: "Paga Suarez",
+                    metas: [
+                        { text: "Ticket" },
+                        { text: "UYU 500" },
+                        { text: "2026-05-30" }
+                    ],
+                    ownerUser: resolveTargetUser(play),
+                    ownerCards: [],
+                    actionsHtml: renderTargetActions(play),
+                    showOwner: true,
+                    showActions: true
+                });
+            }
 
             function normalizeText(value) {
                 return String(value || "").trim().toUpperCase();
@@ -193,18 +193,18 @@ showActions: true
                         : null
                 ].filter(Boolean);
 
-return window.CartaTipo.renderPlayCardBox({
-  rank: play?.card_rank,
-  suit: play?.card_suit,
-  title,
-  status: play?.play_status || "",
-  metas,
-  ownerUser,
-  ownerCards: [],
-  actionsHtml: renderTargetActions(play),
-  showOwner: false,
-  showActions: false
-});
+                return window.CartaTipo.renderPlayCardBox({
+                    rank: play?.card_rank,
+                    suit: play?.card_suit,
+                    title,
+                    status: play?.play_status || "",
+                    metas,
+                    ownerUser: null,
+                    ownerCards: [],
+                    actionsHtml: "",
+                    showOwner: false,
+                    showActions: false
+                });
 
                 return `
     <div class="tribuna-card-fallback">
