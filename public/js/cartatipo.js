@@ -105,7 +105,9 @@
     status = "",
     ownerUser = null,
     ownerCards = [],
-    actionsHtml = ""
+    actionsHtml = "",
+      showOwner = true,
+  showActions = true
   }) {
     const safeRank = normalizeRank(rank);
     const safeSuit = normalizeSuit(suit);
@@ -133,7 +135,7 @@
   `
       : "";
 
-    const ownerHtml = ownerUser ? `
+    const ownerHtml = showOwner && ownerUser ? `
   <div class="lv2-play-card__owner">
     <img
       class="lv2-play-card__owner-avatar"
@@ -194,7 +196,7 @@
 ${ownerHtml}
       </div>
 
-${(actionsHtml || decisionHtml) ? `
+${showActions && (actionsHtml || decisionHtml) ? `
   <div class="lv2-play-card__actions">
     ${decisionHtml}
     ${actionsHtml}
