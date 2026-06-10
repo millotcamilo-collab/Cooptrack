@@ -1,11 +1,15 @@
 .ace-owner-card {
   position: relative;
-  width: var(--lv2-card-w, 200px);
-  height: var(--lv2-card-h, 279px);
+
+  width: 260px;
+  height: 380px;
+
   background: #fff;
   border: 2px solid #222;
   border-radius: 10px;
   overflow: hidden;
+
+  box-sizing: border-box;
 }
 
 .ace-owner-card__corner {
