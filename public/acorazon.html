@@ -119,11 +119,22 @@
         const data = await response.json();
         if (!data.ok || !data.user) return;
 
-        const photoEl = document.getElementById("userPhoto");
-        const nameEl = document.getElementById("userNickname");
+const acePhotoEl = document.getElementById("aceOwnerPhoto");
+const aceNickEl = document.getElementById("aceOwnerNick");
 
-        if (photoEl && data.user.profile_photo_url) photoEl.src = data.user.profile_photo_url;
-        if (nameEl && data.user.nickname) nameEl.textContent = data.user.nickname;
+if (acePhotoEl) {
+  acePhotoEl.src =
+    data.user.profile_photo_url ||
+    "/assets/icons/singeta120.gif";
+}
+
+if (aceNickEl) {
+  aceNickEl.textContent =
+    data.user.nickname ||
+    data.user.full_name ||
+    data.user.name ||
+    "Usuario";
+}
       } catch (error) {
         console.error("Error cargando usuario:", error);
       }
