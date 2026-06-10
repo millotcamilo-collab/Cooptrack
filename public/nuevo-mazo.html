@@ -617,22 +617,28 @@
       }
     }
 
-    function renderDeckPlacard() {
-      renderPlacard("placard-container", {
-        deckPhotoUrl: deckPhotoUrl,
-        rank: "A",
-        suit: "HEART",
-        title: document.getElementById("deckName")?.value,
-        currencyCode: document.getElementById("deckCurrencyCode")?.value,
-        currencyName: document.getElementById("deckCurrencyName")?.value,
-        showCurrency: true,
-        canEditPhoto: true,
-        isEditingPhoto: isEditingPlacardPhoto,
-        draftPhotoUrl: deckPhotoUrl
-      });
+function renderDeckPlacard() {
+  const title = String(document.getElementById("deckName")?.value || "").trim();
+  const currencyCode = String(document.getElementById("deckCurrencyCode")?.value || "").trim();
+  const currencyName = String(document.getElementById("deckCurrencyName")?.value || "").trim();
 
-      bindPlacardPhotoControls();
-    }
+  if (!title) return;
+
+  renderPlacard("placard-container", {
+    deckPhotoUrl,
+    rank: "A",
+    suit: "HEART",
+    title,
+    currencyCode,
+    currencyName,
+    showCurrency: true,
+    canEditPhoto: true,
+    isEditingPhoto: isEditingPlacardPhoto,
+    draftPhotoUrl: deckPhotoUrl
+  });
+
+  bindPlacardPhotoControls();
+}
 
     function bindPlacardPhotoControls() {
       const photoBtn = document.getElementById("placardPhotoBtn");
