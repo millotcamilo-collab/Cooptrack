@@ -20,27 +20,27 @@
 
     <div class="lienzo-grid ct-block" style="grid-template-columns: 1fr;">
       <div class="panel panel--split-top">
-<div class="panel-topbar panel-topbar--empty"></div>
+        <div class="panel-topbar panel-topbar--empty"></div>
 
         <div class="content colombes-content">
           <div class="colombes-editor">
             <div class="colombes-editor__card-wrap">
               <div class="ace-owner-card">
-  <div class="ace-owner-card__corner ace-owner-card__corner--tl">
-    <span>A</span>
-    <span>♥</span>
-  </div>
+                <div class="ace-owner-card__corner ace-owner-card__corner--tl">
+                  <span>A</span>
+                  <span>♥</span>
+                </div>
 
-  <div class="ace-owner-card__body">
-    <img id="aceOwnerPhoto" class="ace-owner-card__photo" src="/assets/icons/singeta120.gif" alt="Propietario">
-    <div id="aceOwnerNick" class="ace-owner-card__nick">Usuario</div>
-  </div>
+                <div class="ace-owner-card__body">
+                  <img id="aceOwnerPhoto" class="ace-owner-card__photo" src="/assets/icons/singeta120.gif" alt="Propietario">
+                  <div id="aceOwnerNick" class="ace-owner-card__nick">Usuario</div>
+                </div>
 
-  <div class="ace-owner-card__corner ace-owner-card__corner--br">
-    <span>A</span>
-    <span>♥</span>
-  </div>
-</div>
+                <div class="ace-owner-card__corner ace-owner-card__corner--br">
+                  <span>A</span>
+                  <span>♥</span>
+                </div>
+              </div>
             </div>
 
             <div class="colombes-editor__form">
@@ -93,9 +93,19 @@
       EUR: "Euro"
     };
 
+    const COUNTRY_TO_CURRENCY = {
+      UY: { code: "UYU", name: "Peso uruguayo" },
+      AR: { code: "ARS", name: "Peso argentino" },
+      CL: { code: "CLP", name: "Peso chileno" },
+      BR: { code: "BRL", name: "Real brasileño" },
+      US: { code: "USD", name: "Dólar estadounidense" },
+      ES: { code: "EUR", name: "Euro" }
+    };
+
     function setStatus(message, isError = false) {
       const el = document.getElementById("statusMsg");
       if (!el) return;
+
       el.textContent = message || "";
       el.style.color = isError ? "#ffb3b3" : "#f5f5f5";
     }
@@ -103,41 +113,72 @@
     function syncCurrencyNameFromCode() {
       const codeEl = document.getElementById("deckCurrencyCode");
       const nameEl = document.getElementById("deckCurrencyName");
+
       const code = String(codeEl?.value || "").trim().toUpperCase();
-      if (nameEl) nameEl.value = DEFAULT_CURRENCY_NAMES[code] || "";
+
+      if (nameEl) {
+        nameEl.value = DEFAULT_CURRENCY_NAMES[code] || "";
+      }
     }
 
-    async function loadUserHeader() {
+    async function fetchCurrentUser() {
       const token = localStorage.getItem("cooptrackToken");
-      if (!token) return;
+      if (!token) return null;
 
       try {
         const response = await fetch(`${API_BASE_URL}/me`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
 
         const data = await response.json();
-        if (!data.ok || !data.user) return;
 
-const acePhotoEl = document.getElementById("aceOwnerPhoto");
-const aceNickEl = document.getElementById("aceOwnerNick");
+        if (!response.ok || !data.ok || !data.user) {
+          return null;
+        }
 
-if (acePhotoEl) {
-  acePhotoEl.src =
-    data.user.profile_photo_url ||
-    "/assets/icons/singeta120.gif";
-}
-
-if (aceNickEl) {
-  aceNickEl.textContent =
-    data.user.nickname ||
-    data.user.full_name ||
-    data.user.name ||
-    "Usuario";
-}
+        return data.user;
       } catch (error) {
         console.error("Error cargando usuario:", error);
+        return null;
       }
+    }
+
+    function applyUserToAce(user) {
+      if (!user) return;
+
+      const acePhotoEl = document.getElementById("aceOwnerPhoto");
+      const aceNickEl = document.getElementById("aceOwnerNick");
+
+      if (acePhotoEl) {
+        acePhotoEl.src =
+          user.profile_photo_url ||
+          "/assets/icons/singeta120.gif";
+      }
+
+      if (aceNickEl) {
+        aceNickEl.textContent =
+          user.nickname ||
+          user.full_name ||
+          user.name ||
+          "Usuario";
+      }
+    }
+
+    function applyDefaultCurrencyFromUser(user) {
+      if (!user) return;
+
+      const country = String(user.country || "").toUpperCase();
+      const currency = COUNTRY_TO_CURRENCY[country];
+
+      if (!currency) return;
+
+      const codeEl = document.getElementById("deckCurrencyCode");
+      const nameEl = document.getElementById("deckCurrencyName");
+
+      if (codeEl) codeEl.value = currency.code;
+      if (nameEl) nameEl.value = currency.name;
     }
 
     async function createDeck() {
@@ -196,10 +237,16 @@ if (aceNickEl) {
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await loadUserHeader();
+      const user = await fetchCurrentUser();
 
-      document.getElementById("deckCurrencyCode")?.addEventListener("change", syncCurrencyNameFromCode);
-      document.getElementById("createDeckBtn")?.addEventListener("click", createDeck);
+      applyUserToAce(user);
+      applyDefaultCurrencyFromUser(user);
+
+      document.getElementById("deckCurrencyCode")
+        ?.addEventListener("change", syncCurrencyNameFromCode);
+
+      document.getElementById("createDeckBtn")
+        ?.addEventListener("click", createDeck);
     });
   </script>
 </body>
