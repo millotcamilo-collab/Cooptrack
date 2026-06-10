@@ -56,3 +56,33 @@
   font-weight: 600;
   text-align: center;
 }
+
+.colombes-content {
+  display: flex;
+  justify-content: center;
+}
+
+.colombes-editor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.colombes-editor__card-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.colombes-editor__form {
+  width: 100%;
+  max-width: 520px;
+}
+
+.colombes-editor__line {
+  justify-content: center;
+}
+.colombes-editor {
+  width: 560px;
+  margin: 0 auto;
+}
