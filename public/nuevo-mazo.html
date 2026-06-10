@@ -44,7 +44,7 @@
         <div class="content colombes-content">
           <div class="colombes-editor">
             <div id="colombesCardZone" class="colombes-editor__card-wrap">
-              <img src="/assets/icons/Acorazon.gif" class="card" alt="As de corazón">
+              <img src="/assets/icons/Acorazon.png" class="card" alt="As de corazón">
             </div>
 
             <div id="colombesForm" class="colombes-editor__form">
@@ -559,15 +559,21 @@
       hideEl("saveAllBtn");
 
       const placardEl = document.getElementById("placard-container");
-      if (placardEl) {
-        placardEl.classList.remove("is-visible");
-      }
 
-      renderDeckPlacard();
+      try {
+        if (placardEl) {
+          placardEl.classList.remove("is-visible");
+        }
 
-      if (placardEl) {
-        void placardEl.offsetWidth;
-        placardEl.classList.add("is-visible");
+        renderDeckPlacard();
+
+        if (placardEl) {
+          void placardEl.offsetWidth;
+          placardEl.classList.add("is-visible");
+        }
+      } catch (error) {
+        // No dejamos que un error del placard bloquee la animación del mazo.
+        console.error("Error actualizando placard antes de animar:", error);
       }
 
       start();
@@ -700,7 +706,7 @@
       const targetRect = colombesCardZone.getBoundingClientRect();
 
       const ghost = document.createElement("div");
-      ghost.className = "pack pack--ghost";
+      ghost.className = "nuevo-mazo-ghost";
       ghost.style.position = "fixed";
       ghost.style.left = (packRect.left + 28) + "px";
       ghost.style.top = packRect.top + "px";
@@ -708,14 +714,15 @@
       ghost.style.height = "120px";
       ghost.style.zIndex = "9999";
       ghost.style.pointerEvents = "none";
-      ghost.style.transition = "left 0.6s ease, top 0.6s ease";
-      ghost.style.willChange = "left, top";
+      ghost.style.transition = "left 0.6s ease, top 0.6s ease, transform 0.6s ease";
+      ghost.style.willChange = "left, top, transform";
+      ghost.style.display = "block";
 
       ghost.innerHTML = `
-    <img src="/assets/icons/Apike.png" class="spade" alt="As de picas">
-    <img src="/assets/icons/Adiamante.png" class="diamond" alt="As de diamantes">
-    <img src="/assets/icons/Atrebol.png" class="club" alt="As de trébol">
-  `;
+        <img src="/assets/icons/Apike.png" alt="As de picas" style="position:absolute;width:76px;left:0;top:0;">
+        <img src="/assets/icons/Adiamante.png" alt="As de diamantes" style="position:absolute;width:76px;left:22px;top:10px;">
+        <img src="/assets/icons/Atrebol.png" alt="As de trébol" style="position:absolute;width:76px;left:44px;top:20px;">
+      `;
 
       document.body.appendChild(ghost);
 
@@ -728,15 +735,16 @@
         ghost.remove();
 
         colombesCardZone.innerHTML = `
-      <div class="colombes-final-stack">
-        <img src="/assets/icons/Acorazon.png" class="colombes-final-stack__heart" alt="As de corazón">
-        <img src="/assets/icons/Apike.png" class="colombes-final-stack__spade" alt="As de picas">
-        <img src="/assets/icons/Adiamante.png" class="colombes-final-stack__diamond" alt="As de diamantes">
-        <img src="/assets/icons/Atrebol.png" class="colombes-final-stack__club" alt="As de trébol">
-      </div>
-    `;
+          <div class="colombes-final-stack">
+            <img src="/assets/icons/Acorazon.png" class="colombes-final-stack__heart" alt="As de corazón">
+            <img src="/assets/icons/Apike.png" class="colombes-final-stack__spade" alt="As de picas">
+            <img src="/assets/icons/Adiamante.png" class="colombes-final-stack__diamond" alt="As de diamantes">
+            <img src="/assets/icons/Atrebol.png" class="colombes-final-stack__club" alt="As de trébol">
+          </div>
+        `;
 
         renderFinalJokers();
+        updateServerNextLabels();
 
         showEl("serverNextPanel");
         enableServerNextPanel();
@@ -745,19 +753,22 @@
         done = true;
       }
 
-      // Fuerza al navegador a registrar la posición inicial antes de mover el ghost.
+      // Fallback fuerte: aunque falle la animación, nunca queda trancado.
+      const fallbackTimer = setTimeout(finishAnimation, 900);
+
+      ghost.addEventListener("transitionend", () => {
+        clearTimeout(fallbackTimer);
+        finishAnimation();
+      }, { once: true });
+
+      // Forzar layout antes de mover el ghost.
       void ghost.offsetWidth;
 
       requestAnimationFrame(() => {
         ghost.style.left = (targetRect.left + 18) + "px";
         ghost.style.top = targetRect.top + "px";
+        ghost.style.transform = "scale(1.02)";
       });
-
-      ghost.addEventListener("transitionend", finishAnimation, { once: true });
-
-      // Fallback: si transitionend no dispara por CSS, navegador o distancia mínima,
-      // igual completa la escena y habilita aprobar.
-      setTimeout(finishAnimation, 750);
     }
 
 
