@@ -558,9 +558,9 @@
 }
 
 .mazobar__topcard-corner {
-  width: 7px;
-  font-size: 9px;
-  line-height: 0.75;
+  width: 12px;
+  font-size: 14px;
+  line-height: 0.85;
 }
 
 .mazobar__topcard-corner--tl {
