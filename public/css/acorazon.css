@@ -38,14 +38,16 @@
 .ace-owner-card__body {
   position: absolute;
   inset: 34px 24px;
-  border: 1px solid rgba(0,0,0,.2);
-  border-radius: 8px;
+  border: none;
+  border-radius: 0;
 
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+
+  padding-top: 18px;
 }
 
 .ace-owner-card__photo {
@@ -89,4 +91,74 @@
 .colombes-editor {
   width: 560px;
   margin: 0 auto;
+}
+
+.ace-owner-card__body {
+  justify-content: flex-start;
+  padding: 18px 14px;
+  gap: 10px;
+}
+
+.ace-owner-card__photo {
+  width: 78px;
+  height: 78px;
+}
+
+.ace-owner-card__nick {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.ace-owner-card__fields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ace-owner-card__field-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ace-owner-card__field-row--currency {
+  display: grid;
+  grid-template-columns: 18px 62px 1fr auto;
+  gap: 5px;
+  align-items: center;
+}
+
+.ace-owner-card__suit {
+  color: #c00000;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ace-owner-card__input {
+  min-width: 0;
+  height: 26px;
+  padding: 3px 5px;
+  border: 1px solid #bdbdbd;
+  border-radius: 5px;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.ace-owner-card__input--title {
+  width: 100%;
+}
+
+.ace-owner-card__input--code {
+  width: 62px;
+  text-align: center;
+}
+
+.ace-owner-card__input--currency {
+  width: 100%;
+}
+
+.ace-owner-card__save {
+  width: 30px;
+  height: 30px;
 }
