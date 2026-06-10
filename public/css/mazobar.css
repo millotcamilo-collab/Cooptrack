@@ -213,10 +213,10 @@
 }
 
 .mazobar__cmd-btn--suit {
-  min-width: 34px;
-  min-height: 34px;
-  padding: 0 10px;
-  font-size: 1rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 1.8rem;
   line-height: 1;
   display: inline-flex;
   align-items: center;
@@ -404,7 +404,9 @@
   }
 
   .mazobar__cmd-btn--suit {
-    width: 42px;
+    width: 48px;
+    min-height: 44px;
+    font-size: 1.7rem;
   }
 
   .mazobar__topcard-image {
