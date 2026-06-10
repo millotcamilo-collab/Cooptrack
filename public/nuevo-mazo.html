@@ -731,14 +731,20 @@
         showEl("serverNextPanel");
         enableServerNextPanel();
         showEl("createDeckBtn");
-        renderDeckPlacard();
-
-showEl("placard-container");
 
 const placardEl = document.getElementById("placard-container");
+
+if (placardEl) {
+  placardEl.classList.remove("is-hidden");
+  placardEl.style.display = "block";
+}
+
+renderDeckPlacard();
+
 if (placardEl) {
   placardEl.classList.add("is-visible");
 }
+
         done = true;
       }
 
