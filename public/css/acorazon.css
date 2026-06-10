@@ -1,0 +1,58 @@
+.ace-owner-card {
+  position: relative;
+  width: var(--lv2-card-w, 200px);
+  height: var(--lv2-card-h, 279px);
+  background: #fff;
+  border: 2px solid #222;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ace-owner-card__corner {
+  position: absolute;
+  color: #c00000;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+
+.ace-owner-card__corner--tl {
+  top: 6px;
+  left: 6px;
+}
+
+.ace-owner-card__corner--br {
+  right: 6px;
+  bottom: 6px;
+  transform: rotate(180deg);
+}
+
+.ace-owner-card__corner span {
+  display: block;
+}
+
+.ace-owner-card__body {
+  position: absolute;
+  inset: 34px 24px;
+  border: 1px solid rgba(0,0,0,.2);
+  border-radius: 8px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.ace-owner-card__photo {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.ace-owner-card__nick {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
