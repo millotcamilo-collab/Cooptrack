@@ -285,7 +285,7 @@
 
     .colombes-final-stack img {
       position: absolute;
-      height: 120px;
+      height: 279px;
       width: auto;
       display: block;
     }
@@ -329,8 +329,8 @@
 
     .joker-toggle-btn {
       position: relative;
-      width: 90px;
-      height: 130px;
+      width: 220px;
+      height: 320px;
       padding: 0;
       border: none;
       background: transparent;
@@ -340,7 +340,7 @@
 
     .joker-toggle-btn img {
       position: absolute;
-      height: 120px;
+      height: 279px;
       width: auto;
       display: block;
       transition: transform 0.18s ease;
@@ -410,8 +410,8 @@
 
     .joker-toggle-btn {
       position: relative;
-      width: 95px;
-      height: 140px;
+      width: 220px;
+      height: 320px;
       padding: 0;
       border: none;
       background: transparent;
