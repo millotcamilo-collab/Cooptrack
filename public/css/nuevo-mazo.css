@@ -53,7 +53,7 @@
 
     .colombes-editor__card-wrap,
     .amsterdam-pack-wrap {
-      min-height: 120px;
+      min-height: 300px;
       display: flex;
       align-items: flex-start;
       justify-content: flex-start;
@@ -67,18 +67,18 @@
     }
 
     .card {
-      height: 120px;
+      height: 279px;
     }
 
-    .pack {
-      position: relative;
-      width: 170px;
-      height: 170px;
-    }
+.pack {
+  position: relative;
+  width: 260px;
+  height: 320px;
+}
 
     .pack img {
       position: absolute;
-      height: 120px;
+      height: 279px;
     }
 
     .joker-blue {
@@ -234,8 +234,8 @@
 
     #pack {
       position: relative;
-      width: 170px;
-      height: 120px;
+      width: 260px;
+      height: 320px;
       /* antes 170 */
       margin-top: 0;
     }
@@ -279,8 +279,8 @@
 
     .colombes-final-stack {
       position: relative;
-      width: 190px;
-      height: 140px;
+      width: 260px;
+      height: 320px;
     }
 
     .colombes-final-stack img {
