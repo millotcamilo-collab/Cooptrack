@@ -735,15 +735,13 @@
 const placardEl = document.getElementById("placard-container");
 
 if (placardEl) {
-  placardEl.classList.remove("is-hidden");
+  placardEl.className = "ct-block is-visible";
   placardEl.style.display = "block";
+  placardEl.style.opacity = "1";
+  placardEl.style.transform = "translateY(0)";
 }
 
 renderDeckPlacard();
-
-if (placardEl) {
-  placardEl.classList.add("is-visible");
-}
 
         done = true;
       }
