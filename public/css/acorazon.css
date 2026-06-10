@@ -162,3 +162,15 @@
   width: 30px;
   height: 30px;
 }
+
+.ace-owner-card__actions {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.ace-owner-card__save {
+  width: 34px;
+  height: 34px;
+}

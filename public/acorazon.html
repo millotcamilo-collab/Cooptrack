@@ -44,27 +44,28 @@
   </div>
 
   <div class="ace-owner-card__field-row">
-    <span class="ace-owner-card__suit">♦</span>
+    <div class="ace-owner-card__field-row">
+  <span class="ace-owner-card__suit">♦</span>
 
-    <select id="deckCurrencyCode" class="ace-owner-card__input ace-owner-card__input--code">
-      <option value="">---</option>
-      <option value="UYU">UYU</option>
-      <option value="ARS">ARS</option>
-      <option value="CLP">CLP</option>
-      <option value="BRL">BRL</option>
-      <option value="USD">USD</option>
-      <option value="EUR">EUR</option>
-    </select>
+  <select id="deckCurrencyCode"
+          class="ace-owner-card__input ace-owner-card__input--code">
+    ...
+  </select>
 
-    <input id="deckCurrencyName" class="ace-owner-card__input ace-owner-card__input--currency"
-      type="text" placeholder="Moneda" autocomplete="off">
-
-    <button id="createDeckBtn" class="icon-btn ace-owner-card__save" type="button" title="Crear mazo">
-      <img src="/assets/icons/salvar40.gif" alt="Crear mazo">
-    </button>
-  </div>
+  <input id="deckCurrencyName"
+         class="ace-owner-card__input ace-owner-card__input--currency"
+         type="text"
+         placeholder="Moneda">
 </div>
 
+<div class="ace-owner-card__actions">
+  <button id="createDeckBtn"
+          class="icon-btn ace-owner-card__save"
+          type="button"
+          title="Crear mazo">
+    <img src="/assets/icons/salvar40.gif" alt="Crear mazo">
+  </button>
+</div>
   <div id="statusMsg" class="ace-owner-card__status"></div>
 </div>
                 </div>
