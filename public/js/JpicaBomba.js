@@ -293,6 +293,14 @@
       creatorUserId === currentUserId;
 
     const userCanEdit = userIsCreator || userIsSpadeAceHolder;
+
+    function getIssuedWithForSpadeAction() {
+      const credentials = [];
+      if (userIsCreator) credentials.push("K_SPADE");
+      if (userIsSpadeAceHolder) credentials.push("A_SPADE");
+      return [...new Set(credentials)];
+    }
+
     const isApproved = statusRaw === "APPROVED";
     const isCancelled = statusRaw === "CANCELLED";
 
@@ -611,6 +619,7 @@ function buildPayload() {
 dispatch("tablero:save-play", {
   ...payload,
   play_status: userIsSpadeAceHolder ? "ACTIVE" : "SENT",
+  issued_with: getIssuedWithForSpadeAction(),
   recurrence: recurrencePayload.recurrence_type ? recurrencePayload : null
 });
         originalText = payload.text || "";
@@ -652,6 +661,7 @@ dispatch("tablero:save-play", {
 
         dispatch("tablero:approve-play", {
           ...payload,
+          issued_with: ["A_SPADE"],
           recurrence: recurrencePayload.recurrence_type ? recurrencePayload : null
         });
       });

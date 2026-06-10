@@ -252,6 +252,80 @@ async function getDeckTitleAHeartPlayId(client, deckId) {
   return result.rows[0] ? Number(result.rows[0].id) : null;
 }
 
+
+function normalizeCredentialList(value) {
+  const raw = Array.isArray(value)
+    ? value
+    : typeof value === 'string'
+      ? (() => {
+          try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch (_) {
+            return [];
+          }
+        })()
+      : [];
+
+  return [...new Set(
+    raw
+      .map((item) => String(item || '').trim().toUpperCase())
+      .filter(Boolean)
+  )];
+}
+
+function credentialForCard(rank, suit) {
+  const normalizedRank = String(rank || '').trim().toUpperCase();
+  const normalizedSuit = String(suit || '').trim().toUpperCase();
+  if (!['A', 'K'].includes(normalizedRank)) return null;
+  if (!['HEART', 'SPADE', 'DIAMOND', 'CLUB'].includes(normalizedSuit)) return null;
+  return `${normalizedRank}_${normalizedSuit}`;
+}
+
+async function getIssuedWithForUser(client, deckId, userId) {
+  const normalizedDeckId = Number(deckId || 0);
+  const normalizedUserId = Number(userId || 0);
+
+  if (!normalizedDeckId || !normalizedUserId) return [];
+
+  const result = await client.query(
+    `
+    SELECT
+      card_rank,
+      card_suit,
+      play_status,
+      play_code,
+      COALESCE(target_user_id, created_by_user_id) AS owner_user_id
+    FROM plays
+    WHERE deck_id = $1
+      AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K')
+      AND UPPER(COALESCE(card_suit, '')) IN ('HEART', 'SPADE', 'DIAMOND', 'CLUB')
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'DELETED', 'QUIT', 'FIRED')
+    ORDER BY id ASC
+    `,
+    [normalizedDeckId]
+  );
+
+  return normalizeCredentialList(
+    result.rows
+      .filter((row) => Number(row.owner_user_id || 0) === normalizedUserId)
+      .filter((row) => {
+        const rank = String(row.card_rank || '').trim().toUpperCase();
+        const status = String(row.play_status || '').trim().toUpperCase();
+        const flow = String(row.play_code || '').split('§')[7] || '';
+
+        if (rank === 'A') return flow === 'foundation';
+        if (rank === 'K') return ['ACTIVE', 'APPROVED', 'SENT', 'PENDING'].includes(status);
+        return false;
+      })
+      .map((row) => credentialForCard(row.card_rank, row.card_suit))
+  );
+}
+
+function mergeIssuedWith(...values) {
+  return normalizeCredentialList(values.flatMap((value) => normalizeCredentialList(value)));
+}
+
 function buildPlayCode({
   mazoId,
   userId,
@@ -286,6 +360,7 @@ async function insertInstitutionalPlay(client, {
   playCode,
   playText = '',
   playStatus = 'ACTIVE',
+  issuedWith = [],
 }) {
   const parsed = parseAndValidatePlayCode(playCode);
 
@@ -317,9 +392,10 @@ async function insertInstitutionalPlay(client, {
       card_rank,
       card_suit,
       play_status,
-      play_text
+      play_text,
+      issued_with
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
     RETURNING *`,
     [
       mazoId,
@@ -331,6 +407,7 @@ async function insertInstitutionalPlay(client, {
       parsed.suit,
       playStatus,
       playText || null,
+      JSON.stringify(normalizeCredentialList(issuedWith)),
     ]
   );
 
@@ -2082,6 +2159,8 @@ app.post('/plays', requireAuth, async (req, res) => {
       }
     }
 
+    const issuedWith = await getIssuedWithForUser(client, mazoId, userId);
+
     const created = await insertInstitutionalPlay(client, {
       mazoId,
       createdByUserId: userId,
@@ -2090,6 +2169,7 @@ app.post('/plays', requireAuth, async (req, res) => {
       playCode: play_code,
       playText: text,
       playStatus: play_status,
+      issuedWith,
     });
 
     // Readers iniciales de la jugada recién creada
@@ -2701,6 +2781,9 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
 
     await client.query('BEGIN');
 
+    const actorIssuedWith = await getIssuedWithForUser(client, current.deck_id, userId);
+    const nextIssuedWith = mergeIssuedWith(current.issued_with, actorIssuedWith);
+
     const updateResult = await client.query(
       `
   UPDATE plays
@@ -2715,8 +2798,9 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
     spade_mode = $8,
     play_code = $9,
     target_user_id = $10,
+    issued_with = $11::jsonb,
 updated_at = NOW()
-WHERE id = $11
+WHERE id = $12
 RETURNING *
   `,
       [
@@ -2730,6 +2814,7 @@ RETURNING *
         nextSpadeMode,
         nextPlayCode,
         nextTargetUserId,
+        JSON.stringify(nextIssuedWith),
         playId
       ]
     );
@@ -4073,6 +4158,16 @@ app.post('/plays/:id/validate', requireAuth, async (req, res) => {
       [validation.id]
     );
 
+    await client.query(
+      `
+      UPDATE plays
+      SET issued_with = $1::jsonb,
+          updated_at = NOW()
+      WHERE id = $2
+      `,
+      [JSON.stringify(mergeIssuedWith(play.issued_with, [validation.validator_role])), playId]
+    );
+
     const remainingResult = await client.query(
       `
       SELECT 1
@@ -4104,11 +4199,16 @@ app.post('/plays/:id/validate', requireAuth, async (req, res) => {
         UPDATE plays
         SET play_status = 'SENT',
             target_user_id = $1,
+            issued_with = $2::jsonb,
             updated_at = NOW()
-        WHERE id = $2
+        WHERE id = $3
         RETURNING *
         `,
-        [finalTargetUserId, playId]
+        [
+          finalTargetUserId,
+          JSON.stringify(mergeIssuedWith(play.issued_with, [validation.validator_role])),
+          playId
+        ]
       );
 
       updatedPlay = updatePlayResult.rows[0];

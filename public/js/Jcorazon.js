@@ -99,6 +99,14 @@
       creatorUserId === currentUserId;
 
     const userCanEdit = userIsCreator || userIsHeartAceHolder;
+
+    function getIssuedWithForHeartAction() {
+      const credentials = [];
+      if (userIsCreator) credentials.push("K_HEART");
+      if (userIsHeartAceHolder) credentials.push("A_HEART");
+      return [...new Set(credentials)];
+    }
+
     const isApproved = statusRaw === "APPROVED";
     const isArchived = statusRaw === "CANCELLED" || statusRaw === "REJECTED";
 
@@ -277,13 +285,15 @@
         dispatch("tablero:save-play", {
           playId,
           text: nextText,
-          play_status: userIsHeartAceHolder ? "ACTIVE" : "SENT"
+          play_status: userIsHeartAceHolder ? "ACTIVE" : "SENT",
+          issued_with: getIssuedWithForHeartAction()
         });
       });
 
       btnApprove?.addEventListener("click", () => {
         dispatch("tablero:approve-play", {
-          playId
+          playId,
+          issued_with: ["A_HEART"]
         });
       });
 

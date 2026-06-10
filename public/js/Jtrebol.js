@@ -90,6 +90,13 @@
 
     const userCanEdit = userIsCreator || userIsDiamondAceHolder;
 
+    function getIssuedWithForClubAction() {
+      const credentials = [];
+      if (userIsCreator) credentials.push("K_DIAMOND");
+      if (userIsDiamondAceHolder) credentials.push("A_DIAMOND");
+      return [...new Set(credentials)];
+    }
+
     const saveIcon = escapeHtml(ACTIONS.save || "");
     const approveIcon = escapeHtml(ACTIONS.approve || "");
     const deleteIcon = escapeHtml(ACTIONS.delete || "");
@@ -208,7 +215,8 @@
         dispatch("tablero:save-play", {
           playId,
           text: nextText,
-          amount: nextAmount
+          amount: nextAmount,
+          issued_with: getIssuedWithForClubAction()
         });
 
         savedTextValue = nextText;
@@ -243,7 +251,8 @@
 
       btnApprove?.addEventListener("click", () => {
         dispatch("tablero:approve-play", {
-          playId
+          playId,
+          issued_with: ["A_DIAMOND"]
         });
       });
 

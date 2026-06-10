@@ -214,7 +214,8 @@
                     target_user_id: draft.target_user_id,
                     play_code: playCode,
                     text: draft.play_text || "",
-                    play_status: "ACTIVE"
+                    play_status: "ACTIVE",
+                    issued_with: getIssuedWithForCurrentUser()
                 })
             });
 
@@ -428,6 +429,13 @@ function renderAssignedTargetPanel(user) {
 
     </section>
   `;
+}
+
+function getIssuedWithForCurrentUser() {
+    return getCurrentUserCorporateCards()
+        .map(card =>
+            `${normalizeRank(card.card_rank)}_${normalizeSuit(card.card_suit)}`
+        );
 }
 
     function normalizeSuit(value) {
