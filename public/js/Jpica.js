@@ -1213,116 +1213,113 @@
   }
 
   function renderJpikeChooser(play, context = {}) {
-    const helpers = context.helpers || {};
-    const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
-    const dispatch =
-      typeof context.dispatch === "function"
-        ? context.dispatch
-        : function (eventName, detail) {
+  const helpers = context.helpers || {};
+  const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
+  const dispatch =
+    typeof context.dispatch === "function"
+      ? context.dispatch
+      : function (eventName, detail) {
           document.dispatchEvent(new CustomEvent(eventName, { detail }));
         };
 
-    const ICONS = window.ICONS || {};
-    const ACTIONS = (ICONS && ICONS.actions) || {};
+  const ICONS = window.ICONS || {};
+  const ACTIONS = ICONS.actions || {};
 
-    const playId = play?.id;
-    const safeText = escapeHtml(String(play?.play_text || ""));
-    const rowId = `tablero-row-${playId}`;
+  const playId = play?.id;
+  const safeText = escapeHtml(String(play?.play_text || ""));
+  const rowId = `tablero-row-${playId}`;
 
-    const startIcon = escapeHtml(ACTIONS.start || "");
-    const bombIcon = escapeHtml(ACTIONS.bomb || "");
-    const deleteIcon = escapeHtml(ACTIONS.delete || "");
-    const helpIcon = escapeHtml(ACTIONS.help || "");
+  const startIcon = escapeHtml(ACTIONS.start || "");
+  const bombIcon = escapeHtml(ACTIONS.bomb || "");
+  const deleteIcon = escapeHtml(ACTIONS.delete || "");
+  const helpIcon = escapeHtml(ACTIONS.help || "");
 
-    setTimeout(() => {
-      const row = document.getElementById(rowId);
-      if (!row || row.dataset.bound === "true") return;
+  setTimeout(() => {
+    const row = document.getElementById(rowId);
+    if (!row || row.dataset.bound === "true") return;
 
-      row.dataset.bound = "true";
+    row.dataset.bound = "true";
 
-      const btnChooseAppointment = row.querySelector('[data-action="choose-appointment"]');
-      const btnChooseDeadline = row.querySelector('[data-action="choose-deadline"]');
-      const btnDelete = row.querySelector('[data-action="delete-play"]');
-      const btnHelp = row.querySelector('[data-action="help-play"]');
+    const btnChooseAppointment = row.querySelector('[data-action="choose-appointment"]');
+    const btnChooseDeadline = row.querySelector('[data-action="choose-deadline"]');
+    const btnDelete = row.querySelector('[data-action="delete-play"]');
+    const btnHelp = row.querySelector('[data-action="help-play"]');
 
-      btnChooseAppointment?.addEventListener("click", () => {
-        dispatch("tablero:save-play", {
-          playId,
-          text: String(play?.play_text || "").trim(),
-          spadeMode: "APPOINTMENT",
-          startDate: "",
-          endDate: "",
-          location: "",
-          issued_with: getIssuedWithForSpadeAction(),
-        });
+    btnChooseAppointment?.addEventListener("click", () => {
+      dispatch("tablero:save-play", {
+        playId,
+        text: String(play?.play_text || "").trim(),
+        spadeMode: "APPOINTMENT",
+        startDate: "",
+        endDate: "",
+        location: ""
       });
+    });
 
-      btnChooseDeadline?.addEventListener("click", () => {
-        dispatch("tablero:save-play", {
-          playId,
-          text: String(play?.play_text || "").trim(),
-          spadeMode: "DEADLINE",
-          startDate: "",
-          endDate: "",
-          location: "",
-          issued_with: getIssuedWithForSpadeAction(),
-        });
+    btnChooseDeadline?.addEventListener("click", () => {
+      dispatch("tablero:save-play", {
+        playId,
+        text: String(play?.play_text || "").trim(),
+        spadeMode: "DEADLINE",
+        startDate: "",
+        endDate: "",
+        location: ""
       });
+    });
 
-      btnDelete?.addEventListener("click", () => {
-        const confirmed = window.confirm("¿Seguro que querés borrar esta jugada?");
-        if (!confirmed) return;
+    btnDelete?.addEventListener("click", () => {
+      const confirmed = window.confirm("¿Seguro que querés borrar esta jugada?");
+      if (!confirmed) return;
 
-        dispatch("tablero:delete-play", {
-          playId
-        });
+      dispatch("tablero:delete-play", {
+        playId
       });
+    });
 
-      btnHelp?.addEventListener("click", () => {
-        dispatch("tablero:help-play", {
-          playId,
-          cardRank: "J",
-          cardSuit: "SPADE",
-          spadeMode: "",
-        });
+    btnHelp?.addEventListener("click", () => {
+      dispatch("tablero:help-play", {
+        playId,
+        cardRank: "J",
+        cardSuit: "SPADE",
+        spadeMode: ""
       });
-    }, 0);
+    });
+  }, 0);
 
-    return `
-  <article class="tablero-row tablero-row--jpike" id="${rowId}">
-    <div class="tablero-row__left">
-      <div class="tablero-row__card">J♠</div>
-    </div>
+  return `
+    <article class="tablero-row tablero-row--jpike" id="${rowId}">
+      <div class="tablero-row__left">
+        <div class="tablero-row__card">J♠</div>
+      </div>
 
-<div class="tablero-row__center">
-  <div class="tablero-row__mode-choose" data-role="mode-choose">
-    <div class="tablero-row__field-inline tablero-row__field-inline--title">
-      <span>${safeText || "Sin texto"}</span>
-    </div>
-  </div>
-</div>
+      <div class="tablero-row__center">
+        <div class="tablero-row__mode-choose" data-role="mode-choose">
+          <div class="tablero-row__field-inline tablero-row__field-inline--title">
+            <span>${safeText || "Sin texto"}</span>
+          </div>
+        </div>
+      </div>
 
-    <div class="tablero-row__right">
-      <button type="button" data-action="choose-appointment" title="Cita">
-        <img src="${startIcon}" alt="Cita" />
-      </button>
+      <div class="tablero-row__right">
+        <button type="button" data-action="choose-appointment" title="Cita">
+          ${startIcon ? `<img src="${startIcon}" alt="Cita" />` : `<span>📅</span>`}
+        </button>
 
-      <button type="button" data-action="choose-deadline" title="Bomba">
-        <img src="${bombIcon}" alt="Bomba" />
-      </button>
+        <button type="button" data-action="choose-deadline" title="Bomba">
+          ${bombIcon ? `<img src="${bombIcon}" alt="Bomba" />` : `<span>💣</span>`}
+        </button>
 
-      <button type="button" data-action="delete-play" title="Borrar">
-        <img src="${deleteIcon}" alt="Borrar" />
-      </button>
+        <button type="button" data-action="delete-play" title="Borrar">
+          ${deleteIcon ? `<img src="${deleteIcon}" alt="Borrar" />` : `<span>X</span>`}
+        </button>
 
-      <button type="button" data-action="help-play" title="Help">
-        ${helpIcon ? `<img src="${helpIcon}" alt="Help" />` : `<span>?</span>`}
-      </button>
-    </div>
-  </article>
-`;
-  }
-
+        <button type="button" data-action="help-play" title="Help">
+          ${helpIcon ? `<img src="${helpIcon}" alt="Help" />` : `<span>?</span>`}
+        </button>
+      </div>
+    </article>
+  `;
+}
   function renderJpikeDeadlineFallback(play, context = {}) {
     const helpers = context.helpers || {};
     const escapeHtml = helpers.escapeHtml || ((v) => String(v ?? ""));
