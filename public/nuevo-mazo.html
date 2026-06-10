@@ -24,7 +24,7 @@
 <body>
   <div class="lienzo-page">
     <div id="topbar-container"></div>
-    <div id="placard-container" class="ct-block"></div>
+    <div id="placard-container" class="ct-block is-hidden"></div>
     <div class="lienzo-grid ct-block">
 
       <!-- COLOMBES -->
@@ -32,7 +32,7 @@
         <div class="panel-topbar">
           <div class="panel-topbar__col panel-topbar__col--identity">
             <div class="lienzo-target-header lienzo-target-header--top">
-              
+
               <img id="userPhoto" class="lienzo-target-header__photo" src="/assets/icons/singeta120.gif" alt="Usuario">
               <span id="userNickname" class="lienzo-target-header__name">Usuario</span>
             </div>
@@ -94,7 +94,7 @@
         <div class="panel-topbar panel-topbar--single">
           <div class="panel-topbar__col panel-topbar__col--identity">
             <div class="lienzo-source-header lienzo-source-header--top">
-              
+
               <img src="/assets/icons/Compila60.gif" class="lienzo-source-header__photo" alt="Cooptrack server">
               <div class="lienzo-source-header__name">Cooptrack Server</div>
             </div>
@@ -558,24 +558,6 @@
 
       hideEl("saveAllBtn");
 
-      const placardEl = document.getElementById("placard-container");
-
-      try {
-        if (placardEl) {
-          placardEl.classList.remove("is-visible");
-        }
-
-        renderDeckPlacard();
-
-        if (placardEl) {
-          void placardEl.offsetWidth;
-          placardEl.classList.add("is-visible");
-        }
-      } catch (error) {
-        // No dejamos que un error del placard bloquee la animación del mazo.
-        console.error("Error actualizando placard antes de animar:", error);
-      }
-
       start();
     }
 
@@ -749,7 +731,12 @@
         showEl("serverNextPanel");
         enableServerNextPanel();
         showEl("createDeckBtn");
+        renderDeckPlacard();
 
+        const placardEl = document.getElementById("placard-container");
+        if (placardEl) {
+          placardEl.classList.add("is-visible");
+        }
         done = true;
       }
 
@@ -776,15 +763,6 @@
       const mode = getPageMode();
 
       applyPageMode();
-
-      if (mode !== "jokerblue") {
-        renderDeckPlacard();
-
-        const placardEl = document.getElementById("placard-container");
-        if (placardEl) {
-          placardEl.classList.add("is-visible");
-        }
-      }
 
       if (mode === "jokerblue") {
         renderDeckPlacard();
