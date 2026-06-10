@@ -733,10 +733,12 @@
         showEl("createDeckBtn");
         renderDeckPlacard();
 
-        const placardEl = document.getElementById("placard-container");
-        if (placardEl) {
-          placardEl.classList.add("is-visible");
-        }
+showEl("placard-container");
+
+const placardEl = document.getElementById("placard-container");
+if (placardEl) {
+  placardEl.classList.add("is-visible");
+}
         done = true;
       }
 
