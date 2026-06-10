@@ -460,7 +460,7 @@ function resolveReadOnlyPageForPlay(play, currentUserId) {
   }
 
   function goToCreateDeckPage() {
-    window.location.href = "/nuevo-mazo.html";
+    window.location.href = "/acorazon.html";
   }
 
   async function hasArchivedDecks() {

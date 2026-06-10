@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A♥ - Nuevo mazo</title>
+
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="/css/topbar.css" />
+  <link rel="stylesheet" href="/css/lienzo.css" />
+  <link rel="stylesheet" href="/css/nuevo-mazo.css" />
+  <link rel="icon" type="image/png" href="/assets/icons/bigote.png">
+
+  <script src="/js/topbar.js"></script>
+</head>
+
+<body>
+  <div class="lienzo-page">
+    <div id="topbar-container"></div>
+
+    <div class="lienzo-grid ct-block" style="grid-template-columns: 1fr;">
+      <div class="panel panel--split-top">
+        <div class="panel-topbar">
+          <div class="panel-topbar__col panel-topbar__col--identity">
+            <div class="lienzo-target-header lienzo-target-header--top">
+              <img id="userPhoto" class="lienzo-target-header__photo" src="/assets/icons/singeta120.gif" alt="Usuario">
+              <span id="userNickname" class="lienzo-target-header__name">Usuario</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="content colombes-content">
+          <div class="colombes-editor">
+            <div class="colombes-editor__card-wrap">
+              <img src="/assets/icons/Acorazon.png" class="card" alt="As de corazón">
+            </div>
+
+            <div class="colombes-editor__form">
+              <div class="colombes-editor__line colombes-editor__line--top">
+                <span class="colombes-editor__suit colombes-editor__suit--red">♥</span>
+                <input id="deckName" class="colombes-editor__input colombes-editor__input--title" type="text"
+                  placeholder="Título del mazo" autocomplete="off">
+              </div>
+
+              <div class="colombes-editor__line colombes-editor__line--bottom">
+                <span class="colombes-editor__suit colombes-editor__suit--red">♦</span>
+
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <select id="deckCurrencyCode" class="colombes-editor__input colombes-editor__input--code">
+                    <option value="">---</option>
+                    <option value="UYU">UYU</option>
+                    <option value="ARS">ARS</option>
+                    <option value="CLP">CLP</option>
+                    <option value="BRL">BRL</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                  </select>
+
+                  <input id="deckCurrencyName" class="colombes-editor__input colombes-editor__input--currency"
+                    type="text" placeholder="Moneda" autocomplete="off">
+
+                  <button id="createDeckBtn" class="icon-btn" type="button" title="Crear mazo">
+                    <img src="/assets/icons/salvar40.gif" alt="Crear mazo">
+                  </button>
+                </div>
+              </div>
+
+              <div id="statusMsg" class="colombes-editor__status"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = window.API_BASE_URL || "https://cooptrack-backend.onrender.com";
+
+    const DEFAULT_CURRENCY_NAMES = {
+      UYU: "Peso uruguayo",
+      ARS: "Peso argentino",
+      CLP: "Peso chileno",
+      BRL: "Real brasileño",
+      USD: "Dólar estadounidense",
+      EUR: "Euro"
+    };
+
+    function setStatus(message, isError = false) {
+      const el = document.getElementById("statusMsg");
+      if (!el) return;
+      el.textContent = message || "";
+      el.style.color = isError ? "#ffb3b3" : "#f5f5f5";
+    }
+
+    function syncCurrencyNameFromCode() {
+      const codeEl = document.getElementById("deckCurrencyCode");
+      const nameEl = document.getElementById("deckCurrencyName");
+      const code = String(codeEl?.value || "").trim().toUpperCase();
+      if (nameEl) nameEl.value = DEFAULT_CURRENCY_NAMES[code] || "";
+    }
+
+    async function loadUserHeader() {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+        if (!data.ok || !data.user) return;
+
+        const photoEl = document.getElementById("userPhoto");
+        const nameEl = document.getElementById("userNickname");
+
+        if (photoEl && data.user.profile_photo_url) photoEl.src = data.user.profile_photo_url;
+        if (nameEl && data.user.nickname) nameEl.textContent = data.user.nickname;
+      } catch (error) {
+        console.error("Error cargando usuario:", error);
+      }
+    }
+
+    async function createDeck() {
+      const token = localStorage.getItem("cooptrackToken");
+
+      if (!token) {
+        setStatus("Falta sesión activa", true);
+        return;
+      }
+
+      const name = String(document.getElementById("deckName")?.value || "").trim();
+      const currencySymbol = String(document.getElementById("deckCurrencyCode")?.value || "").trim().toUpperCase();
+      const currencyName = String(document.getElementById("deckCurrencyName")?.value || "").trim();
+
+      if (!name) {
+        setStatus("Falta el título del mazo", true);
+        document.getElementById("deckName")?.focus();
+        return;
+      }
+
+      if (!currencySymbol) {
+        setStatus("Falta el símbolo de moneda", true);
+        document.getElementById("deckCurrencyCode")?.focus();
+        return;
+      }
+
+      try {
+        setStatus("Creando mazo...");
+
+        const response = await fetch(`${API_BASE_URL}/decks`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name,
+            currency_symbol: currencySymbol,
+            currency_name: currencyName || null,
+            joker_type: "RED"
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok || !data.mazo?.id) {
+          setStatus(data?.error || "No se pudo crear el mazo", true);
+          return;
+        }
+
+        window.location.href = `/mazo.html?id=${data.mazo.id}`;
+      } catch (error) {
+        console.error("Error creando mazo:", error);
+        setStatus("Error de red al crear el mazo", true);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await loadUserHeader();
+
+      document.getElementById("deckCurrencyCode")?.addEventListener("change", syncCurrencyNameFromCode);
+      document.getElementById("createDeckBtn")?.addEventListener("click", createDeck);
+    });
+  </script>
+</body>
+</html>
