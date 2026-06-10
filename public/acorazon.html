@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,6 +26,7 @@
         <div class="content colombes-content">
           <div class="colombes-editor">
             <div class="colombes-editor__card-wrap">
+
               <div class="ace-owner-card">
                 <div class="ace-owner-card__corner ace-owner-card__corner--tl">
                   <span>A</span>
@@ -32,42 +34,51 @@
                 </div>
 
                 <div class="ace-owner-card__body">
-                  <div class="ace-owner-card__body">
-  <img id="aceOwnerPhoto" class="ace-owner-card__photo" src="/assets/icons/singeta120.gif" alt="Propietario">
-  <div id="aceOwnerNick" class="ace-owner-card__nick">Usuario</div>
+                  <img id="aceOwnerPhoto" class="ace-owner-card__photo" src="/assets/icons/singeta120.gif" alt="Propietario">
+                  <div id="aceOwnerNick" class="ace-owner-card__nick">Usuario</div>
 
-  <div class="ace-owner-card__fields">
-  <div class="ace-owner-card__field-row">
-    <span class="ace-owner-card__suit">♥</span>
-    <input id="deckName" class="ace-owner-card__input ace-owner-card__input--title"
-      type="text" placeholder="Título del mazo" autocomplete="off">
-  </div>
+                  <div class="ace-owner-card__fields">
+                    <div class="ace-owner-card__field-row">
+                      <span class="ace-owner-card__suit">♥</span>
 
-  <div class="ace-owner-card__field-row">
-    <div class="ace-owner-card__field-row">
-  <span class="ace-owner-card__suit">♦</span>
+                      <input id="deckName"
+                        class="ace-owner-card__input ace-owner-card__input--title"
+                        type="text"
+                        placeholder="Título del mazo"
+                        autocomplete="off">
+                    </div>
 
-  <select id="deckCurrencyCode"
-          class="ace-owner-card__input ace-owner-card__input--code">
-    ...
-  </select>
+                    <div class="ace-owner-card__field-row">
+                      <span class="ace-owner-card__suit">♦</span>
 
-  <input id="deckCurrencyName"
-         class="ace-owner-card__input ace-owner-card__input--currency"
-         type="text"
-         placeholder="Moneda">
-</div>
+                      <select id="deckCurrencyCode"
+                        class="ace-owner-card__input ace-owner-card__input--code">
+                        <option value="">---</option>
+                        <option value="UYU">UYU</option>
+                        <option value="ARS">ARS</option>
+                        <option value="CLP">CLP</option>
+                        <option value="BRL">BRL</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                      </select>
 
-<div class="ace-owner-card__actions">
-  <button id="createDeckBtn"
-          class="icon-btn ace-owner-card__save"
-          type="button"
-          title="Crear mazo">
-    <img src="/assets/icons/salvar40.gif" alt="Crear mazo">
-  </button>
-</div>
-  <div id="statusMsg" class="ace-owner-card__status"></div>
-</div>
+                      <input id="deckCurrencyName"
+                        class="ace-owner-card__input ace-owner-card__input--currency"
+                        type="text"
+                        placeholder="Moneda">
+                    </div>
+
+                    <div class="ace-owner-card__actions">
+                      <button id="createDeckBtn"
+                        class="icon-btn ace-owner-card__save"
+                        type="button"
+                        title="Crear mazo">
+                        <img src="/assets/icons/salvar40.gif" alt="Crear mazo">
+                      </button>
+                    </div>
+
+                    <div id="statusMsg" class="ace-owner-card__status"></div>
+                  </div>
                 </div>
 
                 <div class="ace-owner-card__corner ace-owner-card__corner--br">
@@ -75,9 +86,8 @@
                   <span>♥</span>
                 </div>
               </div>
-            </div>
 
-            
+            </div>
           </div>
         </div>
       </div>
@@ -116,7 +126,6 @@
     function syncCurrencyNameFromCode() {
       const codeEl = document.getElementById("deckCurrencyCode");
       const nameEl = document.getElementById("deckCurrencyName");
-
       const code = String(codeEl?.value || "").trim().toUpperCase();
 
       if (nameEl) {
@@ -253,4 +262,5 @@
     });
   </script>
 </body>
+
 </html>
