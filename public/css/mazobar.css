@@ -201,7 +201,7 @@
   border-radius: 4px;
   background: #fff;
   color: #111;
-  font-family: "Courier New", Courier, monospace;
+  font-family: var(--font-text);
   font-weight: 700;
   font-size: 1.1rem;
   padding: 7px 12px;
@@ -535,7 +535,7 @@
   position: absolute;
   width: 11px;
 
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-card);
   font-weight: 700;
   line-height: .85;
   text-align: center;

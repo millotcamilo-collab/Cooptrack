@@ -17,7 +17,7 @@
   width: 22px;
   text-align: center;
   line-height: 1;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-card);
   font-weight: 700;
   pointer-events: none;
   z-index: 2;
@@ -287,7 +287,7 @@
   right: 16px;
   font-size: 86px;
   line-height: 1;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-card);
   color: #111;
   opacity: 0.85;
   z-index: 2;

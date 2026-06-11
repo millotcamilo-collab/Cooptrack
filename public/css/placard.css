@@ -437,7 +437,7 @@
   width: 7px;
   font-size: 10px;
 
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-card);
   font-weight: 700;
   line-height: 0.78;
   text-align: center;
