@@ -293,6 +293,7 @@
         });
 
         const data = await response.json();
+        console.log("STATE", data);
         const deck = data?.mazo || data?.deck || data?.state?.mazo || data?.state?.deck || null;
 
         if (deck) {
