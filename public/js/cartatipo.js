@@ -97,22 +97,23 @@
     return "";
   }
 
-  function renderPlayCardBox({
-    rank,
-    suit,
-    title = "",
-    metas = [],
-    status = "",
-    ownerUser = null,
-    ownerLabel = "",
-    ownerCards = [],
-    actionsHtml = "",
-    showOwner = true,
-    showActions = true
-  }) {
+function renderPlayCardBox({
+  rank,
+  suit,
+  title = "",
+  metas = [],
+  status = "",
+  ownerUser = null,
+  ownerLabel = "",
+  ownerCards = [],
+  actionsHtml = "",
+  showOwner = true,
+  showActions = true,
+  figureOverrideSrc = ""
+}) {
     const safeRank = normalizeRank(rank);
     const safeSuit = normalizeSuit(suit);
-    const figureSrc = getFigureImageSrc(safeRank, safeSuit);
+    const figureSrc = figureOverrideSrc || getFigureImageSrc(safeRank, safeSuit);
     const decisionHtml = renderDecisionStamp(status);
 
     const suitSymbol = getSuitSymbol(safeSuit);

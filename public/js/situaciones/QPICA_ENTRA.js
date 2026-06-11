@@ -4,19 +4,19 @@ window.QPICA_ENTRA = {
     return String(parent?.spade_mode || play?.spade_mode || "").toUpperCase();
   },
 
-buildFrame(prefix, index) {
+  buildFrame(prefix, index) {
 
-  const number =
-    prefix === "QPMira"
-      ? String(index)
-      : String(index).padStart(2, "0");
+    const number =
+      prefix === "QPMira"
+        ? String(index)
+        : String(index).padStart(2, "0");
 
-  const src = `/assets/animations/${prefix}${number}.png`;
+    const src = `/assets/animations/${prefix}${number}.png`;
 
-  console.log("FRAME", src);
+    console.log("FRAME", src);
 
-  return src;
-},
+    return src;
+  },
 
   playSequence({ hostId, prefix, from = 0, to = 29, fps = 18 }) {
     const host = document.getElementById(hostId);
@@ -58,10 +58,12 @@ buildFrame(prefix, index) {
           <div class="amsterdam-card-stack">
 
             <div class="amsterdam-card-stack__primary">
-              <div id="qpica-j-animation" class="qpica-animation qpica-animation--j"></div>
-              <div id="qpica-q-animation" class="qpica-animation qpica-animation--q"></div>
 
-              ${helpers.renderPlayCardBox(play)}
+
+              ${helpers.renderPlayCardBox({
+      ...play,
+      figureOverrideSrc: this.buildFrame("QPMira", 0)
+    })}
                 
               <div id="qpica-week-container" class="qpica-week-container"></div>
 
@@ -73,34 +75,5 @@ buildFrame(prefix, index) {
     `;
   },
 
-  start(play) {
-      console.log("START QPICA_ENTRA", play);
 
-    const mode = this.getParentSpadeMode(play);
-
-    const jPrefix =
-      mode === "DEADLINE"
-        ? "JpicaDeadline"
-        : "JpicaCita";
-
-
-          console.log("J PREFIX", jPrefix);
-  console.log("Q PREFIX", "QPMira");
-
-    this.playSequence({
-      hostId: "qpica-j-animation",
-      prefix: jPrefix,
-      from: 0,
-      to: 29,
-      fps: 18
-    });
-
-    this.playSequence({
-      hostId: "qpica-q-animation",
-      prefix: "QPMira",
-      from: 0,
-      to: 8,
-      fps: 12
-    });
-  }
 };
