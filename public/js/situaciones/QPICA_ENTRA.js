@@ -4,10 +4,12 @@ window.QPICA_ENTRA = {
     return String(parent?.spade_mode || play?.spade_mode || "").toUpperCase();
   },
 
-  buildFrame(prefix, index) {
-    const number = String(index).padStart(2, "0");
-    return `/assets/animations/${prefix}${number}.png`;
-  },
+buildFrame(prefix, index) {
+  const number = String(index).padStart(2, "0");
+  const src = `/assets/animations/${prefix}${number}.png`;
+  console.log("FRAME", src);
+  return src;
+},
 
   playSequence({ hostId, prefix, from = 0, to = 29, fps = 18 }) {
     const host = document.getElementById(hostId);
@@ -66,7 +68,7 @@ window.QPICA_ENTRA = {
 
     const jPrefix =
       mode === "DEADLINE"
-        ? "JpicaDeadLine"
+        ? "JpicaDeadline"
         : "JpicaCita";
 
     this.playSequence({
@@ -79,7 +81,7 @@ window.QPICA_ENTRA = {
 
     this.playSequence({
       hostId: "qpica-q-animation",
-      prefix: "QpicaMira",
+      prefix: "QPicaMira",
       from: 0,
       to: 8,
       fps: 12
