@@ -223,38 +223,26 @@
     }
 
     function renderDeckPlacard() {
-      const placardEl = document.getElementById("placard-container");
-      if (!placardEl) return;
+  if (typeof renderPlacard !== "function") {
+    console.error("renderPlacard no está disponible. Revisar /js/placard.js");
+    return;
+  }
 
-      if (typeof renderPlacard !== "function") {
-        console.warn("renderPlacard no está disponible.");
-        placardEl.innerHTML = `<div class="placard-fallback">${escapeHtml(deckTitle || "Mazo")}</div>`;
-        showPlacard();
-        return;
-      }
+  renderPlacard("placard-container", {
+    deckPhotoUrl,
+    rank: "A",
+    suit: "HEART",
+    title: deckTitle || "Mazo",
+    currencyCode: deckCurrencyCode,
+    currencyName: deckCurrencyName,
+    showCurrency: Boolean(deckCurrencyCode || deckCurrencyName),
+    canEditPhoto: false,
+    isEditingPhoto: false,
+    draftPhotoUrl: deckPhotoUrl
+  });
 
-      try {
-        renderPlacard("placard-container", {
-          deckPhotoUrl,
-          rank: "A",
-          suit: "HEART",
-          title: deckTitle || "Mazo",
-          currencyCode: deckCurrencyCode,
-          currencyName: deckCurrencyName,
-          showCurrency: Boolean(deckCurrencyCode || deckCurrencyName),
-          canEditPhoto: true,
-          isEditingPhoto: isEditingPlacardPhoto,
-          draftPhotoUrl: deckPhotoUrl
-        });
-
-        bindPlacardPhotoControls();
-        showPlacard();
-      } catch (error) {
-        console.error("Error renderizando placard:", error);
-        placardEl.innerHTML = `<div class="placard-fallback">${escapeHtml(deckTitle || "Mazo")}</div>`;
-        showPlacard();
-      }
-    }
+  showPlacard();
+}
 
     function escapeHtml(value) {
       return String(value || "")

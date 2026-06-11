@@ -102,7 +102,6 @@ body {
 
 .pack img {
   position: absolute;
-  height: 279px;
 }
 
 .joker-blue {
@@ -143,8 +142,8 @@ body {
 
 .joker-toggle-btn {
   position: relative;
-  width: 220px;
-  height: 320px;
+  width: 260px;
+  height: 400px;
   padding: 0;
   border: none;
   background: transparent;
@@ -154,7 +153,7 @@ body {
 
 .joker-toggle-btn img {
   position: absolute;
-  height: 279px;
+  height: 360px;
   width: auto;
   display: block;
   transition: transform 0.18s ease;
