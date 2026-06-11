@@ -556,8 +556,8 @@ ${draggable ? `data-play-id="${playId}" data-rank="${rank}" data-suit="${suit}"`
 
     const jokerSrc =
       jokerSuit === "BLUE"
-        ? "/assets/icons/joker_blue.gif"
-        : "/assets/icons/Joker120.gif";
+        ? "/assets/icons/Joker.png"
+        : "/assets/icons/joker_blue.png";
 
     const jokerAlt =
       jokerSuit === "BLUE"
