@@ -55,6 +55,9 @@ buildFrame(prefix, index) {
               <div id="qpica-q-animation" class="qpica-animation qpica-animation--q"></div>
 
               ${helpers.renderPlayCardBox(play)}
+                
+              <div id="qpica-week-container" class="qpica-week-container"></div>
+
             </div>
 
           </div>
@@ -76,7 +79,7 @@ buildFrame(prefix, index) {
 
           console.log("J PREFIX", jPrefix);
   console.log("Q PREFIX", "QPicaMira");
-  
+
     this.playSequence({
       hostId: "qpica-j-animation",
       prefix: jPrefix,

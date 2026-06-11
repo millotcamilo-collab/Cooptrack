@@ -73,7 +73,7 @@
   position: absolute;
   overflow: hidden;
 
-  padding: calc(var(--lv2-card-h) * 0.50) 6px 38px;
+  padding: calc(var(--lv2-card-h) * 0.38) 6px 38px;
 
   display: flex;
   flex-direction: column;
