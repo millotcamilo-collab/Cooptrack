@@ -52,7 +52,7 @@
           return;
         }
 
-        window.location.href = `/nuevo-mazo.html?mode=jokerblue&deckId=${deckId}`;
+        window.location.href = `/joker.html?mode=jokerblue&deckId=${deckId}`;
       }
 
       row.addEventListener("click", openJokerBluePage);
