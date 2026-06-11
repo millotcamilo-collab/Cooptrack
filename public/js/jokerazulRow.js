@@ -22,8 +22,8 @@
       status === "ACTIVE" || action === "init_joker_blue";
 
     const jokerSrc = isBlueCurrent
-      ? "/assets/icons/joker_blue.gif"
-      : "/assets/icons/Joker.gif";
+      ? "/assets/icons/joker_blue.png"
+      : "/assets/icons/Joker.png";
 
     const jokerAlt = isBlueCurrent
       ? "Joker azul"
