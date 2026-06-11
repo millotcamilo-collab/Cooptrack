@@ -79,7 +79,7 @@
                   <span class="server-next__label">Publicar A♥ J ♥ ♠</span>
                 </label>
 
-              
+
 
                 <div id="statusMsg" class="joker-status"></div>
               </div>
@@ -103,14 +103,17 @@
     let selectedJokerMonths = 1;
     let currentJokerPlayId = 0;
 
+    let jokerBlueActive = false;
+
     function updateJokerPlanOptions() {
       const plans = document.getElementById("jokerPlanOptions");
 
       if (!plans) return;
 
-      plans.style.display = isBlueOnTop
-        ? "flex"
-        : "none";
+      plans.style.display =
+        isBlueOnTop && !jokerBlueActive
+          ? "flex"
+          : "none";
     }
 
     const API_BASE_URL = "https://cooptrack-backend.onrender.com";
@@ -183,14 +186,14 @@
         labels[1].textContent = "Enviar A, K, Q ♥ ♠ ♦ ♣";
         labels[2].textContent = "Despedir A, K, Q ♥ ♠ ♦ ♣";
         labels[3].textContent = "Publicar A♥ J♥ ♠ ♣";
-        showEl("sendJokerBlueBtn");
+
       } else {
         if (planLabel) planLabel.textContent = "Gratis";
         labels[0].textContent = "Aprobar J ♥ ♠ ♦ ♣";
         labels[1].textContent = "Enviar Q ♠";
         labels[2].textContent = "Despedir Q ♠";
         labels[3].textContent = "Publicar A♥ J ♥ ♠";
-        hideEl("sendJokerBlueBtn");
+
       }
     }
 
@@ -341,6 +344,34 @@
 
         currentJokerPlayId = Number(jokerPlay?.id || 0);
 
+        if (jokerPlay) {
+          currentJokerPlayId = Number(jokerPlay.id || 0);
+
+          const jokerStatus = String(jokerPlay.play_status || "").toUpperCase();
+          const jokerEndDate = jokerPlay.end_date || null;
+
+          jokerBlueActive =
+            jokerStatus === "ACTIVE" &&
+            jokerEndDate &&
+            new Date(jokerEndDate) > new Date();
+
+          if (jokerBlueActive) {
+            isBlueOnTop = true;
+
+            renderFinalJokers();
+            updateServerNextLabels();
+            updateJokerPlanOptions();
+          }
+
+          if (jokerStatus === "ACTIVE" && jokerEndDate) {
+            const date = new Date(jokerEndDate);
+            const planLabel = document.getElementById("serverPlanLabel");
+
+            if (planLabel && !Number.isNaN(date.getTime())) {
+              planLabel.textContent = `Vigente hasta ${date.toLocaleDateString("es-UY")}`;
+            }
+          }
+        }
         console.log("STATE", data);
 
         const deck = data?.mazo || data?.deck || data?.state?.mazo || data?.state?.deck || null;
@@ -413,6 +444,9 @@
         }
 
         setStatus(`Joker azul activo hasta ${endDate.toLocaleDateString("es-UY")}.`);
+        setTimeout(() => {
+          window.location.href = `/mazoAdministradores.html?deckId=${getDeckIdFromUrl()}`;
+        }, 800);
       } catch (error) {
         console.error("Error activando Joker azul:", error);
         setStatus("Error de red al activar Joker azul", true);
