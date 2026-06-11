@@ -29,13 +29,7 @@
 
             <div class="joker-stage__left">
               <div class="joker-pack-wrap">
-                <div id="pack" class="pack">
-                  <img src="/assets/icons/joker_blue.png" class="joker-blue" alt="Joker azul">
-                  <img src="/assets/icons/Joker.png" class="joker-red" alt="Joker rojo">
-                  <img src="/assets/icons/Apike.png" class="spade" alt="As de picas">
-                  <img src="/assets/icons/Adiamante.png" class="diamond" alt="As de diamantes">
-                  <img src="/assets/icons/Atrebol.png" class="club" alt="As de trébol">
-                </div>
+                <div id="pack" class="pack jokers-only" aria-label="Selector de Joker"></div>
               </div>
             </div>
 
@@ -225,29 +219,50 @@
 
       placardEl.classList.remove("is-hidden");
       placardEl.classList.add("is-visible");
+      placardEl.style.display = "block";
     }
 
     function renderDeckPlacard() {
+      const placardEl = document.getElementById("placard-container");
+      if (!placardEl) return;
+
       if (typeof renderPlacard !== "function") {
         console.warn("renderPlacard no está disponible.");
+        placardEl.innerHTML = `<div class="placard-fallback">${escapeHtml(deckTitle || "Mazo")}</div>`;
+        showPlacard();
         return;
       }
 
-      renderPlacard("placard-container", {
-        deckPhotoUrl,
-        rank: "A",
-        suit: "HEART",
-        title: deckTitle,
-        currencyCode: deckCurrencyCode,
-        currencyName: deckCurrencyName,
-        showCurrency: Boolean(deckCurrencyCode || deckCurrencyName),
-        canEditPhoto: true,
-        isEditingPhoto: isEditingPlacardPhoto,
-        draftPhotoUrl: deckPhotoUrl
-      });
+      try {
+        renderPlacard("placard-container", {
+          deckPhotoUrl,
+          rank: "A",
+          suit: "HEART",
+          title: deckTitle || "Mazo",
+          currencyCode: deckCurrencyCode,
+          currencyName: deckCurrencyName,
+          showCurrency: Boolean(deckCurrencyCode || deckCurrencyName),
+          canEditPhoto: true,
+          isEditingPhoto: isEditingPlacardPhoto,
+          draftPhotoUrl: deckPhotoUrl
+        });
 
-      bindPlacardPhotoControls();
-      showPlacard();
+        bindPlacardPhotoControls();
+        showPlacard();
+      } catch (error) {
+        console.error("Error renderizando placard:", error);
+        placardEl.innerHTML = `<div class="placard-fallback">${escapeHtml(deckTitle || "Mazo")}</div>`;
+        showPlacard();
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     function bindPlacardPhotoControls() {
@@ -399,15 +414,19 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await loadDeckForPlacard();
-
+      // Primero dejamos la página en estado Joker.
+      // Así nunca se ve el paquete viejo de nuevo-mazo mientras carga el mazo.
       renderFinalJokers();
       updateServerNextLabels();
       enableServerNextPanel();
+      renderDeckPlacard();
 
       setStatus("Elegí el Joker rojo o azul.");
 
       document.getElementById("sendJokerBlueBtn")?.addEventListener("click", handleSendJokerBlue);
+
+      // Después completamos el placard con los datos reales del mazo.
+      await loadDeckForPlacard();
     });
   </script>
 </body>

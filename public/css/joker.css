@@ -267,3 +267,19 @@ body {
     margin-top: 0;
   }
 }
+
+
+/* Refuerzo: el placard común debe quedar visible aunque haya nacido con is-hidden. */
+#placard-container.is-visible {
+  display: block !important;
+}
+
+.placard-fallback {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  font-weight: 600;
+}
