@@ -27,11 +27,30 @@
         <div class="content">
           <div class="joker-stage">
 
-            <div class="joker-stage__left">
-              <div class="joker-pack-wrap">
-                <div id="pack" class="pack jokers-only" aria-label="Selector de Joker"></div>
-              </div>
-            </div>
+<div class="joker-stage__left">
+
+  <div id="jokerPlanOptions" class="joker-plan-options">
+    <button class="joker-plan-option is-selected" data-months="1">
+      <span>1</span>
+      <small>mes</small>
+    </button>
+
+    <button class="joker-plan-option" data-months="6">
+      <span>6</span>
+      <small>meses</small>
+    </button>
+
+    <button class="joker-plan-option" data-months="12">
+      <span>12</span>
+      <small>meses</small>
+    </button>
+  </div>
+
+  <div class="joker-pack-wrap">
+    <div id="pack" class="pack jokers-only" aria-label="Selector de Joker"></div>
+  </div>
+
+</div>
 
             <div class="joker-stage__right">
               <div id="serverNextPanel" class="server-next server-next--readonly is-hidden">
