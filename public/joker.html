@@ -182,15 +182,15 @@
           title="Cambiar orden de jokers"
         >
           ${isBlueOnTop
-            ? `
+          ? `
               <img src="/assets/icons/Joker.png" class="joker-red joker-red--bottom" alt="Joker rojo">
               <img src="/assets/icons/joker_blue.png" class="joker-blue joker-blue--top" alt="Joker azul">
             `
-            : `
+          : `
               <img src="/assets/icons/joker_blue.png" class="joker-blue joker-blue--bottom" alt="Joker azul">
               <img src="/assets/icons/Joker.png" class="joker-red joker-red--top" alt="Joker rojo">
             `
-          }
+        }
         </button>
       `;
 
@@ -222,27 +222,38 @@
       placardEl.style.display = "block";
     }
 
-    function renderDeckPlacard() {
-  if (typeof renderPlacard !== "function") {
-    console.error("renderPlacard no está disponible. Revisar /js/placard.js");
-    return;
-  }
+function getSuitSymbol(suit) {
+  const value = String(suit || "").toUpperCase();
 
-  renderPlacard("placard-container", {
-    deckPhotoUrl,
-    rank: "A",
-    suit: "HEART",
-    title: deckTitle || "Mazo",
-    currencyCode: deckCurrencyCode,
-    currencyName: deckCurrencyName,
-    showCurrency: Boolean(deckCurrencyCode || deckCurrencyName),
-    canEditPhoto: false,
-    isEditingPhoto: false,
-    draftPhotoUrl: deckPhotoUrl
-  });
+  if (value === "HEART" || value === "CORAZON" || value === "♥") return "♥";
+  if (value === "DIAMOND" || value === "DIAMANTE" || value === "♦") return "♦";
+  if (value === "CLUB" || value === "TREBOL" || value === "♣") return "♣";
+  if (value === "SPADE" || value === "PICA" || value === "♠") return "♠";
 
-  showPlacard();
+  return "";
 }
+
+    function renderDeckPlacard() {
+      if (typeof renderPlacard !== "function") {
+        console.error("renderPlacard no está disponible. Revisar /js/placard.js");
+        return;
+      }
+
+      renderPlacard("placard-container", {
+        deckPhotoUrl,
+        rank: "A",
+        suit: "HEART",
+        title: deckTitle || "Mazo",
+        currencyCode: deckCurrencyCode,
+        currencyName: deckCurrencyName,
+        showCurrency: Boolean(deckCurrencyCode || deckCurrencyName),
+        canEditPhoto: false,
+        isEditingPhoto: false,
+        draftPhotoUrl: deckPhotoUrl
+      });
+
+      showPlacard();
+    }
 
     function escapeHtml(value) {
       return String(value || "")
@@ -360,18 +371,18 @@
 
         const body = jokerPlayId
           ? {
-              play_status: "PENDING",
-              play_code: playCode,
-              text: "Renovación de Joker azul"
-            }
+            play_status: "PENDING",
+            play_code: playCode,
+            text: "Renovación de Joker azul"
+          }
           : {
-              deck_id: deckId,
-              parent_play_id: null,
-              target_user_id: ADMIN_USER_ID,
-              play_code: playCode,
-              play_status: "PENDING",
-              text: "Solicitud de Joker azul"
-            };
+            deck_id: deckId,
+            parent_play_id: null,
+            target_user_id: ADMIN_USER_ID,
+            play_code: playCode,
+            play_status: "PENDING",
+            text: "Solicitud de Joker azul"
+          };
 
         const response = await fetch(url, {
           method,
