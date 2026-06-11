@@ -217,3 +217,27 @@
   z-index: 3;
 }
 
+.qpica-animation {
+  position: absolute;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.qpica-animation img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.qpica-animation--j {
+  left: 0;
+  top: 0;
+  width: 200px;
+}
+
+.qpica-animation--q {
+  left: 30px;
+  top: 20px;
+  width: 200px;
+}
+

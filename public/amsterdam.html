@@ -37,6 +37,7 @@
             <!-- Actions container -->
             <div id="tribuna-actions" class="tribuna__actions-zone"></div>
 
+
             <!-- Chat/Talud container (future) -->
             <!-- <div id="tribuna-talud" class="tribuna__talud-zone"></div> -->
         </section>
@@ -55,14 +56,14 @@
     <!-- Chat helper (future) -->
     <!-- <script src="/js/chat.js"></script> -->
 
-<!-- Amsterdam tribuna module -->
-<script src="/js/amsterdam.js"></script>
+    <!-- Amsterdam tribuna module -->
+    <script src="/js/amsterdam.js"></script>
 
-<!-- Situaciones Amsterdam -->
-<script src="/js/situaciones/QPICA_ENTRA.js"></script>
+    <!-- Situaciones Amsterdam -->
+    <script src="/js/situaciones/QPICA_ENTRA.js"></script>
 
 
-    
+
     <!-- Tribuna initialization script (future: move to tribuna-core.js) -->
     <!-- Tribuna initialization script -->
     <script>
@@ -166,8 +167,8 @@
 
                 const parsed = parsePlayCode(play?.play_code);
                 const payment = parseFlowPayment(parsed.flow);
-console.log("FLOW QQPICA", parsed.flow);
-console.log("PAYMENT QQPICA", payment);
+                console.log("FLOW QQPICA", parsed.flow);
+                console.log("PAYMENT QQPICA", payment);
                 if (!payment) return "";
 
                 const targetUser = resolveTargetUser(play);
@@ -453,15 +454,18 @@ console.log("PAYMENT QQPICA", payment);
                     }
                 }
                 console.log("QPICA_ENTRA cargado:", window.QPICA_ENTRA);
-                const html = window.renderAmsterdamMobile(play, {
-                    resolveTargetUser,
-                    renderPlayCardBox,
-                    renderEconomicCard,
-                    renderSenderCard,
-                    escapeHtml
+                const html = window.QPICA_ENTRA.render({
+                    play,
+                    helpers: {
+                        renderPlayCardBox,
+                        escapeHtml
+                    }
                 });
 
                 document.getElementById("tribuna-content").innerHTML = html;
+                if (window.QPICA_ENTRA?.start) {
+                    window.QPICA_ENTRA.start(play);
+                }
                 if (typeof window.enableAmsterdamPeek === "function") {
                     window.enableAmsterdamPeek();
                 }
