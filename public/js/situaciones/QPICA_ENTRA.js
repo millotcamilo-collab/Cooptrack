@@ -5,9 +5,16 @@ window.QPICA_ENTRA = {
   },
 
 buildFrame(prefix, index) {
-  const number = String(index).padStart(2, "0");
+
+  const number =
+    prefix === "QPMira"
+      ? String(index)
+      : String(index).padStart(2, "0");
+
   const src = `/assets/animations/${prefix}${number}.png`;
+
   console.log("FRAME", src);
+
   return src;
 },
 
@@ -78,7 +85,7 @@ buildFrame(prefix, index) {
 
 
           console.log("J PREFIX", jPrefix);
-  console.log("Q PREFIX", "QPicaMira");
+  console.log("Q PREFIX", "QPMira");
 
     this.playSequence({
       hostId: "qpica-j-animation",
@@ -90,7 +97,7 @@ buildFrame(prefix, index) {
 
     this.playSequence({
       hostId: "qpica-q-animation",
-      prefix: "QPicaMira",
+      prefix: "QPMira",
       from: 0,
       to: 8,
       fps: 12
