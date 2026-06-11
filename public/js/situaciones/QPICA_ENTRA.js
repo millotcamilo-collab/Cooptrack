@@ -90,7 +90,9 @@ start(play) {
 
 ${parent ? helpers.renderPlayCardBox({
   ...parent,
-  figureOverrideSrc: this.buildFrame(jPrefix, 0)
+  figureOverrideSrc: this.buildFrame(jPrefix, 0),
+  actionsHtml: "",
+  showActions: false
 }) : ""}
 
 ${helpers.renderPlayCardBox({

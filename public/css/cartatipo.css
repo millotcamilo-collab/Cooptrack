@@ -52,10 +52,10 @@
 
 .lv2-play-card__inner {
   position: absolute;
-  top: 22px;
-  left: 22px;
-  right: 22px;
-  bottom: 22px;
+  top: 23px;
+  left: 25px;
+  right: 25px;
+  bottom: 23px;
   padding: 7px 6px 32px;
   display: flex;
   flex-direction: column;
