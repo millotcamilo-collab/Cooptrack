@@ -15,7 +15,6 @@ body {
 }
 
 #topbar-container,
-#placard-container,
 .lienzo-grid {
   margin: 0;
 }
@@ -44,6 +43,12 @@ body {
 #joker-panel {
   width: 100%;
   margin-top: 0 !important;
+  min-height: 540px;
+}
+
+#joker-panel .content {
+  padding-top: 18px;
+  padding-bottom: 32px;
 }
 
 .panel {
@@ -51,7 +56,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 12px;
   padding: 16px;
-  min-height: 420px;
+  min-height: 540px;
   display: flex;
   flex-direction: column;
 }
@@ -165,7 +170,7 @@ body {
 
 .joker-red--bottom,
 .joker-blue--bottom {
-  left: 0;
+  left: -20px;
   top: 16px;
   z-index: 1;
 }
@@ -282,3 +287,4 @@ body {
   background: rgba(0, 0, 0, 0.25);
   font-weight: 600;
 }
+
