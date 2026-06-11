@@ -38,8 +38,8 @@ function getCardAlt(cardCode) {
 
 function getJokerImageSrc(jokerType) {
   return String(jokerType || "").toUpperCase() === "BLUE"
-    ? "/assets/icons/joker_blue.gif"
-    : "/assets/icons/Joker120.gif";
+    ? "/assets/icons/joker_blue.png"
+    : "/assets/icons/Joker.png";
 }
 
 function getJokerAlt(jokerType) {
