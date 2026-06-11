@@ -1,7 +1,7 @@
-window.QPICA_ENTRA = {
+window.QPICA_RESPONDE = {
   render(ctx) {
     const { play, helpers } = ctx;
-lisa
+
     return `
       <section class="lienzo-tribune lienzo-tribune--target tribuna-single tribuna-single--amsterdam">
         <div class="lienzo-tribune__corporates"></div>
@@ -9,13 +9,12 @@ lisa
         <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
           <div class="amsterdam-card-stack">
 
-<div class="amsterdam-card-stack__primary">
+            <div class="amsterdam-card-stack__primary">
+              <div id="qpica-j-animation"></div>
+              <div id="qpica-q-animation"></div>
 
-  <div id="qpica-j-animation"></div>
-
-  ${helpers.renderPlayCardBox(play)}
-
-</div>
+              ${helpers.renderPlayCardBox(play)}
+            </div>
 
           </div>
         </div>
