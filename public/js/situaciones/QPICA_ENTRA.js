@@ -64,6 +64,8 @@ buildFrame(prefix, index) {
   },
 
   start(play) {
+      console.log("START QPICA_ENTRA", play);
+
     const mode = this.getParentSpadeMode(play);
 
     const jPrefix =
@@ -71,6 +73,10 @@ buildFrame(prefix, index) {
         ? "JpicaDeadline"
         : "JpicaCita";
 
+
+          console.log("J PREFIX", jPrefix);
+  console.log("Q PREFIX", "QPicaMira");
+  
     this.playSequence({
       hostId: "qpica-j-animation",
       prefix: jPrefix,
