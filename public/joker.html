@@ -27,30 +27,30 @@
         <div class="content">
           <div class="joker-stage">
 
-<div class="joker-stage__left">
+            <div class="joker-stage__left">
 
-  <div id="jokerPlanOptions" class="joker-plan-options">
-    <button class="joker-plan-option is-selected" data-months="1">
-      <span>1</span>
-      <small>mes</small>
-    </button>
+              <div id="jokerPlanOptions" class="joker-plan-options">
+                <button class="joker-plan-option is-selected" data-months="1">
+                  <span>1</span>
+                  <small>mes</small>
+                </button>
 
-    <button class="joker-plan-option" data-months="6">
-      <span>6</span>
-      <small>meses</small>
-    </button>
+                <button class="joker-plan-option" data-months="6">
+                  <span>6</span>
+                  <small>meses</small>
+                </button>
 
-    <button class="joker-plan-option" data-months="12">
-      <span>12</span>
-      <small>meses</small>
-    </button>
-  </div>
+                <button class="joker-plan-option" data-months="12">
+                  <span>12</span>
+                  <small>meses</small>
+                </button>
+              </div>
 
-  <div class="joker-pack-wrap">
-    <div id="pack" class="pack jokers-only" aria-label="Selector de Joker"></div>
-  </div>
+              <div class="joker-pack-wrap">
+                <div id="pack" class="pack jokers-only" aria-label="Selector de Joker"></div>
+              </div>
 
-</div>
+            </div>
 
             <div class="joker-stage__right">
               <div id="serverNextPanel" class="server-next server-next--readonly is-hidden">
@@ -104,6 +104,18 @@
     let deckCurrencyName = "";
     let isEditingPlacardPhoto = false;
     let isBlueOnTop = false;
+
+    let selectedJokerMonths = 1;
+
+function updateJokerPlanOptions() {
+  const plans = document.getElementById("jokerPlanOptions");
+
+  if (!plans) return;
+
+  plans.style.display = isBlueOnTop
+    ? "flex"
+    : "none";
+}
 
     const API_BASE_URL = "https://cooptrack-backend.onrender.com";
     const ADMIN_USER_ID = 1;
@@ -219,6 +231,7 @@
         isBlueOnTop = !isBlueOnTop;
         renderFinalJokers();
         updateServerNextLabels();
+        updateJokerPlanOptions();
         setStatus(
           isBlueOnTop
             ? "Joker azul seleccionado."
@@ -241,16 +254,16 @@
       placardEl.style.display = "block";
     }
 
-function getSuitSymbol(suit) {
-  const value = String(suit || "").toUpperCase();
+    function getSuitSymbol(suit) {
+      const value = String(suit || "").toUpperCase();
 
-  if (value === "HEART" || value === "CORAZON" || value === "♥") return "♥";
-  if (value === "DIAMOND" || value === "DIAMANTE" || value === "♦") return "♦";
-  if (value === "CLUB" || value === "TREBOL" || value === "♣") return "♣";
-  if (value === "SPADE" || value === "PICA" || value === "♠") return "♠";
+      if (value === "HEART" || value === "CORAZON" || value === "♥") return "♥";
+      if (value === "DIAMOND" || value === "DIAMANTE" || value === "♦") return "♦";
+      if (value === "CLUB" || value === "TREBOL" || value === "♣") return "♣";
+      if (value === "SPADE" || value === "PICA" || value === "♠") return "♠";
 
-  return "";
-}
+      return "";
+    }
 
     function renderDeckPlacard() {
       if (typeof renderPlacard !== "function") {
@@ -437,12 +450,20 @@ function getSuitSymbol(suit) {
       // Así nunca se ve el paquete viejo de nuevo-mazo mientras carga el mazo.
       renderFinalJokers();
       updateServerNextLabels();
+      updateJokerPlanOptions();
       enableServerNextPanel();
       renderDeckPlacard();
 
       setStatus("Elegí el Joker rojo o azul.");
 
       document.getElementById("sendJokerBlueBtn")?.addEventListener("click", handleSendJokerBlue);
+
+      document.querySelectorAll(".joker-plan-option").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          selectedJokerMonths = Number(btn.dataset.months || 1);
+          updateJokerPlanOptions();
+        });
+      });
 
       // Después completamos el placard con los datos reales del mazo.
       await loadDeckForPlacard();
