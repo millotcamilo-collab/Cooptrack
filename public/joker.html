@@ -10,70 +10,36 @@
   <link rel="stylesheet" href="/css/lienzo.css" />
   <link rel="stylesheet" href="/css/placard.css" />
   <link rel="stylesheet" href="/css/topbar.css" />
-  <link rel="stylesheet" href="/css/nuevo-mazo.css" />
+  <link rel="stylesheet" href="/css/joker.css" />
   <link rel="icon" type="image/png" href="/assets/icons/bigote.png">
 
   <script src="/js/placard.js"></script>
   <script src="/js/topbar.js"></script>
-
-  <style>
-    .joker-grid {
-      grid-template-columns: minmax(320px, 760px);
-      justify-content: center;
-    }
-
-    #amsterdam-panel {
-      width: 100%;
-    }
-
-    .joker-status {
-      margin-top: 10px;
-      min-height: 20px;
-      font-size: 0.95rem;
-      text-align: center;
-      color: #f5f5f5;
-    }
-  </style>
 </head>
 
 <body>
   <div class="lienzo-page">
     <div id="topbar-container"></div>
     <div id="placard-container" class="ct-block is-hidden"></div>
+
     <div class="lienzo-grid ct-block joker-grid">
-
-      <!-- AMSTERDAM -->
-      <div class="panel panel--split-top" id="amsterdam-panel">
-        <!-- TOPBAR (solo identidad, sin acciones) -->
-        <div class="panel-topbar panel-topbar--single">
-          <div class="panel-topbar__col panel-topbar__col--identity">
-            <div class="lienzo-source-header lienzo-source-header--top">
-
-              <img src="/assets/icons/Compila60.gif" class="lienzo-source-header__photo" alt="Cooptrack server">
-              <div class="lienzo-source-header__name">Cooptrack Server</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- CONTENIDO ORIGINAL (se mantiene) -->
+      <div class="panel panel--split-top" id="joker-panel">
         <div class="content">
-          <div class="amsterdam-stage">
+          <div class="joker-stage">
 
-            <!-- IZQUIERDA: mazo -->
-            <div class="amsterdam-stage__left">
-              <div class="amsterdam-pack-wrap">
+            <div class="joker-stage__left">
+              <div class="joker-pack-wrap">
                 <div id="pack" class="pack">
-                  <img src="/assets/icons/joker_blue.png" class="joker-blue">
-                  <img src="/assets/icons/Joker.png" class="joker-red">
-                  <img src="/assets/icons/Apike.png" class="spade">
-                  <img src="/assets/icons/Adiamante.png" class="diamond">
-                  <img src="/assets/icons/Atrebol.png" class="club">
+                  <img src="/assets/icons/joker_blue.png" class="joker-blue" alt="Joker azul">
+                  <img src="/assets/icons/Joker.png" class="joker-red" alt="Joker rojo">
+                  <img src="/assets/icons/Apike.png" class="spade" alt="As de picas">
+                  <img src="/assets/icons/Adiamante.png" class="diamond" alt="As de diamantes">
+                  <img src="/assets/icons/Atrebol.png" class="club" alt="As de trébol">
                 </div>
               </div>
             </div>
 
-            <!-- DERECHA: checklist (SE QUEDA ACÁ) -->
-            <div class="amsterdam-stage__right">
+            <div class="joker-stage__right">
               <div id="serverNextPanel" class="server-next server-next--readonly is-hidden">
 
                 <div id="serverPlanLabel" class="server-plan-label">
@@ -81,29 +47,26 @@
                 </div>
 
                 <label class="server-next__item">
-                  <img src="/assets/icons/Sello40.gif" class="server-next__icon">
-                  <span class="server-next__label">Aprobar J ♠ ♥ ♦ ♣</span>
+                  <img src="/assets/icons/Sello40.gif" class="server-next__icon" alt="">
+                  <span class="server-next__label">Aprobar J ♥ ♠ ♦ ♣</span>
                 </label>
 
                 <label class="server-next__item">
-
-                  <img src="/assets/icons/buzon60.gif" class="server-next__icon">
+                  <img src="/assets/icons/buzon60.gif" class="server-next__icon" alt="">
                   <span class="server-next__label">Enviar Q ♠</span>
                 </label>
 
                 <label class="server-next__item">
-
-                  <img src="/assets/icons/pistola60.gif" class="server-next__icon">
+                  <img src="/assets/icons/pistola60.gif" class="server-next__icon" alt="">
                   <span class="server-next__label">Despedir Q ♠</span>
                 </label>
 
                 <label class="server-next__item">
-
-                  <img src="/assets/icons/Extra60.gif" class="server-next__icon">
-                  <span class="server-next__label">Publicar A♥ J♥♠</span>
+                  <img src="/assets/icons/Extra60.gif" class="server-next__icon" alt="">
+                  <span class="server-next__label">Publicar A♥ J ♥ ♠</span>
                 </label>
 
-                <div class="amsterdam-create-action">
+                <div class="joker-create-action">
                   <button id="sendJokerBlueBtn" class="icon-btn is-hidden" type="button" title="Solicitar Joker azul"
                     aria-label="Solicitar Joker azul">
                     <img src="/assets/icons/buzon60.gif" alt="Solicitar Joker azul">
@@ -111,7 +74,6 @@
                 </div>
 
                 <div id="statusMsg" class="joker-status"></div>
-
               </div>
             </div>
 
@@ -123,14 +85,19 @@
   </div>
 
   <script>
-    let done = false;
     let deckPhotoUrl = "";
+    let deckTitle = "Mazo";
+    let deckCurrencyCode = "";
+    let deckCurrencyName = "";
     let isEditingPlacardPhoto = false;
     let isBlueOnTop = false;
 
-    function getPageMode() {
+    const API_BASE_URL = "https://cooptrack-backend.onrender.com";
+    const ADMIN_USER_ID = 1;
+
+    function getDeckIdFromUrl() {
       const params = new URLSearchParams(window.location.search);
-      return String(params.get("mode") || "jokerblue").trim().toLowerCase();
+      return Number(params.get("deckId") || params.get("id") || 0);
     }
 
     function getJokerPlayIdFromUrl() {
@@ -138,36 +105,24 @@
       return Number(params.get("jokerPlayId") || params.get("playId") || 0);
     }
 
-    function getDeckIdFromUrl() {
-      const params = new URLSearchParams(window.location.search);
-      return Number(params.get("deckId") || params.get("id") || 0);
-    }
-
-    function applyPageMode() {
-      hideEl("createDeckBtn");
-      showEl("sendJokerBlueBtn");
-      setStatus("Solicitud Joker azul lista para enviar.");
+    function getToken() {
+      return localStorage.getItem("cooptrackToken") || "";
     }
 
     function showEl(id) {
-      const el = document.getElementById(id);
-      if (el) {
-        el.classList.remove("is-hidden");
-      }
+      document.getElementById(id)?.classList.remove("is-hidden");
     }
 
     function hideEl(id) {
-      const el = document.getElementById(id);
-      if (el) {
-        el.classList.add("is-hidden");
-      }
+      document.getElementById(id)?.classList.add("is-hidden");
     }
 
-    const API_BASE_URL = "https://cooptrack-backend.onrender.com";
-    const ADMIN_USER_ID = 1;
+    function setStatus(message, isError = false) {
+      const el = document.getElementById("statusMsg");
+      if (!el) return;
 
-    function getToken() {
-      return localStorage.getItem("cooptrackToken") || "";
+      el.textContent = message || "";
+      el.style.color = isError ? "#ffb3b3" : "#f5f5f5";
     }
 
     function decodeJwtPayload(token) {
@@ -193,6 +148,169 @@
         "manual",
         `U:${ADMIN_USER_ID}`
       ].join("§");
+    }
+
+    function updateServerNextLabels() {
+      const labels = document.querySelectorAll("#serverNextPanel .server-next__label");
+      const planLabel = document.getElementById("serverPlanLabel");
+
+      if (!labels.length) return;
+
+      if (isBlueOnTop) {
+        if (planLabel) planLabel.textContent = "Costo mensual 1 dólar";
+        labels[0].textContent = "Aprobar J ♥ ♠ ♦ ♣";
+        labels[1].textContent = "Enviar A, K, Q ♥ ♠ ♦ ♣";
+        labels[2].textContent = "Despedir A, K, Q ♥ ♠ ♦ ♣";
+        labels[3].textContent = "Publicar A♥ J♥ ♠ ♣";
+        showEl("sendJokerBlueBtn");
+      } else {
+        if (planLabel) planLabel.textContent = "Gratis";
+        labels[0].textContent = "Aprobar J ♥ ♠ ♦ ♣";
+        labels[1].textContent = "Enviar Q ♠";
+        labels[2].textContent = "Despedir Q ♠";
+        labels[3].textContent = "Publicar A♥ J ♥ ♠";
+        hideEl("sendJokerBlueBtn");
+      }
+    }
+
+    function renderFinalJokers() {
+      const pack = document.getElementById("pack");
+      if (!pack) return;
+
+      pack.className = "pack jokers-only";
+
+      pack.innerHTML = `
+        <button
+          id="jokerToggleBtn"
+          type="button"
+          class="joker-toggle-btn"
+          aria-label="Cambiar orden de jokers"
+          title="Cambiar orden de jokers"
+        >
+          ${isBlueOnTop
+            ? `
+              <img src="/assets/icons/Joker.png" class="joker-red joker-red--bottom" alt="Joker rojo">
+              <img src="/assets/icons/joker_blue.png" class="joker-blue joker-blue--top" alt="Joker azul">
+            `
+            : `
+              <img src="/assets/icons/joker_blue.png" class="joker-blue joker-blue--bottom" alt="Joker azul">
+              <img src="/assets/icons/Joker.png" class="joker-red joker-red--top" alt="Joker rojo">
+            `
+          }
+        </button>
+      `;
+
+      const btn = document.getElementById("jokerToggleBtn");
+
+      btn?.addEventListener("click", () => {
+        isBlueOnTop = !isBlueOnTop;
+        renderFinalJokers();
+        updateServerNextLabels();
+        setStatus(
+          isBlueOnTop
+            ? "Joker azul seleccionado."
+            : "Joker rojo seleccionado."
+        );
+      });
+
+      requestAnimationFrame(() => {
+        btn?.classList.add("is-wiggle");
+        setTimeout(() => btn?.classList.remove("is-wiggle"), 700);
+      });
+    }
+
+    function showPlacard() {
+      const placardEl = document.getElementById("placard-container");
+      if (!placardEl) return;
+
+      placardEl.classList.remove("is-hidden");
+      placardEl.classList.add("is-visible");
+    }
+
+    function renderDeckPlacard() {
+      if (typeof renderPlacard !== "function") {
+        console.warn("renderPlacard no está disponible.");
+        return;
+      }
+
+      renderPlacard("placard-container", {
+        deckPhotoUrl,
+        rank: "A",
+        suit: "HEART",
+        title: deckTitle,
+        currencyCode: deckCurrencyCode,
+        currencyName: deckCurrencyName,
+        showCurrency: Boolean(deckCurrencyCode || deckCurrencyName),
+        canEditPhoto: true,
+        isEditingPhoto: isEditingPlacardPhoto,
+        draftPhotoUrl: deckPhotoUrl
+      });
+
+      bindPlacardPhotoControls();
+      showPlacard();
+    }
+
+    function bindPlacardPhotoControls() {
+      const photoBtn = document.getElementById("placardPhotoBtn");
+      const saveBtn = document.getElementById("placardPhotoSaveBtn");
+      const cancelBtn = document.getElementById("placardPhotoCancelBtn");
+      const input = document.getElementById("placardPhotoUrlInput");
+
+      photoBtn?.addEventListener("click", () => {
+        isEditingPlacardPhoto = true;
+        renderDeckPlacard();
+      });
+
+      saveBtn?.addEventListener("click", () => {
+        deckPhotoUrl = String(input?.value || "").trim();
+        isEditingPlacardPhoto = false;
+        renderDeckPlacard();
+      });
+
+      cancelBtn?.addEventListener("click", () => {
+        isEditingPlacardPhoto = false;
+        renderDeckPlacard();
+      });
+    }
+
+    async function loadDeckForPlacard() {
+      const deckId = getDeckIdFromUrl();
+      const token = getToken();
+
+      if (!deckId || !token) {
+        renderDeckPlacard();
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/mazos/${deckId}/state`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+        const deck = data?.mazo || data?.deck || data?.state?.mazo || data?.state?.deck || null;
+
+        if (deck) {
+          deckTitle = deck.name || deck.title || deck.deck_name || deckTitle;
+          deckPhotoUrl = deck.deck_image_url || deck.photo_url || deck.image_url || "";
+          deckCurrencyCode = deck.currency_symbol || deck.currency_code || "";
+          deckCurrencyName = deck.currency_name || "";
+        }
+      } catch (error) {
+        console.error("Error cargando placard del mazo:", error);
+      }
+
+      renderDeckPlacard();
+    }
+
+    function enableServerNextPanel() {
+      const panel = document.getElementById("serverNextPanel");
+      if (!panel) return;
+
+      panel.classList.remove("server-next--readonly", "is-hidden");
+      panel.classList.add("server-next--editable");
     }
 
     async function handleSendJokerBlue() {
@@ -238,18 +356,18 @@
 
         const body = jokerPlayId
           ? {
-            play_status: "PENDING",
-            play_code: playCode,
-            text: "Renovación de Joker azul"
-          }
+              play_status: "PENDING",
+              play_code: playCode,
+              text: "Renovación de Joker azul"
+            }
           : {
-            deck_id: deckId,
-            parent_play_id: null,
-            target_user_id: ADMIN_USER_ID,
-            play_code: playCode,
-            play_status: "PENDING",
-            text: "Solicitud de Joker azul"
-          };
+              deck_id: deckId,
+              parent_play_id: null,
+              target_user_id: ADMIN_USER_ID,
+              play_code: playCode,
+              play_status: "PENDING",
+              text: "Solicitud de Joker azul"
+            };
 
         const response = await fetch(url, {
           method,
@@ -280,464 +398,17 @@
       }
     }
 
-    function setStatus(message, isError = false) {
-      const el = document.getElementById("statusMsg");
-      if (!el) return;
-
-      el.textContent = message || "";
-      el.style.color = isError ? "#ffb3b3" : "#f5f5f5";
-    }
-
-    const DEFAULT_CURRENCY_NAMES = {
-      UYU: "Peso uruguayo",
-      ARS: "Peso argentino",
-      CLP: "Peso chileno",
-      BRL: "Real brasileño",
-      USD: "Dólar estadounidense",
-      EUR: "Euro"
-    };
-
-    const COUNTRY_TO_CURRENCY = {
-      UY: { code: "UYU", name: "Peso uruguayo" },
-      AR: { code: "ARS", name: "Peso argentino" },
-      CL: { code: "CLP", name: "Peso chileno" },
-      BR: { code: "BRL", name: "Real brasileño" },
-      US: { code: "USD", name: "Dólar estadounidense" },
-      ES: { code: "EUR", name: "Euro" }
-    };
-
-    function syncCurrencyNameFromCode() {
-      const codeEl = document.getElementById("deckCurrencyCode");
-      const nameEl = document.getElementById("deckCurrencyName");
-
-      if (!codeEl || !nameEl) return;
-
-      const code = String(codeEl.value || "").trim().toUpperCase();
-      const defaultName = DEFAULT_CURRENCY_NAMES[code] || "";
-
-      nameEl.value = defaultName;
-    }
-
-    // 👇 PEGAR ACÁ
-    function updateServerNextLabels() {
-      const labels = document.querySelectorAll("#serverNextPanel .server-next__label");
-      const planLabel = document.getElementById("serverPlanLabel");
-
-
-      if (!labels.length) return;
-
-      if (isBlueOnTop) {
-        if (planLabel) {
-          planLabel.textContent = "Costo mensual 1 dólar";
-        }
-        labels[0].textContent = "Aprobar J ♥ ♠ ♦ ♣";
-        labels[1].textContent = "Enviar A, K, Q ♥ ♠ ♦ ♣";
-        labels[2].textContent = "Despedir A, K, Q ♥ ♠ ♦ ♣";
-        labels[3].textContent = "Publicar A♥ J♥ ♠ ♣";
-      } else {
-        if (planLabel) {
-          planLabel.textContent = "Gratis";
-        }
-        labels[0].textContent = "Aprobar J ♥ ♠ ♦ ♣";
-        labels[1].textContent = "Enviar Q ♠";
-        labels[2].textContent = "Despedir Q ♠";
-        labels[3].textContent = "Publicar A♥ J ♥ ♠";
-      }
-    }
-
-    function renderFinalJokers() {
-      const pack = document.getElementById("pack");
-      if (!pack) return;
-
-      pack.className = "pack jokers-only";
-
-      pack.innerHTML = `
-    <button
-      id="jokerToggleBtn"
-      type="button"
-      class="joker-toggle-btn"
-      aria-label="Cambiar orden de jokers"
-      title="Cambiar orden de jokers"
-    >
-      ${isBlueOnTop
-          ? `
-            <img src="/assets/icons/Joker.png" class="joker-red joker-red--bottom" alt="Joker rojo">
-            <img src="/assets/icons/joker_blue.png" class="joker-blue joker-blue--top" alt="Joker azul">
-          `
-          : `
-            <img src="/assets/icons/joker_blue.png" class="joker-blue joker-blue--bottom" alt="Joker azul">
-            <img src="/assets/icons/Joker.png" class="joker-red joker-red--top" alt="Joker rojo">
-          `
-        }
-    </button>
-  `;
-
-      const btn = document.getElementById("jokerToggleBtn");
-
-      btn?.addEventListener("click", () => {
-        isBlueOnTop = !isBlueOnTop;
-        renderFinalJokers();
-        updateServerNextLabels();
-      });
-
-      requestAnimationFrame(() => {
-        btn?.classList.add("is-wiggle");
-
-        setTimeout(() => {
-          btn?.classList.remove("is-wiggle");
-        }, 700);
-      });
-
-    }
-
-
-    async function loadDefaultCurrencyFromProfile() {
-      const token = localStorage.getItem("cooptrackToken");
-      if (!token) return;
-
-      try {
-        const response = await fetch("https://cooptrack-backend.onrender.com/me", {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-
-        if (!data.ok || !data.user) return;
-
-        const country = String(data.user.country || "").toUpperCase();
-        const currency = COUNTRY_TO_CURRENCY[country];
-
-        const codeEl = document.getElementById("deckCurrencyCode");
-        const nameEl = document.getElementById("deckCurrencyName");
-
-        if (!codeEl || !nameEl) return;
-
-        if (currency) {
-          codeEl.value = currency.code;
-          nameEl.value = currency.name;
-        }
-
-      } catch (err) {
-        console.error("Error cargando moneda:", err);
-      }
-    }
-
-    async function loadUserHeader() {
-      const token = localStorage.getItem("cooptrackToken");
-      if (!token) return;
-
-      try {
-        const response = await fetch("https://cooptrack-backend.onrender.com/me", {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-
-        if (!data.ok || !data.user) return;
-
-        const photoEl = document.getElementById("userPhoto");
-        const nameEl = document.getElementById("userNickname");
-
-        if (photoEl && data.user.profile_photo_url) {
-          photoEl.src = data.user.profile_photo_url;
-        }
-
-        if (nameEl && data.user.nickname) {
-          nameEl.textContent = data.user.nickname;
-        }
-
-      } catch (err) {
-        console.error("Error cargando usuario:", err);
-      }
-    }
-
-    function validateStepOne() {
-      const deckName = String(document.getElementById("deckName")?.value || "").trim();
-      const currencyCode = String(document.getElementById("deckCurrencyCode")?.value || "").trim();
-      const currencyNameEl = document.getElementById("deckCurrencyName");
-
-      if (!deckName) {
-        setStatus("Falta el título del mazo", true);
-        document.getElementById("deckName")?.focus();
-        return false;
-      }
-
-      if (!currencyCode) {
-        setStatus("Falta el símbolo de moneda", true);
-        document.getElementById("deckCurrencyCode")?.focus();
-        return false;
-      }
-
-      if (currencyNameEl && !String(currencyNameEl.value || "").trim()) {
-        currencyNameEl.value = DEFAULT_CURRENCY_NAMES[currencyCode] || "";
-      }
-
-      setStatus("Datos listos. Ahora podés aprobar.");
-      return true;
-    }
-
-    function enableServerNextPanel() {
-      const panel = document.getElementById("serverNextPanel");
-      if (!panel) return;
-
-      panel.classList.remove("server-next--readonly");
-      panel.classList.add("server-next--editable");
-    }
-
-
-    function handleSaveStepOne() {
-      const ok = validateStepOne();
-      if (!ok) return;
-
-      const form = document.getElementById("colombesForm");
-      if (form) form.classList.add("is-hidden");
-
-      hideEl("saveAllBtn");
-
-      start();
-    }
-
-    async function handleCreateDeck() {
-      const token = localStorage.getItem("cooptrackToken");
-
-      if (!token) {
-        setStatus("Falta sesión activa", true);
-        return;
-      }
-
-      const name = String(document.getElementById("deckName")?.value || "").trim();
-      const currencySymbol = String(document.getElementById("deckCurrencyCode")?.value || "").trim().toUpperCase();
-      const currencyName = String(document.getElementById("deckCurrencyName")?.value || "").trim();
-
-      if (!name) {
-        setStatus("Falta el título del mazo", true);
-        return;
-      }
-
-      if (!currencySymbol) {
-        setStatus("Falta el símbolo de moneda", true);
-        return;
-      }
-
-      const jokerType = isBlueOnTop ? "BLUE" : "RED";
-
-      try {
-        setStatus("Guardando mazo...");
-
-        const response = await fetch("https://cooptrack-backend.onrender.com/decks", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            name,
-            deck_image_url: deckPhotoUrl || null,
-            currency_symbol: currencySymbol,
-            currency_name: currencyName || null,
-            joker_type: jokerType
-          })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.ok || !data.mazo?.id) {
-          setStatus(data?.error || "No se pudo crear el mazo", true);
-          return;
-        }
-
-        window.location.href = `/mazo.html?id=${data.mazo.id}`;
-      } catch (error) {
-        console.error("Error creando mazo:", error);
-        setStatus("Error de red al crear el mazo", true);
-      }
-    }
-
-function renderDeckPlacard() {
-  const title = String(document.getElementById("deckName")?.value || "").trim();
-  const currencyCode = String(document.getElementById("deckCurrencyCode")?.value || "").trim();
-  const currencyName = String(document.getElementById("deckCurrencyName")?.value || "").trim();
-
-  if (!title) return;
-
-  renderPlacard("placard-container", {
-    deckPhotoUrl,
-    rank: "A",
-    suit: "HEART",
-    title,
-    currencyCode,
-    currencyName,
-    showCurrency: true,
-    canEditPhoto: true,
-    isEditingPhoto: isEditingPlacardPhoto,
-    draftPhotoUrl: deckPhotoUrl
-  });
-
-  bindPlacardPhotoControls();
-}
-
-    function bindPlacardPhotoControls() {
-      const photoBtn = document.getElementById("placardPhotoBtn");
-      const saveBtn = document.getElementById("placardPhotoSaveBtn");
-      const cancelBtn = document.getElementById("placardPhotoCancelBtn");
-      const input = document.getElementById("placardPhotoUrlInput");
-
-      if (photoBtn) {
-        photoBtn.addEventListener("click", () => {
-          isEditingPlacardPhoto = true;
-          renderDeckPlacard();
-        });
-      }
-
-      if (saveBtn) {
-        saveBtn.addEventListener("click", () => {
-          deckPhotoUrl = String(input?.value || "").trim();
-          isEditingPlacardPhoto = false;
-          renderDeckPlacard();
-        });
-      }
-
-      if (cancelBtn) {
-        cancelBtn.addEventListener("click", () => {
-          isEditingPlacardPhoto = false;
-          renderDeckPlacard();
-        });
-      }
-    }
-
-    function checkAllServerNextItems() {
-      const panel = document.getElementById("serverNextPanel");
-      if (!panel) return;
-
-      const items = panel.querySelectorAll(".server-next__item");
-      items.forEach((item) => {
-        item.classList.add("is-checked");
-      });
-    }
-
-    function start() {
-      if (done) return;
-
-      const pack = document.getElementById("pack");
-      const colombesCardZone = document.getElementById("colombesCardZone");
-
-      if (!pack || !colombesCardZone) {
-        console.warn("No se pudo iniciar animación: falta pack o colombesCardZone");
-        return;
-      }
-
-      const packRect = pack.getBoundingClientRect();
-      const targetRect = colombesCardZone.getBoundingClientRect();
-
-      const ghost = document.createElement("div");
-      ghost.className = "nuevo-mazo-ghost";
-      ghost.style.position = "fixed";
-      ghost.style.left = (packRect.left + 28) + "px";
-      ghost.style.top = packRect.top + "px";
-      ghost.style.width = "120px";
-      ghost.style.height = "120px";
-      ghost.style.zIndex = "9999";
-      ghost.style.pointerEvents = "none";
-      ghost.style.transition = "left 0.6s ease, top 0.6s ease, transform 0.6s ease";
-      ghost.style.willChange = "left, top, transform";
-      ghost.style.display = "block";
-
-      ghost.innerHTML = `
-        <img src="/assets/icons/Apike.png" alt="As de picas" style="position:absolute;width:76px;left:0;top:0;">
-        <img src="/assets/icons/Adiamante.png" alt="As de diamantes" style="position:absolute;width:76px;left:22px;top:10px;">
-        <img src="/assets/icons/Atrebol.png" alt="As de trébol" style="position:absolute;width:76px;left:44px;top:20px;">
-      `;
-
-      document.body.appendChild(ghost);
-
-      let finished = false;
-
-      function finishAnimation() {
-        if (finished) return;
-        finished = true;
-
-        ghost.remove();
-
-        colombesCardZone.innerHTML = `
-          <div class="colombes-final-stack">
-            <img src="/assets/icons/Acorazon.png" class="colombes-final-stack__heart" alt="As de corazón">
-            <img src="/assets/icons/Apike.png" class="colombes-final-stack__spade" alt="As de picas">
-            <img src="/assets/icons/Adiamante.png" class="colombes-final-stack__diamond" alt="As de diamantes">
-            <img src="/assets/icons/Atrebol.png" class="colombes-final-stack__club" alt="As de trébol">
-          </div>
-        `;
-
-        renderFinalJokers();
-        updateServerNextLabels();
-
-        showEl("serverNextPanel");
-        enableServerNextPanel();
-        showEl("createDeckBtn");
-
-const placardEl = document.getElementById("placard-container");
-
-if (placardEl) {
-  placardEl.className = "ct-block is-visible";
-  placardEl.style.display = "block";
-  placardEl.style.opacity = "1";
-  placardEl.style.transform = "translateY(0)";
-}
-
-renderDeckPlacard();
-
-        done = true;
-      }
-
-      // Fallback fuerte: aunque falle la animación, nunca queda trancado.
-      const fallbackTimer = setTimeout(finishAnimation, 900);
-
-      ghost.addEventListener("transitionend", () => {
-        clearTimeout(fallbackTimer);
-        finishAnimation();
-      }, { once: true });
-
-      // Forzar layout antes de mover el ghost.
-      void ghost.offsetWidth;
-
-      requestAnimationFrame(() => {
-        ghost.style.left = (targetRect.left + 18) + "px";
-        ghost.style.top = targetRect.top + "px";
-        ghost.style.transform = "scale(1.02)";
-      });
-    }
-
-
     document.addEventListener("DOMContentLoaded", async () => {
-      const mode = getPageMode();
-
-      applyPageMode();
-
-      renderDeckPlacard();
-
-      const placardEl = document.getElementById("placard-container");
-      if (placardEl) {
-        placardEl.classList.add("is-visible");
-      }
+      await loadDeckForPlacard();
 
       renderFinalJokers();
       updateServerNextLabels();
-
-      showEl("serverNextPanel");
-      showEl("sendJokerBlueBtn");
-
       enableServerNextPanel();
 
-      await loadDefaultCurrencyFromProfile();
-      await loadUserHeader();
-
+      setStatus("Elegí el Joker rojo o azul.");
 
       document.getElementById("sendJokerBlueBtn")?.addEventListener("click", handleSendJokerBlue);
     });
-
   </script>
 </body>
 

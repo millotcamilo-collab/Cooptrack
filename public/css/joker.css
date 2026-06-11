@@ -1,0 +1,269 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: radial-gradient(circle, #083627, #031d14);
+  color: white;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+/* Página Joker: usa topbar + placard común + un solo panel de servicio */
+.lienzo-page {
+  gap: 0;
+}
+
+#topbar-container,
+#placard-container,
+.lienzo-grid {
+  margin: 0;
+}
+
+#placard-container {
+  padding: 0;
+  box-sizing: border-box;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+#placard-container.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lienzo-grid.joker-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 760px);
+  justify-content: center;
+  gap: 0 !important;
+  padding: 0;
+}
+
+#joker-panel {
+  width: 100%;
+  margin-top: 0 !important;
+}
+
+.panel {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 16px;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 18px;
+}
+
+.joker-stage {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 24px;
+  width: auto;
+}
+
+.joker-stage__left,
+.joker-stage__right {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.joker-stage__right {
+  margin-top: 4px;
+}
+
+.joker-pack-wrap {
+  min-height: 300px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-top: 0;
+}
+
+.pack,
+#pack {
+  position: relative;
+  width: 260px;
+  height: 320px;
+  margin-top: 0;
+}
+
+.pack img {
+  position: absolute;
+  height: 279px;
+}
+
+.joker-blue {
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+.joker-red {
+  left: 14px;
+  bottom: 0;
+  z-index: 2;
+}
+
+.spade {
+  left: 28px;
+  bottom: 0;
+  z-index: 3;
+}
+
+.diamond {
+  left: 42px;
+  bottom: 0;
+  z-index: 4;
+}
+
+.club {
+  left: 56px;
+  bottom: 0;
+  z-index: 5;
+}
+
+.pack.jokers-only .joker-blue,
+.pack.jokers-only .joker-red {
+  left: auto;
+  bottom: auto;
+}
+
+.joker-toggle-btn {
+  position: relative;
+  width: 220px;
+  height: 320px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: block;
+}
+
+.joker-toggle-btn img {
+  position: absolute;
+  height: 279px;
+  width: auto;
+  display: block;
+  transition: transform 0.18s ease;
+}
+
+.joker-toggle-btn:hover img {
+  transform: scale(1.02);
+}
+
+.joker-red--bottom,
+.joker-blue--bottom {
+  left: 0;
+  top: 16px;
+  z-index: 1;
+}
+
+.joker-red--top,
+.joker-blue--top {
+  left: 18px;
+  top: 0;
+  z-index: 2;
+}
+
+.server-next {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.server-next__item {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.server-next__icon,
+#serverNextPanel .server-next__icon,
+#serverNextPanel.server-next .server-next__icon {
+  height: 28px !important;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.server-next__label,
+#serverNextPanel .server-next__label,
+#serverNextPanel.server-next .server-next__label {
+  font-size: 15px;
+  line-height: 1.15;
+}
+
+.server-next--readonly .server-next__checkbox {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.server-next--editable .server-next__checkbox {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.server-plan-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 12px;
+  letter-spacing: 0.3px;
+}
+
+.joker-create-action {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.joker-status {
+  margin-top: 10px;
+  min-height: 20px;
+  font-size: 0.95rem;
+  text-align: center;
+  color: #f5f5f5;
+}
+
+@keyframes jokerWiggle {
+  0% { transform: rotate(0deg); }
+  15% { transform: rotate(-4deg); }
+  30% { transform: rotate(4deg); }
+  45% { transform: rotate(-3deg); }
+  60% { transform: rotate(3deg); }
+  75% { transform: rotate(-2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.joker-toggle-btn.is-wiggle {
+  animation: jokerWiggle 0.7s ease;
+}
+
+@media (max-width: 720px) {
+  .lienzo-grid.joker-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .joker-stage {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .joker-stage__right {
+    margin-top: 0;
+  }
+}
