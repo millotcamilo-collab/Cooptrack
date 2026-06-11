@@ -464,6 +464,7 @@
 
                 document.getElementById("tribuna-content").innerHTML = html;
                 if (window.QPICA_ENTRA?.start) {
+                    console.log("VOY A EJECUTAR START");
                     window.QPICA_ENTRA.start(play);
                 }
                 if (typeof window.enableAmsterdamPeek === "function") {
