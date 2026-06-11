@@ -107,13 +107,19 @@
     ownerLabel = "",
     ownerCards = [],
     actionsHtml = "",
-      showOwner = true,
-  showActions = true
+    showOwner = true,
+    showActions = true
   }) {
     const safeRank = normalizeRank(rank);
     const safeSuit = normalizeSuit(suit);
     const figureSrc = getFigureImageSrc(safeRank, safeSuit);
     const decisionHtml = renderDecisionStamp(status);
+
+    const suitSymbol = getSuitSymbol(safeSuit);
+    const isRedSuit = safeSuit === "HEART" || safeSuit === "DIAMOND";
+    const centerSuitClass = isRedSuit
+      ? " lv2-play-card__center-suit--red"
+      : "";
 
     const ownerCardsHtml = Array.isArray(ownerCards) && ownerCards.length
       ? `
@@ -154,11 +160,11 @@
 
    <span class="lv2-play-card__owner-name">
   ${escapeHtml(
-    ownerUser.nickname ||
-    ownerUser.full_name ||
-    ownerUser.name ||
-    "Usuario"
-  )}
+      ownerUser.nickname ||
+      ownerUser.full_name ||
+      ownerUser.name ||
+      "Usuario"
+    )}
 </span>
 
 
@@ -175,6 +181,12 @@
         class="lv2-play-card__figure"
         style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
       ></div>
+
+      ${suitSymbol ? `
+  <div class="lv2-play-card__center-suit${centerSuitClass}">
+    ${escapeHtml(suitSymbol)}
+  </div>
+` : ""}
 
       <div class="lv2-play-card__inner lv2-play-card__inner--figure">
         ${title ? `

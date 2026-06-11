@@ -280,3 +280,20 @@
   color: rgba(0,0,0,.8);
   white-space: nowrap;
 }
+
+.lv2-play-card__center-suit {
+  position: absolute;
+  top: 60px;
+  right: 16px;
+  font-size: 86px;
+  line-height: 1;
+  font-family: Georgia, "Times New Roman", serif;
+  color: #111;
+  opacity: 0.85;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.lv2-play-card__center-suit--red {
+  color: #c40000;
+}
