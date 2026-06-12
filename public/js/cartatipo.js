@@ -183,7 +183,7 @@ function renderPlayCardBox({
         style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
       ></div>
 
-      ${suitSymbol ? `
+${safeRank === "A" && suitSymbol ? `
   <div class="lv2-play-card__center-suit${centerSuitClass}">
     ${escapeHtml(suitSymbol)}
   </div>
