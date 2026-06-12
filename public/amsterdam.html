@@ -264,26 +264,26 @@
                         : null
                 ].filter(Boolean);
 
-return window.CartaTipo.renderPlayCardBox({
-  rank: play?.card_rank,
-  suit: play?.card_suit,
-  title,
-  status: play?.play_status || "",
-  metas,
+                return window.CartaTipo.renderPlayCardBox({
+                    rank: play?.card_rank,
+                    suit: play?.card_suit,
+                    title,
+                    status: play?.play_status || "",
+                    metas,
 
-  ownerUser: play.ownerUser || null,
-  ownerCards: play.ownerCards || [],
+                    ownerUser: play.ownerUser || null,
+                    ownerCards: play.ownerCards || [],
 
-  actionsHtml:
-    play.actionsHtml !== undefined
-      ? play.actionsHtml
-      : renderTargetActions(play),
+                    actionsHtml:
+                        play.actionsHtml !== undefined
+                            ? play.actionsHtml
+                            : renderTargetActions(play),
 
-  showOwner: play.showOwner ?? false,
-  showActions: play.showActions ?? true,
+                    showOwner: play.showOwner ?? false,
+                    showActions: play.showActions ?? true,
 
-  figureOverrideSrc: play.figureOverrideSrc || ""
-});
+                    figureOverrideSrc: play.figureOverrideSrc || ""
+                });
 
                 return `
     <div class="tribuna-card-fallback">
@@ -460,10 +460,16 @@ return window.CartaTipo.renderPlayCardBox({
                             parent_play: parentData.play
                         };
                     }
+                    const parentOwner = deckState?.users?.find(
+                        (u) => Number(u.id) === Number(play.parent_play?.created_by_user_id)
+                    );
+
+                    console.log("PARENT OWNER", parentOwner);
                 }
                 console.log("QPICA_ENTRA cargado:", window.QPICA_ENTRA);
                 const html = window.QPICA_ENTRA.render({
                     play,
+                    parentOwner,
                     helpers: {
                         renderPlayCardBox,
                         escapeHtml
