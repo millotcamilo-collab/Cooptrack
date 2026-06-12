@@ -255,9 +255,9 @@
 }
 
 .tribuna-page--amsterdam .amsterdam-card-stack__primary .lv2-play-card:first-child {
-  z-index: 2;
+  z-index: 1;
 }
 
 .tribuna-page--amsterdam .amsterdam-card-stack__primary .lv2-play-card:nth-child(2) {
-  z-index: 1;
+  z-index: 2;
 }
