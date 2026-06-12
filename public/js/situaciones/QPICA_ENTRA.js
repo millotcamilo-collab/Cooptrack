@@ -63,28 +63,20 @@ window.QPICA_ENTRA = {
     });
 
 setTimeout(() => {
-  const back = document.querySelector(".qpica-q-back");
+const host = document.querySelector(".amsterdam-card-stack__primary");
 
-  if (back) {
-    back.style.opacity = "0";
-    back.style.pointerEvents = "none";
-  }
+if (!host || !this.currentCtx) return;
 
-  this.playSequence({
-    figureEl: qFigure,
-    prefix: "QPMira",
-    from: 0,
-    to: 8,
-    fps: 12
-  });
+host.innerHTML = this.renderOpen(this.currentCtx);
 
 }, 2500);
 
   },
 
-  render(ctx) {
-    return this.renderClosed(ctx);
-  },
+render(ctx) {
+  this.currentCtx = ctx;
+  return this.renderClosed(ctx);
+},
 
   renderClosed(ctx) {
     const { play, helpers, parentOwner } = ctx;
@@ -143,15 +135,33 @@ ${parent ? helpers.renderPlayCardBox({
     `;
   },
 
-  renderOpen(ctx) {
+ renderOpen(ctx) {
   const { play, helpers } = ctx;
   const parent = play?.parent_play || play?.parent || null;
 
-  const mode = this.getParentSpadeMode(play);
-  const jPrefix = mode === "DEADLINE" ? "JpicaDeadline" : "JpicaCita";
-
   return `
-    OPEN
+    ${parent ? helpers.renderPlayCardBox({
+      ...parent,
+      title: "",
+      metas: [],
+      ownerUser: {
+        nickname: parent.created_by_nickname,
+        profile_photo_url: parent.created_by_profile_photo_url
+      },
+      ownerCards: parent.issued_with || [],
+      actionsHtml: "",
+      showOwner: true,
+      showActions: false
+    }) : ""}
+
+    <div class="qpica-q-wrapper">
+      ${helpers.renderPlayCardBox({
+        ...play,
+        figureOverrideSrc: this.buildFrame("QPMira", 0)
+      })}
+    </div>
+
+    <div id="qpica-week-container" class="qpica-week-container"></div>
   `;
 },
 
