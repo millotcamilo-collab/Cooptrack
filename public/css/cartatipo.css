@@ -108,7 +108,7 @@
   background: rgba(245, 238, 220, 0.88);
   backdrop-filter: sepia(85%) saturate(55%) brightness(1.02);
   -webkit-backdrop-filter: sepia(85%) saturate(55%) brightness(1.02);
-  z-index: 3;
+  z-index: 4;
   pointer-events: none;
 }
 
@@ -301,21 +301,21 @@
 .lv2-play-card__inner-suit {
   position: absolute;
   font-family: var(--font-card);
-  font-size: 42px;
+  font-size: 62px;
   line-height: 1;
   opacity: 1;
-  z-index: 6;
+  z-index: 3;
   pointer-events: none;
 }
 
 .lv2-play-card__inner-suit--tl {
-  top: 72px;
+  top: 42px;
   left: 42px;
 }
 
 .lv2-play-card__inner-suit--br {
   right: 42px;
-  bottom: 72px;
+  bottom: 42px;
   transform: rotate(180deg);
 }
 
