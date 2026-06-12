@@ -91,7 +91,23 @@ start(play) {
 ${parent ? helpers.renderPlayCardBox({
   ...parent,
   figureOverrideSrc: this.buildFrame(jPrefix, 0),
+  ownerUser: {
+    nickname:
+      parent.created_by_user_nickname ||
+      parent.user_nickname ||
+      play.created_by_user_nickname ||
+      play.source_user_nickname ||
+      "Anfitrión",
+    profile_photo_url:
+      parent.created_by_user_profile_photo_url ||
+      parent.user_profile_photo_url ||
+      play.created_by_user_profile_photo_url ||
+      play.source_user_profile_photo_url ||
+      "/assets/icons/singeta120.gif"
+  },
+  ownerCards: parent.ownerCards || [],
   actionsHtml: "",
+  showOwner: true,
   showActions: false
 }) : ""}
 

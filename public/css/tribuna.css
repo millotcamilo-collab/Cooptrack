@@ -244,3 +244,8 @@
 .qpica-week-container{
   margin-top: 8px;
 }
+
+
+.tribuna-page--amsterdam .amsterdam-card-stack__primary .lv2-play-card + .lv2-play-card {
+  margin-top: -72px;
+}
