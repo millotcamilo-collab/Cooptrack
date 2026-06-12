@@ -301,7 +301,7 @@
 .lv2-play-card__inner-suit {
   position: absolute;
   font-family: var(--font-card);
-  font-size: 62px;
+  font-size: 58px;
   line-height: 1;
   opacity: 1;
   z-index: 3;
@@ -309,13 +309,13 @@
 }
 
 .lv2-play-card__inner-suit--tl {
-  top: 42px;
-  left: 42px;
+  top: 10px;
+  left: 38px;
 }
 
 .lv2-play-card__inner-suit--br {
-  right: 42px;
-  bottom: 42px;
+  right: 38px;
+  bottom: 10px;
   transform: rotate(180deg);
 }
 
