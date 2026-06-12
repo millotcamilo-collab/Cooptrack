@@ -264,18 +264,26 @@
                         : null
                 ].filter(Boolean);
 
-                return window.CartaTipo.renderPlayCardBox({
-                    rank: play?.card_rank,
-                    suit: play?.card_suit,
-                    title,
-                    status: play?.play_status || "",
-                    metas,
-                    ownerUser: null,
-                    ownerCards: [],
-                    actionsHtml: renderTargetActions(play),
-                    showOwner: false,
-                    showActions: true
-                });
+return window.CartaTipo.renderPlayCardBox({
+  rank: play?.card_rank,
+  suit: play?.card_suit,
+  title,
+  status: play?.play_status || "",
+  metas,
+
+  ownerUser: play.ownerUser || null,
+  ownerCards: play.ownerCards || [],
+
+  actionsHtml:
+    play.actionsHtml !== undefined
+      ? play.actionsHtml
+      : renderTargetActions(play),
+
+  showOwner: play.showOwner ?? false,
+  showActions: play.showActions ?? true,
+
+  figureOverrideSrc: play.figureOverrideSrc || ""
+});
 
                 return `
     <div class="tribuna-card-fallback">

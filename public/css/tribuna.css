@@ -249,3 +249,15 @@
 .tribuna-page--amsterdam .amsterdam-card-stack__primary .lv2-play-card + .lv2-play-card {
   margin-top: -72px;
 }
+
+.tribuna-page--amsterdam .amsterdam-card-stack__primary .lv2-play-card {
+  position: relative;
+}
+
+.tribuna-page--amsterdam .amsterdam-card-stack__primary .lv2-play-card:first-child {
+  z-index: 2;
+}
+
+.tribuna-page--amsterdam .amsterdam-card-stack__primary .lv2-play-card:nth-child(2) {
+  z-index: 1;
+}
