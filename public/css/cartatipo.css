@@ -297,3 +297,28 @@
 .lv2-play-card__center-suit--red {
   color: #c40000;
 }
+
+.lv2-play-card__inner-suit {
+  position: absolute;
+  font-family: var(--font-card);
+  font-size: 42px;
+  line-height: 1;
+  opacity: .32;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.lv2-play-card__inner-suit--tl {
+  top: 72px;
+  left: 42px;
+}
+
+.lv2-play-card__inner-suit--br {
+  right: 42px;
+  bottom: 72px;
+  transform: rotate(180deg);
+}
+
+.lv2-play-card__inner-suit--red {
+  color: #c40000;
+}
