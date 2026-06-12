@@ -68,6 +68,16 @@ const host = document.querySelector(".amsterdam-card-stack__primary");
 if (!host || !this.currentCtx) return;
 
 host.innerHTML = this.renderOpen(this.currentCtx);
+const openFigures = host.querySelectorAll(".lv2-play-card__figure");
+const openQFigure = openFigures[1];
+
+this.playSequence({
+  figureEl: openQFigure,
+  prefix: "QPMira",
+  from: 0,
+  to: 8,
+  fps: 12
+});
 
 }, 2500);
 
@@ -140,19 +150,23 @@ ${parent ? helpers.renderPlayCardBox({
   const parent = play?.parent_play || play?.parent || null;
 
   return `
-    ${parent ? helpers.renderPlayCardBox({
-      ...parent,
-      title: "",
-      metas: [],
-      ownerUser: {
-        nickname: parent.created_by_nickname,
-        profile_photo_url: parent.created_by_profile_photo_url
-      },
-      ownerCards: parent.issued_with || [],
-      actionsHtml: "",
-      showOwner: true,
-      showActions: false
-    }) : ""}
+${parent ? helpers.renderPlayCardBox({
+  ...parent,
+  play_text: "",
+  parent_play_text: "",
+  start_date: null,
+  end_date: null,
+  location: "",
+
+  ownerUser: {
+    nickname: parent.created_by_nickname,
+    profile_photo_url: parent.created_by_profile_photo_url
+  },
+  ownerCards: parent.issued_with || [],
+  actionsHtml: "",
+  showOwner: true,
+  showActions: false
+}) : ""}
 
     <div class="qpica-q-wrapper">
       ${helpers.renderPlayCardBox({
