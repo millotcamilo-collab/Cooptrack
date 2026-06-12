@@ -285,3 +285,8 @@ top: 20px;
   position: relative;
   margin-top: -72px;
 }
+
+.qpica-q-wrapper--open {
+  position: relative;
+  margin-top: -120px;
+}

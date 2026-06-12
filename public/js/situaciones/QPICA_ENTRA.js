@@ -79,7 +79,7 @@ this.playSequence({
   fps: 12
 });
 
-}, 2500);
+}, 4860);
 
   },
 
@@ -168,7 +168,7 @@ ${parent ? helpers.renderPlayCardBox({
   showActions: false
 }) : ""}
 
-    <div class="qpica-q-wrapper">
+    <div class="qpica-q-wrapper qpica-q-wrapper--open">
       ${helpers.renderPlayCardBox({
         ...play,
         figureOverrideSrc: this.buildFrame("QPMira", 0)
