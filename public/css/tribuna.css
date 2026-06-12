@@ -203,7 +203,7 @@
 .tribuna-page--amsterdam .amsterdam-card-stack__primary {
   position: absolute;
   left: 0;
-  top: calc(var(--lv2-card-h) * 0.35);
+top: 20px;
   z-index: 2;
   touch-action: none;
   cursor: grab;
