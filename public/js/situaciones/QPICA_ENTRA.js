@@ -96,9 +96,12 @@ ${parent ? helpers.renderPlayCardBox({
       ...parent,
       figureOverrideSrc: this.buildFrame(jPrefix, 0),
 
-      ownerUser: parentOwner || null,
+      ownerUser: {
+        nickname: parent.created_by_nickname,
+        profile_photo_url: parent.created_by_profile_photo_url
+      },
 
-      ownerCards: parent.ownerCards || [],
+      ownerCards: parent.issued_with || [],
       actionsHtml: "",
       showOwner: true,
       showActions: false
