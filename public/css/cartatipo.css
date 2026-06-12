@@ -303,8 +303,8 @@
   font-family: var(--font-card);
   font-size: 42px;
   line-height: 1;
-  opacity: .32;
-  z-index: 4;
+  opacity: 1;
+  z-index: 6;
   pointer-events: none;
 }
 
