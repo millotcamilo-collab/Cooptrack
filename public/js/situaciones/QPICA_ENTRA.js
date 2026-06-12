@@ -62,26 +62,27 @@ window.QPICA_ENTRA = {
       fps: 18
     });
 
-setTimeout(() => {
-const host = document.querySelector(".amsterdam-card-stack__primary");
-
-if (!host || !this.currentCtx) return;
-
-host.innerHTML = this.renderOpen(this.currentCtx);
-const openFigures = host.querySelectorAll(".lv2-play-card__figure");
-const openQFigure = openFigures[1];
-
-this.playSequence({
-  figureEl: openQFigure,
-  prefix: "QPMira",
-  from: 0,
-  to: 8,
-  fps: 12
-});
-
-}, 4860);
 
   },
+
+open() {
+  const host = document.querySelector(".amsterdam-card-stack__primary");
+
+  if (!host || !this.currentCtx) return;
+
+  host.innerHTML = this.renderOpen(this.currentCtx);
+
+  const openFigures = host.querySelectorAll(".lv2-play-card__figure");
+  const openQFigure = openFigures[1];
+
+  this.playSequence({
+    figureEl: openQFigure,
+    prefix: "QPMira",
+    from: 0,
+    to: 8,
+    fps: 12
+  });
+},
 
 render(ctx) {
   this.currentCtx = ctx;
@@ -127,11 +128,12 @@ ${parent ? helpers.renderPlayCardBox({
     figureOverrideSrc: this.buildFrame("QPMira", 0)
   })}
 
-  <img
-    class="qpica-q-back"
-    src="/assets/icons/DorsoAzul.png"
-    alt=""
-  />
+<img
+  class="qpica-q-back"
+  src="/assets/icons/DorsoAzul.png"
+  alt=""
+  onclick="window.QPICA_ENTRA.open()"
+/>
 
 </div>
                 
