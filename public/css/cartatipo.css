@@ -309,13 +309,13 @@
 }
 
 .lv2-play-card__inner-suit--tl {
-  top: 18px;
+  top: 27px;
   left: 38px;
 }
 
 .lv2-play-card__inner-suit--br {
   right: 38px;
-  bottom: 18px;
+  bottom: 27px;
   transform: rotate(180deg);
 }
 

@@ -280,3 +280,8 @@ top: 20px;
   object-fit: cover;
   z-index: 20;
 }
+
+.tribuna-page--amsterdam .qpica-q-wrapper {
+  position: relative;
+  margin-top: -72px;
+}

@@ -143,5 +143,16 @@ ${parent ? helpers.renderPlayCardBox({
     `;
   },
 
+  renderOpen(ctx) {
+  const { play, helpers } = ctx;
+  const parent = play?.parent_play || play?.parent || null;
+
+  const mode = this.getParentSpadeMode(play);
+  const jPrefix = mode === "DEADLINE" ? "JpicaDeadline" : "JpicaCita";
+
+  return `
+    OPEN
+  `;
+},
 
 };
