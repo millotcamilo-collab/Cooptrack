@@ -185,7 +185,7 @@
 .tribuna-page--amsterdam .amsterdam-card-stack {
   position: relative;
   width: var(--lv2-card-w);
-  min-height: calc(var(--lv2-card-h) * 2.25);
+  min-height: calc(var(--lv2-card-h) * 2.65);
   margin: 0 auto;
 }
 

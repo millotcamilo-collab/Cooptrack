@@ -77,7 +77,7 @@ start(play) {
 
     const mode = this.getParentSpadeMode(play);
     const jPrefix = mode === "DEADLINE" ? "JpicaDeadline" : "JpicaCita";
-
+console.log("PARENT", parent);
     return `
       <section class="lienzo-tribune lienzo-tribune--target tribuna-single tribuna-single--amsterdam">
         <div class="lienzo-tribune__corporates"></div>
