@@ -429,8 +429,9 @@
                         `<div class="tribuna-error">No se pudo cargar la jugada.</div>`;
                     return;
                 }
-                let play = data.play;
-                let deckState = null;
+let play = data.play;
+let deckState = null;
+let parentOwner = null;
 
                 const stateResponse = await fetch(`${API_BASE_URL}/mazos/${play.deck_id}/state`, {
                     headers: {
@@ -460,7 +461,7 @@
                             parent_play: parentData.play
                         };
                     }
-                    const parentOwner = deckState?.users?.find(
+                    parentOwner = deckState?.users?.find(
                         (u) => Number(u.id) === Number(play.parent_play?.created_by_user_id)
                     );
 
