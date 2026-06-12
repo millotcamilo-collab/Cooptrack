@@ -61,7 +61,18 @@ window.QPICA_ENTRA = {
       to: 29,
       fps: 18
     });
+const back = document.querySelector(".qpica-q-back");
 
+if (back) {
+  back.addEventListener("click", () => {
+    this.open();
+  }, { once: true });
+
+  back.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    this.open();
+  }, { once: true });
+}
 
   },
 
@@ -79,6 +90,16 @@ if (back) {
 setTimeout(() => {
   host.innerHTML = this.renderOpen(this.currentCtx);
 
+  const openFigures = host.querySelectorAll(".lv2-play-card__figure");
+  const openQFigure = openFigures[1];
+
+  this.playSequence({
+    figureEl: openQFigure,
+    prefix: "QPMira",
+    from: 0,
+    to: 8,
+    fps: 12
+  });
 }, 700);
 
   const openFigures = host.querySelectorAll(".lv2-play-card__figure");
@@ -141,7 +162,6 @@ ${parent ? helpers.renderPlayCardBox({
   class="qpica-q-back"
   src="/assets/icons/DorsoAzul.png"
   alt=""
-  onclick="window.QPICA_ENTRA.open()"
 />
 
 </div>
