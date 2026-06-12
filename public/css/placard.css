@@ -509,3 +509,10 @@
   right: 9px;
   bottom: 12px;
 }
+
+@media (min-width: 901px) {
+  .placard__maincard {
+    display: none;
+  }
+}
+
