@@ -70,7 +70,16 @@ open() {
 
   if (!host || !this.currentCtx) return;
 
+  const back = host.querySelector(".qpica-q-back");
+
+if (back) {
+  back.classList.add("qpica-q-back--opening");
+}
+
+setTimeout(() => {
   host.innerHTML = this.renderOpen(this.currentCtx);
+
+}, 700);
 
   const openFigures = host.querySelectorAll(".lv2-play-card__figure");
   const openQFigure = openFigures[1];

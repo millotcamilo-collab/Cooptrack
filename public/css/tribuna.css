@@ -290,3 +290,14 @@ top: 20px;
   position: relative;
   margin-top: -120px;
 }
+
+.qpica-q-back {
+  cursor: pointer;
+  transition: transform .7s ease, opacity .7s ease;
+  transform-origin: center center;
+}
+
+.qpica-q-back--opening {
+  transform: rotateY(90deg) scale(0.94);
+  opacity: 0;
+}
