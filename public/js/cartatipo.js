@@ -133,9 +133,9 @@ function renderPlayCardBox({
             ? " lv2-play-card__owner-card--red"
             : "";
 
-        return `
+return `
   <span class="lv2-play-card__owner-card${redClass}">
-    ${escapeHtml(r)}${escapeHtml(getSuitSymbol(s))}
+    ${escapeHtml(getSuitSymbol(s))}
   </span>
 `;
       }).join("")}

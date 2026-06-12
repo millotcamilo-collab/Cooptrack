@@ -62,13 +62,24 @@ window.QPICA_ENTRA = {
       fps: 18
     });
 
-    this.playSequence({
-      figureEl: qFigure,
-      prefix: "QPMira",
-      from: 0,
-      to: 8,
-      fps: 12
-    });
+setTimeout(() => {
+  const back = document.querySelector(".qpica-q-back");
+
+  if (back) {
+    back.style.opacity = "0";
+    back.style.pointerEvents = "none";
+  }
+
+  this.playSequence({
+    figureEl: qFigure,
+    prefix: "QPMira",
+    from: 0,
+    to: 8,
+    fps: 12
+  });
+
+}, 2500);
+
   },
 
   render(ctx) {
@@ -107,10 +118,20 @@ ${parent ? helpers.renderPlayCardBox({
       showActions: false
     }) : ""}
 
-${helpers.renderPlayCardBox({
-      ...play,
-      figureOverrideSrc: this.buildFrame("QPMira", 0)
-    })}
+<div class="qpica-q-wrapper">
+
+  ${helpers.renderPlayCardBox({
+    ...play,
+    figureOverrideSrc: this.buildFrame("QPMira", 0)
+  })}
+
+  <img
+    class="qpica-q-back"
+    src="/assets/icons/DorsoAzul.png"
+    alt=""
+  />
+
+</div>
                 
               <div id="qpica-week-container" class="qpica-week-container"></div>
 
