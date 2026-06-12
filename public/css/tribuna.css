@@ -186,7 +186,13 @@
   position: relative;
   width: var(--lv2-card-w);
   min-height: calc(var(--lv2-card-h) * 2.65);
+
   margin: 0 auto;
+  padding-bottom: 40px;
+}
+
+.tribuna-page--amsterdam .lienzo-tribune {
+  min-height: calc(var(--lv2-card-h) * 2.75);
 }
 
 .tribuna-page--amsterdam .amsterdam-card-stack__primary.is-peeking {

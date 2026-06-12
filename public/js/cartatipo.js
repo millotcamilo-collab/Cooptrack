@@ -189,6 +189,16 @@ ${safeRank === "A" && suitSymbol ? `
   </div>
 ` : ""}
 
+${safeRank !== "A" && suitSymbol ? `
+  <div class="lv2-play-card__inner-suit lv2-play-card__inner-suit--tl${centerSuitClass}">
+    ${escapeHtml(suitSymbol)}
+  </div>
+
+  <div class="lv2-play-card__inner-suit lv2-play-card__inner-suit--br${centerSuitClass}">
+    ${escapeHtml(suitSymbol)}
+  </div>
+` : ""}
+
       <div class="lv2-play-card__inner lv2-play-card__inner--figure">
         ${title ? `
           <div class="lv2-play-card__title">
