@@ -159,7 +159,11 @@ render(ctx) {
 
 
 ${parent ? helpers.renderPlayCardBox({
-      ...parent,
+  ...parent,
+  play_text: parent.play_text,
+  start_date: parent.start_date,
+  end_date: parent.end_date,
+  location: parent.location,
       figureOverrideSrc: this.buildFrame(jPrefix, 0),
 
       ownerUser: {
@@ -177,6 +181,10 @@ ${parent ? helpers.renderPlayCardBox({
 
   ${helpers.renderPlayCardBox({
     ...play,
+    play_text: play.play_text,
+    start_date: play.start_date,
+    end_date: play.end_date,
+    location: play.location,
     figureOverrideSrc: this.buildFrame("QPMira", 0)
   })}
 
@@ -203,13 +211,12 @@ ${parent ? helpers.renderPlayCardBox({
   const parent = play?.parent_play || play?.parent || null;
 
   return `
-${parent ? helpers.renderPlayCardBox({
+  ${parent ? helpers.renderPlayCardBox({
   ...parent,
-  play_text: "",
-  parent_play_text: "",
-  start_date: null,
-  end_date: null,
-  location: "",
+  play_text: parent.play_text,
+  start_date: parent.start_date,
+  end_date: parent.end_date,
+  location: parent.location,
 
   ownerUser: {
     nickname: parent.created_by_nickname,

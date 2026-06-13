@@ -165,6 +165,20 @@ function renderMiniDay({
     showActions = true,
     figureOverrideSrc = ""
   }) {
+    try {
+      console.log("[CartaTipo.renderPlayCardBox] incoming:", {
+        rank: rank,
+        suit: suit,
+        play_text: play_text,
+        start_date: start_date,
+        end_date: end_date,
+        location: location,
+        metas: metas
+      });
+    } catch (e) {
+      // noop
+    }
+
     const safeRank = normalizeRank(rank);
     const safeSuit = normalizeSuit(suit);
     const figureSrc = figureOverrideSrc || getFigureImageSrc(safeRank, safeSuit);

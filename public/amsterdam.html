@@ -103,6 +103,10 @@
                     suit: parent.card_suit,
 
                     title: parent.play_text || "",
+                    play_text: parent.play_text,
+                    start_date: parent.start_date,
+                    end_date: parent.end_date,
+                    location: parent.location,
 
                     metas: [],
 
@@ -183,6 +187,11 @@
                     suit: "HEART",
 
                     title: "",
+
+                    play_text: play.play_text,
+                    start_date: play.start_date,
+                    end_date: play.end_date,
+                    location: play.location,
 
                     metas: [
                         { text: payment.concept || "" },

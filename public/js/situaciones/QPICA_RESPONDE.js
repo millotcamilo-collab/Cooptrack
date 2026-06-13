@@ -13,7 +13,13 @@ window.QPICA_RESPONDE = {
               <div id="qpica-j-animation"></div>
               <div id="qpica-q-animation"></div>
 
-              ${helpers.renderPlayCardBox(play)}
+              ${helpers.renderPlayCardBox({
+                ...play,
+                play_text: play.play_text,
+                start_date: play.start_date,
+                end_date: play.end_date,
+                location: play.location
+              })}
             </div>
 
           </div>

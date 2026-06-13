@@ -193,6 +193,10 @@
             rank: "J",
             suit: "SPADE",
             title: play.play_text || "Sin texto",
+            play_text: play.play_text,
+            start_date: play.start_date,
+            end_date: play.end_date,
+            location: play.location,
             ownerUser: getPlayOwnerUser(play),
             ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
             metas: [
@@ -314,6 +318,10 @@ function bindSourceDrag(play) {
                   rank: "J",
                   suit: "SPADE",
                   title: play.play_text || "Sin texto",
+                  play_text: play.play_text,
+                  start_date: play.start_date,
+                  end_date: play.end_date,
+                  location: play.location,
                   ownerUser: getPlayOwnerUser(play),
                   ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
                   metas: [
