@@ -278,8 +278,13 @@
                     suit: play?.card_suit,
                     title,
                     status: play?.play_status || "",
-                    metas,
 
+                    play_text: title,
+                    start_date: parent?.start_date || play?.start_date || null,
+                    end_date: parent?.end_date || play?.end_date || null,
+                    location,
+
+                    metas,
                     ownerUser: play.ownerUser || null,
                     ownerCards: play.ownerCards || [],
 
@@ -438,9 +443,9 @@
                         `<div class="tribuna-error">No se pudo cargar la jugada.</div>`;
                     return;
                 }
-let play = data.play;
-let deckState = null;
-let parentOwner = null;
+                let play = data.play;
+                let deckState = null;
+                let parentOwner = null;
 
                 const stateResponse = await fetch(`${API_BASE_URL}/mazos/${play.deck_id}/state`, {
                     headers: {
@@ -476,7 +481,7 @@ let parentOwner = null;
 
                     console.log("PARENT OWNER", parentOwner);
                     console.log("DECK STATE", deckState);
-console.log("DECK USERS", deckState?.users);
+                    console.log("DECK USERS", deckState?.users);
                 }
                 console.log("QPICA_ENTRA cargado:", window.QPICA_ENTRA);
                 const html = window.QPICA_ENTRA.render({
