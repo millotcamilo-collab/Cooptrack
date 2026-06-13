@@ -171,4 +171,21 @@
   window.getPlayHelp = getPlayHelp;
   window.openPlayHelp = openPlayHelp;
   window.closePlayHelp = closePlayHelp;
+
+  /* ===== Render cartas Help ===== */
+
+document
+  .querySelectorAll(".help-card__cartatipo")
+  .forEach((slot) => {
+
+    slot.innerHTML =
+      CartaTipo.renderPlayCardBox({
+        rank: slot.dataset.rank,
+        suit: slot.dataset.suit,
+        showOwner: false,
+        showActions: false
+      });
+
+  });
+
 })();
