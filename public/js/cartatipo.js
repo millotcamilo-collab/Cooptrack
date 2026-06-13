@@ -231,15 +231,21 @@ function renderMiniDay({
   </div>
 ` : "";
 
+const useMiniDay = shouldRenderMiniDay({
+  rank: safeRank,
+  suit: safeSuit,
+  start_date,
+  end_date
+});
 
-    const bodyHtml = useMiniDay
-      ? renderMiniDay({
-        play_text,
-        start_date,
-        end_date,
-        location
-      })
-      : metas.map((meta) => `
+const bodyHtml = useMiniDay
+  ? renderMiniDay({
+      play_text,
+      start_date,
+      end_date,
+      location
+    })
+  : metas.map((meta) => `
       <div class="lv2-play-card__meta">
         ${meta.icon ? `
           <img
@@ -251,6 +257,7 @@ function renderMiniDay({
         <span>${escapeHtml(meta.text || "")}</span>
       </div>
     `).join("");
+
 
 
     return `
