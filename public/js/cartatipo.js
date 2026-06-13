@@ -7,6 +7,32 @@
     return String(value || "").trim().toUpperCase();
   }
 
+  function shouldRenderMiniDay({ rank, suit, start_date, end_date }) {
+    return (
+      normalizeSuit(suit) === "SPADE" &&
+      (start_date || end_date)
+    );
+  }
+
+
+  function renderMiniDay({ play_text = "", location = "" }) {
+    return `
+    <div class="lv2-mini-day">
+      <div class="lv2-mini-day__row">17</div>
+      <div class="lv2-mini-day__row">18</div>
+      <div class="lv2-mini-day__row lv2-mini-day__row--active">
+        <span class="lv2-mini-day__hour">19</span>
+        <span class="lv2-mini-day__text">${escapeHtml(play_text)}</span>
+        ${location ? `
+          <span class="lv2-mini-day__location" title="${escapeHtml(location)}">📍</span>
+        ` : ""}
+      </div>
+      <div class="lv2-mini-day__row">20</div>
+      <div class="lv2-mini-day__row">21</div>
+    </div>
+  `;
+  }
+
   function escapeHtml(value) {
     return String(value ?? "")
       .replace(/&/g, "&amp;")
@@ -97,20 +123,24 @@
     return "";
   }
 
-function renderPlayCardBox({
-  rank,
-  suit,
-  title = "",
-  metas = [],
-  status = "",
-  ownerUser = null,
-  ownerLabel = "",
-  ownerCards = [],
-  actionsHtml = "",
-  showOwner = true,
-  showActions = true,
-  figureOverrideSrc = ""
-}) {
+  function renderPlayCardBox({
+    rank,
+    suit,
+    title = "",
+    metas = [],
+    status = "",
+    start_date = null,
+    end_date = null,
+    location = "",
+    play_text = "",
+    ownerUser = null,
+    ownerLabel = "",
+    ownerCards = [],
+    actionsHtml = "",
+    showOwner = true,
+    showActions = true,
+    figureOverrideSrc = ""
+  }) {
     const safeRank = normalizeRank(rank);
     const safeSuit = normalizeSuit(suit);
     const figureSrc = figureOverrideSrc || getFigureImageSrc(safeRank, safeSuit);
@@ -133,7 +163,9 @@ function renderPlayCardBox({
             ? " lv2-play-card__owner-card--red"
             : "";
 
-return `
+
+
+        return `
   <span class="lv2-play-card__owner-card${redClass}">
     ${escapeHtml(getSuitSymbol(s))}
   </span>
@@ -144,6 +176,7 @@ return `
       : "";
 
     const ownerHtml = showOwner && ownerUser ? `
+    
   <div class="lv2-play-card__owner">
     <img
       class="lv2-play-card__owner-avatar"
@@ -174,6 +207,34 @@ return `
   </div>
 ` : "";
 
+    const useMiniDay = shouldRenderMiniDay({
+      rank: safeRank,
+      suit: safeSuit,
+      start_date,
+      end_date
+    });
+
+    const bodyHtml = useMiniDay
+      ? renderMiniDay({
+        play_text,
+        start_date,
+        end_date,
+        location
+      })
+      : metas.map((meta) => `
+      <div class="lv2-play-card__meta">
+        ${meta.icon ? `
+          <img
+            class="lv2-play-card__meta-icon"
+            src="${escapeHtml(meta.icon)}"
+            alt=""
+          />
+        ` : ""}
+        <span>${escapeHtml(meta.text || "")}</span>
+      </div>
+    `).join("");
+
+
     return `
     <div class="lv2-play-card">
       ${renderCardCorners(safeRank, safeSuit)}
@@ -188,6 +249,8 @@ ${safeRank === "A" && suitSymbol ? `
     ${escapeHtml(suitSymbol)}
   </div>
 ` : ""}
+
+
 
 ${safeRank !== "A" && suitSymbol ? `
   <div class="lv2-play-card__inner-suit lv2-play-card__inner-suit--tl${centerSuitClass}">
@@ -208,18 +271,8 @@ ${safeRank !== "A" && suitSymbol ? `
           </div>
         ` : ""}
 
-        ${metas.map((meta) => `
-          <div class="lv2-play-card__meta">
-            ${meta.icon ? `
-              <img
-                class="lv2-play-card__meta-icon"
-                src="${escapeHtml(meta.icon)}"
-                alt=""
-              />
-            ` : ""}
-            <span>${escapeHtml(meta.text || "")}</span>
-          </div>
-        `).join("")}
+${bodyHtml}
+
 
 
       </div>
@@ -247,6 +300,8 @@ ${showActions && (actionsHtml || decisionHtml) ? `
     getFigureImageSrc,
     renderCardCorners,
     renderDecisionStamp,
-    renderPlayCardBox
+    renderPlayCardBox,
+    shouldRenderMiniDay,
+    renderMiniDay,
   };
 })();
