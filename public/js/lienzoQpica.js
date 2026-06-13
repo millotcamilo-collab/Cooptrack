@@ -44,6 +44,59 @@
         return getAllPlays().find((play) => Number(play?.id || 0) === id) || null;
     }
 
+    function getCurrentUserId() {
+        return Number(getCurrentUser()?.id || 0);
+    }
+
+    function getPlayDayKey(value) {
+        if (!value) return null;
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return null;
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function getEffectivePlaySchedule(play) {
+        const parent = play?.parent_play || play?.parent || getPlayById(play?.parent_play_id) || null;
+        return {
+            play_text: parent?.play_text || play?.parent_play_text || play?.play_text || "",
+            start_date: parent?.start_date || play?.start_date || null,
+            end_date: parent?.end_date || play?.end_date || null,
+            location: parent?.location || play?.location || ""
+        };
+    }
+
+    function getDayItemsForPlay(play) {
+        const ownerId = getCurrentUserId() || Number(play?.target_user_id || 0) || Number(play?.created_by_user_id || 0);
+        if (!ownerId) return [];
+
+        const schedule = getEffectivePlaySchedule(play);
+        const dayKey = getPlayDayKey(schedule.start_date || schedule.end_date);
+        if (!dayKey) return [];
+
+        return getAllPlays()
+            .filter((candidate) => {
+                const rank = normalizeRank(candidate?.card_rank || candidate?.rank);
+                const suit = normalizeSuit(candidate?.card_suit || candidate?.suit);
+                if (!["J", "Q"].includes(rank) || suit !== "SPADE") return false;
+                if (String(candidate?.id || "") === String(play?.id || "")) return false;
+                const candidateOwnerId = Number(candidate?.target_user_id || 0) || Number(candidate?.created_by_user_id || 0);
+                if (candidateOwnerId !== ownerId) return false;
+                const candidateSchedule = getEffectivePlaySchedule(candidate);
+                const candidateDayKey = getPlayDayKey(candidateSchedule.start_date || candidateSchedule.end_date);
+                return candidateDayKey === dayKey;
+            })
+            .map((candidate) => {
+                const candidateSchedule = getEffectivePlaySchedule(candidate);
+                return {
+                    id: candidate.id,
+                    play_text: candidateSchedule.play_text || "",
+                    start_date: candidateSchedule.start_date,
+                    end_date: candidateSchedule.end_date,
+                    location: candidateSchedule.location || ""
+                };
+            });
+    }
+
     function renderCardCorners(rank, suit) {
         const symbol = getSuitSymbol(suit);
         const normalizedSuit = normalizeSuit(suit);
@@ -1010,9 +1063,10 @@
             ? formatTimeLabel(parentPlay?.end_date)
             : formatTimeLabel(parentPlay?.start_date);
 
+        const effective = getEffectivePlaySchedule(play);
         const location = isDeadline
             ? ""
-            : String(parentPlay?.location || "").trim();
+            : String(effective.location || "").trim();
 
         const ownerUser =
             Number(play?.target_user_id || 0)
@@ -1027,10 +1081,11 @@ const ownerCards = ownerUser?.id
             rank,
             suit,
             title: parentText,
-            play_text: play.play_text,
-            start_date: play.start_date,
-            end_date: play.end_date,
-            location: play.location,
+            play_text: effective.play_text,
+            start_date: effective.start_date,
+            end_date: effective.end_date,
+            location,
+            dayItems: getDayItemsForPlay(play),
             status: play?.play_status,
             ownerUser,
             ownerCards,
@@ -1655,6 +1710,11 @@ ${parentJSpadeText
                     rank: "J",
                     suit: "SPADE",
                     title: parentJSpadeText,
+                    play_text: parentPlay?.play_text || "",
+                    start_date: parentPlay?.start_date || null,
+                    end_date: parentPlay?.end_date || null,
+                    location: parentPlay?.location || "",
+                    dayItems: getDayItemsForPlay(parentPlay || play),
                     ownerUser: user,
                     ownerCards: getCorporateCardsForCurrentUser(
                         getAllPlays(),

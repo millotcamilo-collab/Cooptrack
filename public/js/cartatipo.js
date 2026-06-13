@@ -15,11 +15,21 @@
   }
 
 
+function formatHour(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return `${String(date.getHours()).padStart(2, "0")}:${String(
+    date.getMinutes()
+  ).padStart(2, "0")}`;
+}
+
 function renderMiniDay({
   play_text = "",
   location = "",
   start_date = null,
-  end_date = null
+  end_date = null,
+  dayItems = []
 }) {
   const date = start_date || end_date;
   const dayLabel = date
@@ -28,6 +38,20 @@ function renderMiniDay({
         month: "short"
       })
     : "";
+
+  const otherRows = Array.isArray(dayItems)
+    ? dayItems
+        .map((item) => {
+          const itemDate = item.start_date || item.end_date;
+          return {
+            ...item,
+            date: itemDate,
+            hour: formatHour(itemDate)
+          };
+        })
+        .filter((item) => item.date)
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+    : [];
 
   return `
     <div class="lv2-mini-day">
@@ -41,7 +65,7 @@ function renderMiniDay({
       <div class="lv2-mini-day__row">18</div>
 
       <div class="lv2-mini-day__row lv2-mini-day__row--active">
-        <span class="lv2-mini-day__hour">19</span>
+        <span class="lv2-mini-day__hour">${escapeHtml(formatHour(date))}</span>
         <span class="lv2-mini-day__text">${escapeHtml(play_text)}</span>
         ${location ? `
           <span
@@ -50,6 +74,23 @@ function renderMiniDay({
           >📍</span>
         ` : ""}
       </div>
+
+      ${otherRows
+        .map(
+          (item) => `
+      <div class="lv2-mini-day__row">
+        ${item.hour ? `<span class="lv2-mini-day__hour">${escapeHtml(item.hour)}</span>` : ""}
+        <span class="lv2-mini-day__text">${escapeHtml(item.play_text || "")}</span>
+        ${item.location ? `
+          <span
+            class="lv2-mini-day__location"
+            title="${escapeHtml(item.location)}"
+          >📍</span>
+        ` : ""}
+      </div>
+      `
+        )
+        .join("")}
 
       <div class="lv2-mini-day__row">20</div>
       <div class="lv2-mini-day__row">21</div>
@@ -157,6 +198,7 @@ function renderMiniDay({
     end_date = null,
     location = "",
     play_text = "",
+    dayItems = [],
     ownerUser = null,
     ownerLabel = "",
     ownerCards = [],
@@ -173,6 +215,7 @@ function renderMiniDay({
         start_date: start_date,
         end_date: end_date,
         location: location,
+        dayItems: dayItems,
         metas: metas
       });
     } catch (e) {
@@ -257,7 +300,8 @@ const bodyHtml = useMiniDay
       play_text,
       start_date,
       end_date,
-      location
+      location,
+      dayItems
     })
   : metas.map((meta) => `
       <div class="lv2-play-card__meta">
