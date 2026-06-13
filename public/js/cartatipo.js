@@ -207,12 +207,7 @@
   </div>
 ` : "";
 
-    const useMiniDay = shouldRenderMiniDay({
-      rank: safeRank,
-      suit: safeSuit,
-      start_date,
-      end_date
-    });
+const useMiniDay = safeSuit === "SPADE";
 
     const bodyHtml = useMiniDay
       ? renderMiniDay({
