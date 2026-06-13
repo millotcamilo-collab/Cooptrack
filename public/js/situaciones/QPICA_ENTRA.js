@@ -18,6 +18,28 @@ window.QPICA_ENTRA = {
     return src;
   },
 
+renderMiniDay(play) {
+  return `
+    <div class="lv2-mini-day">
+
+      <div class="lv2-mini-day__row">17</div>
+      <div class="lv2-mini-day__row">18</div>
+
+      <div class="lv2-mini-day__row lv2-mini-day__row--active">
+        <span class="lv2-mini-day__hour">19</span>
+        <span class="lv2-mini-day__text">
+          ${play.play_text || ""}
+        </span>
+        <span class="lv2-mini-day__location">📍</span>
+      </div>
+
+      <div class="lv2-mini-day__row">20</div>
+      <div class="lv2-mini-day__row">21</div>
+
+    </div>
+  `;
+},
+
   playSequence({ figureEl, prefix, from = 0, to = 29, fps = 18 }) {
     if (!figureEl) return;
 
