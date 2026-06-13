@@ -15,23 +15,47 @@
   }
 
 
-  function renderMiniDay({ play_text = "", location = "" }) {
-    return `
+function renderMiniDay({
+  play_text = "",
+  location = "",
+  start_date = null,
+  end_date = null
+}) {
+  const date = start_date || end_date;
+  const dayLabel = date
+    ? new Date(date).toLocaleDateString("es-UY", {
+        day: "numeric",
+        month: "short"
+      })
+    : "";
+
+  return `
     <div class="lv2-mini-day">
+      ${dayLabel ? `
+        <div class="lv2-mini-day__header">
+          ${escapeHtml(dayLabel)}
+        </div>
+      ` : ""}
+
       <div class="lv2-mini-day__row">17</div>
       <div class="lv2-mini-day__row">18</div>
+
       <div class="lv2-mini-day__row lv2-mini-day__row--active">
         <span class="lv2-mini-day__hour">19</span>
         <span class="lv2-mini-day__text">${escapeHtml(play_text)}</span>
         ${location ? `
-          <span class="lv2-mini-day__location" title="${escapeHtml(location)}">📍</span>
+          <span
+            class="lv2-mini-day__location"
+            title="${escapeHtml(location)}"
+          >📍</span>
         ` : ""}
       </div>
+
       <div class="lv2-mini-day__row">20</div>
       <div class="lv2-mini-day__row">21</div>
     </div>
   `;
-  }
+}
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -207,7 +231,6 @@
   </div>
 ` : "";
 
-const useMiniDay = safeSuit === "SPADE";
 
     const bodyHtml = useMiniDay
       ? renderMiniDay({
@@ -260,11 +283,11 @@ ${safeRank !== "A" && suitSymbol ? `
       <div class="lv2-play-card__inner lv2-play-card__inner--figure">
         ${ownerHtml}
 
-        ${title ? `
-          <div class="lv2-play-card__title">
-            ${escapeHtml(title)}
-          </div>
-        ` : ""}
+${title && !useMiniDay ? `
+  <div class="lv2-play-card__title">
+    ${escapeHtml(title)}
+  </div>
+` : ""}
 
 ${bodyHtml}
 
