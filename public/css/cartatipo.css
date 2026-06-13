@@ -10,6 +10,7 @@
   border-radius: 10px;
   box-sizing: border-box;
   overflow: hidden;
+  font-size: calc(var(--lv2-card-w) / 8);
 }
 
 .lv2-card-corner {
@@ -301,7 +302,7 @@
 .lv2-play-card__inner-suit {
   position: absolute;
   font-family: var(--font-card);
-  font-size: 52px;
+font-size: 1em;
   line-height: 1;
   opacity: 1;
   z-index: 3;

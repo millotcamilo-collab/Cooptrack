@@ -200,6 +200,8 @@ ${safeRank !== "A" && suitSymbol ? `
 ` : ""}
 
       <div class="lv2-play-card__inner lv2-play-card__inner--figure">
+        ${ownerHtml}
+
         ${title ? `
           <div class="lv2-play-card__title">
             ${escapeHtml(title)}
@@ -219,7 +221,7 @@ ${safeRank !== "A" && suitSymbol ? `
           </div>
         `).join("")}
 
-${ownerHtml}
+
       </div>
 
 ${showActions && (actionsHtml || decisionHtml) ? `

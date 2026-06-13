@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +8,7 @@
 
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="stylesheet" href="/css/topbar.css" />
- <link rel="icon" type="image/png" href="/assets/icons/bigote.png">
+  <link rel="icon" type="image/png" href="/assets/icons/bigote.png">
   <style>
     body {
       margin: 0;
@@ -196,6 +197,38 @@
       white-space: normal;
     }
 
+.help-card--cartatipo {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  min-height: auto;
+  gap: 8px;
+  box-shadow: none;
+}
+
+.help-card--cartatipo:hover,
+.help-card--cartatipo:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: none;
+}
+
+.help-card__caption {
+  width: var(--lv2-card-w, 200px);
+  min-height: 46px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  background: rgba(245, 238, 220, 0.88);
+  backdrop-filter: sepia(75%) saturate(60%);
+  -webkit-backdrop-filter: sepia(75%) saturate(60%);
+  text-align: center;
+}
+
+.help-card__cartatipo {
+  display: flex;
+  justify-content: center;
+}
+
     @media (max-width: 1100px) {
       .help-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -227,6 +260,7 @@
     }
   </style>
 </head>
+
 <body>
   <div id="topbar-container"></div>
 
@@ -235,54 +269,41 @@
       <header class="help-page__header">
         <h1 class="help-page__title">Help</h1>
         <p class="help-page__intro">
-          Cooptrack es una agenda compartida donde las cartas de la baraja francesa regula el flujo documental entre los usuarios.
-          Los palos representan el tipo de documentación. Corazón se corresponde con contenido, picas con actividades, trebol con relaciones publicas y diamantes con montos. 
-          Las jotas se corresponden con la base documental de cada agenda, y las reinas son las extensiones de las Jotas terceros. En tanto reyes y ases conforman lo que denominaremos cartas corpotativas 
+          Cooptrack es una agenda compartida donde las cartas de la baraja francesa regula el flujo documental entre los
+          usuarios.
+          Los palos representan el tipo de documentación. Corazón se corresponde con contenido, picas con actividades,
+          trebol con relaciones publicas y diamantes con montos.
+          Las jotas se corresponden con la base documental de cada agenda, y las reinas son las extensiones de las Jotas
+          terceros. En tanto reyes y ases conforman lo que denominaremos cartas corpotativas
         </p>
       </header>
 
       <section class="help-section">
         <h2 class="help-section__title">Jotas</h2>
         <div class="help-grid">
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('J_HEART')"
-            title="Ver ayuda de J corazón"
-          >
-            <img src="/assets/icons/Jcorazon.png" alt="J corazón" class="help-card__image" />
-            <div class="help-card__label">Anotación</div>
-            <div class="help-card__subtext"></div>
+          <button type="button" class="help-card help-card--cartatipo" onclick="openPlayHelp('J_HEART')"
+            title="Ver ayuda de J corazón">
+            <div class="help-card__caption">
+              <div class="help-card__label">Anotación</div>
+              <div class="help-card__subtext">Texto breve opcional</div>
+            </div>
+
+            <div class="help-card__cartatipo" data-rank="J" data-suit="HEART"></div>
           </button>
 
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('J_SPADE')"
-            title="Ver ayuda de J picas"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('J_SPADE')" title="Ver ayuda de J picas">
             <img src="/assets/icons/Jpike.png" alt="J picas" class="help-card__image" />
             <div class="help-card__label">Actividad</div>
             <div class="help-card__subtext"></div>
           </button>
 
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('J_CLUB')"
-            title="Ver ayuda de J trébol"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('J_CLUB')" title="Ver ayuda de J trébol">
             <img src="/assets/icons/Jtrebol.png" alt="J trébol" class="help-card__image" />
             <div class="help-card__label">Factura</div>
             <div class="help-card__subtext"></div>
           </button>
 
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('J_DIAMOND')"
-            title="Ver ayuda de J diamante"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('J_DIAMOND')" title="Ver ayuda de J diamante">
             <img src="/assets/icons/Jdiamante.png" alt="J diamante" class="help-card__image" />
             <div class="help-card__label">Moneda y monto</div>
             <div class="help-card__subtext"></div>
@@ -293,43 +314,23 @@
       <section class="help-section">
         <h2 class="help-section__title">Reinas</h2>
         <div class="help-grid">
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('Q_HEART')"
-            title="Ver ayuda de Q corazón"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('Q_HEART')" title="Ver ayuda de Q corazón">
             <img src="/assets/icons/Qcorazon.png" alt="A corazón" class="help-card__image" />
             <div class="help-card__label">Presupuesto</div>
             <div class="help-card__subtext"></div>
           </button>
 
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('Q_SPADE')"
-            title="Ver ayuda de Q picas"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('Q_SPADE')" title="Ver ayuda de Q picas">
             <img src="/assets/icons/Qpike.png" alt="A picas" class="help-card__image" />
             <div class="help-card__label">Invitación </div>
             <div class="help-card__subtext">Las reinas de picas se corresponden con las J de picas</div>
           </button>
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('Q_CLUB')"
-            title="Ver ayuda de Q trébol"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('Q_CLUB')" title="Ver ayuda de Q trébol">
             <img src="/assets/icons/Qtrebol.png" alt="A trébol" class="help-card__image" />
             <div class="help-card__label">Compra/Venta</div>
             <div class="help-card__subtext">Las reinas de trébol se corresponden con facturas</div>
           </button>
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('Q_DIAMOND')"
-            title="Ver ayuda de Q diamante"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('Q_DIAMOND')" title="Ver ayuda de Q diamante">
             <img src="/assets/icons/Qdiamante.png" alt="Q diamante" class="help-card__image" />
             <div class="help-card__label">Moneda y monto</div>
             <div class="help-card__subtext">Las reinas de diamante se corresponden con montos transaccionales</div>
@@ -342,45 +343,26 @@
       <section class="help-section">
         <h2 class="help-section__title">Reyes</h2>
         <div class="help-grid">
-<button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('K_HEART')"
-            title="Ver ayuda de K corazón"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('K_HEART')" title="Ver ayuda de K corazón">
             <img src="/assets/icons/Kcorazon.png" alt="K corazón" class="help-card__image" />
             <div class="help-card__label">Contenido</div>
             <div class="help-card__subtext">Los reyes de corazon tienen acceso a todas las Jotas corazon</div>
           </button>
 
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('K_SPADE')"
-            title="Ver ayuda de K picas"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('K_SPADE')" title="Ver ayuda de K picas">
             <img src="/assets/icons/Kpike.png" alt="K picas" class="help-card__image" />
             <div class="help-card__label">Actividades </div>
             <div class="help-card__subtext">Los reyes de picas tienen acceso a todas las jotas y reinas de picas</div>
           </button>
 
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('K_DIAMOND')"
-            title="Ver ayuda de K diamante"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('K_DIAMOND')" title="Ver ayuda de K diamante">
             <img src="/assets/icons/Kdiamante.png" alt="K diamante" class="help-card__image" />
             <div class="help-card__label">Contabilidad</div>
-            <div class="help-card__subtext">Los reyes de diamante tienen acceso a todas las jotas y reinas de diamante</div>
+            <div class="help-card__subtext">Los reyes de diamante tienen acceso a todas las jotas y reinas de diamante
+            </div>
           </button>
 
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('K_CLUB')"
-            title="Ver ayuda de K trébol"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('K_CLUB')" title="Ver ayuda de K trébol">
             <img src="/assets/icons/Ktrebol.png" alt="K trébol" class="help-card__image" />
             <div class="help-card__label">Socios</div>
             <div class="help-card__subtext">Los reyes de trébol son socios</div>
@@ -389,48 +371,28 @@
         </div>
       </section>
 
-<section class="help-section">
+      <section class="help-section">
         <h2 class="help-section__title">Ases</h2>
         <div class="help-grid">
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('A_HEART')"
-            title="Ver ayuda de A corazón"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('A_HEART')" title="Ver ayuda de A corazón">
             <img src="/assets/icons/Acorazon.png" alt="A corazón" class="help-card__image" />
             <div class="help-card__label">Edición</div>
             <div class="help-card__subtext">Validación de contenido.</div>
           </button>
 
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('A_SPADE')"
-            title="Ver ayuda de A picas"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('A_SPADE')" title="Ver ayuda de A picas">
             <img src="/assets/icons/Apike.png" alt="A picas" class="help-card__image" />
             <div class="help-card__label">Gerencia </div>
             <div class="help-card__subtext">Validación de actividades.</div>
           </button>
 
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('A_DIAMOND')"
-            title="Ver ayuda de A diamante"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('A_DIAMOND')" title="Ver ayuda de A diamante">
             <img src="/assets/icons/Adiamante.png" alt="A diamante" class="help-card__image" />
             <div class="help-card__label">Contabilidad</div>
             <div class="help-card__subtext">Validación de transacciones económicas.</div>
           </button>
 
-          <button
-            type="button"
-            class="help-card"
-            onclick="openPlayHelp('A_CLUB')"
-            title="Ver ayuda de A trébol"
-          >
+          <button type="button" class="help-card" onclick="openPlayHelp('A_CLUB')" title="Ver ayuda de A trébol">
             <img src="/assets/icons/Atrebol.png" alt="A trébol" class="help-card__image" />
             <div class="help-card__label">Relaciones públicas</div>
             <div class="help-card__subtext">Validación de operaciones con outsiders.</div>
@@ -472,4 +434,5 @@
   <script src="/js/topbar.js"></script>
   <script src="/js/help.js"></script>
 </body>
+
 </html>
