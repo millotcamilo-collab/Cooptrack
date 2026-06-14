@@ -285,7 +285,7 @@ function renderAmsterdam(play) {
 
       <div class="lienzo-tribune__corporates"></div>
 
-      <div class="lienzo-tribune__stage">
+      <div class="lienzo-tribune__stage lienzo-tribune__stage--column">
 
 <div class="lienzo-jpica-toolbar">
 

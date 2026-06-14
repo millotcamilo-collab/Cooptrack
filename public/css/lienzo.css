@@ -382,3 +382,10 @@ min-height: var(--lv2-tribune-h);
   width: auto;
   display: block;
 }
+
+.lienzo-tribune__stage--column {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 8px;
+}

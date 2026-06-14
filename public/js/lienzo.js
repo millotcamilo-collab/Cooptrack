@@ -402,17 +402,6 @@
         ${backgroundCards.map((card, index) => renderBackgroundCard(card, index)).join("")}
       </div>
 
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(sourceUser.profile_photo_url)}"
-          alt="${escapeHtml(sourceUser.nickname)}"
-        />
-
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(sourceUser.nickname)}
-        </div>
-      </div>
 
       <div class="lienzo-tribune__stage"></div>
 
