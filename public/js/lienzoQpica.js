@@ -1673,32 +1673,10 @@ ${qHeartMode
       `
             : "";
 
-        const identityHtml = `
-  <div class="lienzo-tribune__identity">
-    <img
-      class="lienzo-tribune__avatar"
-      src="${escapeHtml(userPhoto)}"
-      alt="${escapeHtml(userName)}"
-    />
-
-    <div class="lienzo-tribune__name">
-      ${escapeHtml(userName)}
-    </div>
-  </div>
-`;
 
         return `
 <section class="lienzo-tribune lienzo-tribune--source">
-  <div class="lienzo-tribune__corporates">
-    ${scene.backgroundCards
-                .filter(card => {
-                    const rank = normalizeRank(card.card_rank);
-                    const suit = normalizeSuit(card.card_suit);
-                    return !(rank === "J" && suit === "SPADE");
-                })
-                .map(renderBackgroundCard)
-                .join("")}
-  </div>
+
 
   ${identityHtml}
 
@@ -1795,7 +1773,7 @@ ${parentJSpadeText
 
         return `
     <section class="lienzo-tribune lienzo-tribune--target">
-      <div class="lienzo-tribune__corporates"></div>
+
 
       ${identityHtml}
 

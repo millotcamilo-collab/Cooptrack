@@ -371,21 +371,7 @@
     return `
     <section class="lienzo-tribune">
 
-      <div class="lienzo-tribune__corporates">
-        ${cards.map(renderBackgroundCard).join("")}
-      </div>
 
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(photo)}"
-          alt="${escapeHtml(name)}"
-        />
-
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(name)}
-        </div>
-      </div>
 
       <div class="lienzo-tribune__stage"></div>
 
