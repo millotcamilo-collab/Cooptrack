@@ -761,17 +761,23 @@ function getSourceKImageSrc(rank, suit) {
   `;
     }
 
-    function renderUsersPanel() {
-return `
-  <section class="lienzo-tribune lienzo-tribune--target lienzo-tribune--target-empty">
+function renderUsersPanel() {
+  const draft = window.__lienzoNewDraft;
 
-    <div class="lienzo-tribune__stage">
-      <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
-    </div>
+  return `
+    <section class="lienzo-tribune lienzo-tribune--target lienzo-tribune--target-empty">
 
-  </section>
-`;
-    }
+      <div class="lienzo-tribune__stage">
+        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+          ${renderKCardBox(draft, false)}
+        </div>
+
+        <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
+      </div>
+
+    </section>
+  `;
+}
 
     async function refreshCurrentUser() {
         try {
@@ -813,33 +819,21 @@ return `
     }
 
 
-    function renderSourcePlayerPanel(draft) {
-        const user = getCurrentUser();
-        const userPhoto = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-        const userName =
-            user?.nickname ||
-            user?.full_name ||
-            user?.name ||
-            "Creador";
+function renderSourcePlayerPanel(draft) {
+  const scene = buildSourceCardsScene(draft);
 
-        const scene = buildSourceCardsScene(draft);
-        const delivered =
-            window.__lienzoAnimationState?.sourceCardDelivered === true;
+  return `
+    <section class="lienzo-tribune lienzo-tribune--source">
 
-return `
-  <section class="lienzo-tribune lienzo-tribune--source">
+      <div class="lienzo-tribune__corporates">
+        ${scene.backgroundCards.map(renderBackgroundCard).join("")}
+      </div>
 
-    <div class="lienzo-tribune__corporates">
-      ${scene.backgroundCards.map(renderBackgroundCard).join("")}
-    </div>
+      <div class="lienzo-tribune__stage"></div>
 
-    <div class="lienzo-tribune__stage">
-      ${delivered ? "" : renderKSourceCardImage(draft, "lienzo-source-card")}
-    </div>
-
-  </section>
-`;
-    }
+    </section>
+  `;
+}
 
 
     function bindUsersPicker(draft) {
@@ -903,11 +897,13 @@ return `
                             `Usuario ${user.id}`);
                 }
 
-                document.dispatchEvent(
-                    new CustomEvent("lienzo:animate-card-to-user", {
-                        detail: { user }
-                    })
-                );
+const dropzone = document.getElementById("lienzo-target-dropzone");
+
+if (dropzone) {
+  dropzone.innerHTML = renderKCardBox(window.__lienzoNewDraft, true);
+}
+
+bindActionButtons();
             }
         });
     }
