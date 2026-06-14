@@ -525,17 +525,6 @@ function renderSourcePlayerPanel(play) {
           .join("")}
       </div>
 
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(sourceUser.profile_photo_url)}"
-          alt="${escapeHtml(sourceUser.nickname)}"
-        />
-
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(sourceUser.nickname)}
-        </div>
-      </div>
 
       <div class="lienzo-tribune__stage"></div>
 
@@ -917,9 +906,6 @@ function renderTargetPlayerPanel(play) {
     }
 
 function renderUserTribune(user, cards = []) {
-  const name = user?.nickname || "Usuario";
-  const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
-
   return `
     <section class="lienzo-tribune">
 
@@ -927,18 +913,6 @@ function renderUserTribune(user, cards = []) {
         ${cards.map((card, index) =>
           renderBackgroundCard(card, index)
         ).join("")}
-      </div>
-
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(photo)}"
-          alt="${escapeHtml(name)}"
-        />
-
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(name)}
-        </div>
       </div>
 
       <div class="lienzo-tribune__stage"></div>
