@@ -242,37 +242,41 @@
     return { baseFlow, payment };
   }
 
-  function resolveLienzoPageForPlay(play) {
-    if (!play) return "/lienzo.html";
+function resolveLienzoPageForPlay(play) {
+  if (!play) return "/lienzo.html";
 
-    const rank = String(play?.card_rank || play?.rank || "").trim().toUpperCase();
-    const suit = String(play?.card_suit || play?.suit || "").trim().toUpperCase();
+  const rank = String(play?.card_rank || play?.rank || "").trim().toUpperCase();
+  const suit = String(play?.card_suit || play?.suit || "").trim().toUpperCase();
 
-    if (rank === "Q" && suit === "SPADE") {
-      const parsed = parsePlayCode(play?.play_code || "");
-      const meta = parseFlowMetadata(parsed?.flow);
-
-      const amount = String(meta?.payment?.amount || "").trim();
-      const payDate = String(meta?.payment?.payDate || "").trim();
-      const concept = String(meta?.payment?.concept || "").trim();
-
-      if (amount && payDate && concept) {
-        return "/lienzoQQpica.html";
-      }
-
-      return "/lienzoQpica.html";
-    }
-
-    if (rank === "K") {
-      return "/lienzoK.html";
-    }
-
-    if (rank === "A") {
-      return "/lienzoA.html";
-    }
-
-    return "/lienzo.html";
+  if (rank === "J" && suit === "SPADE") {
+    return "/lienzoJpica.html";
   }
+
+  if (rank === "Q" && suit === "SPADE") {
+    const parsed = parsePlayCode(play?.play_code || "");
+    const meta = parseFlowMetadata(parsed?.flow);
+
+    const amount = String(meta?.payment?.amount || "").trim();
+    const payDate = String(meta?.payment?.payDate || "").trim();
+    const concept = String(meta?.payment?.concept || "").trim();
+
+    if (amount && payDate && concept) {
+      return "/lienzoQQpica.html";
+    }
+
+    return "/lienzoQpica.html";
+  }
+
+  if (rank === "K") {
+    return "/lienzoK.html";
+  }
+
+  if (rank === "A") {
+    return "/lienzoA.html";
+  }
+
+  return "/lienzo.html";
+}
 
   function normalizePlay(play) {
     const parsed = parsePlayCode(play?.play_code);
