@@ -237,7 +237,7 @@
 
   background: #fff;
 
-  font-family: var(--font-family-base);
+  font-family: var(--font-card);
   font-size: 22px;
   font-weight: 700;
 
@@ -257,17 +257,19 @@
 
   background: #fff;
 
+  font-family: var(--font-card);
+  font-size: 22px;
+  font-weight: 700;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   cursor: pointer;
-
-  font-size: 22px;
-  font-weight: 700;
 }
 
 .users-picker__extra-btn img {
   max-width: 24px;
   max-height: 24px;
 }
+
