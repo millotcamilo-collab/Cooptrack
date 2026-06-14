@@ -923,14 +923,6 @@
         });
       });
 
-      btnAddJclub?.addEventListener("click", () => {
-        dispatch("tablero:add-child-play", {
-          parentPlayId: playId,
-          childRank: "J",
-          childSuit: "CLUB",
-        });
-      });
-
       textInput?.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
           event.preventDefault();
@@ -946,26 +938,31 @@
     }, 0);
 
     return `
-  <article
-  class="tablero-row tablero-row--jpike tablero-row--link"
+<article
+  class="tablero-row tablero-row--jpike"
   id="${rowId}"
-  data-open-lienzo="true"
-  data-play-id="${play.id}"
-  data-deck-id="${context?.deck?.id || context?.state?.deck?.id || ""}"
 >
     <div class="tablero-row__left">
-      <div class="tablero-row__card tablero-row__card--with-news">
-  <span>J♠</span>
-  ${isPublished ? `
-    <img
-      src="${extraIcon}"
-      alt="Publicada"
-      title="Noticia publicada"
-      class="tablero-row__news-badge"
-    />
-  ` : ""}
+  <button
+    type="button"
+    class="tablero-row__card tablero-row__card--with-news tablero-row__card--open-lienzo"
+    data-open-lienzo="true"
+    data-play-id="${play.id}"
+    data-deck-id="${context?.deck?.id || context?.state?.deck?.id || ""}"
+    title="Abrir lienzo J♠"
+  >
+    <span>J♠</span>
+
+    ${isPublished ? `
+      <img
+        src="${extraIcon}"
+        alt="Publicada"
+        title="Noticia publicada"
+        class="tablero-row__news-badge"
+      />
+    ` : ""}
+  </button>
 </div>
-    </div>
 
     <div class="tablero-row__center">
 
@@ -1233,7 +1230,15 @@
   return `
     <article class="tablero-row tablero-row--jpike" id="${rowId}">
       <div class="tablero-row__left">
-        <div class="tablero-row__card">J♠</div>
+        <button
+  type="button"
+  class="tablero-row__card tablero-row__card--open-lienzo"
+  data-open-lienzo="true"
+  data-play-id="${play.id}"
+  data-deck-id="${context?.deck?.id || context?.state?.deck?.id || ""}"
+>
+  J♠
+</button>
       </div>
 
       <div class="tablero-row__center">

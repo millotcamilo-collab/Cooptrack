@@ -317,8 +317,6 @@
     const exitIcon = escapeHtml(ACTIONS.exit || ACTIONS.cancel || "");
     const helpIcon = escapeHtml(ACTIONS.help || "");
     const cancelIcon = escapeHtml(ACTIONS.cancel || ACTIONS.exit || "");
-    const clubIcon = escapeHtml(ACTIONS.club || "");
-    const qspadeIcon = escapeHtml(ACTIONS.qspade || ACTIONS.spade || "");
     const routineIcon = escapeHtml(ACTIONS.routine || "");
 
     setTimeout(() => {
@@ -725,16 +723,22 @@ dispatch("tablero:save-play", {
     }, 0);
 
     return `
-  <article
-  class="tablero-row tablero-row--jpike tablero-row--jpike-bomba tablero-row--link"
+<article
+  class="tablero-row tablero-row--jpike tablero-row--jpike-bomba"
   id="${rowId}"
-  data-open-lienzo="true"
-  data-play-id="${play.id}"
-  data-deck-id="${context?.state?.deck?.id || ""}"
 >
-    <div class="tablero-row__left">
-      <div class="tablero-row__card">J♠</div>
-    </div>
+<div class="tablero-row__left">
+  <button
+    type="button"
+    class="tablero-row__card tablero-row__card--open-lienzo"
+    data-open-lienzo="true"
+    data-play-id="${play.id}"
+    data-deck-id="${context?.state?.deck?.id || ""}"
+    title="Abrir lienzo J♠"
+  >
+    J♠
+  </button>
+</div>
 
     <div class="tablero-row__center">
 

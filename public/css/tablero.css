@@ -325,3 +325,9 @@
   gap: 6px;
   min-width: 0;
 }
+
+.tablero-row__card--open-lienzo {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
