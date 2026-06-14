@@ -389,3 +389,27 @@ min-height: var(--lv2-tribune-h);
   justify-content: flex-start;
   gap: 8px;
 }
+
+.lienzo-jpica-invitations-list {
+  width: 100%;
+
+  background: #ffffff;
+
+  border-radius: 8px;
+
+  padding: 8px;
+
+  box-sizing: border-box;
+}
+
+.lienzo-jpica-toolbar {
+  width: 100%;
+
+  background: #ffffff;
+
+  border-radius: 8px;
+
+  padding: 8px;
+
+  box-sizing: border-box;
+}
