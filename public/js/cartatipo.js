@@ -48,6 +48,20 @@
     ];
   }
 
+  function getMiniDayRange(value) {
+    if (!value) return null;
+
+    const base = new Date(value);
+
+    const from = new Date(base);
+    from.setHours(from.getHours() - 2);
+
+    const to = new Date(base);
+    to.setHours(to.getHours() + 2);
+
+    return { from, to };
+  }
+
   function renderMiniDay({
     play_text = "",
     location = "",
@@ -57,6 +71,8 @@
   }) {
     const date = start_date || end_date;
     const [h1, h2, h3, h4] = getMiniDayHours(date);
+    const range = getMiniDayRange(date);
+
     const dayLabel = date
       ? new Date(date).toLocaleDateString("es-UY", {
         day: "numeric",
@@ -64,17 +80,30 @@
       })
       : "";
 
+    const centerTime = date ? new Date(date).getTime() : null;
+
     const otherRows = Array.isArray(dayItems)
       ? dayItems
         .map((item) => {
           const itemDate = item.start_date || item.end_date;
+
           return {
             ...item,
             date: itemDate,
             hour: formatHour(itemDate)
           };
         })
-        .filter((item) => item.date)
+        .filter((item) => {
+          if (!item.date || !range || !centerTime) return false;
+
+          const itemTime = new Date(item.date).getTime();
+
+          return (
+            itemTime >= range.from.getTime() &&
+            itemTime <= range.to.getTime() &&
+            itemTime !== centerTime
+          );
+        })
         .sort((a, b) => new Date(a.date) - new Date(b.date))
       : [];
 
@@ -86,39 +115,37 @@
         </div>
       ` : ""}
 
-<div class="lv2-mini-day__row">${escapeHtml(h1)}</div>
-<div class="lv2-mini-day__row">${escapeHtml(h2)}</div>
+      <div class="lv2-mini-day__row">${escapeHtml(h1)}</div>
+      <div class="lv2-mini-day__row">${escapeHtml(h2)}</div>
 
       <div class="lv2-mini-day__row lv2-mini-day__row--active">
         <span class="lv2-mini-day__hour">${escapeHtml(formatHour(date))}</span>
         <span class="lv2-mini-day__text">${escapeHtml(play_text)}</span>
         ${location ? `
-          <span
-            class="lv2-mini-day__location"
-            title="${escapeHtml(location)}"
-          >📍</span>
+<span class="lv2-mini-day__location">
+  📍 ${escapeHtml(item.location)}
+</span>
         ` : ""}
       </div>
 
       ${otherRows
         .map(
           (item) => `
-      <div class="lv2-mini-day__row">
-        ${item.hour ? `<span class="lv2-mini-day__hour">${escapeHtml(item.hour)}</span>` : ""}
-        <span class="lv2-mini-day__text">${escapeHtml(item.play_text || "")}</span>
-        ${item.location ? `
-          <span
-            class="lv2-mini-day__location"
-            title="${escapeHtml(item.location)}"
-          >📍</span>
-        ` : ""}
-      </div>
-      `
+            <div class="lv2-mini-day__row">
+              ${item.hour ? `<span class="lv2-mini-day__hour">${escapeHtml(item.hour)}</span>` : ""}
+              <span class="lv2-mini-day__text">${escapeHtml(item.play_text || "")}</span>
+              ${item.location ? `
+<span class="lv2-mini-day__location">
+  📍 ${escapeHtml(item.location)}
+</span>
+              ` : ""}
+            </div>
+          `
         )
         .join("")}
 
-<div class="lv2-mini-day__row">${escapeHtml(h3)}</div>
-<div class="lv2-mini-day__row">${escapeHtml(h4)}</div>
+      <div class="lv2-mini-day__row">${escapeHtml(h3)}</div>
+      <div class="lv2-mini-day__row">${escapeHtml(h4)}</div>
     </div>
   `;
   }
