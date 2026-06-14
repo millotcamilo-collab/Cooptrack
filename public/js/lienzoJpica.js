@@ -327,7 +327,7 @@ function renderAmsterdam(play) {
 
 </div>
 
-        <div class="lienzo-jpica-invitations-list">
+       <div class="lienzo-jpica-invitations-list tablero">
   ${
     qSpades.length
       ? qSpades
