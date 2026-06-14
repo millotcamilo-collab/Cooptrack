@@ -75,6 +75,14 @@
       : getSourceUser(play);
   }
 
+function normalizeRank(value) {
+  return String(value || "").trim().toUpperCase();
+}
+
+function normalizeSuit(value) {
+  return String(value || "").trim().toUpperCase();
+}
+
   function compareCorporateCards(a, b) {
     const order = {
       A_HEART: 1,
