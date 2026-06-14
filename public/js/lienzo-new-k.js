@@ -113,29 +113,17 @@
         const name = user?.nickname || "Usuario";
         const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
 
-        return `
-    <section class="lienzo-tribune">
+return `
+  <section class="lienzo-tribune">
 
-      <div class="lienzo-tribune__corporates">
-        ${cards.map(renderBackgroundCard).join("")}
-      </div>
+    <div class="lienzo-tribune__corporates">
+      ${cards.map(renderBackgroundCard).join("")}
+    </div>
 
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(photo)}"
-          alt="${escapeHtml(name)}"
-        />
+    <div class="lienzo-tribune__stage"></div>
 
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(name)}
-        </div>
-      </div>
-
-      <div class="lienzo-tribune__stage"></div>
-
-    </section>
-  `;
+  </section>
+`;
     }
     function resolveLienzoPageForCard(rank, suit) {
         const r = normalizeRank(rank);
@@ -774,29 +762,15 @@ function getSourceKImageSrc(rank, suit) {
     }
 
     function renderUsersPanel() {
-        return `
-    <section class="lienzo-tribune lienzo-tribune--target lienzo-tribune--target-empty">
+return `
+  <section class="lienzo-tribune lienzo-tribune--target lienzo-tribune--target-empty">
 
-      <div class="lienzo-tribune__corporates"></div>
+    <div class="lienzo-tribune__stage">
+      <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
+    </div>
 
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="/assets/icons/singeta120.gif"
-          alt="Destinatario"
-        />
-
-        <div class="lienzo-tribune__name">
-          Destinatario
-        </div>
-      </div>
-
-      <div class="lienzo-tribune__stage">
-        <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
-      </div>
-
-    </section>
-  `;
+  </section>
+`;
     }
 
     async function refreshCurrentUser() {
@@ -852,36 +826,19 @@ function getSourceKImageSrc(rank, suit) {
         const delivered =
             window.__lienzoAnimationState?.sourceCardDelivered === true;
 
-        return `
-    <section class="lienzo-tribune lienzo-tribune--source">
+return `
+  <section class="lienzo-tribune lienzo-tribune--source">
 
-      <div class="lienzo-tribune__corporates">
-        ${scene.backgroundCards.map(renderBackgroundCard).join("")}
-      </div>
+    <div class="lienzo-tribune__corporates">
+      ${scene.backgroundCards.map(renderBackgroundCard).join("")}
+    </div>
 
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(userPhoto)}"
-          alt="${escapeHtml(userName)}"
-        />
+    <div class="lienzo-tribune__stage">
+      ${delivered ? "" : renderKSourceCardImage(draft, "lienzo-source-card")}
+    </div>
 
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(userName)}
-        </div>
-      </div>
-
-      <div class="lienzo-tribune__stage">
-        ${delivered
-                ? ""
-                : `
-${renderKSourceCardImage(draft, "lienzo-source-card")}
-          `
-            }
-      </div>
-
-    </section>
-  `;
+  </section>
+`;
     }
 
 
