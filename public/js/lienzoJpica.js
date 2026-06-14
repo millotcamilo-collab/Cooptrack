@@ -287,15 +287,45 @@ function renderAmsterdam(play) {
 
       <div class="lienzo-tribune__stage">
 
-        <div class="lienzo-jpica-invitations-header">
-          <div class="lienzo-jpica-invitations-title">
-            Invitaciones
-          </div>
+<div class="lienzo-jpica-toolbar">
 
-          <div class="lienzo-jpica-invitations-count">
-            ${qSpades.length}
-          </div>
-        </div>
+  <button
+    type="button"
+    class="icon-btn"
+    id="jpica-users-btn"
+    title="Usuarios"
+  >
+    <img src="/assets/icons/GenteGris.gif" alt="Usuarios">
+  </button>
+
+  <button
+    type="button"
+    class="icon-btn"
+    id="jpica-jclub-btn"
+    title="J♣"
+  >
+    <img src="/assets/icons/Jtrebol.png" alt="J♣">
+  </button>
+
+  <button
+    type="button"
+    class="icon-btn"
+    id="jpica-qspade-btn"
+    title="Q♠"
+  >
+    <img src="/assets/icons/Qpica.png" alt="Q♠">
+  </button>
+
+  <button
+    type="button"
+    class="icon-btn"
+    id="jpica-publish-btn"
+    title="Publicar"
+  >
+    <img src="/assets/icons/Extra120.gif" alt="Publicar">
+  </button>
+
+</div>
 
         <div class="lienzo-jpica-invitations-list">
   ${
