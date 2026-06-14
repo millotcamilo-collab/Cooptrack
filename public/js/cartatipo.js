@@ -121,11 +121,11 @@
       <div class="lv2-mini-day__row lv2-mini-day__row--active">
         <span class="lv2-mini-day__hour">${escapeHtml(formatHour(date))}</span>
         <span class="lv2-mini-day__text">${escapeHtml(play_text)}</span>
-        ${location ? `
+${location ? `
 <span class="lv2-mini-day__location">
-  📍 ${escapeHtml(item.location)}
+  📍 ${escapeHtml(location)}
 </span>
-        ` : ""}
+` : ""}
       </div>
 
       ${otherRows
