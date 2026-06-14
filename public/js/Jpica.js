@@ -382,8 +382,7 @@
 
       const btnHelp = row.querySelector('[data-action="help-play"]');
       const btnCancel = row.querySelector('[data-action="cancel-play"]');
-      const btnAddJclub = row.querySelector('[data-action="add-jclub-child"]');
-      const btnAddQspade = row.querySelector('[data-action="add-qspade-child"]');
+
       const btnPublishNews = row.querySelector('[data-action="publish-news"]');
       const btnRoutine = row.querySelector('[data-action="toggle-routine"]');
 
@@ -635,8 +634,7 @@
           if (btnDelete) btnDelete.style.display = "none";
           if (btnExit) btnExit.style.display = "none";
           if (btnCancel) btnCancel.style.display = "none";
-          if (btnAddJclub) btnAddJclub.style.display = "none";
-          if (btnAddQspade) btnAddQspade.style.display = "none";
+
           if (btnHelp) btnHelp.style.display = "inline-flex";
           if (btnRoutine) btnRoutine.style.display = "none";
           return;
@@ -674,19 +672,6 @@
           btnCancel.style.display = showCancelApproved ? "inline-flex" : "none";
         }
 
-        if (btnAddJclub) {
-          btnAddJclub.style.display = showApprovedExtras ? "inline-flex" : "none";
-        }
-
-        if (btnAddQspade) {
-          const canLaunch = canLaunchQspade(play);
-
-          btnAddQspade.style.display = showApprovedExtras ? "inline-flex" : "none";
-
-          btnAddQspade.disabled = !canLaunch;
-          btnAddQspade.style.opacity = canLaunch ? "1" : "0.4";
-          btnAddQspade.style.pointerEvents = canLaunch ? "auto" : "none";
-        }
 
         if (btnPublishNews) {
           btnPublishNews.style.display =
@@ -900,37 +885,7 @@
         renderMode();
       });
 
-      btnAddQspade?.addEventListener("click", () => {
-        const deckId =
-          context?.state?.deck?.id ||
-          context?.state?.mazo?.id ||
-          window.__currentDeck?.id ||
-          null;
 
-        if (!deckId || !playId) {
-          alert("No se pudo abrir el lienzo");
-          return;
-        }
-
-        window.location.href =
-          `/lienzo-new.html?deckId=${deckId}&parentPlayId=${playId}&childRank=Q&childSuit=SPADE`;
-      });
-
-      btnPublishNews?.addEventListener("click", () => {
-        const deckId =
-          context?.state?.deck?.id ||
-          context?.state?.mazo?.id ||
-          window.__currentDeck?.id ||
-          null;
-
-        if (!deckId || !playId) {
-          alert("No se pudo abrir el lienzo de publicación");
-          return;
-        }
-
-        window.location.href =
-          `/lienzoJpica.html?deckId=${deckId}&playId=${playId}`;
-      });
 
       btnRoutine?.addEventListener("click", async () => {
         await loadRecurrenceIfNeeded();
@@ -1192,23 +1147,6 @@
       <button type="button" data-action="cancel-play" title="Cancelar" style="display:none;">
         ${cancelIcon ? `<img src="${cancelIcon}" alt="Cancelar" />` : `<span>X</span>`}
       </button>
-
-      <button type="button" data-action="add-jclub-child" title="Agregar J♣ hija" style="display:none;">
-        ${clubIcon ? `<img src="${clubIcon}" alt="J♣" />` : `<span>J♣</span>`}
-      </button>
-
-      <button type="button" data-action="add-qspade-child" title="Agregar Q♠" style="display:none;">
-        ${qspadeIcon ? `<img src="${qspadeIcon}" alt="Q♠" />` : `<span>Q♠</span>`}
-      </button>
-
-<button
-  type="button"
-  data-action="publish-news"
-  title="Publicar noticia"
-  style="display:none;"
->
-  <img src="${extraIcon}" alt="Noticias" />
-</button>
 
       <button type="button" data-action="help-play" title="Help">
         ${helpIcon ? `<img src="${helpIcon}" alt="Help" />` : `<span>?</span>`}

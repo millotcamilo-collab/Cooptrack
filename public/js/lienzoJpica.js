@@ -50,7 +50,20 @@
       minute: "2-digit"
     });
   }
+function canLaunchQspade(play) {
+  const limitValue = play?.end_date || play?.start_date;
+  if (!limitValue) return false;
 
+  const limit = new Date(limitValue);
+
+  if (Number.isNaN(limit.getTime())) {
+    return false;
+  }
+
+  const margen = 30 * 60 * 1000;
+
+  return (limit.getTime() + margen) > Date.now();
+}
   function getSourceUser(play) {
     return {
       id: play.created_by_user_id,
@@ -451,9 +464,14 @@
         }
       },
 
-      onAnimateSelect(user) {
-        createQpicaFromUser(parentPlay, user);
-      }
+onAnimateSelect(user) {
+  if (!canLaunchQspade(parentPlay)) {
+    alert("Ya no se pueden agregar invitaciones a esta actividad.");
+    return;
+  }
+
+  createQpicaFromUser(parentPlay, user);
+}
     });
   }
 

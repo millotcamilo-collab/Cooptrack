@@ -343,8 +343,8 @@
 
       const btnHelp = row.querySelector('[data-action="help-play"]');
       const btnCancel = row.querySelector('[data-action="cancel-play"]');
-      const btnAddJclub = row.querySelector('[data-action="add-jclub-child"]');
-      const btnAddQspade = row.querySelector('[data-action="add-qspade-child"]');
+
+
       const btnRoutine = row.querySelector('[data-action="toggle-routine"]');
 
       const deadlineRead = row.querySelector('[data-role="deadline-read"]');
@@ -452,9 +452,6 @@
         row.dataset.mode = mode;
       }
 
-      function canLaunchQspade(play) {
-        return isFutureDate(play?.end_date);
-      }
 
       function renderMode() {
         const visualMode = row.dataset.mode || "read";
@@ -498,8 +495,6 @@
           if (btnDelete) btnDelete.style.display = "none";
           if (btnExit) btnExit.style.display = "none";
           if (btnCancel) btnCancel.style.display = "none";
-          if (btnAddJclub) btnAddJclub.style.display = "none";
-          if (btnAddQspade) btnAddQspade.style.display = "none";
           if (btnHelp) btnHelp.style.display = "inline-flex";
           if (btnRoutine) btnRoutine.style.display = "none";
           return;
@@ -535,20 +530,6 @@
 
         if (btnCancel) {
           btnCancel.style.display = showCancelApproved ? "inline-flex" : "none";
-        }
-
-        if (btnAddJclub) {
-          btnAddJclub.style.display = showApprovedExtras ? "inline-flex" : "none";
-        }
-
-        if (btnAddQspade) {
-          const canLaunch = canLaunchQspade(play);
-
-          btnAddQspade.style.display = showApprovedExtras ? "inline-flex" : "none";
-
-          btnAddQspade.disabled = !canLaunch;
-          btnAddQspade.style.opacity = canLaunch ? "1" : "0.4";
-          btnAddQspade.style.pointerEvents = canLaunch ? "auto" : "none";
         }
 
         if (isEdit && textInput) {
@@ -698,22 +679,6 @@ dispatch("tablero:save-play", {
         renderMode();
       });
 
-      btnAddQspade?.addEventListener("click", () => {
-        const deckId =
-          context?.state?.deck?.id ||
-          context?.state?.mazo?.id ||
-          window.__currentDeck?.id ||
-          null;
-
-        if (!deckId || !playId) {
-          alert("No se pudo abrir el lienzo");
-          return;
-        }
-
-        window.location.href =
-          `/lienzo-new.html?deckId=${deckId}&parentPlayId=${playId}&childRank=Q&childSuit=SPADE`;
-      });
-
       btnRoutine?.addEventListener("click", async () => {
         await loadRecurrenceIfNeeded();
 
@@ -744,13 +709,6 @@ dispatch("tablero:save-play", {
         });
       });
 
-      btnAddJclub?.addEventListener("click", () => {
-        dispatch("tablero:add-child-play", {
-          parentPlayId: playId,
-          childRank: "J",
-          childSuit: "CLUB",
-        });
-      });
 
       textInput?.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
@@ -925,13 +883,6 @@ dispatch("tablero:save-play", {
         ${cancelIcon ? `<img src="${cancelIcon}" alt="Cancelar" />` : `<span>X</span>`}
       </button>
 
-      <button type="button" data-action="add-jclub-child" title="Agregar J♣ hija" style="display:none;">
-        ${clubIcon ? `<img src="${clubIcon}" alt="J♣" />` : `<span>J♣</span>`}
-      </button>
-
-      <button type="button" data-action="add-qspade-child" title="Agregar Q♠" style="display:none;">
-        ${qspadeIcon ? `<img src="${qspadeIcon}" alt="Q♠" />` : `<span>Q♠</span>`}
-      </button>
 
       <button type="button" data-action="help-play" title="Help">
         ${helpIcon ? `<img src="${helpIcon}" alt="Help" />` : `<span>?</span>`}
