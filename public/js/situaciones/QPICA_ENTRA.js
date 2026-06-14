@@ -18,8 +18,8 @@ window.QPICA_ENTRA = {
     return src;
   },
 
-renderMiniDay(play) {
-  return `
+  renderMiniDay(play) {
+    return `
     <div class="lv2-mini-day">
 
       <div class="lv2-mini-day__row">17</div>
@@ -38,7 +38,7 @@ renderMiniDay(play) {
 
     </div>
   `;
-},
+  },
 
   playSequence({ figureEl, prefix, from = 0, to = 29, fps = 18 }) {
     if (!figureEl) return;
@@ -83,63 +83,61 @@ renderMiniDay(play) {
       to: 29,
       fps: 18
     });
-const back = document.querySelector(".qpica-q-back");
+    const back = document.querySelector(".qpica-q-back");
 
-if (back) {
-  back.addEventListener("click", () => {
-    this.open();
-  }, { once: true });
+    if (back) {
+      back.addEventListener("click", () => {
+        this.open();
+      }, { once: true });
 
-  back.addEventListener("touchend", (e) => {
-    e.preventDefault();
-    this.open();
-  }, { once: true });
-}
+      back.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        this.open();
+      }, { once: true });
+    }
 
   },
 
-open() {
-  const host = document.querySelector(".amsterdam-card-stack__primary");
+  open() {
+    const host = document.querySelector(".amsterdam-card-stack__primary");
 
-  if (!host || !this.currentCtx) return;
+    if (!host || !this.currentCtx) return;
 
-  const back = host.querySelector(".qpica-q-back");
+    const back = host.querySelector(".qpica-q-back");
 
-if (back) {
-  back.classList.add("qpica-q-back--opening");
-}
+    if (back) {
+      back.classList.add("qpica-q-back--opening");
+    }
 
-setTimeout(() => {
-  host.innerHTML = this.renderOpen(this.currentCtx);
+    setTimeout(() => {
+      host.innerHTML = this.renderOpen(this.currentCtx);
 
-  const openFigures = host.querySelectorAll(".lv2-play-card__figure");
-  const openQFigure = openFigures[1];
+      if (typeof window.bindLienzoActions === "function") {
+        window.bindLienzoActions();
+      }
 
-  this.playSequence({
-    figureEl: openQFigure,
-    prefix: "QPMira",
-    from: 0,
-    to: 8,
-    fps: 12
-  });
-}, 700);
+      if (typeof window.bindQpicaActions === "function") {
+        window.bindQpicaActions();
+      }
 
-  const openFigures = host.querySelectorAll(".lv2-play-card__figure");
-  const openQFigure = openFigures[1];
+      const openFigures = host.querySelectorAll(".lv2-play-card__figure");
+      const openQFigure = openFigures[1];
 
-  this.playSequence({
-    figureEl: openQFigure,
-    prefix: "QPMira",
-    from: 0,
-    to: 8,
-    fps: 12
-  });
-},
+      this.playSequence({
+        figureEl: openQFigure,
+        prefix: "QPMira",
+        from: 0,
+        to: 8,
+        fps: 12
+      });
+    }, 700);
 
-render(ctx) {
-  this.currentCtx = ctx;
-  return this.renderClosed(ctx);
-},
+  },
+
+  render(ctx) {
+    this.currentCtx = ctx;
+    return this.renderClosed(ctx);
+  },
 
   renderClosed(ctx) {
     const { play, helpers, parentOwner } = ctx;
@@ -159,11 +157,11 @@ render(ctx) {
 
 
 ${parent ? helpers.renderPlayCardBox({
-  ...parent,
-  play_text: parent.play_text,
-  start_date: parent.start_date,
-  end_date: parent.end_date,
-  location: parent.location,
+      ...parent,
+      play_text: parent.play_text,
+      start_date: parent.start_date,
+      end_date: parent.end_date,
+      location: parent.location,
       figureOverrideSrc: this.buildFrame(jPrefix, 0),
 
       ownerUser: {
@@ -180,13 +178,13 @@ ${parent ? helpers.renderPlayCardBox({
 <div class="qpica-q-wrapper">
 
   ${helpers.renderPlayCardBox({
-    ...play,
-play_text: parent?.play_text || play.play_text,
-start_date: parent?.start_date || play.start_date,
-end_date: parent?.end_date || play.end_date,
-location: parent?.location || play.location,
-    figureOverrideSrc: this.buildFrame("QPMira", 0)
-  })}
+      ...play,
+      play_text: parent?.play_text || play.play_text,
+      start_date: parent?.start_date || play.start_date,
+      end_date: parent?.end_date || play.end_date,
+      location: parent?.location || play.location,
+      figureOverrideSrc: this.buildFrame("QPMira", 0)
+    })}
 
 <img
   class="qpica-q-back"
@@ -206,41 +204,41 @@ location: parent?.location || play.location,
     `;
   },
 
- renderOpen(ctx) {
-  const { play, helpers } = ctx;
-  const parent = play?.parent_play || play?.parent || null;
+  renderOpen(ctx) {
+    const { play, helpers } = ctx;
+    const parent = play?.parent_play || play?.parent || null;
 
-  return `
+    return `
   ${parent ? helpers.renderPlayCardBox({
-  ...parent,
-  play_text: parent.play_text,
-  start_date: parent.start_date,
-  end_date: parent.end_date,
-  location: parent.location,
+      ...parent,
+      play_text: parent.play_text,
+      start_date: parent.start_date,
+      end_date: parent.end_date,
+      location: parent.location,
 
-  ownerUser: {
-    nickname: parent.created_by_nickname,
-    profile_photo_url: parent.created_by_profile_photo_url
-  },
-  ownerCards: parent.issued_with || [],
-  actionsHtml: "",
-  showOwner: true,
-  showActions: false
-}) : ""}
+      ownerUser: {
+        nickname: parent.created_by_nickname,
+        profile_photo_url: parent.created_by_profile_photo_url
+      },
+      ownerCards: parent.issued_with || [],
+      actionsHtml: "",
+      showOwner: true,
+      showActions: false
+    }) : ""}
 
     <div class="qpica-q-wrapper qpica-q-wrapper--open">
 ${helpers.renderPlayCardBox({
-  ...play,
-  play_text: parent?.play_text || play.play_text,
-  start_date: parent?.start_date || play.start_date,
-  end_date: parent?.end_date || play.end_date,
-  location: parent?.location || play.location,
-  figureOverrideSrc: this.buildFrame("QPMira", 0)
-})}
+      ...play,
+      play_text: parent?.play_text || play.play_text,
+      start_date: parent?.start_date || play.start_date,
+      end_date: parent?.end_date || play.end_date,
+      location: parent?.location || play.location,
+      figureOverrideSrc: this.buildFrame("QPMira", 0)
+    })}
     </div>
 
     <div id="qpica-week-container" class="qpica-week-container"></div>
   `;
-},
+  },
 
 };
