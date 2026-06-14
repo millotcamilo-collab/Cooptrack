@@ -588,7 +588,7 @@ function renderUsersPicker(containerId, options = {}) {
       if (playSuit !== childSuit) return false;
 
       if (childRank === "K") {
-        return playTargetId === userId || playCreatorId === userId;
+        return playTargetId === userId;
       }
 
       return (

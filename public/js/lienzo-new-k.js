@@ -113,7 +113,7 @@
         const name = user?.nickname || "Usuario";
         const photo = user?.profile_photo_url || "/assets/icons/singeta120.gif";
 
-return `
+        return `
   <section class="lienzo-tribune">
 
     <div class="lienzo-tribune__corporates">
@@ -321,12 +321,12 @@ return `
         const ghostWrap = document.createElement("div");
         const draft = window.__lienzoNewDraft;
 
-const sourceImg = source.querySelector("img");
-const sourceSrc =
-  sourceImg?.getAttribute("src") ||
-  getSourceKImageSrc(draft?.card_rank, draft?.card_suit);
+        const sourceImg = source.querySelector("img");
+        const sourceSrc =
+            sourceImg?.getAttribute("src") ||
+            getSourceKImageSrc(draft?.card_rank, draft?.card_suit);
 
-ghostWrap.innerHTML = `
+        ghostWrap.innerHTML = `
   <img
     class="lienzo-card-image lienzo-source-card-image"
     src="${escapeHtml(sourceSrc)}"
@@ -401,11 +401,11 @@ ghostWrap.innerHTML = `
         bindActionButtons();
     }
 
-function renderAssignedTargetPanel(user) {
-  const container = document.querySelector(".lienzo-grid__right");
-  if (!container) return;
+    function renderAssignedTargetPanel(user) {
+        const container = document.querySelector(".lienzo-grid__right");
+        if (!container) return;
 
-  container.innerHTML = `
+        container.innerHTML = `
     <section class="lienzo-tribune lienzo-tribune--target">
 
       <div class="lienzo-tribune__corporates"></div>
@@ -417,14 +417,14 @@ function renderAssignedTargetPanel(user) {
 
     </section>
   `;
-}
+    }
 
-function getIssuedWithForCurrentUser() {
-    return getCurrentUserCorporateCards()
-        .map(card =>
-            `${normalizeRank(card.card_rank)}_${normalizeSuit(card.card_suit)}`
-        );
-}
+    function getIssuedWithForCurrentUser() {
+        return getCurrentUserCorporateCards()
+            .map(card =>
+                `${normalizeRank(card.card_rank)}_${normalizeSuit(card.card_suit)}`
+            );
+    }
 
     function normalizeSuit(value) {
         return String(value || "").trim().toUpperCase();
@@ -574,16 +574,16 @@ function getIssuedWithForCurrentUser() {
         return map[`${r}_${s}`] || "/assets/icons/DorsoAzul.png";
     }
 
-function getSourceKImageSrc(rank, suit) {
-  const r = normalizeRank(rank);
-  const s = normalizeSuit(suit);
+    function getSourceKImageSrc(rank, suit) {
+        const r = normalizeRank(rank);
+        const s = normalizeSuit(suit);
 
-  if (r === "K" && s === "SPADE") {
-    return "/assets/icons/Kpike.png";
-  }
+        if (r === "K" && s === "SPADE") {
+            return "/assets/icons/Kpike.png";
+        }
 
-  return getCardImageSrc(r, s);
-}
+        return getCardImageSrc(r, s);
+    }
 
     function getDeckAvatarSrc(deck) {
         console.log("deck completo =", deck);
@@ -637,7 +637,6 @@ function getSourceKImageSrc(rank, suit) {
         const { deckId, parentPlayId, childRank, childSuit } = getLienzoNewParams();
         const parentPlay = getPlayById(parentPlayId);
         const deck = getCurrentDeck();
-        const currentUser = getCurrentUser();
 
         return {
             mode: "new",
@@ -646,8 +645,8 @@ function getSourceKImageSrc(rank, suit) {
             parentPlay,
             card_rank: childRank,
             card_suit: childSuit,
-            target_user_id: currentUser?.id || null,
-            target_user: currentUser || null,
+            target_user_id: null,
+            target_user: null,
             play_text: "",
             status: "DRAFT"
         };
@@ -708,7 +707,11 @@ function getSourceKImageSrc(rank, suit) {
             };
         }
 
-        return getCurrentUser();
+return {
+  id: null,
+  nickname: "",
+  profile_photo_url: ""
+};
     }
 
     function getDraftOwnerCards(draft) {
@@ -761,10 +764,10 @@ function getSourceKImageSrc(rank, suit) {
   `;
     }
 
-function renderUsersPanel() {
-  const draft = window.__lienzoNewDraft;
+    function renderUsersPanel() {
+        const draft = window.__lienzoNewDraft;
 
-  return `
+        return `
     <section class="lienzo-tribune lienzo-tribune--target lienzo-tribune--target-empty">
 
       <div class="lienzo-tribune__stage">
@@ -777,7 +780,7 @@ function renderUsersPanel() {
 
     </section>
   `;
-}
+    }
 
     async function refreshCurrentUser() {
         try {
@@ -819,10 +822,10 @@ function renderUsersPanel() {
     }
 
 
-function renderSourcePlayerPanel(draft) {
-  const scene = buildSourceCardsScene(draft);
+    function renderSourcePlayerPanel(draft) {
+        const scene = buildSourceCardsScene(draft);
 
-  return `
+        return `
     <section class="lienzo-tribune lienzo-tribune--source">
 
       <div class="lienzo-tribune__corporates">
@@ -833,7 +836,7 @@ function renderSourcePlayerPanel(draft) {
 
     </section>
   `;
-}
+    }
 
 
     function bindUsersPicker(draft) {
@@ -897,13 +900,13 @@ function renderSourcePlayerPanel(draft) {
                             `Usuario ${user.id}`);
                 }
 
-const dropzone = document.getElementById("lienzo-target-dropzone");
+                const dropzone = document.getElementById("lienzo-target-dropzone");
 
-if (dropzone) {
-  dropzone.innerHTML = renderKCardBox(window.__lienzoNewDraft, true);
-}
+                if (dropzone) {
+                    dropzone.innerHTML = renderKCardBox(window.__lienzoNewDraft, true);
+                }
 
-bindActionButtons();
+                bindActionButtons();
             }
         });
     }
