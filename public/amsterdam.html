@@ -365,28 +365,28 @@ window.bindAmsterdamTargetActions = bindTargetActions;
                 return `/mazo.html${deckQuery}`;
             }
 
-            async function updatePlayStatus(play, status) {
-                const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        play_status: status
-                    })
-                });
+async function updatePlayStatus(play, status) {
+  const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      play_status: status
+    })
+  });
 
-                const data = await response.json().catch(() => null);
+  const data = await response.json().catch(() => null);
 
-                if (!response.ok || !data?.ok) {
-                    alert("No se pudo actualizar la jugada.");
-                    return;
-                }
+  if (!response.ok || !data?.ok) {
+    alert("No se pudo actualizar la jugada.");
+    return;
+  }
 
-                window.location.href = `/mazo.html?id=${play.deckwindow.location.href =
-  resolveAfterAmsterdamActionUrl(play, status);_id}`;
-            }
+  window.location.href =
+    resolveAfterAmsterdamActionUrl(play, status);
+}
 
 
 
