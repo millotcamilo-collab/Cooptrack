@@ -14,33 +14,58 @@
     );
   }
 
+  function formatHour(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return `${String(date.getHours()).padStart(2, "0")}:${String(
+      date.getMinutes()
+    ).padStart(2, "0")}`;
+  }
 
-function formatHour(value) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return `${String(date.getHours()).padStart(2, "0")}:${String(
-    date.getMinutes()
-  ).padStart(2, "0")}`;
-}
+  function getMiniDayHours(value) {
+    if (!value) return ["", "", "", ""];
 
-function renderMiniDay({
-  play_text = "",
-  location = "",
-  start_date = null,
-  end_date = null,
-  dayItems = []
-}) {
-  const date = start_date || end_date;
-  const dayLabel = date
-    ? new Date(date).toLocaleDateString("es-UY", {
+    const base = new Date(value);
+
+    const minus2 = new Date(base);
+    minus2.setHours(minus2.getHours() - 2);
+
+    const minus1 = new Date(base);
+    minus1.setHours(minus1.getHours() - 1);
+
+    const plus1 = new Date(base);
+    plus1.setHours(plus1.getHours() + 1);
+
+    const plus2 = new Date(base);
+    plus2.setHours(plus2.getHours() + 2);
+
+    return [
+      formatHour(minus2),
+      formatHour(minus1),
+      formatHour(plus1),
+      formatHour(plus2)
+    ];
+  }
+
+  function renderMiniDay({
+    play_text = "",
+    location = "",
+    start_date = null,
+    end_date = null,
+    dayItems = []
+  }) {
+    const date = start_date || end_date;
+    const [h1, h2, h3, h4] = getMiniDayHours(date);
+    const dayLabel = date
+      ? new Date(date).toLocaleDateString("es-UY", {
         day: "numeric",
         month: "short"
       })
-    : "";
+      : "";
 
-  const otherRows = Array.isArray(dayItems)
-    ? dayItems
+    const otherRows = Array.isArray(dayItems)
+      ? dayItems
         .map((item) => {
           const itemDate = item.start_date || item.end_date;
           return {
@@ -51,9 +76,9 @@ function renderMiniDay({
         })
         .filter((item) => item.date)
         .sort((a, b) => new Date(a.date) - new Date(b.date))
-    : [];
+      : [];
 
-  return `
+    return `
     <div class="lv2-mini-day">
       ${dayLabel ? `
         <div class="lv2-mini-day__header">
@@ -61,8 +86,8 @@ function renderMiniDay({
         </div>
       ` : ""}
 
-      <div class="lv2-mini-day__row">17</div>
-      <div class="lv2-mini-day__row">18</div>
+<div class="lv2-mini-day__row">${escapeHtml(h1)}</div>
+<div class="lv2-mini-day__row">${escapeHtml(h2)}</div>
 
       <div class="lv2-mini-day__row lv2-mini-day__row--active">
         <span class="lv2-mini-day__hour">${escapeHtml(formatHour(date))}</span>
@@ -92,11 +117,11 @@ function renderMiniDay({
         )
         .join("")}
 
-      <div class="lv2-mini-day__row">20</div>
-      <div class="lv2-mini-day__row">21</div>
+<div class="lv2-mini-day__row">${escapeHtml(h3)}</div>
+<div class="lv2-mini-day__row">${escapeHtml(h4)}</div>
     </div>
   `;
-}
+  }
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -288,22 +313,22 @@ function renderMiniDay({
   </div>
 ` : "";
 
-const useMiniDay = shouldRenderMiniDay({
-  rank: safeRank,
-  suit: safeSuit,
-  start_date,
-  end_date
-});
-
-const bodyHtml = useMiniDay
-  ? renderMiniDay({
-      play_text,
+    const useMiniDay = shouldRenderMiniDay({
+      rank: safeRank,
+      suit: safeSuit,
       start_date,
-      end_date,
-      location,
-      dayItems
-    })
-  : metas.map((meta) => `
+      end_date
+    });
+
+    const bodyHtml = useMiniDay
+      ? renderMiniDay({
+        play_text,
+        start_date,
+        end_date,
+        location,
+        dayItems
+      })
+      : metas.map((meta) => `
       <div class="lv2-play-card__meta">
         ${meta.icon ? `
           <img
