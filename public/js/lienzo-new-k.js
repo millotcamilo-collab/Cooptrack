@@ -854,6 +854,14 @@ return {
             return;
         }
 
+console.log("USERS PICKER PARAMS", {
+  deckId: Number(draft.deckId || 0),
+  parentPlayId: Number(draft.parentPlayId || 0),
+  childRank: normalizeRank(draft.card_rank),
+  childSuit: normalizeSuit(draft.card_suit),
+  plays: getAllPlays().length
+});
+
         window.renderUsersPicker("lienzo-users-picker", {
             currentUserId: Number(getCurrentUser()?.id || 0),
             deckId: Number(draft.deckId || 0),
