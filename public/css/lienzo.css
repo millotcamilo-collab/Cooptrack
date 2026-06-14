@@ -393,8 +393,6 @@ min-height: var(--lv2-tribune-h);
 .lienzo-jpica-invitations-list {
   width: 100%;
 
-  background: #ffffff;
-
   border-radius: 8px;
 
   padding: 8px;
@@ -405,11 +403,17 @@ min-height: var(--lv2-tribune-h);
 .lienzo-jpica-toolbar {
   width: 100%;
 
-  background: #ffffff;
-
   border-radius: 8px;
 
   padding: 8px;
 
+  box-sizing: border-box;
+}
+
+.lienzo-jpica-panel {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 8px;
   box-sizing: border-box;
 }

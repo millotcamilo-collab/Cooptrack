@@ -287,73 +287,77 @@ function renderAmsterdam(play) {
 
       <div class="lienzo-tribune__stage lienzo-tribune__stage--column">
 
-<div class="lienzo-jpica-toolbar">
+        <div class="lienzo-jpica-panel">
 
-  <button
-    type="button"
-    class="icon-btn"
-    id="jpica-users-btn"
-    title="Usuarios"
-  >
-    <img src="/assets/icons/GenteGris.gif" alt="Usuarios">
-  </button>
+          <div class="lienzo-jpica-toolbar">
 
-  <button
-    type="button"
-    class="icon-btn"
-    id="jpica-jclub-btn"
-    title="J♣"
-  >
-    <img src="/assets/icons/Jtrebol.png" alt="J♣">
-  </button>
+            <button
+              type="button"
+              class="icon-btn"
+              id="jpica-users-btn"
+              title="Usuarios"
+            >
+              <img src="/assets/icons/GenteGris.gif" alt="Usuarios">
+            </button>
 
-  <button
-    type="button"
-    class="icon-btn"
-    id="jpica-qspade-btn"
-    title="Q♠"
-  >
-    <img src="/assets/icons/Qpica.png" alt="Q♠">
-  </button>
+            <button
+              type="button"
+              class="icon-btn"
+              id="jpica-jclub-btn"
+              title="J♣"
+            >
+              <img src="/assets/icons/Jtrebol.png" alt="J♣">
+            </button>
 
-  <button
-    type="button"
-    class="icon-btn"
-    id="jpica-publish-btn"
-    title="Publicar"
-  >
-    <img src="/assets/icons/Extra120.gif" alt="Publicar">
-  </button>
+            <button
+              type="button"
+              class="icon-btn"
+              id="jpica-qspade-btn"
+              title="Q♠"
+            >
+              <img src="/assets/icons/Qpica.png" alt="Q♠">
+            </button>
 
-</div>
+            <button
+              type="button"
+              class="icon-btn"
+              id="jpica-publish-btn"
+              title="Publicar"
+            >
+              <img src="/assets/icons/Extra120.gif" alt="Publicar">
+            </button>
 
-       <div class="lienzo-jpica-invitations-list tablero">
-  ${
-    qSpades.length
-      ? qSpades
-          .map((q) => {
-            if (typeof window.renderQpike !== "function") {
-              return "";
-            }
-
-            return window.renderQpike(q, {
-              deck: getCurrentDeck(),
-              state: getCurrentState(),
-              helpers: {
-                escapeHtml,
-                formatDate: formatTime,
-                getCardLabel: () => "Q♠"
-              }
-            });
-          })
-          .join("")
-      : `
-          <div class="lienzo-jpica-empty">
-            Todavía no hay invitaciones.
           </div>
-        `
-  }
-</div>
+
+          <div class="lienzo-jpica-invitations-list tablero">
+            ${
+              qSpades.length
+                ? qSpades
+                    .map((q) => {
+                      if (typeof window.renderQpike !== "function") {
+                        return "";
+                      }
+
+                      return window.renderQpike(q, {
+                        deck: getCurrentDeck(),
+                        state: getCurrentState(),
+                        helpers: {
+                          escapeHtml,
+                          formatDate: formatTime,
+                          getCardLabel: () => "Q♠"
+                        }
+                      });
+                    })
+                    .join("")
+                : `
+                    <div class="lienzo-jpica-empty">
+                      Todavía no hay invitaciones.
+                    </div>
+                  `
+            }
+          </div>
+
+        </div>
 
       </div>
 
