@@ -75,13 +75,13 @@
       : getSourceUser(play);
   }
 
-function normalizeRank(value) {
-  return String(value || "").trim().toUpperCase();
-}
+  function normalizeRank(value) {
+    return String(value || "").trim().toUpperCase();
+  }
 
-function normalizeSuit(value) {
-  return String(value || "").trim().toUpperCase();
-}
+  function normalizeSuit(value) {
+    return String(value || "").trim().toUpperCase();
+  }
 
   function compareCorporateCards(a, b) {
     const order = {
@@ -170,64 +170,47 @@ function normalizeSuit(value) {
   }
 
   function renderColombes(play) {
-  const user = getSourceUser(play);
 
-  return `
+
+    return `
     <section class="lienzo-tribune lienzo-tribune--source">
 
       <div class="lienzo-tribune__corporates"></div>
 
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(user.profile_photo_url)}"
-          alt="${escapeHtml(user.nickname)}"
-        />
-
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(user.nickname)}
-        </div>
-      </div>
 
       <div class="lienzo-tribune__stage">
-        <div
-          id="lienzo-jpica-card"
-          draggable="true"
-          data-rank="J"
-          data-suit="SPADE"
-          title="Arrastrar J♠ hacia Publicar"
-        >
+<div id="lienzo-jpica-card">
           ${window.CartaTipo.renderPlayCardBox({
-            rank: "J",
-            suit: "SPADE",
-            title: play.play_text || "Sin texto",
-            play_text: play.play_text,
-            start_date: play.start_date,
-            end_date: play.end_date,
-            location: play.location,
-            ownerUser: getPlayOwnerUser(play),
-            ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
-            metas: [
-              play.start_date
-                ? {
-                    icon: "/assets/icons/reloj60.gif",
-                    text: formatTime(play.start_date)
-                  }
-                : null,
-              play.location
-                ? {
-                    icon: "/assets/icons/LocGlobito80.gif",
-                    text: play.location
-                  }
-                : null
-            ].filter(Boolean)
-          })}
+      rank: "J",
+      suit: "SPADE",
+      title: play.play_text || "Sin texto",
+      play_text: play.play_text,
+      start_date: play.start_date,
+      end_date: play.end_date,
+      location: play.location,
+      ownerUser: getPlayOwnerUser(play),
+      ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
+      metas: [
+        play.start_date
+          ? {
+            icon: "/assets/icons/reloj60.gif",
+            text: formatTime(play.start_date)
+          }
+          : null,
+        play.location
+          ? {
+            icon: "/assets/icons/LocGlobito80.gif",
+            text: play.location
+          }
+          : null
+      ].filter(Boolean)
+    })}
         </div>
       </div>
 
     </section>
   `;
-}
+  }
 
   function renderQHeartBox(play) {
     const deck = getCurrentDeck();
@@ -279,158 +262,76 @@ function normalizeSuit(value) {
       </div>
     `;
   }
-  
-function bindSourceDrag(play) {
-  const card = document.getElementById("lienzo-jpica-card");
-  if (!card) return;
 
-  card.addEventListener("dragstart", (event) => {
-    window.__draggingPlacardCard = {
-      source: "lienzoJpica",
-      rank: "J",
-      suit: "SPADE",
-      playId: play.id
-    };
-
-    event.dataTransfer.effectAllowed = "copy";
-    event.dataTransfer.setData("text/plain", "J|SPADE");
-  });
-
-  card.addEventListener("dragend", () => {
-    window.__draggingPlacardCard = null;
-  });
+  function getChildQSpades(parentPlayId) {
+  return getAllPlays()
+    .filter((p) => {
+      const rank = normalizeRank(p?.card_rank || p?.rank);
+      const suit = normalizeSuit(p?.card_suit || p?.suit);
+      return (
+        Number(p?.parent_play_id || 0) === Number(parentPlayId) &&
+        rank === "Q" &&
+        suit === "SPADE"
+      );
+    })
+    .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
 }
-  function renderAmsterdam(play) {
+
+function renderAmsterdam(play) {
+  const qSpades = getChildQSpades(play.id);
+
   return `
     <section class="lienzo-tribune lienzo-tribune--target">
 
       <div class="lienzo-tribune__corporates"></div>
 
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="/assets/icons/Extra120.gif"
-          alt="Publicar"
-        />
-
-        <div class="lienzo-tribune__name">
-          Publicar
-        </div>
-      </div>
-
       <div class="lienzo-tribune__stage">
-        <div id="lienzo-jpica-dropzone" class="lienzo-target-dropzone">
-          ${
-            hasDroppedJSpade()
-              ? window.CartaTipo.renderPlayCardBox({
-                  rank: "J",
-                  suit: "SPADE",
-                  title: play.play_text || "Sin texto",
-                  play_text: play.play_text,
-                  start_date: play.start_date,
-                  end_date: play.end_date,
-                  location: play.location,
-                  ownerUser: getPlayOwnerUser(play),
-                  ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
-                  metas: [
-                    play.start_date
-                      ? {
-                          icon: "/assets/icons/reloj60.gif",
-                          text: formatTime(play.start_date)
-                        }
-                      : null,
-                    play.location
-                      ? {
-                          icon: "/assets/icons/LocGlobito80.gif",
-                          text: play.location
-                        }
-                      : null
-                  ].filter(Boolean),
-                  actionsHtml: `
-                    <button id="lienzo-publish-simple-btn" class="icon-btn" title="Publicar">
-                      <img src="/assets/icons/Extra120.gif" alt="Publicar" />
-                    </button>
-                  `
-                })
-              : `<div class="lienzo-drop-hint">Soltá la J♠ acá para preparar la publicación</div>`
-          }
+
+        <div class="lienzo-jpica-invitations-header">
+          <div class="lienzo-jpica-invitations-title">
+            Invitaciones
+          </div>
+
+          <div class="lienzo-jpica-invitations-count">
+            ${qSpades.length}
+          </div>
         </div>
 
-        ${hasDroppedQHeart() ? renderQHeartBox(play) : ""}
+        <div class="lienzo-jpica-invitations-list">
+  ${
+    qSpades.length
+      ? qSpades
+          .map((q) => {
+            if (typeof window.renderQpike !== "function") {
+              return "";
+            }
+
+            return window.renderQpike(q, {
+              deck: getCurrentDeck(),
+              state: getCurrentState(),
+              helpers: {
+                escapeHtml,
+                formatDate: formatTime,
+                getCardLabel: () => "Q♠"
+              }
+            });
+          })
+          .join("")
+      : `
+          <div class="lienzo-jpica-empty">
+            Todavía no hay invitaciones.
+          </div>
+        `
+  }
+</div>
+
       </div>
 
     </section>
   `;
 }
-
-function bindDropzone(play) {
-  const zone = document.getElementById("lienzo-jpica-dropzone");
-  if (!zone) return;
-
-  function getDraggingCard() {
-    return window.__draggingPlacardCard || null;
-  }
-
-  function getCardType(card) {
-    const rank = String(card?.rank || "").toUpperCase();
-    const suit = String(card?.suit || "").toUpperCase();
-
-    return {
-      isJSpade: rank === "J" && suit === "SPADE",
-      isQHeart: rank === "Q" && suit === "HEART"
-    };
-  }
-
-  zone.addEventListener("dragover", (event) => {
-    event.preventDefault();
-
-    const card = getDraggingCard();
-    const { isJSpade, isQHeart } = getCardType(card);
-    const isValid = isJSpade || isQHeart;
-
-    zone.classList.toggle("is-drag-valid", isValid);
-    zone.classList.toggle("is-drag-invalid", !isValid);
-
-    event.dataTransfer.dropEffect = isValid ? "copy" : "none";
-  });
-
-  zone.addEventListener("dragleave", () => {
-    zone.classList.remove("is-drag-valid", "is-drag-invalid");
-  });
-
-  zone.addEventListener("drop", (event) => {
-    event.preventDefault();
-    zone.classList.remove("is-drag-valid", "is-drag-invalid");
-
-    const card = getDraggingCard();
-    const { isJSpade, isQHeart } = getCardType(card);
-
-    if (isJSpade) {
-      setDroppedJSpade({
-        rank: "J",
-        suit: "SPADE",
-        targetZone: "AMSTERDAM",
-        playId: play.id
-      });
-
-      renderLienzoJpica(play);
-      return;
-    }
-
-    if (isQHeart) {
-      setDroppedQHeart({
-        rank: "Q",
-        suit: "HEART",
-        targetZone: "AMSTERDAM",
-        playId: play.id
-      });
-
-      renderLienzoJpica(play);
-    }
-  });
-}
-
-  async function publishSimple(play) {
+  
+   async function publishSimple(play) {
     const token = localStorage.getItem("cooptrackToken");
     if (!token) {
       alert("No estás logueado");
@@ -455,14 +356,6 @@ function bindDropzone(play) {
     window.location.href = "/noticias.html";
   }
 
-function hasDroppedJSpade() {
-  const selection = window.__lienzoJpicaPublishedSelection || null;
-  return selection?.rank === "J" && selection?.suit === "SPADE";
-}
-
-function setDroppedJSpade(value) {
-  window.__lienzoJpicaPublishedSelection = value || null;
-}
 
   function bindActions(play) {
     const publishSimpleBtn = document.getElementById("lienzo-publish-simple-btn");
@@ -478,13 +371,13 @@ function setDroppedJSpade(value) {
     });
   }
 
-function renderLienzoJpica(play) {
-  const container = getLienzoContainer();
-  const deck = getCurrentDeck();
+  function renderLienzoJpica(play) {
+    const container = getLienzoContainer();
+    const deck = getCurrentDeck();
 
-  if (!container) return;
+    if (!container) return;
 
-  container.innerHTML = `
+    container.innerHTML = `
     <div class="lienzo-v2-page">
       ${renderDeckHeader(deck)}
 
@@ -506,27 +399,25 @@ function renderLienzoJpica(play) {
     </div>
   `;
 
-  mountPlacard(play);
-  bindSourceDrag(play);
-  bindDropzone(play);
-  bindActions(play);
-}
+mountPlacard(play);
+bindActions(play);
+  }
 
   window.openLienzoJpicaByPlayId = function (playId) {
-  const play = getPlayById(playId);
-  const container = getLienzoContainer();
+    const play = getPlayById(playId);
+    const container = getLienzoContainer();
 
-  if (!play) {
-    if (container) {
-      container.innerHTML = `
+    if (!play) {
+      if (container) {
+        container.innerHTML = `
         <div class="lienzo-error">
           No se encontró la J♠ para publicar.
         </div>
       `;
+      }
+      return;
     }
-    return;
-  }
 
-  renderLienzoJpica(play);
-};
+    renderLienzoJpica(play);
+  };
 })();
