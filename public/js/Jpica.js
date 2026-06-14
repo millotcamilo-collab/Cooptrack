@@ -991,7 +991,13 @@
     }, 0);
 
     return `
-  <article class="tablero-row tablero-row--jpike" id="${rowId}">
+  <article
+  class="tablero-row tablero-row--jpike tablero-row--link"
+  id="${rowId}"
+  data-open-lienzo="true"
+  data-play-id="${play.id}"
+  data-deck-id="${context?.deck?.id || context?.state?.deck?.id || ""}"
+>
     <div class="tablero-row__left">
       <div class="tablero-row__card tablero-row__card--with-news">
   <span>J♠</span>

@@ -767,7 +767,13 @@ dispatch("tablero:save-play", {
     }, 0);
 
     return `
-  <article class="tablero-row tablero-row--jpike tablero-row--jpike-bomba" id="${rowId}">
+  <article
+  class="tablero-row tablero-row--jpike tablero-row--jpike-bomba tablero-row--link"
+  id="${rowId}"
+  data-open-lienzo="true"
+  data-play-id="${play.id}"
+  data-deck-id="${context?.state?.deck?.id || ""}"
+>
     <div class="tablero-row__left">
       <div class="tablero-row__card">J♠</div>
     </div>
