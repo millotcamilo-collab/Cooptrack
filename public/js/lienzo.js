@@ -479,17 +479,7 @@
 
       <div class="lienzo-tribune__corporates"></div>
 
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(targetUser.profile_photo_url)}"
-          alt="${escapeHtml(targetUser.nickname)}"
-        />
 
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(targetUser.nickname)}
-        </div>
-      </div>
 
       <div class="lienzo-tribune__stage">
         <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">

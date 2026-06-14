@@ -101,11 +101,8 @@ min-height: var(--lv2-tribune-h);
 
   padding: 18px;
 
-  display: grid;
-  grid-template-rows:
-    54px 1fr;
-
-  row-gap: 10px;
+  display: flex;
+  flex-direction: column;
 
   background: var(--lv2-panel-bg);
   border: 1px solid var(--lv2-panel-border);
@@ -140,59 +137,13 @@ min-height: var(--lv2-tribune-h);
   object-fit: contain;
 }
 
-/* layer 2: identidad */
-.lienzo-tribune__identity {
-  grid-row: 1;
-
-  position: relative;
-  z-index: 2;
-
-  margin-left: 150px;
-
-  height: 126px;
-
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 10px;
-
-  padding-top: 0;
-
-  min-width: 0;
-}
-
-.lienzo-tribune__avatar {
-  width: 40px;
-  height: 40px;
-
-  display: block;
-  object-fit: cover;
-
-  border-radius: 4px;
-  background: transparent;
-}
-
-.lienzo-tribune__name {
-  min-width: 0;
-
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.15;
-
-  color: var(--lv2-text);
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 
 /* layer 3: carta activa */
 .lienzo-tribune__stage {
-  grid-row: 2;
-
   position: relative;
   z-index: 2;
+
+  flex: 1;
 
   display: flex;
   align-items: flex-start;

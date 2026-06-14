@@ -335,15 +335,6 @@
           `).join("")}
         </div>
 
-        <div class="lienzo-tribune__identity">
-          <img
-            class="lienzo-tribune__avatar"
-            src="${escapeHtml(sourceUser.profile_photo_url)}"
-          />
-          <div class="lienzo-tribune__name">
-            ${escapeHtml(sourceUser.nickname)}
-          </div>
-        </div>
 
         <div class="lienzo-tribune__stage">
           <div
@@ -370,15 +361,6 @@
 
         <div class="lienzo-tribune__corporates"></div>
 
-        <div class="lienzo-tribune__identity">
-          <img
-            class="lienzo-tribune__avatar"
-            src="${escapeHtml(aceHolder.profile_photo_url)}"
-          />
-          <div class="lienzo-tribune__name">
-            ${escapeHtml(aceHolder.nickname)}
-          </div>
-        </div>
 
         <div class="lienzo-tribune__stage">
           <div
