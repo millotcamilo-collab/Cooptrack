@@ -109,28 +109,32 @@ window.QPICA_ENTRA = {
       back.classList.add("qpica-q-back--opening");
     }
 
-    setTimeout(() => {
-      host.innerHTML = this.renderOpen(this.currentCtx);
+setTimeout(() => {
+  host.innerHTML = this.renderOpen(this.currentCtx);
 
-      if (typeof window.bindLienzoActions === "function") {
-        window.bindLienzoActions();
-      }
+  if (typeof window.bindAmsterdamTargetActions === "function") {
+    window.bindAmsterdamTargetActions(this.currentCtx.play);
+  }
 
-      if (typeof window.bindQpicaActions === "function") {
-        window.bindQpicaActions();
-      }
+  if (typeof window.bindLienzoActions === "function") {
+    window.bindLienzoActions();
+  }
 
-      const openFigures = host.querySelectorAll(".lv2-play-card__figure");
-      const openQFigure = openFigures[1];
+  if (typeof window.bindQpicaActions === "function") {
+    window.bindQpicaActions();
+  }
 
-      this.playSequence({
-        figureEl: openQFigure,
-        prefix: "QPMira",
-        from: 0,
-        to: 8,
-        fps: 12
-      });
-    }, 700);
+  const openFigures = host.querySelectorAll(".lv2-play-card__figure");
+  const openQFigure = openFigures[1];
+
+  this.playSequence({
+    figureEl: openQFigure,
+    prefix: "QPMira",
+    from: 0,
+    to: 8,
+    fps: 12
+  });
+}, 700);
 
   },
 
