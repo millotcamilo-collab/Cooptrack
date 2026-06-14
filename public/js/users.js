@@ -393,12 +393,14 @@ function renderUsersPicker(containerId, options = {}) {
         if (!selected) return;
 
         state.selectedUser = selected;
+        rerender();
 
         if (typeof options.onAnimateSelect === "function") {
           options.onAnimateSelect(selected);
         }
       });
     });
+    
     createFields.forEach((field) => {
       field.addEventListener("input", (event) => {
         const fieldName = event.target.getAttribute("data-users-create-field");
