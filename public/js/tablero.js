@@ -602,6 +602,19 @@
     return Number(params.get("focusPlayId") || 0);
   }
 
+function isHiddenChildPlay(play) {
+  const parentId = Number(play?.parent_play_id || 0);
+  if (!parentId) return false;
+
+  const rank = normalizeRank(play?.rank || play?.card_rank);
+  const suit = normalizeSuit(play?.suit || play?.card_suit);
+
+  return (
+    (rank === "Q" && suit === "SPADE") ||
+    (rank === "J" && suit === "CLUB")
+  );
+}
+
   function renderTablero(deck, plays, state = {}) {
     const container = document.getElementById('tablero-container');
 
@@ -616,6 +629,8 @@
       initTableroViewFromUrlOnce();
       const tableroPlays = sortTableroPlays(
         normalized.filter((play) => {
+          if (isHiddenChildPlay(play)) return false;
+
           if (!belongsToTablero(play)) return false;
           if (!matchesTableroFilter(play, activeTableroFilter)) return false;
 
