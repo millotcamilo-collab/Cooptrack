@@ -340,6 +340,17 @@ function renderUsersPicker(containerId, options = {}) {
     const saveNewBtn = container.querySelector("[data-users-save-new]");
     const cancelNewBtn = container.querySelector("[data-users-cancel-new]");
     const conflictButtons = container.querySelectorAll("[data-users-conflict-id]");
+    const extraActionButtons = container.querySelectorAll("[data-users-extra-action]");
+
+extraActionButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const actionId = btn.getAttribute("data-users-extra-action");
+
+    if (typeof options.onExtraAction === "function") {
+      options.onExtraAction(actionId, state);
+    }
+  });
+});
 
     if (input) {
       input.addEventListener("input", (event) => {
@@ -521,13 +532,10 @@ function renderUsersPicker(containerId, options = {}) {
   }
 
   function renderSearchState() {
+    console.log("EXTRA ACTIONS", options.extraActions);
     return `
     <div class="users-picker__top">
-      <img
-        class="users-picker__people-icon"
-        src="${escapeHtml(options.peopleIcon || "/assets/icons/GenteGris.gif")}"
-        alt="Usuarios"
-      />
+
 
       <div class="users-picker__search-wrap">
         <input
@@ -555,6 +563,23 @@ function renderUsersPicker(containerId, options = {}) {
           <img src="${escapeHtml(options.sealIcon || "/assets/icons/lacre120.gif")}" alt="Registrar usuario" />
         </button>
 
+${Array.isArray(options.extraActions)
+  ? options.extraActions.map((action) => `
+      <button
+        type="button"
+        class="users-picker__extra-btn"
+        data-users-extra-action="${action.id}"
+        title="${action.title || ""}"
+      >
+        ${
+          action.label
+            ? action.label
+            : `<img src="${action.icon}" alt="">`
+        }
+      </button>
+    `).join("")
+  : ""
+}
         
       </div>
     </div>
