@@ -920,12 +920,18 @@ function isHiddenChildPlay(play) {
 
   document.addEventListener("click", (event) => {
 
-    if (event.target.closest("button[data-action]")) {
-      return;
-    }
+ if (
+    event.target.closest("button[data-action]") ||
+    event.target.closest("input") ||
+    event.target.closest("select") ||
+    event.target.closest("textarea") ||
+    event.target.closest("label")
+  ) {
+    return;
+  }
 
-    const row = event.target.closest('[data-open-lienzo="true"]');
-    if (!row) return;
+  const row = event.target.closest('[data-open-lienzo="true"]');
+  if (!row) return;
 
     const playId = Number(row.dataset.playId || 0);
     const deckId =
