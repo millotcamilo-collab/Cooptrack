@@ -740,7 +740,13 @@ return {
     </div>
   `;
     }
-
+function renderActionButtons() {
+  return `
+    <button id="lienzo-save-btn" class="icon-btn" title="Salvar">
+      <img src="/assets/icons/salvar40.gif" alt="Salvar" />
+    </button>
+  `;
+}
     function renderKCardBox(draft, showActions = false, id = "") {
         const rank = normalizeRank(draft?.card_rank || "K");
         const suit = normalizeSuit(draft?.card_suit);
