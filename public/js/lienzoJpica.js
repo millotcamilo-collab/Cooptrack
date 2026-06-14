@@ -277,6 +277,107 @@
     .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
 }
 
+function bindInvitationRows() {
+  document
+    .querySelectorAll(".jpica-q-row")
+    .forEach((row) => {
+      row.addEventListener("click", () => {
+        const playId = Number(
+          row.getAttribute("data-play-id") || 0
+        );
+
+        if (!playId) return;
+
+        const deckId = Number(
+          getCurrentDeck()?.id || 0
+        );
+
+        window.location.href =
+          `/lienzoQpica.html?deckId=${deckId}&playId=${playId}`;
+      });
+    });
+}
+
+async function createQpicaFromUser(parentPlay, user) {
+  const token = localStorage.getItem("cooptrackToken");
+  const deckId = Number(getCurrentDeck()?.id || parentPlay?.deck_id || 0);
+  const userId = Number(window.__currentUser?.id || window.__currentState?.currentUser?.id || 0);
+  const targetUserId = Number(user?.id || 0);
+
+  if (!token || !deckId || !userId || !targetUserId) {
+    alert("Faltan datos para crear la Q♠.");
+    return;
+  }
+
+  const when = new Date().toISOString();
+
+  const playCode = [
+    deckId,
+    userId,
+    when,
+    "Q",
+    "SPADE",
+    "create_from_jpica",
+    `U:${userId}`,
+    `child_of:${parentPlay.id}`,
+    `U:${targetUserId}`
+  ].join("§");
+
+  const response = await fetch("/plays", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      deck_id: deckId,
+      parent_play_id: parentPlay.id,
+      target_user_id: targetUserId,
+      play_code: playCode,
+      text: parentPlay.play_text || "",
+      play_status: "ACTIVE",
+      issued_with: []
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    console.error("Error creando Q♠:", data);
+    alert(data?.error || "No se pudo crear la Q♠.");
+    return;
+  }
+
+  const newPlayId = Number(data?.play?.id || 0);
+
+  if (!newPlayId) {
+    alert("Se creó la Q♠ pero no volvió el id.");
+    return;
+  }
+
+  window.location.href = `/lienzoQpica.html?deckId=${deckId}&playId=${newPlayId}`;
+}
+
+function mountUsersPickerForQpica(parentPlay) {
+  if (typeof window.renderUsersPicker !== "function") {
+    console.warn("users.js no está cargado");
+    return;
+  }
+
+  window.renderUsersPicker("jpica-users-picker", {
+    currentUserId: Number(window.__currentUser?.id || 0),
+    deckId: Number(getCurrentDeck()?.id || parentPlay?.deck_id || 0),
+    parentPlayId: Number(parentPlay?.id || 0),
+    childRank: "Q",
+    childSuit: "SPADE",
+    plays: getAllPlays(),
+
+    onAnimateSelect(user) {
+      createQpicaFromUser(parentPlay, user);
+    }
+  });
+}
+
 function renderAmsterdam(play) {
   const qSpades = getChildQSpades(play.id);
 
@@ -312,15 +413,6 @@ function renderAmsterdam(play) {
             <button
               type="button"
               class="icon-btn"
-              id="jpica-qspade-btn"
-              title="Q♠"
-            >
-              <img src="/assets/icons/Qpica.png" alt="Q♠">
-            </button>
-
-            <button
-              type="button"
-              class="icon-btn"
               id="jpica-publish-btn"
               title="Publicar"
             >
@@ -328,6 +420,8 @@ function renderAmsterdam(play) {
             </button>
 
           </div>
+
+          <div id="jpica-users-picker" class="jpica-users-picker"></div>
 
           <div class="lienzo-jpica-invitations-list tablero">
             ${
@@ -337,16 +431,22 @@ function renderAmsterdam(play) {
                       if (typeof window.renderQpike !== "function") {
                         return "";
                       }
-
-                      return window.renderQpike(q, {
-                        deck: getCurrentDeck(),
-                        state: getCurrentState(),
-                        helpers: {
-                          escapeHtml,
-                          formatDate: formatTime,
-                          getCardLabel: () => "Q♠"
-                        }
-                      });
+return `
+  <div
+    class="jpica-q-row"
+    data-play-id="${q.id}"
+  >
+    ${window.renderQpike(q, {
+      deck: getCurrentDeck(),
+      state: getCurrentState(),
+      helpers: {
+        escapeHtml,
+        formatDate: formatTime,
+        getCardLabel: () => "Q♠"
+      }
+    })}
+  </div>
+`;
                     })
                     .join("")
                 : `
@@ -435,6 +535,8 @@ function renderAmsterdam(play) {
 
 mountPlacard(play);
 bindActions(play);
+bindInvitationRows();
+mountUsersPickerForQpica(play);
   }
 
   window.openLienzoJpicaByPlayId = function (playId) {
