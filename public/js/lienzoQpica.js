@@ -1678,12 +1678,10 @@ ${qHeartMode
 <section class="lienzo-tribune lienzo-tribune--source">
 
 
-  ${identityHtml}
-
         <div class="lienzo-tribune__stage">
 
 
-${parentJSpadeText
+        ${parentJSpadeText
                 ? window.CartaTipo.renderPlayCardBox({
                     rank: "J",
                     suit: "SPADE",
@@ -1757,25 +1755,10 @@ ${parentJSpadeText
     `
             : "";
 
-        const identityHtml = `
-    <div class="lienzo-tribune__identity">
-      <img
-        class="lienzo-tribune__avatar"
-        src="${escapeHtml(userPhoto)}"
-        alt="${escapeHtml(userName)}"
-      />
-
-      <div class="lienzo-tribune__name">
-        ${escapeHtml(userName)}
-      </div>
-    </div>
-  `;
 
         return `
     <section class="lienzo-tribune lienzo-tribune--target">
 
-
-      ${identityHtml}
 
       <div class="lienzo-tribune__stage">
         <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
