@@ -1889,15 +1889,24 @@ ${qHeartMode
                     : "Invitación enviada"
             );
 
-            const deckId =
-                Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
+const deckId =
+  Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
 
-            if (deckId) {
-                window.location.href = `/mazo.html?id=${deckId}`;
-                return;
-            }
+const parentPlayId = Number(play?.parent_play_id || 0);
 
-            window.history.back();
+if (deckId && parentPlayId) {
+  window.location.href =
+    `/lienzoJpica.html?deckId=${deckId}&playId=${parentPlayId}`;
+  return;
+}
+
+if (deckId) {
+  window.location.href = `/mazo.html?id=${deckId}`;
+  return;
+}
+
+window.history.back();
+
         } catch (error) {
             console.error("Error en handleSendPlay", error);
             alert("No se pudo enviar la jugada");

@@ -358,53 +358,117 @@
     window.location.href = `/lienzoQpica.html?deckId=${deckId}&playId=${newPlayId}`;
   }
 
-function mountUsersPickerForQpica(parentPlay) {
-  if (typeof window.renderUsersPicker !== "function") {
-    console.warn("users.js no está cargado");
-    return;
+  async function createJtrebolFromJpica(parentPlay) {
+    const token = localStorage.getItem("cooptrackToken");
+    const deckId = Number(getCurrentDeck()?.id || parentPlay?.deck_id || 0);
+    const userId = Number(
+      window.__currentUser?.id ||
+      window.__currentState?.userId ||
+      window.__currentState?.currentUser?.id ||
+      0
+    );
+
+    if (!token || !deckId || !userId || !parentPlay?.id) {
+      alert("Faltan datos para crear la J♣.");
+      return;
+    }
+
+    const when = new Date().toISOString();
+
+    const playCode = [
+      deckId,
+      userId,
+      when,
+      "J",
+      "CLUB",
+      "create_child",
+      `U:${userId}`,
+      `child_of:${parentPlay.id}`,
+      `U:${userId}`
+    ].join("§");
+
+    const response = await fetch("/plays", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        deck_id: deckId,
+        parent_play_id: parentPlay.id,
+        play_code: playCode,
+        text: "",
+        amount: null,
+        play_status: "ACTIVE"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error creando J♣:", data);
+      alert(data?.error || "No se pudo crear la J♣.");
+      return;
+    }
+
+    window.location.reload();
   }
 
-  window.renderUsersPicker("jpica-users-picker", {
-    currentUserId: Number(window.__currentUser?.id || 0),
-    deckId: Number(getCurrentDeck()?.id || parentPlay?.deck_id || 0),
-    parentPlayId: Number(parentPlay?.id || 0),
-    childRank: "Q",
-    childSuit: "SPADE",
-    plays: getAllPlays(),
-
-    extraActions: [
-      {
-        id: "jclub",
-        label: "J♣",
-        title: "Crear J♣"
-      },
-      {
-        id: "publish",
-        title: "Publicar",
-        icon: "/assets/icons/Extra120.gif"
-      }
-    ],
-
-    onExtraAction(actionId) {
-      if (actionId === "jclub") {
-        alert("Acá seguimos: crear J♣ hija de esta J♠.");
-      }
-
-      if (actionId === "publish") {
-        publishSimple(parentPlay);
-      }
-    },
-
-    onAnimateSelect(user) {
-      createQpicaFromUser(parentPlay, user);
+  function mountUsersPickerForQpica(parentPlay) {
+    if (typeof window.renderUsersPicker !== "function") {
+      console.warn("users.js no está cargado");
+      return;
     }
-  });
-}
+
+    window.renderUsersPicker("jpica-users-picker", {
+      currentUserId: Number(window.__currentUser?.id || 0),
+      deckId: Number(getCurrentDeck()?.id || parentPlay?.deck_id || 0),
+      parentPlayId: Number(parentPlay?.id || 0),
+      childRank: "Q",
+      childSuit: "SPADE",
+      plays: getAllPlays(),
+
+      extraActions: [
+        {
+          id: "jclub",
+          label: "J♣",
+          title: "Crear J♣"
+        },
+        {
+          id: "publish",
+          title: "Publicar",
+          icon: "/assets/icons/Extra120.gif"
+        }
+      ],
+
+      onExtraAction(actionId) {
+        if (actionId === "jclub") {
+          createJtrebolFromJpica(parentPlay);
+        }
+
+        if (actionId === "publish") {
+          publishSimple(parentPlay);
+        }
+      },
+
+      onAnimateSelect(user) {
+        createQpicaFromUser(parentPlay, user);
+      }
+    });
+  }
 
   function renderAmsterdam(play) {
-    const qSpades = getChildQSpades(play.id);
+  const childPlays = getAllPlays()
+    .filter(
+      (p) => Number(p?.parent_play_id || 0) === Number(play.id)
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.created_at || 0) -
+        new Date(b.created_at || 0)
+    );
 
-    return `
+  return `
     <section class="lienzo-tribune lienzo-tribune--target">
 
       <div class="lienzo-tribune__corporates"></div>
@@ -413,41 +477,73 @@ function mountUsersPickerForQpica(parentPlay) {
 
         <div class="lienzo-jpica-panel">
 
-          
-
           <div id="jpica-users-picker" class="jpica-users-picker"></div>
 
           <div class="lienzo-jpica-invitations-list tablero">
-            ${qSpades.length
-        ? qSpades
-          .map((q) => {
-            if (typeof window.renderQpike !== "function") {
-              return "";
-            }
-            return `
-  <div
-    class="jpica-q-row"
-    data-play-id="${q.id}"
-  >
-    ${window.renderQpike(q, {
-              deck: getCurrentDeck(),
-              state: getCurrentState(),
-              helpers: {
-                escapeHtml,
-                formatDate: formatTime,
-                getCardLabel: () => "Q♠"
-              }
-            })}
-  </div>
-`;
-          })
-          .join("")
-        : `
+
+            ${
+              childPlays.length
+                ? childPlays
+                    .map((child) => {
+
+                      const rank = normalizeRank(
+                        child?.card_rank || child?.rank
+                      );
+
+                      const suit = normalizeSuit(
+                        child?.card_suit || child?.suit
+                      );
+
+                      if (
+                        rank === "Q" &&
+                        suit === "SPADE" &&
+                        typeof window.renderQpike === "function"
+                      ) {
+                        return `
+                          <div
+                            class="jpica-q-row"
+                            data-play-id="${child.id}"
+                          >
+                            ${window.renderQpike(child, {
+                              deck: getCurrentDeck(),
+                              state: getCurrentState(),
+                              helpers: {
+                                escapeHtml,
+                                formatDate: formatTime,
+                                getCardLabel: () => "Q♠"
+                              }
+                            })}
+                          </div>
+                        `;
+                      }
+
+                      if (
+                        rank === "J" &&
+                        suit === "CLUB" &&
+                        typeof window.renderJtrebol === "function"
+                      ) {
+                        return window.renderJtrebol(child, {
+                          deck: getCurrentDeck(),
+                          state: getCurrentState(),
+                          helpers: {
+                            escapeHtml,
+                            formatDate: formatTime,
+                            getCardLabel: () => "J♣"
+                          }
+                        });
+                      }
+
+                      return "";
+
+                    })
+                    .join("")
+                : `
                     <div class="lienzo-jpica-empty">
                       Todavía no hay invitaciones.
                     </div>
                   `
-      }
+            }
+
           </div>
 
         </div>
@@ -456,7 +552,7 @@ function mountUsersPickerForQpica(parentPlay) {
 
     </section>
   `;
-  }
+}
 
   async function publishSimple(play) {
     const token = localStorage.getItem("cooptrackToken");
