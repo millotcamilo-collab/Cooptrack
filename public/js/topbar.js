@@ -510,7 +510,30 @@ function resolveReadOnlyPageForPlay(play, currentUserId) {
           playForRouting = data.play;
         }
       }
+const rank = normalizeText(playForRouting?.card_rank || playForRouting?.rank);
+const suit = normalizeText(playForRouting?.card_suit || playForRouting?.suit);
+const status = normalizeText(playForRouting?.play_status || playForRouting?.status);
 
+const currentUser = await getLoggedUser();
+const currentUserId = currentUser?.id;
+
+const isSource =
+  Number(playForRouting?.created_by_user_id || 0) === Number(currentUserId);
+
+const finalStates = ["APPROVED", "REJECTED", "CANCELLED"];
+
+if (
+  rank === "Q" &&
+  suit === "SPADE" &&
+  isSource &&
+  finalStates.includes(status) &&
+  Number(playForRouting?.parent_play_id || 0)
+) {
+  await acknowledgePlay(playForRouting.id);
+  window.location.href =
+    `/lienzoJpica.html?deckId=${playForRouting.deck_id}&playId=${playForRouting.parent_play_id}`;
+  return;
+}
       // Get current user to check tribuna eligibility
       const currentUser = await getLoggedUser();
       const currentUserId = currentUser?.id;
