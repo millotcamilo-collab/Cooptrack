@@ -612,6 +612,36 @@ onAnimateSelect(user) {
     });
   }
 
+function bindJtrebolEventsInLienzo() {
+  document.addEventListener("tablero:delete-play", async (event) => {
+    const playId = Number(event?.detail?.playId || 0);
+    if (!playId) return;
+
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) {
+      alert("No estás logueado");
+      return;
+    }
+
+    const response = await fetch(`/plays/${playId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error borrando J♣:", data);
+      alert(data?.error || "No se pudo borrar la J♣.");
+      return;
+    }
+
+    window.location.reload();
+  });
+}
+
   function renderLienzoJpica(play) {
     const container = getLienzoContainer();
     const deck = getCurrentDeck();
@@ -644,6 +674,7 @@ onAnimateSelect(user) {
     bindActions(play);
     bindInvitationRows();
     mountUsersPickerForQpica(play);
+    bindJtrebolEventsInLienzo();
   }
 
   window.openLienzoJpicaByPlayId = function (playId) {
