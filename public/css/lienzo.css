@@ -420,7 +420,10 @@ min-height: var(--lv2-tribune-h);
 .jpica-users-header {
   background: #ffffff;
   border-radius: 8px;
-  padding: 8px;
-  margin-bottom: 8px;
+
+  padding: 4px 8px;
+
+  margin-bottom: 6px;
+
   box-sizing: border-box;
 }

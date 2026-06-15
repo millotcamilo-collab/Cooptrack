@@ -170,14 +170,7 @@ function canLaunchQspade(play) {
       rank: "A",
       suit: "HEART",
       showCurrency: false,
-      leftCards: [
-        {
-          id: "virtual-Q-HEART",
-          rank: "Q",
-          suit: "HEART",
-          isVirtual: true
-        }
-      ],
+leftCards: [],
       plays: getAllPlays()
     });
   }
