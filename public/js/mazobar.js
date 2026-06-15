@@ -751,7 +751,7 @@ ${isAdminPage
   : buildTopCardsHTML(corporateCards, { draggable: false })
 }
               </div>
-              ${buildPageHeroIconHTML(normalizedPlays, currentUserId)}
+              
               ${buildDeckPhotoHTML(deck, normalizedPlays, currentUserId)}
             </div>
 
@@ -766,6 +766,7 @@ ${isAdminPage
               </div>
 
               <div class="mazobar__commands">
+              ${buildPageHeroIconHTML(normalizedPlays, currentUserId)}
                 ${buildCommandButtonsHTML(normalizedPlays, currentUserId)}
               </div>
 

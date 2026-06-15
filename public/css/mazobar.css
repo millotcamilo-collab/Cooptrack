@@ -351,7 +351,7 @@
 
 /* Responsive */
 
-@media (max-width: 1024px) {
+@media (max-width: 680px) {
   .mazobar__row--top {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -363,6 +363,16 @@
 
   .mazobar__top-right {
     justify-content: flex-start;
+  }
+
+    .mazobar__commands {
+    gap: 2px;
+  }
+
+  .mazobar__cmd-btn--suit {
+    min-width: 38px;
+    width: 38px;
+    padding: 0;
   }
 }
 
@@ -464,7 +474,7 @@
 }
 
 .mazobar__hero-icon img {
-  height: 80px;
+  height: 40px;
   width: auto;
   display: block;
 }
@@ -580,4 +590,21 @@
   left: 7px;
   right: 7px;
   bottom: 11px;
+}
+
+.page-mazo .mazobar__topcards {
+  position: relative;
+  gap: 0;
+}
+
+.page-mazo .mazobar__topcard-image,
+.page-mazo .mazobar__topcard-fallback,
+.page-mazo .mazobar__topcard-button {
+  margin-left: -24px;
+}
+
+.page-mazo .mazobar__topcard-image:first-child,
+.page-mazo .mazobar__topcard-fallback:first-child,
+.page-mazo .mazobar__topcard-button:first-child {
+  margin-left: 0;
 }
