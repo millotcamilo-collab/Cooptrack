@@ -323,7 +323,7 @@
                 }
             }
 
-window.bindAmsterdamTargetActions = bindTargetActions;
+window.bindAmericaTargetActions = bindTargetActions;
             
         function isMobileViewport() {
                 return window.matchMedia("(max-width: 900px)").matches;
@@ -486,8 +486,8 @@ async function updatePlayStatus(play, status) {
                     console.log("DECK STATE", deckState);
                     console.log("DECK USERS", deckState?.users);
                 }
-                console.log("QPICA_ENTRA cargado:", window.QPICA_ENTRA);
-                const html = window.QPICA_ENTRA.render({
+console.log("K_ENTRA cargado:", window.K_ENTRA);
+const html = window.K_ENTRA.render({
                     play,
                     parentOwner,
                     helpers: {
@@ -497,10 +497,10 @@ async function updatePlayStatus(play, status) {
                 });
 
                 document.getElementById("tribuna-content").innerHTML = html;
-                if (window.QPICA_ENTRA?.start) {
-                    console.log("VOY A EJECUTAR START");
-                    window.QPICA_ENTRA.start(play);
-                }
+if (window.K_ENTRA?.start) {
+  console.log("VOY A EJECUTAR START K_ENTRA");
+  window.K_ENTRA.start(play);
+}
                 if (typeof window.enableAmsterdamPeek === "function") {
                     window.enableAmsterdamPeek();
                 }
