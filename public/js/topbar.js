@@ -327,6 +327,17 @@
 
     const status = normalizeText(play?.play_status || play?.status);
 
+const rank = normalizeText(play?.card_rank || play?.rank);
+const suit = normalizeText(play?.card_suit || play?.suit);
+
+if (
+  rank === "J" &&
+  suit === "HEART" &&
+  (status === "SENT" || status === "PENDING")
+) {
+  return "/lienzoJcorazon.html";
+}
+
     // 1) TARGET: Si es destinatario y hay acción pendiente (SENT/PENDING)
     if (isTarget && (status === "SENT" || status === "PENDING")) {
       return "/amsterdam.html";
@@ -513,9 +524,9 @@ function resolveReadOnlyPageForPlay(play, currentUserId) {
 const rank = normalizeText(playForRouting?.card_rank || playForRouting?.rank);
 const suit = normalizeText(playForRouting?.card_suit || playForRouting?.suit);
 const status = normalizeText(playForRouting?.play_status || playForRouting?.status);
-
-const currentUser = await getLoggedUser();
-const currentUserId = currentUser?.id;
+      // Get current user to check tribuna eligibility
+      const currentUser = await getLoggedUser();
+      const currentUserId = currentUser?.id;
 
 const isSource =
   Number(playForRouting?.created_by_user_id || 0) === Number(currentUserId);
@@ -534,9 +545,7 @@ if (
     `/lienzoJpica.html?deckId=${playForRouting.deck_id}&playId=${playForRouting.parent_play_id}`;
   return;
 }
-      // Get current user to check tribuna eligibility
-      const currentUser = await getLoggedUser();
-      const currentUserId = currentUser?.id;
+
 
       // Try tribuna route first
 let nextPage = null;
