@@ -360,9 +360,18 @@ if (
 }
 
     // 1) TARGET: Si es destinatario y hay acción pendiente (SENT/PENDING)
-    if (isTarget && (status === "SENT" || status === "PENDING")) {
-      return "/amsterdam.html";
-    }
+if (
+  rank === "K" &&
+  isTarget &&
+  (status === "SENT" || status === "PENDING")
+) {
+  return "/america.html";
+}
+
+// 1) TARGET: Si es destinatario y hay acción pendiente (SENT/PENDING)
+if (isTarget && (status === "SENT" || status === "PENDING")) {
+  return "/amsterdam.html";
+}
 
     // 2) VALIDATOR with A_DIAMOND: Si es validador con rol A_DIAMOND
     if (isValidator) {

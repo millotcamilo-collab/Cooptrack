@@ -2,97 +2,515 @@
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tribuna América - CoopTrack</title>
-  <link rel="icon" type="image/png" href="/assets/icons/bigote.png" />
-  <!-- Global styles -->
-  <link rel="stylesheet" href="/css/global.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tribuna Amsterdam - CoopTrack</title>
+    <link rel="icon" type="image/png" href="/assets/icons/bigote.png" />
 
-  <!-- Tribuna page specific styles (future) -->
-  <link rel="stylesheet" href="/css/tribuna.css" />
+    <!-- Global styles -->
+    <link rel="stylesheet" href="/css/global.css" />
 
-  <!-- Card type render -->
-  <link rel="stylesheet" href="/css/cartatipo.css" />
+    <!-- Tribuna page specific styles (future) -->
+    <link rel="stylesheet" href="/css/tribuna.css" />
 
-  <!-- Placard styles -->
-  <link rel="stylesheet" href="/css/placard.css" />
-      <link rel="stylesheet" href="/css/topbar.css" />
+    <!-- Card type render -->
+    <link rel="stylesheet" href="/css/cartatipo.css" />
+    <link rel="stylesheet" href="/css/lienzo.css" />
+    <!-- Placard styles -->
+    <link rel="stylesheet" href="/css/placard.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
 </head>
 
 <body>
-  <!-- Topbar container (rendered by topbar.js) -->
-  <div id="topbar-container"></div>
+    <!-- Topbar container (rendered by topbar.js) -->
+    <div id="topbar-container"></div>
 
-  <!-- Main tribuna page content -->
-  <main class="tribuna-page tribuna-page--america">
-    <section id="tribuna-root" class="tribuna-page__root">
-      <!-- Placard container (optional) -->
-      <div id="tribuna-placard" class="tribuna__placard-zone"></div>
+    <!-- Main tribuna page content -->
+    <main class="tribuna-page tribuna-page--amsterdam">
+        <section id="tribuna-root" class="tribuna-page__root">
+            <!-- Placard container (optional) -->
+            <div id="tribuna-placard" class="tribuna__placard-zone"></div>
 
-      <!-- Tribuna content (rendered by america.js) -->
-      <div id="tribuna-content" class="tribuna__content-zone"></div>
+            <!-- Tribuna content (rendered by amsterdam.js) -->
+            <div id="tribuna-content" class="tribuna__content-zone"></div>
 
-      <!-- Actions container -->
-      <div id="tribuna-actions" class="tribuna__actions-zone"></div>
+            <!-- Actions container -->
+            <div id="tribuna-actions" class="tribuna__actions-zone"></div>
 
-      <!-- Chat/Talud container (future) -->
-      <!-- <div id="tribuna-talud" class="tribuna__talud-zone"></div> -->
-    </section>
-  </main>
 
-  <!-- Scripts -->
-  <!-- Topbar (required for all pages) -->
-  <script src="/js/topbar.js"></script>
+            <!-- Chat/Talud container (future) -->
+            <!-- <div id="tribuna-talud" class="tribuna__talud-zone"></div> -->
+        </section>
+    </main>
 
-  <!-- Card type helper (used in tribuna render) -->
-  <script src="/js/cartatipo.js"></script>
+    <!-- Scripts -->
+    <!-- Topbar (required for all pages) -->
+    <script src="/js/topbar.js"></script>
 
-  <!-- Placard helper -->
-  <script src="/js/placard.js"></script>
+    <!-- Card type helper (used in tribuna render) -->
+    <script src="/js/cartatipo.js"></script>
 
-  <!-- Chat helper (future) -->
-  <!-- <script src="/js/chat.js"></script> -->
+    <!-- Placard helper -->
+    <script src="/js/placard.js"></script>
 
-  <!-- America tribuna module -->
-  <script src="/js/america.js"></script>
+    <!-- Chat helper (future) -->
+    <!-- <script src="/js/chat.js"></script> -->
 
-  <!-- Tribuna initialization script (future: move to tribuna-core.js) -->
-  <script>
-    (function () {
-      // Read URL params: deckId, playId
-      const urlParams = new URLSearchParams(window.location.search);
-      const deckId = urlParams.get("deckId");
-      const playId = urlParams.get("playId");
+    <!-- Amsterdam tribuna module -->
+    <script src="/js/amsterdam.js"></script>
 
-      // Initialize topbar
-      if (typeof window.renderTopbar === "function") {
-        window.renderTopbar({
-          containerId: "topbar-container",
-          deckId: deckId
-        });
-      }
+    <!-- Situaciones Amsterdam -->
+    <script src="/js/situaciones/K_ENTRA.js"></script>
 
-      // Initialize America tribuna
-      if (typeof window.AmericaTribuna === "object") {
-        const tribuna = window.AmericaTribuna.init({ deckId, playId });
-        console.log("America tribuna initialized:", tribuna);
 
-        // Load and render play
-        if (playId) {
-          window.AmericaTribuna.loadPlay(playId).then((play) => {
-            if (play) {
-              const contentZone = document.getElementById("tribuna-content");
-              if (contentZone) {
-                contentZone.innerHTML = window.AmericaTribuna.renderTribuna(play);
-              }
-              window.AmericaTribuna.bindActions(play);
+
+    <!-- Tribuna initialization script (future: move to tribuna-core.js) -->
+    <!-- Tribuna initialization script -->
+    <script>
+        (async function () {
+            const API_BASE_URL = "https://cooptrack-backend.onrender.com";
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const playId = urlParams.get("playId");
+            const token = localStorage.getItem("cooptrackToken");
+
+            function escapeHtml(value) {
+                return String(value ?? "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#39;");
             }
-          });
-        }
-      }
-    })();
-  </script>
+
+            function resolveTargetUser(play) {
+                return {
+                    nickname: play?.target_user_nickname || "Invitado",
+                    profile_photo_url:
+                        play?.target_user_profile_photo_url ||
+                        play?.target_profile_photo_url ||
+                        "/assets/icons/singeta120.gif"
+                };
+            }
+
+            function renderSenderCard(play) {
+                const parent = play?.parent_play;
+
+                if (!parent) return "";
+
+                return window.CartaTipo.renderPlayCardBox({
+                    rank: parent.card_rank,
+                    suit: parent.card_suit,
+
+                    title: parent.play_text || "",
+                    play_text: parent.play_text,
+                    start_date: parent.start_date,
+                    end_date: parent.end_date,
+                    location: parent.location,
+
+                    metas: [],
+
+                    ownerUser: null,
+                    ownerCards: [],
+
+                    actionsHtml: ""
+                });
+            }
+
+            function parsePlayCode(code) {
+                const parts = String(code || "").split("§");
+
+                return {
+                    deckId: parts[0] || "",
+                    userId: parts[1] || "",
+                    date: parts[2] || "",
+                    rank: parts[3] || "",
+                    suit: parts[4] || "",
+                    action: parts[5] || "",
+                    authorized: parts[6] || "",
+                    flow: parts[7] || "",
+                    recipients: parts[8] || ""
+                };
+            }
+
+            function parseFlowPayment(flowValue) {
+                const chunks = String(flowValue || "")
+                    .split(";")
+                    .map((item) => item.trim())
+                    .filter(Boolean);
+
+                for (const chunk of chunks) {
+                    if (!chunk.toLowerCase().startsWith("pay:qheart")) continue;
+
+                    const parts = chunk.split("|");
+                    const payment = {};
+
+                    parts.forEach((part, index) => {
+                        if (index === 0) return;
+
+                        const separatorIndex = part.indexOf(":");
+                        if (separatorIndex === -1) return;
+
+                        const key = part.slice(0, separatorIndex).trim();
+                        const value = part.slice(separatorIndex + 1).trim();
+
+                        if (key) payment[key] = value;
+                    });
+
+                    return payment;
+                }
+
+                return null;
+            }
+
+            function renderEconomicCard(play) {
+                const rank = normalizeText(play?.card_rank || play?.rank);
+                const suit = normalizeText(play?.card_suit || play?.suit);
+
+                if (!(rank === "Q" && suit === "SPADE")) return "";
+
+                const parsed = parsePlayCode(play?.play_code);
+                const payment = parseFlowPayment(parsed.flow);
+                console.log("FLOW QQPICA", parsed.flow);
+                console.log("PAYMENT QQPICA", payment);
+                if (!payment) return "";
+
+                const targetUser = resolveTargetUser(play);
+
+                const payerLabel =
+                    String(payment.side || "").toUpperCase() === "AMSTERDAM"
+                        ? targetUser.nickname
+                        : play?.deck_name || "Mazo";
+
+                return window.CartaTipo.renderPlayCardBox({
+                    rank: "Q",
+                    suit: "HEART",
+
+                    title: "",
+
+                    play_text: play.play_text,
+                    start_date: play.start_date,
+                    end_date: play.end_date,
+                    location: play.location,
+
+                    metas: [
+                        { text: payment.concept || "" },
+                        { text: `${payment.currency || ""} ${payment.amount || ""}`.trim() },
+                        { text: payment.payDate || "" }
+                    ].filter((m) => m.text),
+
+                    ownerUser: targetUser,
+                    ownerLabel: `Paga ${payerLabel}`,
+
+                    ownerCards: [],
+                    actionsHtml: renderTargetActions(play),
+
+                    showOwner: true,
+                    showActions: true
+                });
+            }
+
+            function normalizeText(value) {
+                return String(value || "").trim().toUpperCase();
+            }
+
+            function formatTimeLabel(value) {
+                if (!value) return "";
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) return "";
+                return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+            }
+
+            function renderTargetActions(play) {
+                const status = normalizeText(play?.play_status || play?.status);
+
+                if (status !== "SENT" && status !== "PENDING") return "";
+
+                return `
+    <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
+      <img src="/assets/icons/Sello40.gif" alt="Aceptar" />
+    </button>
+
+    <button id="lienzo-reject-btn" class="icon-btn" title="Rechazar">
+      <img src="/assets/icons/stepback40.gif" alt="Rechazar" />
+    </button>
+  `;
+            }
+
+            function renderPlayCardBox(play) {
+                const parent = play?.parent_play || play?.parent || null;
+
+                const title =
+                    parent?.play_text ||
+                    play?.parent_play_text ||
+                    play?.play_text ||
+                    "";
+
+                const spadeMode = normalizeText(parent?.spade_mode || play?.spade_mode);
+                const isDeadline = spadeMode === "DEADLINE";
+
+                const timeValue = isDeadline
+                    ? (parent?.end_date || play?.end_date)
+                    : (parent?.start_date || play?.start_date);
+
+                const location = isDeadline
+                    ? ""
+                    : String(parent?.location || play?.location || "").trim();
+
+                const metas = [
+                    timeValue
+                        ? {
+                            icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
+                            text: formatTimeLabel(timeValue)
+                        }
+                        : null,
+
+                    location
+                        ? {
+                            icon: "/assets/icons/LocGlobito80.gif",
+                            text: location
+                        }
+                        : null
+                ].filter(Boolean);
+
+                return window.CartaTipo.renderPlayCardBox({
+                    rank: play?.card_rank,
+                    suit: play?.card_suit,
+                    title,
+                    status: play?.play_status || "",
+
+                    play_text: title,
+                    start_date: parent?.start_date || play?.start_date || null,
+                    end_date: parent?.end_date || play?.end_date || null,
+                    location,
+
+                    metas,
+                    ownerUser: play.ownerUser || null,
+                    ownerCards: play.ownerCards || [],
+
+                    actionsHtml:
+                        play.actionsHtml !== undefined
+                            ? play.actionsHtml
+                            : renderTargetActions(play),
+
+                    showOwner: play.showOwner ?? false,
+                    showActions: play.showActions ?? true,
+
+                    figureOverrideSrc: play.figureOverrideSrc || ""
+                });
+
+                return `
+    <div class="tribuna-card-fallback">
+      ${escapeHtml(play?.card_rank || "")}${escapeHtml(play?.card_suit || "")}
+    </div>
+  `;
+            }
+
+            function bindTargetActions(play) {
+                const acceptBtn = document.getElementById("lienzo-accept-btn");
+                const rejectBtn = document.getElementById("lienzo-reject-btn");
+
+                if (acceptBtn) {
+                    acceptBtn.addEventListener("click", async () => {
+                        await updatePlayStatus(play, "APPROVED");
+                    });
+                }
+
+                if (rejectBtn) {
+                    rejectBtn.addEventListener("click", async () => {
+                        await updatePlayStatus(play, "REJECTED");
+                    });
+                }
+            }
+
+window.bindAmsterdamTargetActions = bindTargetActions;
+            
+        function isMobileViewport() {
+                return window.matchMedia("(max-width: 900px)").matches;
+            }
+
+            function resolveAfterAmsterdamActionUrl(play, status) {
+                const deckId = Number(play?.deck_id || 0);
+                const rank = normalizeText(play?.card_rank || play?.rank);
+                const suit = normalizeText(play?.card_suit || play?.suit);
+                const normalizedStatus = normalizeText(status);
+
+                const deckQuery = deckId ? `?id=${deckId}` : "";
+
+                if (!isMobileViewport()) {
+                    return `/mazo.html${deckQuery}`;
+                }
+
+                // Todo rechazo va al archivo
+                if (
+                    ["REJECTED", "CANCELLED", "QUIT", "FIRED"].includes(normalizedStatus)
+                ) {
+                    return deckId
+                        ? `/mazoArchivo.html?id=${deckId}`
+                        : "/archivo.html";
+                }
+
+                if (rank === "Q" && suit === "SPADE") {
+                    return "/almanaque.html";
+                }
+
+                if (rank === "K") {
+                    return `/mazo.html${deckQuery}`;
+                }
+
+                if (rank === "A") {
+                    return `/mazoAdministradores.html${deckQuery}`;
+                }
+
+                return `/mazo.html${deckQuery}`;
+            }
+
+async function updatePlayStatus(play, status) {
+  const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      play_status: status
+    })
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok || !data?.ok) {
+    alert("No se pudo actualizar la jugada.");
+    return;
+  }
+
+  window.location.href =
+    resolveAfterAmsterdamActionUrl(play, status);
+}
+
+
+
+            function renderTribunaPlacard(play, deckState) {
+                const host = document.getElementById("tribuna-placard");
+                if (!host || typeof window.renderPlacard !== "function") return;
+
+                const parent = play?.parent_play || null;
+                const deck = deckState?.mazo || deckState?.deck || {};
+
+                window.renderPlacard(host, {
+                    page: "tribuna-amsterdam",
+                    mode: "AMSTERDAM",
+                    play,
+                    currentUserId: Number(play?.target_user_id || 0),
+
+                    deckId: play?.deck_id,
+                    deck,
+                    mazo: deck,
+
+                    photoUrl: deck?.deck_image_url || play?.deck_image_url || "",
+                    rank: "A",
+                    suit: "HEART",
+                    title: deck?.name || play?.deck_name || "Mazo",
+
+                    showCurrency: false,
+                    leftCards: [],
+                    plays: Array.isArray(deckState?.plays)
+                        ? deckState.plays
+                        : [parent, play].filter(Boolean)
+                });
+            }
+
+            async function loadPlay() {
+                if (!playId) {
+                    document.getElementById("tribuna-content").innerHTML =
+                        `<div class="tribuna-error">Falta playId.</div>`;
+                    return;
+                }
+
+                if (!token) {
+                    document.getElementById("tribuna-content").innerHTML =
+                        `<div class="tribuna-error">Falta sesión activa.</div>`;
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.ok || !data.play) {
+                    document.getElementById("tribuna-content").innerHTML =
+                        `<div class="tribuna-error">No se pudo cargar la jugada.</div>`;
+                    return;
+                }
+                let play = data.play;
+                let deckState = null;
+                let parentOwner = null;
+
+                const stateResponse = await fetch(`${API_BASE_URL}/mazos/${play.deck_id}/state`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+
+                const stateData = await stateResponse.json().catch(() => null);
+
+                if (stateResponse.ok && stateData?.ok) {
+                    deckState = stateData;
+                }
+
+                if (play.parent_play_id) {
+                    const parentResponse = await fetch(`${API_BASE_URL}/plays/${play.parent_play_id}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+
+                    const parentData = await parentResponse.json();
+
+                    if (parentResponse.ok && parentData.ok && parentData.play) {
+                        play = {
+                            ...play,
+                            parent_play: parentData.play
+                        };
+                    }
+                    parentOwner = deckState?.users?.find(
+                        (u) => Number(u.id) === Number(play.parent_play?.created_by_user_id)
+                    );
+
+                    console.log("PARENT OWNER", parentOwner);
+                    console.log("DECK STATE", deckState);
+                    console.log("DECK USERS", deckState?.users);
+                }
+                console.log("QPICA_ENTRA cargado:", window.QPICA_ENTRA);
+                const html = window.QPICA_ENTRA.render({
+                    play,
+                    parentOwner,
+                    helpers: {
+                        renderPlayCardBox,
+                        escapeHtml
+                    }
+                });
+
+                document.getElementById("tribuna-content").innerHTML = html;
+                if (window.QPICA_ENTRA?.start) {
+                    console.log("VOY A EJECUTAR START");
+                    window.QPICA_ENTRA.start(play);
+                }
+                if (typeof window.enableAmsterdamPeek === "function") {
+                    window.enableAmsterdamPeek();
+                }
+                renderTribunaPlacard(play, deckState);
+                bindTargetActions(play);
+            }
+
+            await loadPlay();
+        })();
+    </script>
 </body>
 
 </html>
