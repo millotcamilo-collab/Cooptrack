@@ -757,7 +757,6 @@ ${isAdminPage
 
             <div class="mazobar__top-center">
               <div class="mazobar__titleline">
-                <span class="mazobar__title-rank">A</span>
                 <span class="mazobar__title-suit" aria-hidden="true">♥</span>
                 <span class="mazobar__title-name">${deckName}</span>
                 <span class="mazobar__balance-icon" aria-hidden="true">♦</span>
