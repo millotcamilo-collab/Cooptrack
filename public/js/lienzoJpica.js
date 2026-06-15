@@ -420,6 +420,61 @@ leftCards: [],
     window.location.reload();
   }
 
+  async function createJcorazonFromJpica(parentPlay) {
+  const token = localStorage.getItem("cooptrackToken");
+  const deckId = Number(getCurrentDeck()?.id || parentPlay?.deck_id || 0);
+  const userId = Number(
+    window.__currentUser?.id ||
+    window.__currentState?.userId ||
+    window.__currentState?.currentUser?.id ||
+    0
+  );
+
+  if (!token || !deckId || !userId || !parentPlay?.id) {
+    alert("Faltan datos para crear la J♥.");
+    return;
+  }
+
+  const when = new Date().toISOString();
+
+  const playCode = [
+    deckId,
+    userId,
+    when,
+    "J",
+    "HEART",
+    "create_child",
+    `U:${userId}`,
+    `child_of:${parentPlay.id}`,
+    `U:${userId}`
+  ].join("§");
+
+  const response = await fetch("/plays", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      deck_id: deckId,
+      parent_play_id: parentPlay.id,
+      play_code: playCode,
+      text: "",
+      play_status: "ACTIVE"
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    console.error("Error creando J♥:", data);
+    alert(data?.error || "No se pudo crear la J♥.");
+    return;
+  }
+
+  window.location.reload();
+}
+
   function mountUsersPickerForQpica(parentPlay) {
     if (typeof window.renderUsersPicker !== "function") {
       console.warn("users.js no está cargado");
@@ -458,9 +513,9 @@ extraActions: [
           createJtrebolFromJpica(parentPlay);
         }
 
-  if (actionId === "jheart") {
-    alert("Próximamente J♥ hija de J♠");
-  }
+if (actionId === "jheart") {
+  createJcorazonFromJpica(parentPlay);
+}
 
         if (actionId === "publish") {
           publishSimple(parentPlay);
@@ -555,6 +610,22 @@ onAnimateSelect(user) {
                           }
                         });
                       }
+
+if (
+  rank === "J" &&
+  suit === "HEART" &&
+  typeof window.renderJcorazon === "function"
+) {
+  return window.renderJcorazon(child, {
+    deck: getCurrentDeck(),
+    state: getCurrentState(),
+    helpers: {
+      escapeHtml,
+      formatDate: formatTime,
+      getCardLabel: () => "J♥"
+    }
+  });
+}
 
                       return "";
 
