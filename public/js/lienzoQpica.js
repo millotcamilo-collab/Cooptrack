@@ -1682,38 +1682,46 @@ ${qHeartMode
 
 
         ${parentJSpadeText
-                ? window.CartaTipo.renderPlayCardBox({
-                    rank: "J",
-                    suit: "SPADE",
-                    title: parentJSpadeText,
-                    play_text: parentPlay?.play_text || "",
-                    start_date: parentPlay?.start_date || null,
-                    end_date: parentPlay?.end_date || null,
-                    location: parentPlay?.location || "",
-                    dayItems: getDayItemsForPlay(parentPlay || play),
-                    ownerUser: user,
-                    ownerCards: getCorporateCardsForCurrentUser(
-                        getAllPlays(),
-                        Number(user?.id || 0)
-                    ),
-                    metas: [
-                        parentPlay?.start_date
-                            ? {
-                                icon: "/assets/icons/reloj60.gif",
-                                text: formatTimeLabel(parentPlay.start_date)
-                            }
-                            : null,
-                        parentPlay?.location
-                            ? {
-                                icon: "/assets/icons/LocGlobito80.gif",
-                                text: parentPlay.location
-                            }
-                            : null
-                    ].filter(Boolean)
-                })
-                : ""
-            }
-
+  ? `
+    <button
+      type="button"
+      class="lienzo-parent-jpica-btn"
+      onclick="window.location.href='/lienzoJpica.html?deckId=${Number(play?.deck_id || getCurrentDeck()?.id || 0)}&playId=${Number(parentPlay?.id || play?.parent_play_id || 0)}'"
+      title="Abrir J♠"
+    >
+      ${window.CartaTipo.renderPlayCardBox({
+        rank: "J",
+        suit: "SPADE",
+        title: parentJSpadeText,
+        play_text: parentPlay?.play_text || "",
+        start_date: parentPlay?.start_date || null,
+        end_date: parentPlay?.end_date || null,
+        location: parentPlay?.location || "",
+        dayItems: getDayItemsForPlay(parentPlay || play),
+        ownerUser: user,
+        ownerCards: getCorporateCardsForCurrentUser(
+          getAllPlays(),
+          Number(user?.id || 0)
+        ),
+        metas: [
+          parentPlay?.start_date
+            ? {
+                icon: "/assets/icons/reloj60.gif",
+                text: formatTimeLabel(parentPlay.start_date)
+              }
+            : null,
+          parentPlay?.location
+            ? {
+                icon: "/assets/icons/LocGlobito80.gif",
+                text: parentPlay.location
+              }
+            : null
+        ].filter(Boolean)
+      })}
+    </button>
+  `
+  : ""
+}
   ${qHeartBoxHtml}
 </div>
 
