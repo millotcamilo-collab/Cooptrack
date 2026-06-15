@@ -86,8 +86,8 @@
 
     const label = `${rank}${labelMap[suit] || ""}`;
 
-if (rank === "Q" && suit === "HEART") {
-  return `
+    if (rank === "Q" && suit === "HEART") {
+      return `
     <div
       class="placard__qheart-card placard__qheart-card--pulse"
       title="${escapeHtml(label)}"
@@ -112,7 +112,7 @@ if (rank === "Q" && suit === "HEART") {
       </div>
     </div>
   `;
-}
+    }
 
     if (src) {
       return `
@@ -421,6 +421,9 @@ if (rank === "Q" && suit === "HEART") {
       return getQQpicaHeadline(config);
     }
 
+    if (page === "lienzo-jpica") {
+      return "";
+    }
     // 👇 RQF primero y dinámico por tipo de carta
     if (page === "lienzo-rqf") {
       const rank = String(config?.play?.card_rank || "").trim().toUpperCase();
@@ -485,22 +488,33 @@ if (rank === "Q" && suit === "HEART") {
       config?.leftCardsHtml || buildTopCardsHTML(config?.leftCards || [])
     );
 
-    function getApprovedJHeartTexts(plays) {
-      if (!Array.isArray(plays)) return [];
+function getApprovedJHeartTexts(plays, parentPlayId = null) {
+  if (!Array.isArray(plays)) return [];
 
-      return plays
-        .filter((p) => {
-          const rank = String(p?.card_rank || "").toUpperCase();
-          const suit = String(p?.card_suit || "").toUpperCase();
-          const status = String(p?.play_status || "").toUpperCase();
+  return plays
+    .filter((p) => {
+      const rank = String(p?.card_rank || "").toUpperCase();
+      const suit = String(p?.card_suit || "").toUpperCase();
+      const status = String(p?.play_status || "").toUpperCase();
 
-          return rank === "J" && suit === "HEART" && status === "APPROVED";
-        })
-        .map((p) => String(p?.play_text || "").trim())
-        .filter(Boolean);
-    }
+      if (rank !== "J" || suit !== "HEART" || status !== "APPROVED") {
+        return false;
+      }
 
-    const jHeartTexts = getApprovedJHeartTexts(config?.plays || []);
+      if (parentPlayId) {
+        return Number(p?.parent_play_id || 0) === Number(parentPlayId);
+      }
+
+      return true;
+    })
+    .map((p) => String(p?.play_text || "").trim())
+    .filter(Boolean);
+}
+
+    const jHeartTexts = getApprovedJHeartTexts(
+  config?.plays || [],
+  config?.page === "lienzo-jpica" ? config?.play?.id : null
+);
 
     let subtitleHtml = "";
 
