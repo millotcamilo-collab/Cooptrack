@@ -198,9 +198,7 @@ ${parent ? helpers.renderPlayCardBox({
 
 </div>
                 
-              <div id="qpica-week-container" class="qpica-week-container">
-  ${this.renderMiniDay(parent || play)}
-</div>
+
 
             </div>
 
@@ -243,9 +241,7 @@ ${helpers.renderPlayCardBox({
     })}
     </div>
 
-    <div id="qpica-week-container" class="qpica-week-container">
-  ${this.renderMiniDay(parent || play)}
-</div>
+
   `;
   },
 
