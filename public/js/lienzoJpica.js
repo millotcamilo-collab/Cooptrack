@@ -441,23 +441,33 @@ function canLaunchQspade(play) {
       childSuit: "SPADE",
       plays: getAllPlays(),
 
-      extraActions: [
-        {
-          id: "jclub",
-          label: "J♣",
-          title: "Crear J♣"
-        },
-        {
-          id: "publish",
-          title: "Publicar",
-          icon: "/assets/icons/Extra120.gif"
-        }
-      ],
+extraActions: [
+  {
+    id: "publish",
+    title: "Publicar",
+    icon: "/assets/icons/Extra120.gif",
+    plain: true
+  },
+  {
+    id: "jclub",
+    label: "J♣",
+    title: "Crear J♣"
+  },
+  {
+    id: "jheart",
+    label: "J♥",
+    title: "Crear J♥"
+  }
+],
 
       onExtraAction(actionId) {
         if (actionId === "jclub") {
           createJtrebolFromJpica(parentPlay);
         }
+
+  if (actionId === "jheart") {
+    alert("Próximamente J♥ hija de J♠");
+  }
 
         if (actionId === "publish") {
           publishSimple(parentPlay);
@@ -495,7 +505,9 @@ onAnimateSelect(user) {
 
         <div class="lienzo-jpica-panel">
 
-          <div id="jpica-users-picker" class="jpica-users-picker"></div>
+          <div class="jpica-users-header">
+  <div id="jpica-users-picker" class="jpica-users-picker"></div>
+</div>
 
           <div class="lienzo-jpica-invitations-list tablero">
 

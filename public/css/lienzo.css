@@ -412,8 +412,15 @@ min-height: var(--lv2-tribune-h);
 
 .lienzo-jpica-panel {
   width: 100%;
+  background: transparent;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.jpica-users-header {
   background: #ffffff;
   border-radius: 8px;
   padding: 8px;
+  margin-bottom: 8px;
   box-sizing: border-box;
 }

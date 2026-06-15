@@ -567,7 +567,7 @@ ${Array.isArray(options.extraActions)
   ? options.extraActions.map((action) => `
       <button
         type="button"
-        class="users-picker__extra-btn"
+        class="${action.plain ? "users-picker__icon-btn" : "users-picker__extra-btn"}"
         data-users-extra-action="${action.id}"
         title="${action.title || ""}"
       >
