@@ -189,9 +189,30 @@
         .filter((play) => play.pendingKind === "ACTION_REQUIRED")
         .sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
 
-      const readOnly = candidates
-        .filter((play) => play.pendingKind === "READ_ONLY")
-        .sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+const readOnlyRaw = candidates
+  .filter((play) => play.pendingKind === "READ_ONLY")
+  .sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+
+const seenQpicaParents = new Set();
+
+const readOnly = readOnlyRaw.filter((play) => {
+  const rank = normalizeText(play?.card_rank || play?.rank);
+  const suit = normalizeText(play?.card_suit || play?.suit);
+  const parentId = Number(play?.parent_play_id || 0);
+
+  if (rank === "Q" && suit === "SPADE" && parentId) {
+    const key = `QSPADE_PARENT_${parentId}`;
+
+    if (seenQpicaParents.has(key)) {
+      return false;
+    }
+
+    seenQpicaParents.add(key);
+    return true;
+  }
+
+  return true;
+});
 
       return {
         latestActionRequired: actionRequired[0] || null,
