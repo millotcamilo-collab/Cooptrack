@@ -50,20 +50,20 @@
       minute: "2-digit"
     });
   }
-function canLaunchQspade(play) {
-  const limitValue = play?.end_date || play?.start_date;
-  if (!limitValue) return false;
+  function canLaunchQspade(play) {
+    const limitValue = play?.end_date || play?.start_date;
+    if (!limitValue) return false;
 
-  const limit = new Date(limitValue);
+    const limit = new Date(limitValue);
 
-  if (Number.isNaN(limit.getTime())) {
-    return false;
+    if (Number.isNaN(limit.getTime())) {
+      return false;
+    }
+
+    const margen = 30 * 60 * 1000;
+
+    return (limit.getTime() + margen) > Date.now();
   }
-
-  const margen = 30 * 60 * 1000;
-
-  return (limit.getTime() + margen) > Date.now();
-}
   function getSourceUser(play) {
     return {
       id: play.created_by_user_id,
@@ -164,13 +164,14 @@ function canLaunchQspade(play) {
     if (!host || typeof window.renderPlacard !== "function") return;
 
     window.renderPlacard(host, {
-      page: "lienzo-new",
+      page: "lienzo-jpica",
+      play,
       photoUrl: host.dataset.photoUrl,
       title: host.dataset.title,
       rank: "A",
       suit: "HEART",
       showCurrency: false,
-leftCards: [],
+      leftCards: [],
       plays: getAllPlays()
     });
   }
@@ -421,58 +422,72 @@ leftCards: [],
   }
 
   async function createJcorazonFromJpica(parentPlay) {
-  const token = localStorage.getItem("cooptrackToken");
-  const deckId = Number(getCurrentDeck()?.id || parentPlay?.deck_id || 0);
-  const userId = Number(
-    window.__currentUser?.id ||
-    window.__currentState?.userId ||
-    window.__currentState?.currentUser?.id ||
-    0
-  );
+    const token = localStorage.getItem("cooptrackToken");
+    const deckId = Number(getCurrentDeck()?.id || parentPlay?.deck_id || 0);
+    const userId = Number(
+      window.__currentUser?.id ||
+      window.__currentState?.userId ||
+      window.__currentState?.currentUser?.id ||
+      0
+    );
 
-  if (!token || !deckId || !userId || !parentPlay?.id) {
-    alert("Faltan datos para crear la J♥.");
-    return;
+    if (!token || !deckId || !userId || !parentPlay?.id) {
+      alert("Faltan datos para crear la J♥.");
+      return;
+    }
+
+    const when = new Date().toISOString();
+
+    const playCode = [
+      deckId,
+      userId,
+      when,
+      "J",
+      "HEART",
+      "create_child",
+      `U:${userId}`,
+      `child_of:${parentPlay.id}`,
+      `U:${userId}`
+    ].join("§");
+
+    const response = await fetch("/plays", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        deck_id: deckId,
+        parent_play_id: parentPlay.id,
+        play_code: playCode,
+        text: "",
+        play_status: "ACTIVE"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error creando J♥:", data);
+      alert(data?.error || "No se pudo crear la J♥.");
+      return;
+    }
+
+    window.location.reload();
   }
-
-  const when = new Date().toISOString();
-
-  const playCode = [
-    deckId,
-    userId,
-    when,
-    "J",
-    "HEART",
-    "create_child",
-    `U:${userId}`,
-    `child_of:${parentPlay.id}`,
-    `U:${userId}`
-  ].join("§");
-
-  const response = await fetch("/plays", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({
-      deck_id: deckId,
-      parent_play_id: parentPlay.id,
-      play_code: playCode,
-      text: "",
-      play_status: "ACTIVE"
-    })
+  
+function bindJpicaChildHeader(parentPlay) {
+  document.getElementById("jpica-toggle-users-btn")?.addEventListener("click", () => {
+    document.getElementById("jpica-users-picker")?.classList.toggle("is-hidden");
   });
 
-  const data = await response.json();
+  document.getElementById("jpica-create-jclub-btn")?.addEventListener("click", () => {
+    createJtrebolFromJpica(parentPlay);
+  });
 
-  if (!response.ok || !data.ok) {
-    console.error("Error creando J♥:", data);
-    alert(data?.error || "No se pudo crear la J♥.");
-    return;
-  }
-
-  window.location.reload();
+  document.getElementById("jpica-create-jheart-btn")?.addEventListener("click", () => {
+    createJcorazonFromJpica(parentPlay);
+  });
 }
 
   function mountUsersPickerForQpica(parentPlay) {
@@ -489,62 +504,44 @@ leftCards: [],
       childSuit: "SPADE",
       plays: getAllPlays(),
 
-extraActions: [
-  {
-    id: "publish",
-    title: "Publicar",
-    icon: "/assets/icons/Extra120.gif",
-    plain: true
-  },
-  {
-    id: "jclub",
-    label: "J♣",
-    title: "Crear J♣"
-  },
-  {
-    id: "jheart",
-    label: "J♥",
-    title: "Crear J♥"
-  }
-],
-
       onExtraAction(actionId) {
         if (actionId === "jclub") {
           createJtrebolFromJpica(parentPlay);
         }
 
-if (actionId === "jheart") {
-  createJcorazonFromJpica(parentPlay);
-}
+        if (actionId === "jheart") {
+          createJcorazonFromJpica(parentPlay);
+        }
 
         if (actionId === "publish") {
           publishSimple(parentPlay);
         }
       },
 
-onAnimateSelect(user) {
-  if (!canLaunchQspade(parentPlay)) {
-    alert("Ya no se pueden agregar invitaciones a esta actividad.");
-    return;
-  }
+      onAnimateSelect(user) {
+        if (!canLaunchQspade(parentPlay)) {
+          alert("Ya no se pueden agregar invitaciones a esta actividad.");
+          return;
+        }
 
-  createQpicaFromUser(parentPlay, user);
-}
+        createQpicaFromUser(parentPlay, user);
+        bindJpicaChildHeader(play);
+      }
     });
   }
 
   function renderAmsterdam(play) {
-  const childPlays = getAllPlays()
-    .filter(
-      (p) => Number(p?.parent_play_id || 0) === Number(play.id)
-    )
-    .sort(
-      (a, b) =>
-        new Date(a.created_at || 0) -
-        new Date(b.created_at || 0)
-    );
+    const childPlays = getAllPlays()
+      .filter(
+        (p) => Number(p?.parent_play_id || 0) === Number(play.id)
+      )
+      .sort(
+        (a, b) =>
+          new Date(a.created_at || 0) -
+          new Date(b.created_at || 0)
+      );
 
-  return `
+    return `
     <section class="lienzo-tribune lienzo-tribune--target">
 
       <div class="lienzo-tribune__corporates"></div>
@@ -553,90 +550,95 @@ onAnimateSelect(user) {
 
         <div class="lienzo-jpica-panel">
 
-          <div class="jpica-users-header">
-  <div id="jpica-users-picker" class="jpica-users-picker"></div>
+<div class="jpica-users-header">
+  <div class="jpica-child-actions">
+    <button type="button" id="jpica-toggle-users-btn" class="jpica-child-btn">Q♠</button>
+    <button type="button" id="jpica-create-jclub-btn" class="jpica-child-btn">J♣</button>
+    <button type="button" id="jpica-create-jheart-btn" class="jpica-child-btn jpica-child-btn--heart">J♥</button>
+  </div>
+
+  <div id="jpica-users-picker" class="jpica-users-picker is-hidden"></div>
 </div>
 
           <div class="lienzo-jpica-invitations-list tablero">
 
-            ${
-              childPlays.length
-                ? childPlays
-                    .map((child) => {
+            ${childPlays.length
+        ? childPlays
+          .map((child) => {
 
-                      const rank = normalizeRank(
-                        child?.card_rank || child?.rank
-                      );
+            const rank = normalizeRank(
+              child?.card_rank || child?.rank
+            );
 
-                      const suit = normalizeSuit(
-                        child?.card_suit || child?.suit
-                      );
+            const suit = normalizeSuit(
+              child?.card_suit || child?.suit
+            );
 
-                      if (
-                        rank === "Q" &&
-                        suit === "SPADE" &&
-                        typeof window.renderQpike === "function"
-                      ) {
-                        return `
+            if (
+              rank === "Q" &&
+              suit === "SPADE" &&
+              typeof window.renderQpike === "function"
+            ) {
+              return `
                           <div
                             class="jpica-q-row"
                             data-play-id="${child.id}"
                           >
                             ${window.renderQpike(child, {
-                              deck: getCurrentDeck(),
-                              state: getCurrentState(),
-                              helpers: {
-                                escapeHtml,
-                                formatDate: formatTime,
-                                getCardLabel: () => "Q♠"
-                              }
-                            })}
+                deck: getCurrentDeck(),
+                state: getCurrentState(),
+                helpers: {
+                  escapeHtml,
+                  formatDate: formatTime,
+                  getCardLabel: () => "Q♠"
+                }
+              })}
                           </div>
                         `;
-                      }
+            }
 
-                      if (
-                        rank === "J" &&
-                        suit === "CLUB" &&
-                        typeof window.renderJtrebol === "function"
-                      ) {
-                        return window.renderJtrebol(child, {
-                          deck: getCurrentDeck(),
-                          state: getCurrentState(),
-                          helpers: {
-                            escapeHtml,
-                            formatDate: formatTime,
-                            getCardLabel: () => "J♣"
-                          }
-                        });
-                      }
+            if (
+              rank === "J" &&
+              suit === "CLUB" &&
+              typeof window.renderJtrebol === "function"
+            ) {
+              return window.renderJtrebol(child, {
+                deck: getCurrentDeck(),
+                state: getCurrentState(),
+                helpers: {
+                  escapeHtml,
+                  formatDate: formatTime,
+                  getCardLabel: () => "J♣"
+                }
+              });
+            }
 
-if (
-  rank === "J" &&
-  suit === "HEART" &&
-  typeof window.renderJcorazon === "function"
-) {
-  return window.renderJcorazon(child, {
-    deck: getCurrentDeck(),
-    state: getCurrentState(),
-    helpers: {
-      escapeHtml,
-      formatDate: formatTime,
-      getCardLabel: () => "J♥"
-    }
-  });
-}
+            if (
+              rank === "J" &&
+              suit === "HEART" &&
+              typeof window.renderJcorazon === "function"
+            ) {
+              return window.renderJcorazon(child, {
+                deck: getCurrentDeck(),
+                state: getCurrentState(),
+                helpers: {
+                  escapeHtml,
+                  formatDate: formatTime,
+                  getCardLabel: () => "J♥"
+                }
+              });
+            }
 
-                      return "";
+            return "";
 
-                    })
-                    .join("")
-                : `
+          })
+          .join("")
+        : `
                     <div class="lienzo-jpica-empty">
                       Todavía no hay invitaciones.
                     </div>
                   `
-            }
+      }
 
           </div>
 
@@ -646,7 +648,7 @@ if (
 
     </section>
   `;
-}
+  }
 
   async function publishSimple(play) {
     const token = localStorage.getItem("cooptrackToken");
@@ -688,110 +690,110 @@ if (
     });
   }
 
-async function patchJtrebol(playId, payload) {
-  const token = localStorage.getItem("cooptrackToken");
+  async function patchJtrebol(playId, payload) {
+    const token = localStorage.getItem("cooptrackToken");
 
-  if (!token) {
-    alert("No estás logueado");
-    return false;
-  }
-
-  const response = await fetch(`/plays/${playId}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await response.json();
-
-  if (!response.ok || !data.ok) {
-    console.error("Error actualizando J♣:", data);
-    alert(data?.error || "No se pudo actualizar la J♣.");
-    return false;
-  }
-
-  return true;
-}
-
-async function deleteJtrebol(playId) {
-  const token = localStorage.getItem("cooptrackToken");
-
-  if (!token) {
-    alert("No estás logueado");
-    return false;
-  }
-
-  const response = await fetch(`/plays/${playId}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`
+    if (!token) {
+      alert("No estás logueado");
+      return false;
     }
-  });
 
-  const data = await response.json();
-
-  if (!response.ok || !data.ok) {
-    console.error("Error borrando J♣:", data);
-    alert(data?.error || "No se pudo borrar la J♣.");
-    return false;
-  }
-
-  return true;
-}
-
-function bindJtrebolEventsInLienzo() {
-
-  document.addEventListener("tablero:save-play", async (event) => {
-    const {
-      playId,
-      text,
-      amount
-    } = event.detail || {};
-
-    const ok = await patchJtrebol(playId, {
-      text,
-      amount
+    const response = await fetch(`/plays/${playId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
     });
 
-    if (ok) {
-      window.location.reload();
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error actualizando J♣:", data);
+      alert(data?.error || "No se pudo actualizar la J♣.");
+      return false;
     }
-  });
 
-  document.addEventListener("tablero:approve-play", async (event) => {
-    const {
-      playId,
-      text,
-      amount
-    } = event.detail || {};
+    return true;
+  }
 
-    const ok = await patchJtrebol(playId, {
-      text,
-      amount,
-      play_status: "APPROVED"
+  async function deleteJtrebol(playId) {
+    const token = localStorage.getItem("cooptrackToken");
+
+    if (!token) {
+      alert("No estás logueado");
+      return false;
+    }
+
+    const response = await fetch(`/plays/${playId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     });
 
-    if (ok) {
-      window.location.reload();
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error borrando J♣:", data);
+      alert(data?.error || "No se pudo borrar la J♣.");
+      return false;
     }
-  });
 
-  document.addEventListener("tablero:delete-play", async (event) => {
-    const playId = Number(event?.detail?.playId || 0);
+    return true;
+  }
 
-    if (!playId) return;
+  function bindJtrebolEventsInLienzo() {
 
-    const ok = await deleteJtrebol(playId);
+    document.addEventListener("tablero:save-play", async (event) => {
+      const {
+        playId,
+        text,
+        amount
+      } = event.detail || {};
 
-    if (ok) {
-      window.location.reload();
-    }
-  });
+      const ok = await patchJtrebol(playId, {
+        text,
+        amount
+      });
 
-}
+      if (ok) {
+        window.location.reload();
+      }
+    });
+
+    document.addEventListener("tablero:approve-play", async (event) => {
+      const {
+        playId,
+        text,
+        amount
+      } = event.detail || {};
+
+      const ok = await patchJtrebol(playId, {
+        text,
+        amount,
+        play_status: "APPROVED"
+      });
+
+      if (ok) {
+        window.location.reload();
+      }
+    });
+
+    document.addEventListener("tablero:delete-play", async (event) => {
+      const playId = Number(event?.detail?.playId || 0);
+
+      if (!playId) return;
+
+      const ok = await deleteJtrebol(playId);
+
+      if (ok) {
+        window.location.reload();
+      }
+    });
+
+  }
 
   function renderLienzoJpica(play) {
     const container = getLienzoContainer();

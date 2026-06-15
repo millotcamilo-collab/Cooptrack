@@ -440,3 +440,28 @@ min-height: var(--lv2-tribune-h);
 .lienzo-parent-jpica-btn:hover {
   transform: scale(1.01);
 }
+
+.jpica-users-picker.is-hidden {
+  display: none;
+}
+
+.jpica-child-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jpica-child-btn {
+  min-width: 44px;
+  min-height: 36px;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  background: #fff;
+  color: #111;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.jpica-child-btn--heart {
+  color: #c00000;
+}
