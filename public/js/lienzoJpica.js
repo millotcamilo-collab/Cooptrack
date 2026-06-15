@@ -612,34 +612,109 @@ onAnimateSelect(user) {
     });
   }
 
-function bindJtrebolEventsInLienzo() {
-  document.addEventListener("tablero:delete-play", async (event) => {
-    const playId = Number(event?.detail?.playId || 0);
-    if (!playId) return;
+async function patchJtrebol(playId, payload) {
+  const token = localStorage.getItem("cooptrackToken");
 
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) {
-      alert("No estás logueado");
-      return;
+  if (!token) {
+    alert("No estás logueado");
+    return false;
+  }
+
+  const response = await fetch(`/plays/${playId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    console.error("Error actualizando J♣:", data);
+    alert(data?.error || "No se pudo actualizar la J♣.");
+    return false;
+  }
+
+  return true;
+}
+
+async function deleteJtrebol(playId) {
+  const token = localStorage.getItem("cooptrackToken");
+
+  if (!token) {
+    alert("No estás logueado");
+    return false;
+  }
+
+  const response = await fetch(`/plays/${playId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`
     }
+  });
 
-    const response = await fetch(`/plays/${playId}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    console.error("Error borrando J♣:", data);
+    alert(data?.error || "No se pudo borrar la J♣.");
+    return false;
+  }
+
+  return true;
+}
+
+function bindJtrebolEventsInLienzo() {
+
+  document.addEventListener("tablero:save-play", async (event) => {
+    const {
+      playId,
+      text,
+      amount
+    } = event.detail || {};
+
+    const ok = await patchJtrebol(playId, {
+      text,
+      amount
     });
 
-    const data = await response.json();
-
-    if (!response.ok || !data.ok) {
-      console.error("Error borrando J♣:", data);
-      alert(data?.error || "No se pudo borrar la J♣.");
-      return;
+    if (ok) {
+      window.location.reload();
     }
-
-    window.location.reload();
   });
+
+  document.addEventListener("tablero:approve-play", async (event) => {
+    const {
+      playId,
+      text,
+      amount
+    } = event.detail || {};
+
+    const ok = await patchJtrebol(playId, {
+      text,
+      amount,
+      play_status: "APPROVED"
+    });
+
+    if (ok) {
+      window.location.reload();
+    }
+  });
+
+  document.addEventListener("tablero:delete-play", async (event) => {
+    const playId = Number(event?.detail?.playId || 0);
+
+    if (!playId) return;
+
+    const ok = await deleteJtrebol(playId);
+
+    if (ok) {
+      window.location.reload();
+    }
+  });
+
 }
 
   function renderLienzoJpica(play) {
