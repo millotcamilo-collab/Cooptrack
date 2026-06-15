@@ -273,3 +273,7 @@
   max-height: 24px;
 }
 
+.users-picker__extra-btn--heart {
+  color: #cc0000;
+}
+

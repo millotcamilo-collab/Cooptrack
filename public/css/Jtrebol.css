@@ -11,6 +11,14 @@
   box-sizing: border-box;
 }
 
+.tablero-row--jtrebol {
+  color: #111;
+}
+
+.tablero-row--jtrebol * {
+  color: inherit;
+}
+
 .tablero-row--jtrebol .tablero-row__left {
   justify-content: center;
   align-items: center;

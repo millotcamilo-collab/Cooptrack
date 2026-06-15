@@ -207,3 +207,12 @@
   gap: 8px;
   white-space: nowrap;
 }
+
+.lienzo-jpica-invitations-list .tablero-row--qpike {
+  background: #fffdf8 !important;
+  color: #111 !important;
+}
+
+.lienzo-jpica-invitations-list .tablero-row--qpike * {
+  color: inherit;
+}
