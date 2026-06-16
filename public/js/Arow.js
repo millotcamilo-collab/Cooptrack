@@ -20,6 +20,22 @@
     ).toUpperCase();
   }
 
+function buildKeyUrl(play, context) {
+  const playId = Number(play?.id || 0);
+  const deckId = resolveDeckId(play, context);
+  const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
+
+  if (!playId || !deckId || !suit) return "";
+
+  return (
+    `/lienzo-new-k.html` +
+    `?deckId=${deckId}` +
+    `&parentPlayId=${playId}` +
+    `&childRank=K` +
+    `&childSuit=${encodeURIComponent(suit)}`
+  );
+}
+
   function getOwnerNickname(play) {
     return (
       play?.targetNickname ||
@@ -351,6 +367,18 @@
         window.location.href = url;
       }
 
+const keyBtn = row.querySelector("[data-ace-key-btn]");
+
+if (keyBtn) {
+  keyBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const url = buildKeyUrl(play, context);
+    if (url) window.location.href = url;
+  });
+}
+
       row.addEventListener("click", openLienzo);
 
       row.addEventListener("keydown", (event) => {
@@ -410,6 +438,20 @@ ${transferPending ? `
   </div>
 `}
         </div>
+        <div class="tablero-row__actions">
+
+    <button
+      type="button"
+      class="admin-row__key-btn"
+      data-ace-key-btn
+      title="Entregar llave"
+    >
+      <img src="/assets/icons/Llave.png" alt="Llave" />
+    </button>
+
+  </div>
+
+</article>
       </article>
     `;
   }
