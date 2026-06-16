@@ -331,3 +331,20 @@
   cursor: pointer;
   font: inherit;
 }
+
+.admin-row__key-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-row__key-btn img {
+  display: block;
+  height: 25px;
+  width: auto;
+}
