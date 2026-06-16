@@ -1,35 +1,31 @@
 window.K_ENTRA = {
   render(ctx) {
-const { play, helpers } = ctx;
+    const { play, helpers } = ctx;
 
-const senderNick =
-  play?.created_by_nickname ||
-  "Remitente";
+    const senderNick =
+      play?.created_by_nickname ||
+      "Remitente";
 
-const issuedWith = Array.isArray(play?.issued_with)
-  ? play.issued_with
-  : [];
+    const issuedWith = Array.isArray(play?.issued_with)
+      ? play.issued_with
+      : [];
 
-const senderCards = issuedWith
-  .map((card) => {
-    if (card === "A_HEART") return "A♥";
-    if (card === "A_SPADE") return "A♠";
-    if (card === "A_DIAMOND") return "A♦";
-    if (card === "A_CLUB") return "A♣";
+    const senderCards = issuedWith
+      .map((card) => {
+        if (card === "A_HEART") return "A♥";
+        if (card === "A_SPADE") return "A♠";
+        if (card === "A_DIAMOND") return "A♦";
+        if (card === "A_CLUB") return "A♣";
 
-    if (card === "K_HEART") return "K♥";
-    if (card === "K_SPADE") return "K♠";
-    if (card === "K_DIAMOND") return "K♦";
-    if (card === "K_CLUB") return "K♣";
 
-    return "";
-  })
-  .filter(Boolean)
-  .join(" ");
+        return "";
+      })
+      .filter(Boolean)
+      .join(" ");
 
-const senderPhoto =
-  play?.created_by_profile_photo_url ||
-  "/assets/icons/singeta120.gif";
+    const senderPhoto =
+      play?.created_by_profile_photo_url ||
+      "/assets/icons/singeta120.gif";
 
     return `
       <section class="lienzo-tribune lienzo-tribune--target tribuna-single tribuna-single--america">
@@ -58,10 +54,23 @@ const senderPhoto =
 </div>
               <div class="kentra-k-wrapper kentra-k-wrapper--open">
                 ${helpers.renderPlayCardBox({
-                  ...play,
-                  play_text: play.play_text || "",
-                  title: play.play_text || "Invitación K"
-                })}
+      ...play,
+
+      play_text: play.play_text || "",
+      title: play.play_text || "Invitación K",
+
+      ownerUser: {
+        nickname:
+          play?.target_user_nickname || "Invitado",
+
+        profile_photo_url:
+          play?.target_user_profile_photo_url ||
+          "/assets/icons/singeta120.gif"
+      },
+
+      ownerCards: [],
+      showOwner: true
+    })}
               </div>
 
             </div>
