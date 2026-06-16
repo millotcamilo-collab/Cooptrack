@@ -26,14 +26,10 @@
         return Number(parts[1] || 0);
     }
 
-    function getPlayOwnerUserId(play) {
-        return Number(
-            play?.created_by_user_id ||
-            play?.target_user_id ||
-            getOwnerUserIdFromPlayCode(play) ||
-            0
-        );
-    }
+function getPlayOwnerUserId(play) {
+    const ownerId = getOwnerUserIdFromPlayCode(play);
+    return Number(ownerId || 0);
+}
 
     function getUserNameForPlay(play, userId, usersMap) {
         const normalizedUserId = Number(userId || 0);
