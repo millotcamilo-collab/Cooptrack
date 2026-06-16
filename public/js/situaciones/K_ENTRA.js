@@ -1,13 +1,13 @@
 window.K_ENTRA = {
   render(ctx) {
-const { play, senderOwner, parentOwner, helpers } = ctx;
 
-const sender = senderOwner || parentOwner;
 
-const senderNick = sender?.nickname || "Remitente";
+const senderNick =
+  play?.created_by_nickname ||
+  "Remitente";
+
 const senderPhoto =
-  sender?.profile_photo_url ||
-  sender?.photo_url ||
+  play?.created_by_profile_photo_url ||
   "/assets/icons/singeta120.gif";
 
     return `
