@@ -3,9 +3,7 @@
         return String(value || "").trim().toUpperCase();
     }
 
-    window.__lienzoAnimationState = window.__lienzoAnimationState || {
-        sourceCardDelivered: false
-    };
+
 
     function bindActionButtons() {
         const saveBtn = document.getElementById("lienzo-save-btn");
@@ -308,116 +306,7 @@
     }
 
 
-    function animateCardToUser(user) {
-        const source = document.getElementById("lienzo-source-card");
-        if (!source) {
-            console.warn("No hay carta origen");
-            return;
-        }
 
-        const rect = source.getBoundingClientRect();
-
-        // 👻 crear recuadro fantasma
-        const ghostWrap = document.createElement("div");
-        const draft = window.__lienzoNewDraft;
-
-        const sourceImg = source.querySelector("img");
-        const sourceSrc =
-            sourceImg?.getAttribute("src") ||
-            getSourceKImageSrc(draft?.card_rank, draft?.card_suit);
-
-        ghostWrap.innerHTML = `
-  <img
-    class="lienzo-card-image lienzo-source-card-image"
-    src="${escapeHtml(sourceSrc)}"
-    alt=""
-  />
-`;
-
-        const ghostNode = ghostWrap.firstElementChild;
-        if (!ghostNode) return;
-
-        ghostNode.style.position = "fixed";
-        ghostNode.style.left = rect.left + "px";
-        ghostNode.style.top = rect.top + "px";
-        ghostNode.style.width = "var(--lv2-card-w)";
-        ghostNode.style.height = "var(--lv2-card-h)";
-        ghostNode.style.margin = "0";
-        ghostNode.style.zIndex = "9999";
-        ghostNode.style.transition = "all 450ms ease";
-        ghostNode.style.pointerEvents = "none";
-
-        document.body.appendChild(ghostNode);
-
-        source.style.visibility = "hidden";
-        source.style.pointerEvents = "none";
-
-        const container = document.querySelector(".lienzo-grid__right");
-        if (!container) return;
-
-        const targetRect = container.getBoundingClientRect();
-
-        const targetX = targetRect.left + targetRect.width / 2 - 180;
-        const targetY = targetRect.top + targetRect.height / 3;
-
-        requestAnimationFrame(() => {
-            ghostNode.style.left = targetX + "px";
-            ghostNode.style.top = targetY + "px";
-            ghostNode.style.transform = "scale(1.05)";
-        });
-
-        ghostNode.addEventListener("transitionend", () => {
-            if (!ghostNode.parentNode) return;
-
-            ghostNode.remove();
-
-            window.__lienzoAnimationState = {
-                ...(window.__lienzoAnimationState || {}),
-                sourceCardDelivered: true
-            };
-
-            const leftContainer = document.querySelector(".lienzo-grid__left");
-            if (leftContainer) {
-                leftContainer.innerHTML = renderColombesTribunes(window.__lienzoNewDraft);
-            }
-
-            renderAssignedTargetPanel(user);
-
-            bindActionButtons();
-
-            setTimeout(() => {
-                mountCardInTarget();
-            }, 50);
-        });
-    }
-
-    function mountCardInTarget() {
-        const dropzone = document.getElementById("lienzo-target-dropzone");
-        if (!dropzone) return;
-
-        const draft = window.__lienzoNewDraft;
-
-        dropzone.innerHTML = renderKCardBox(draft, true);
-        bindActionButtons();
-    }
-
-    function renderAssignedTargetPanel(user) {
-        const container = document.querySelector(".lienzo-grid__right");
-        if (!container) return;
-
-        container.innerHTML = `
-    <section class="lienzo-tribune lienzo-tribune--target">
-
-      <div class="lienzo-tribune__corporates"></div>
-
-      <div class="lienzo-tribune__stage">
-        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-        </div>
-      </div>
-
-    </section>
-  `;
-    }
 
     function getIssuedWithForCurrentUser() {
         return getCurrentUserCorporateCards()
@@ -574,16 +463,6 @@
         return map[`${r}_${s}`] || "/assets/icons/DorsoAzul.png";
     }
 
-    function getSourceKImageSrc(rank, suit) {
-        const r = normalizeRank(rank);
-        const s = normalizeSuit(suit);
-
-        if (r === "K" && s === "SPADE") {
-            return "/assets/icons/Kpike.png";
-        }
-
-        return getCardImageSrc(r, s);
-    }
 
     function getDeckAvatarSrc(deck) {
         console.log("deck completo =", deck);
@@ -721,25 +600,7 @@ return {
         return deriveOwnedCorporateCards(getAllPlays(), Number(ownerUser.id)).sort(compareCorporateCards);
     }
 
-    function renderKSourceCardImage(draft, id = "") {
-        const src = getSourceKImageSrc(draft?.card_rank || "K", draft?.card_suit);
 
-        const html = `
-    <img
-      class="lienzo-card-image lienzo-source-card-image"
-      src="${escapeHtml(src)}"
-      alt=""
-    />
-  `;
-
-        if (!id) return html;
-
-        return `
-    <div id="${escapeHtml(id)}">
-      ${html}
-    </div>
-  `;
-    }
 function renderActionButtons() {
   return `
     <button id="lienzo-save-btn" class="icon-btn" title="Salvar">
@@ -1003,14 +864,10 @@ console.log("USERS PICKER PARAMS", {
 
         window.__lienzoNewDraft = draft;
 
-        container.innerHTML = `
+container.innerHTML = `
   ${renderDeckHeader(deck)}
 
-  <div class="lienzo-v2-grid lienzo-v2-grid--2">
-    <div id="colombes" class="lienzo-grid__left">
-      ${renderColombesTribunes(draft)}
-    </div>
-
+  <div class="lienzo-v2-grid lienzo-v2-grid--single">
     <div id="amsterdam" class="lienzo-grid__right">
       ${renderUsersPanel()}
     </div>
@@ -1019,12 +876,7 @@ console.log("USERS PICKER PARAMS", {
         mountPlacardFromDataset();
         bindUsersPicker(draft);
     }
-    document.addEventListener("lienzo:animate-card-to-user", (event) => {
-        const user = event.detail?.user;
-        if (!user) return;
 
-        animateCardToUser(user);
-    });
 
 
 
