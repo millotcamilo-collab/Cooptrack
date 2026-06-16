@@ -465,3 +465,38 @@ min-height: var(--lv2-tribune-h);
 .jpica-child-btn--heart {
   color: #c00000;
 }
+
+.kentra-remitente {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.kentra-remitente__photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.kentra-remitente__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.kentra-remitente__nick {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.kentra-remitente__cards {
+  color: rgba(255,255,255,0.85);
+  font-size: 0.9rem;
+  line-height: 1.2;
+  letter-spacing: 1px;
+}

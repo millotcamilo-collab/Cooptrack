@@ -6,6 +6,27 @@ const senderNick =
   play?.created_by_nickname ||
   "Remitente";
 
+const issuedWith = Array.isArray(play?.issued_with)
+  ? play.issued_with
+  : [];
+
+const senderCards = issuedWith
+  .map((card) => {
+    if (card === "A_HEART") return "A♥";
+    if (card === "A_SPADE") return "A♠";
+    if (card === "A_DIAMOND") return "A♦";
+    if (card === "A_CLUB") return "A♣";
+
+    if (card === "K_HEART") return "K♥";
+    if (card === "K_SPADE") return "K♠";
+    if (card === "K_DIAMOND") return "K♦";
+    if (card === "K_CLUB") return "K♣";
+
+    return "";
+  })
+  .filter(Boolean)
+  .join(" ");
+
 const senderPhoto =
   play?.created_by_profile_photo_url ||
   "/assets/icons/singeta120.gif";
@@ -31,7 +52,7 @@ const senderPhoto =
     </div>
 
     <div class="kentra-remitente__cards">
-      A♦ A♣
+      ${helpers.escapeHtml(senderCards)}
     </div>
   </div>
 </div>
