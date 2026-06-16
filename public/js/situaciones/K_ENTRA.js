@@ -1,6 +1,6 @@
 window.K_ENTRA = {
   render(ctx) {
-
+const { play, helpers } = ctx;
 
 const senderNick =
   play?.created_by_nickname ||
