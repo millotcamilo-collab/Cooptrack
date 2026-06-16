@@ -417,9 +417,9 @@ function resolveReadOnlyPageForPlay(play, currentUserId) {
     return "/amsterdam.html";
   }
 
-  if (rank === "K" && finalStates.includes(status)) {
-    return "/amsterdam.html";
-  }
+if (rank === "K" && finalStates.includes(status)) {
+  return "/lienzoK.html";
+}
 
   if (rank === "A" && finalStates.includes(status)) {
     return "/amsterdam.html";
