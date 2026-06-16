@@ -448,7 +448,8 @@ async function updatePlayStatus(play, status) {
                 }
                 let play = data.play;
                 let deckState = null;
-                let parentOwner = null;
+let senderOwner = null;
+let parentOwner = null;
 
                 const stateResponse = await fetch(`${API_BASE_URL}/mazos/${play.deck_id}/state`, {
                     headers: {
@@ -486,15 +487,19 @@ async function updatePlayStatus(play, status) {
                     console.log("DECK STATE", deckState);
                     console.log("DECK USERS", deckState?.users);
                 }
+                senderOwner = deckState?.users?.find(
+                    (u) => Number(u.id) === Number(play.created_by_user_id)
+                );
 console.log("K_ENTRA cargado:", window.K_ENTRA);
 const html = window.K_ENTRA.render({
-                    play,
-                    parentOwner,
-                    helpers: {
-                        renderPlayCardBox,
-                        escapeHtml
-                    }
-                });
+  play,
+  senderOwner,
+  parentOwner,
+  helpers: {
+    renderPlayCardBox,
+    escapeHtml
+  }
+});
 
                 document.getElementById("tribuna-content").innerHTML = html;
 if (window.K_ENTRA?.start) {
