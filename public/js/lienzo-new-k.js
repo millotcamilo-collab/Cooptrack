@@ -631,25 +631,27 @@ function renderActionButtons() {
   `;
     }
 
-    function renderUsersPanel() {
-        const draft = window.__lienzoNewDraft;
+function renderUsersPanel() {
+  const draft = window.__lienzoNewDraft;
 
-        return `
-<section class="lienzo-tribune lienzo-tribune--target lienzo-tribune--target-empty">
+  return `
+    <section class="lienzo-tribune lienzo-tribune--target lienzo-tribune--target-empty">
 
-  <div class="lienzo-tribune__stage lienzo-tribune__stage--column">
+      <div class="lienzo-tribune__stage">
+        <div class="knew-card-layer">
 
-    <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
+          <div id="lienzo-target-dropzone" class="lienzo-target-dropzone knew-card-layer__card">
+            ${renderKCardBox(draft, false)}
+          </div>
 
-    <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-      ${renderKCardBox(draft, false)}
-    </div>
+          <div id="lienzo-users-picker" class="lienzo-users-picker knew-card-layer__users"></div>
 
-  </div>
+        </div>
+      </div>
 
-</section>
+    </section>
   `;
-    }
+}
 
     async function refreshCurrentUser() {
         try {

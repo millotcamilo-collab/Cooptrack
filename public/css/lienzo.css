@@ -500,3 +500,12 @@ min-height: var(--lv2-tribune-h);
   line-height: 1.2;
   letter-spacing: 1px;
 }
+.lienzo-v2-grid--single {
+  --lv2-cols: 1;
+  grid-template-columns: 1fr;
+}
+.lienzo-v2-grid--single .lienzo-grid__right {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}

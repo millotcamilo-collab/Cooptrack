@@ -306,3 +306,27 @@ top: 20px;
   --lv2-card-w: 320px;
   --lv2-card-h: 425px;
 }
+.knew-card-layer {
+  position: relative;
+  width: var(--lv2-card-w);
+  min-height: var(--lv2-card-h);
+  margin: 0 auto;
+}
+
+.knew-card-layer__card {
+  position: relative;
+  z-index: 1;
+}
+
+.knew-card-layer__users {
+  position: absolute;
+  z-index: 5;
+
+  left: 50%;
+  top: 72px;
+  transform: translateX(-50%);
+
+  width: calc(var(--lv2-card-w) - 64px);
+  max-height: calc(var(--lv2-card-h) - 140px);
+  overflow: auto;
+}
