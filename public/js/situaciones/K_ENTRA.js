@@ -1,6 +1,12 @@
 window.K_ENTRA = {
   render(ctx) {
-    const { play, helpers } = ctx;
+    const { play, parentOwner, helpers } = ctx;
+
+const senderNick = parentOwner?.nickname || "Remitente";
+const senderPhoto =
+  parentOwner?.profile_photo_url ||
+  parentOwner?.photo_url ||
+  "/assets/icons/singeta120.gif";
 
     return `
       <section class="lienzo-tribune lienzo-tribune--target tribuna-single tribuna-single--america">
@@ -10,6 +16,23 @@ window.K_ENTRA = {
           <div class="amsterdam-card-stack">
             <div class="amsterdam-card-stack__primary">
 
+<div class="kentra-remitente">
+  <img
+    class="kentra-remitente__photo"
+    src="${helpers.escapeHtml(senderPhoto)}"
+    alt=""
+  />
+
+  <div class="kentra-remitente__info">
+    <div class="kentra-remitente__nick">
+      ${helpers.escapeHtml(senderNick)}
+    </div>
+
+    <div class="kentra-remitente__cards">
+      A♦ A♣
+    </div>
+  </div>
+</div>
               <div class="kentra-k-wrapper kentra-k-wrapper--open">
                 ${helpers.renderPlayCardBox({
                   ...play,
