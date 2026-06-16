@@ -635,17 +635,19 @@ function renderActionButtons() {
         const draft = window.__lienzoNewDraft;
 
         return `
-    <section class="lienzo-tribune lienzo-tribune--target lienzo-tribune--target-empty">
+<section class="lienzo-tribune lienzo-tribune--target lienzo-tribune--target-empty">
 
-      <div class="lienzo-tribune__stage">
-        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-          ${renderKCardBox(draft, false)}
-        </div>
+  <div class="lienzo-tribune__stage lienzo-tribune__stage--column">
 
-        <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
-      </div>
+    <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
 
-    </section>
+    <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+      ${renderKCardBox(draft, false)}
+    </div>
+
+  </div>
+
+</section>
   `;
     }
 

@@ -301,3 +301,8 @@ top: 20px;
   transform: rotateY(90deg) scale(0.94);
   opacity: 0;
 }
+
+.tribuna-page--knew {
+  --lv2-card-w: 320px;
+  --lv2-card-h: 425px;
+}
