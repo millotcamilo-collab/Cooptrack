@@ -631,21 +631,27 @@ function renderActionButtons() {
   `;
     }
 
+function renderUsersTribune() {
+  return `
+    <section class="lienzo-tribune lienzo-tribune--source">
+
+      <div class="lienzo-tribune__stage">
+        <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
+      </div>
+
+    </section>
+  `;
+}
+
 function renderUsersPanel() {
   const draft = window.__lienzoNewDraft;
 
   return `
-    <section class="lienzo-tribune lienzo-tribune--target lienzo-tribune--target-empty">
+    <section class="lienzo-tribune lienzo-tribune--target">
 
       <div class="lienzo-tribune__stage">
-        <div class="knew-card-layer">
-
-          <div id="lienzo-target-dropzone" class="lienzo-target-dropzone knew-card-layer__card">
-            ${renderKCardBox(draft, false)}
-          </div>
-
-          <div id="lienzo-users-picker" class="lienzo-users-picker knew-card-layer__users"></div>
-
+        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+          ${renderKCardBox(draft, false)}
         </div>
       </div>
 
@@ -770,6 +776,12 @@ console.log("USERS PICKER PARAMS", {
                     target_user: user || null
                 };
 
+const colombes = document.getElementById("colombes");
+
+if (colombes) {
+  colombes.style.display = "none";
+}
+
                 if (selectedBox && user) {
                     selectedBox.textContent =
                         "Seleccionado: " +
@@ -871,11 +883,17 @@ console.log("USERS PICKER PARAMS", {
 container.innerHTML = `
   ${renderDeckHeader(deck)}
 
-  <div class="lienzo-v2-grid lienzo-v2-grid--single">
-    <div id="amsterdam" class="lienzo-grid__right">
-      ${renderUsersPanel()}
-    </div>
+<div class="lienzo-v2-grid lienzo-v2-grid--2">
+
+  <div id="colombes" class="lienzo-grid__left">
+    ${renderUsersTribune()}
   </div>
+
+  <div id="amsterdam" class="lienzo-grid__right">
+    ${renderUsersPanel()}
+  </div>
+
+</div>
 `;
         mountPlacardFromDataset();
         bindUsersPicker(draft);
