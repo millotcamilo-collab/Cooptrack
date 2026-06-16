@@ -487,9 +487,19 @@ let parentOwner = null;
                     console.log("DECK STATE", deckState);
                     console.log("DECK USERS", deckState?.users);
                 }
-senderOwner = deckState?.users?.find((u) =>
-  Number(u.id || u.user_id || u.created_by_user_id) === Number(play.created_by_user_id)
-);
+
+                console.log("PLAY COMPLETO", play);
+console.log("PLAY CREATED BY", play.created_by_user_id);
+console.log("DECKSTATE COMPLETO", deckState);
+console.log("DECKSTATE USERS", deckState?.users);
+
+senderOwner = deckState?.users?.find((u) => {
+  console.log("COMPARO USER", u);
+
+  return Number(u.id || u.user_id) === Number(play.created_by_user_id);
+});
+
+console.log("SENDER OWNER FINAL", senderOwner);
 
 console.log("SENDER OWNER", senderOwner);
 console.log("K_ENTRA cargado:", window.K_ENTRA);
