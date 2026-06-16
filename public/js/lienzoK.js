@@ -961,19 +961,15 @@ function renderUserTribune(user, cards = []) {
 
         if (!container || !play) return;
 
-        container.innerHTML = `
-      ${renderDeckHeader(deck)}
+container.innerHTML = `
+  ${renderDeckHeader(deck)}
 
-      <div class="lienzo-v2-grid lienzo-v2-grid--2">
-        <div id="colombes" class="lienzo-grid__left">
-          ${renderColombesTribunes(play)}
-        </div>
-
-        <div id="amsterdam" class="lienzo-grid__right">
-          ${renderTargetPlayerPanel(play)}
-        </div>
-      </div>
-    `;
+  <div class="lienzo-v2-grid lienzo-v2-grid--single">
+    <div id="amsterdam" class="lienzo-grid__right">
+      ${renderTargetPlayerPanel(play)}
+    </div>
+  </div>
+`;
 
         mountPlacardFromDataset();
         bindLienzoActions(play);
