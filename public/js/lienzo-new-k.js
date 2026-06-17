@@ -717,6 +717,42 @@ function renderUsersPanel() {
   `;
     }
 
+function animateUserFaceToCard(user) {
+  const photoSrc =
+    user?.profile_photo_url ||
+    "/assets/icons/singeta120.gif";
+
+  const colombes = document.getElementById("colombes");
+  const targetAvatar = document.querySelector(
+    "#amsterdam .lv2-play-card__owner-avatar"
+  );
+
+  if (!colombes || !targetAvatar) return;
+
+  const fromRect = colombes.getBoundingClientRect();
+  const toRect = targetAvatar.getBoundingClientRect();
+
+  const flyer = document.createElement("img");
+  flyer.src = photoSrc;
+  flyer.alt = "";
+  flyer.className = "lienzo-face-flyer";
+
+  flyer.style.left = `${fromRect.left + fromRect.width / 2 - 24}px`;
+  flyer.style.top = `${fromRect.top + fromRect.height / 2 - 24}px`;
+
+  document.body.appendChild(flyer);
+
+  requestAnimationFrame(() => {
+    flyer.style.left = `${toRect.left + toRect.width / 2 - 24}px`;
+    flyer.style.top = `${toRect.top + toRect.height / 2 - 24}px`;
+    flyer.style.transform = "scale(1.25) rotate(8deg)";
+    flyer.style.opacity = "0.15";
+  });
+
+  setTimeout(() => {
+    flyer.remove();
+  }, 650);
+}
 
     function bindUsersPicker(draft) {
         const selectedBox = document.getElementById("lienzo-user-selected");
@@ -778,11 +814,7 @@ console.log("USERS PICKER PARAMS", {
                     target_user: user || null
                 };
 
-const colombes = document.getElementById("colombes");
 
-if (colombes) {
-  colombes.style.display = "none";
-}
 
                 if (selectedBox && user) {
                     selectedBox.textContent =
@@ -793,13 +825,15 @@ if (colombes) {
                             `Usuario ${user.id}`);
                 }
 
-                const dropzone = document.getElementById("lienzo-target-dropzone");
+if (dropzone) {
+  dropzone.innerHTML = renderKCardBox(window.__lienzoNewDraft, true);
 
-                if (dropzone) {
-                    dropzone.innerHTML = renderKCardBox(window.__lienzoNewDraft, true);
-                }
+  requestAnimationFrame(() => {
+    animateUserFaceToCard(user);
+  });
+}
 
-                bindActionButtons();
+bindActionButtons();
             }
         });
     }
