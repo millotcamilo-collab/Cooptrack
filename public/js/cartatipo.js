@@ -257,7 +257,8 @@ ${location ? `
     actionsHtml = "",
     showOwner = true,
     showActions = true,
-    figureOverrideSrc = ""
+    figureOverrideSrc = "",
+    hideInnerSuit = false
   }) {
     try {
       console.log("[CartaTipo.renderPlayCardBox] incoming:", {
@@ -380,7 +381,7 @@ ${location ? `
         style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
       ></div>
 
-${safeRank === "A" && suitSymbol ? `
+${safeRank === "A" && suitSymbol && !hideInnerSuit ? `
   <div class="lv2-play-card__center-suit${centerSuitClass}">
     ${escapeHtml(suitSymbol)}
   </div>
