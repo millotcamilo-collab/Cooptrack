@@ -14,25 +14,39 @@
     }
   }
 
+function shouldShowAceKey(play, context) {
+  const rank = getRank(play);
+  const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
+
+  if (rank !== "A") return false;
+  if (suit === "HEART") return false;
+
+  const viewerId = getCurrentViewerId(context);
+  const ownerId = getAceOwnerUserId(play);
+  const hasBlueJoker = deckHasActiveBlueJoker(context);
+
+  return !!viewerId && viewerId === ownerId && hasBlueJoker;
+}
+
   function getRank(play) {
     return String(
       play?.rank || play?.card_rank || ""
     ).toUpperCase();
   }
 
-function buildKeyUrl(play, context) {
-  const playId = Number(play?.id || 0);
-  const deckId = resolveDeckId(play, context);
+  function buildKeyUrl(play, context) {
+    const playId = Number(play?.id || 0);
+    const deckId = resolveDeckId(play, context);
 
-  if (!playId || !deckId) return "";
+    if (!playId || !deckId) return "";
 
-  return (
-    `/lienzo.html` +
-    `?deckId=${deckId}` +
-    `&playId=${playId}` +
-    `&action=view`
-  );
-}
+    return (
+      `/lienzo.html` +
+      `?deckId=${deckId}` +
+      `&playId=${playId}` +
+      `&action=view`
+    );
+  }
 
   function getOwnerNickname(play) {
     return (
@@ -340,6 +354,8 @@ function buildKeyUrl(play, context) {
 
     const centerTitle = escapeHtml(`${rankName} de ${suitName}`);
 
+const showKeyButton = shouldShowAceKey(play, context);
+
     setTimeout(() => {
       const row = document.getElementById(rowId);
       if (!row || row.dataset.bound === "true") return;
@@ -365,17 +381,17 @@ function buildKeyUrl(play, context) {
         window.location.href = url;
       }
 
-const keyBtn = row.querySelector("[data-ace-key-btn]");
+      const keyBtn = row.querySelector("[data-ace-key-btn]");
 
-if (keyBtn) {
-  keyBtn.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
+      if (keyBtn) {
+        keyBtn.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
 
-    const url = buildKeyUrl(play, context);
-    if (url) window.location.href = url;
-  });
-}
+          const url = buildKeyUrl(play, context);
+          if (url) window.location.href = url;
+        });
+      }
 
       row.addEventListener("click", openLienzo);
 
@@ -436,8 +452,8 @@ ${transferPending ? `
   </div>
 `}
         </div>
-        <div class="tablero-row__actions">
-
+        ${showKeyButton ? `
+  <div class="tablero-row__actions">
     <button
       type="button"
       class="admin-row__key-btn"
@@ -446,8 +462,8 @@ ${transferPending ? `
     >
       <img src="/assets/icons/Llave.png" alt="Llave" />
     </button>
-
   </div>
+` : ""}
 
 </article>
       </article>

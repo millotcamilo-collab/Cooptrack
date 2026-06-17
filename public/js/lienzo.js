@@ -621,8 +621,211 @@
     }
   }
 
+function renderAceUsersTribune() {
+  return `
+    <section class="lienzo-tribune lienzo-tribune--source">
+      <div class="lienzo-tribune__stage">
+        <div id="lienzo-users-picker" class="lienzo-users-picker"></div>
+      </div>
+    </section>
+  `;
+}
+
+
+function getAceOwnerUser(play) {
+  return {
+    id: Number(play?.target_user_id || play?.created_by_user_id || 0),
+    nickname:
+      play?.target_user_nickname ||
+      play?.created_by_nickname ||
+      "Propietario",
+    profile_photo_url:
+      play?.target_user_profile_photo_url ||
+      play?.created_by_profile_photo_url ||
+      "/assets/icons/singeta120.gif"
+  };
+}
+
+function renderAceCardBox(play, ownerUser, actionsHtml = "") {
+  return window.CartaTipo.renderPlayCardBox({
+    rank: "A",
+    suit: normalizeSuit(play?.card_suit || play?.suit),
+    title: "",
+    ownerUser,
+    ownerCards: [],
+    actionsHtml
+  });
+}
+
+function renderAceTransferTargetPanel(play) {
+  const ownerUser = getAceOwnerUser(play);
+
+  return `
+    <section class="lienzo-tribune lienzo-tribune--target">
+      <div class="lienzo-tribune__stage">
+        <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+          ${renderAceCardBox(play, ownerUser)}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function animateUserFaceToCard(user) {
+        const photoSrc =
+            user?.profile_photo_url ||
+            "/assets/icons/singeta120.gif";
+
+        const sourceAvatar = document.querySelector(
+            `[data-users-row-id="${CSS.escape(String(user?.id || ""))}"] .users-picker__row-photo`
+        );
+
+        const selectedAvatar = document.querySelector(
+            "#colombes .users-picker__people-icon"
+        );
+
+        const targetAvatar = document.querySelector(
+            "#amsterdam .lv2-play-card__owner-avatar"
+        );
+
+        const originAvatar = sourceAvatar || selectedAvatar;
+
+        if (!originAvatar || !targetAvatar) return;
+
+        const fromRect = originAvatar.getBoundingClientRect();
+
+        const toRect = targetAvatar.getBoundingClientRect();
+
+        const flyer = document.createElement("img");
+        flyer.src = photoSrc;
+        flyer.alt = "";
+        flyer.className = "lienzo-face-flyer";
+
+        flyer.style.left = `${fromRect.left + fromRect.width / 2 - 24}px`;
+        flyer.style.top = `${fromRect.top + fromRect.height / 2 - 24}px`;
+
+        document.body.appendChild(flyer);
+
+        requestAnimationFrame(() => {
+            flyer.style.left = `${toRect.left + toRect.width / 2 - 24}px`;
+            flyer.style.top = `${toRect.top + toRect.height / 2 - 24}px`;
+            flyer.style.transform = "scale(1.25) rotate(8deg)";
+            flyer.style.opacity = "0.15";
+        });
+
+        setTimeout(() => {
+            flyer.remove();
+        }, 650);
+    }
+
+function bindAceTransferUsersPicker(play) {
+  if (typeof window.renderUsersPicker !== "function") {
+    const picker = document.getElementById("lienzo-users-picker");
+    if (picker) {
+      picker.innerHTML = `
+        <div class="lienzo-error">
+          No se pudo cargar users.js
+        </div>
+      `;
+    }
+    return;
+  }
+
+  const draft = window.__lienzoAceTransferDraft;
+
+  window.renderUsersPicker("lienzo-users-picker", {
+    currentUserId: Number(getCurrentUser()?.id || 0),
+    deckId: Number(draft.deckId || 0),
+    parentPlayId: Number(draft.parentPlayId || 0),
+    childRank: "A",
+    childSuit: normalizeSuit(draft.card_suit),
+    plays: getAllPlays(),
+
+    onSelect(user) {
+      window.__lienzoAceTransferDraft = {
+        ...window.__lienzoAceTransferDraft,
+        target_user_id: Number(user?.id || 0) || null,
+        target_user: user || null
+      };
+    },
+
+    onAnimateSelect(user) {
+      window.__lienzoAceTransferDraft = {
+        ...window.__lienzoAceTransferDraft,
+        target_user_id: Number(user?.id || 0) || null,
+        target_user: user || null
+      };
+
+      const dropzone = document.getElementById("lienzo-target-dropzone");
+
+      if (dropzone) {
+        dropzone.innerHTML = renderAceCardBox(
+          play,
+          user,
+          renderSourceActions(play)
+        );
+
+        requestAnimationFrame(() => {
+          animateUserFaceToCard(user);
+        });
+      }
+
+      bindLienzoActions(play);
+    }
+  });
+}
+
+function renderTransferAceLienzo(play) {
+  const container = getLienzoContainer();
+  const deck = getCurrentDeck();
+
+  if (!container || !play) return;
+
+  window.__lienzoAceTransferDraft = {
+    deckId: Number(play.deck_id || deck?.id || 0),
+    parentPlayId: Number(play.id || 0),
+    card_rank: "A",
+    card_suit: normalizeSuit(play.card_suit || play.suit),
+    source_play: play,
+    target_user_id: null,
+    target_user: null
+  };
+
+  container.innerHTML = `
+    <div class="lienzo-v2-page">
+      ${renderDeckHeader(deck)}
+
+      <div class="lienzo-v2-shell">
+        <div class="lienzo-v2-main">
+
+          <div class="lienzo-v2-grid lienzo-v2-grid--2">
+            <div id="colombes">
+              ${renderAceUsersTribune()}
+            </div>
+
+            <div id="amsterdam">
+              ${renderAceTransferTargetPanel(play)}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  `;
+
+  mountPlacardFromDataset();
+  bindAceTransferUsersPicker(play);
+}
+
 function renderLienzo(play) {
   console.count("renderLienzo");
+
+  const action = getLienzoAction();
+
+  if (action === "transfer") {
+    renderTransferAceLienzo(play);
+    return;
+  }
 
   const container = getLienzoContainer();
   const deck = getCurrentDeck();
