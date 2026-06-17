@@ -196,8 +196,8 @@
   function buildPageHeroIconHTML(plays, currentUserId) {
     const pageType = getCurrentPageType();
 
-if (pageType === "users") {
-  return `
+    if (pageType === "users") {
+      return `
     <button
       id="btnUsersByDeck"
       type="button"
@@ -211,7 +211,7 @@ if (pageType === "users") {
       />
     </button>
   `;
-}
+    }
     if (pageType === "mazo" && canUserCreateJ(plays, currentUserId)) {
       return `
       <div
@@ -878,10 +878,11 @@ ${isAdminPage
     const pageType = getCurrentPageType();
     const isMazoPage =
       pageType === "mazo" ||
-      pageType === "archivo";
-const isAdminPage = pageType === "administradores";
-const isArchivoPage = pageType === "archivo";
-const isUsersPage = pageType === "users";
+      pageType === "archivo" ||
+      pageType === "users";
+    const isAdminPage = pageType === "administradores";
+    const isArchivoPage = pageType === "archivo";
+    const isUsersPage = pageType === "users";
     const hasArchive = hasArchivedPlays(plays);
 
     const mazoArchiveButton =
@@ -1007,7 +1008,7 @@ ${isArchivoPage ? `
 
 ${!isUsersPage ? `
   <button
-    id="btnUsersByDeck"
+    id="btnUsersHero"
     type="button"
     class="mazobar__cmd-btn"
     title="Usuarios del mazo"
