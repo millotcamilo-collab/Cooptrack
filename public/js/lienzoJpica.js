@@ -519,14 +519,13 @@ function bindJpicaChildHeader(parentPlay) {
       },
 
       onAnimateSelect(user) {
-        if (!canLaunchQspade(parentPlay)) {
-          alert("Ya no se pueden agregar invitaciones a esta actividad.");
-          return;
-        }
+  if (!canLaunchQspade(parentPlay)) {
+    alert("Ya no se pueden agregar invitaciones a esta actividad.");
+    return;
+  }
 
-        createQpicaFromUser(parentPlay, user);
-        bindJpicaChildHeader(play);
-      }
+  createQpicaFromUser(parentPlay, user);
+}
     });
   }
 
@@ -827,6 +826,7 @@ function bindJpicaChildHeader(parentPlay) {
     bindActions(play);
     bindInvitationRows();
     mountUsersPickerForQpica(play);
+    bindJpicaChildHeader(play);
     bindJtrebolEventsInLienzo();
   }
 
