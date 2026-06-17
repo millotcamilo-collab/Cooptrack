@@ -524,3 +524,32 @@ min-height: var(--lv2-tribune-h);
     transform 0.6s ease,
     opacity 0.6s ease;
 }
+
+/* Transferencia de As: solo Colombes + Amsterdam, usando todo el ancho */
+.lienzo-v2-grid--ace-transfer {
+  grid-template-columns: minmax(620px, 1.4fr) minmax(320px, 0.8fr);
+  width: 100%;
+}
+
+.lienzo-v2-grid--ace-transfer .lienzo-tribune {
+  overflow: visible;
+}
+
+.lienzo-v2-grid--ace-transfer #colombes .users-picker {
+  width: 100%;
+  max-width: none;
+}
+
+.lienzo-v2-grid--ace-transfer #colombes .lienzo-tribune__stage {
+  justify-content: flex-start;
+}
+
+.lienzo-v2-grid--ace-transfer #amsterdam .lienzo-tribune__stage {
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .lienzo-v2-grid--ace-transfer {
+    grid-template-columns: 1fr;
+  }
+}
