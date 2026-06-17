@@ -118,7 +118,7 @@
 }
 
 .lv2-play-card.lv2-play-card--authority:has(.lv2-play-card__inner--figure)::after {
-  height: 40%;
+  height: 60%;
 }
 
 .lv2-play-card__title,
@@ -229,12 +229,30 @@
   min-width: 0;
 }
 
+.lv2-play-card--authority .lv2-play-card__owner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
 .lv2-play-card__owner-avatar {
   width: 40px;
   height: 40px;
   object-fit: cover;
   border-radius: 4px;
   flex: 0 0 auto;
+}
+
+.lv2-play-card--authority .lv2-play-card__owner-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
 }
 
 .lv2-play-card__owner-info {
@@ -255,6 +273,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.lv2-play-card--authority .lv2-play-card__owner-name {
+  text-align: center;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  max-width: 90px;
 }
 
 .lv2-play-card__owner-cards {
