@@ -276,6 +276,7 @@ ${location ? `
 
     const safeRank = normalizeRank(rank);
     const safeSuit = normalizeSuit(suit);
+    const isAuthorityCard = safeRank === "A" || safeRank === "K";
     const figureSrc = figureOverrideSrc || getFigureImageSrc(safeRank, safeSuit);
     const decisionHtml = renderDecisionStamp(status);
 
@@ -371,7 +372,7 @@ ${location ? `
 
 
     return `
-    <div class="lv2-play-card">
+    <div class="lv2-play-card${isAuthorityCard ? " lv2-play-card--authority" : ""}">
       ${renderCardCorners(safeRank, safeSuit)}
 
       <div

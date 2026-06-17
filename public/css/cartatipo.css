@@ -84,6 +84,10 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
+.lv2-play-card--authority .lv2-play-card__inner--figure {
+  padding-top: calc(var(--lv2-card-h) * 0.48);
+}
+
 .lv2-play-card__figure {
   position: absolute;
   inset: 22px;
@@ -113,6 +117,9 @@
   pointer-events: none;
 }
 
+.lv2-play-card--authority::after {
+  height: 40%;
+}
 
 
 .lv2-play-card__title,
