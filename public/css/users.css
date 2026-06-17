@@ -291,8 +291,34 @@
 .users-picker__row-main {
   display: grid;
   grid-template-columns: 42px 44px 1fr;
+  grid-template-rows: 22px 18px;
   align-items: center;
   column-gap: 10px;
+  row-gap: 0;
+}
+
+.users-picker__row-type-icon {
+  grid-column: 1;
+  grid-row: 1 / 3;
+}
+
+.users-picker__row-photo {
+  grid-column: 2;
+  grid-row: 1 / 3;
+}
+
+.users-picker__row-name {
+  grid-column: 3;
+  grid-row: 1;
+  line-height: 1;
+}
+
+.users-picker__row-summary {
+  grid-column: 3;
+  grid-row: 2;
+  font-size: 12px;
+  line-height: 1;
+  opacity: .8;
 }
 
 .users-picker__row-name,
