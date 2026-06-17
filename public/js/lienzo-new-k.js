@@ -194,15 +194,17 @@
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    deck_id: draft.deckId,
-                    parent_play_id: draft.parentPlayId,
-                    target_user_id: draft.target_user_id,
-                    play_code: playCode,
-                    text: draft.play_text || "",
-                    play_status: "ACTIVE",
-                    issued_with: getIssuedWithForCurrentUser()
-                })
+body: JSON.stringify({
+  deck_id: draft.deckId,
+  parent_play_id: draft.parentPlayId,
+  target_user_id: draft.target_user_id,
+  play_code: playCode,
+  card_rank: String(draft.card_rank).toUpperCase(),
+  card_suit: String(draft.card_suit).toUpperCase(),
+  text: draft.play_text || "",
+  play_status: "ACTIVE",
+  issued_with: getIssuedWithForCurrentUser()
+})
             });
 
             const data = await response.json();
