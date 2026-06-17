@@ -92,6 +92,49 @@ function normalizeEmailValue(value) {
 function normalizePhoneValue(value) {
   return String(value || "").replace(/\D+/g, "");
 }
+
+function isDeckUserCard(play) {
+  const rank = String(play?.card_rank || play?.rank || "").toUpperCase();
+  return ["A", "K", "Q"].includes(rank);
+}
+
+function addUserToMap(map, user) {
+  const id = Number(user?.id || 0);
+  if (!id || map.has(id)) return;
+
+  map.set(id, {
+    id,
+    nickname: user.nickname || user.full_name || user.name || `Usuario ${id}`,
+    full_name: user.full_name || "",
+    name: user.name || "",
+    profile_photo_url: user.profile_photo_url || "/assets/icons/singeta120.gif",
+    user_type: user.user_type || user.qCategory || "active",
+    qCategory: user.qCategory || user.user_type || "active"
+  });
+}
+
+function getDeckUsersFromPlays(plays = []) {
+  const map = new Map();
+
+  plays.forEach((play) => {
+    if (!isDeckUserCard(play)) return;
+
+    addUserToMap(map, {
+      id: play.created_by_user_id,
+      nickname: play.created_by_nickname,
+      profile_photo_url: play.created_by_profile_photo_url
+    });
+
+    addUserToMap(map, {
+      id: play.target_user_id,
+      nickname: play.target_user_nickname,
+      profile_photo_url: play.target_user_profile_photo_url
+    });
+  });
+
+  return Array.from(map.values());
+}
+
 function renderUsersPicker(containerId, options = {}) {
   const container = document.getElementById(containerId);
   if (!container) {
@@ -103,6 +146,7 @@ function renderUsersPicker(containerId, options = {}) {
     deckId: options.deckId || null,
     allUsers: [],
     filteredUsers: [],
+    deckUsers: getDeckUsersFromPlays(options.plays || []),
     selectedUser: options.selectedUser || null,
     searchValue: "",
     loaded: false,
@@ -342,15 +386,15 @@ function renderUsersPicker(containerId, options = {}) {
     const conflictButtons = container.querySelectorAll("[data-users-conflict-id]");
     const extraActionButtons = container.querySelectorAll("[data-users-extra-action]");
 
-extraActionButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const actionId = btn.getAttribute("data-users-extra-action");
+    extraActionButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const actionId = btn.getAttribute("data-users-extra-action");
 
-    if (typeof options.onExtraAction === "function") {
-      options.onExtraAction(actionId, state);
-    }
-  });
-});
+        if (typeof options.onExtraAction === "function") {
+          options.onExtraAction(actionId, state);
+        }
+      });
+    });
 
     if (input) {
       input.addEventListener("input", (event) => {
@@ -411,7 +455,7 @@ extraActionButtons.forEach((btn) => {
         }
       });
     });
-    
+
     createFields.forEach((field) => {
       field.addEventListener("input", (event) => {
         const fieldName = event.target.getAttribute("data-users-create-field");
@@ -564,7 +608,7 @@ extraActionButtons.forEach((btn) => {
         </button>
 
 ${Array.isArray(options.extraActions)
-  ? options.extraActions.map((action) => `
+        ? options.extraActions.map((action) => `
       <button
         type="button"
         class="
@@ -574,15 +618,14 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
         data-users-extra-action="${action.id}"
         title="${action.title || ""}"
       >
-        ${
-          action.label
+        ${action.label
             ? action.label
             : `<img src="${action.icon}" alt="">`
-        }
+          }
       </button>
     `).join("")
-  : ""
-}
+        : ""
+      }
         
       </div>
     </div>
@@ -635,26 +678,29 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
       resultsHtml = `<div class="users-picker__empty">Cargando usuarios...</div>`;
     } else if (state.error) {
       resultsHtml = `<div class="users-picker__empty">${escapeHtml(state.error)}</div>`;
-    } else if (!state.searchValue.trim()) {
-      resultsHtml = "";
-    } else if (!state.filteredUsers.length) {
-      resultsHtml = `<div class="users-picker__empty">No se encontraron usuarios.</div>`;
     } else {
+      const usersToRender = state.searchValue.trim()
+        ? state.filteredUsers
+        : state.deckUsers;
 
-      const childRank = String(options.childRank || "").toUpperCase();
-      const childSuit = String(options.childSuit || "").toUpperCase();
+      if (!usersToRender.length) {
+        resultsHtml = `<div class="users-picker__empty">No hay usuarios AKQ en este mazo.</div>`;
+      } else {
 
-      resultsHtml = state.filteredUsers.map((user) => {
-        const alreadyInvited = hasActiveInvitationForUser(user);
+        const childRank = String(options.childRank || "").toUpperCase();
+        const childSuit = String(options.childSuit || "").toUpperCase();
 
-        const actionLabel =
-          `${childRank}${childSuit === "HEART" ? "♥" :
-            childSuit === "SPADE" ? "♠" :
-              childSuit === "DIAMOND" ? "♦" :
-                "♣"
-          }`;
+        resultsHtml = usersToRender.map((user) => {
+          const alreadyInvited = hasActiveInvitationForUser(user);
 
-        return `
+          const actionLabel =
+            `${childRank}${childSuit === "HEART" ? "♥" :
+              childSuit === "SPADE" ? "♠" :
+                childSuit === "DIAMOND" ? "♦" :
+                  "♣"
+            }`;
+
+          return `
         <div class="users-picker__row" data-users-row-id="${escapeHtml(user.id)}">
           <button
             type="button"
@@ -674,8 +720,8 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
           </button>
 
           ${alreadyInvited
-            ? `<span class="users-picker__row-action users-picker__row-action--disabled" title="Ya invitado">${escapeHtml(actionLabel)}</span>`
-            : `
+              ? `<span class="users-picker__row-action users-picker__row-action--disabled" title="Ya invitado">${escapeHtml(actionLabel)}</span>`
+              : `
               <button
                 type="button"
                 class="users-picker__row-action"
@@ -685,13 +731,14 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
                 <img src="/assets/icons/ClaquetaAbierta.gif" alt="Asignar usuario" />
               </button>
             `
-          }
+            }
         </div>
       `;
-      }).join("");
-    }
+        }).join("");
+        }
+      }
 
-    return `
+      return `
     ${state.isCreatingUser ? renderCreateUserState() : renderSearchState()}
     ${state.isCreatingUser ? "" : `
       <div class="users-picker__results">
@@ -699,12 +746,12 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
       </div>
     `}
   `;
-  }
+    }
 
-  function renderSelectedState() {
-    const user = state.selectedUser;
+    function renderSelectedState() {
+      const user = state.selectedUser;
 
-    return `
+      return `
     <div class="users-picker__top">
       <img
         class="users-picker__people-icon"
@@ -728,33 +775,33 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
       </div>
     </div>
   `;
-  }
+    }
 
-  function rerender() {
-    const html = `
+    function rerender() {
+      const html = `
     <section class="users-picker">
       ${state.selectedUser ? renderSelectedState() : renderResultsState()}
     </section>
   `;
 
-    container.innerHTML = html;
-    bindEvents();
+      container.innerHTML = html;
+      bindEvents();
+    }
+
+    rerender();
+
+    return {
+      rerender,
+      clear() {
+        container.innerHTML = "";
+      },
+      getSelectedUser() {
+        return state.selectedUser;
+      },
+      setSelectedUser(user) {
+        state.selectedUser = user || null;
+        rerender();
+      },
+    };
   }
-
-  rerender();
-
-  return {
-    rerender,
-    clear() {
-      container.innerHTML = "";
-    },
-    getSelectedUser() {
-      return state.selectedUser;
-    },
-    setSelectedUser(user) {
-      state.selectedUser = user || null;
-      rerender();
-    },
-  };
-}
-window.renderUsersPicker = renderUsersPicker;
+  window.renderUsersPicker = renderUsersPicker;
