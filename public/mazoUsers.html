@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Usuarios - CoopTrack</title>
+
+    <link rel="stylesheet" href="/css/global.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
+    <link rel="stylesheet" href="/css/mazobar.css" />
+    <link rel="stylesheet" href="/css/help.css" />
+    <link rel="stylesheet" href="/css/users.css" />
+    <link rel="icon" type="image/png" href="/assets/icons/bigote.png">
+</head>
+
+<body>
+    <div id="topbar-container"></div>
+    <div id="mazobar-container"></div>
+    <div id="usuarios-container"></div>
+
+    <!-- UTILIDADES -->
+    <script src="/js/icons.js"></script>
+    <script src="/js/help.js"></script>
+
+    <!-- MÓDULOS PRINCIPALES -->
+    <script src="/js/topbar.js"></script>
+    <script src="/js/mazobar.js"></script>
+    <script src="/js/users.js"></script>
+
+    <script>
+        window.API_BASE_URL = window.API_BASE_URL || "https://cooptrack-backend.onrender.com";
+
+        function getToken() {
+            return localStorage.getItem("cooptrackToken");
+        }
+
+        function getAuthHeaders(includeJson = false) {
+            const token = getToken();
+            const headers = {};
+
+            if (includeJson) {
+                headers["Content-Type"] = "application/json";
+            }
+
+            if (token) {
+                headers["Authorization"] = `Bearer ${token}`;
+            }
+
+            return headers;
+        }
+
+        async function fetchDeckById(deckId) {
+            try {
+                const token = getToken();
+
+                if (!token) {
+                    throw new Error("Token no encontrado");
+                }
+
+                const response = await fetch(`${API_BASE_URL}/decks/${deckId}`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.ok) {
+                    throw new Error(data.message || "Error cargando mazo");
+                }
+
+                return data.mazo || data.deck;
+            } catch (error) {
+                console.error("Error trayendo deck:", error);
+                return null;
+            }
+        }
+
+        async function fetchDeckState(deckId) {
+            try {
+                const token = getToken();
+
+                if (!token) {
+                    throw new Error("Token no encontrado");
+                }
+
+                const response = await fetch(`${API_BASE_URL}/mazo/${deckId}/state`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                const rawText = await response.text();
+                console.log("STATE RAW RESPONSE:", rawText);
+
+                let data;
+                try {
+                    data = JSON.parse(rawText);
+                } catch (error) {
+                    console.error("No es JSON válido:", rawText);
+                    throw new Error("El backend devolvió HTML o error");
+                }
+
+                if (!response.ok || !data.ok) {
+                    throw new Error(data.error || "Error cargando estado del mazo");
+                }
+
+                return data;
+            } catch (error) {
+                console.error("Error trayendo estado del mazo:", error);
+                return {
+                    plays: [],
+                    userId: null
+                };
+            }
+        }
+
+        function clearDeckView() {
+            const ids = [
+                "mazobar-container",
+                "usuarios-container"
+            ];
+
+            ids.forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = "";
+            });
+        }
+
+        async function loadMazoUsersPage(deckId) {
+            if (!deckId) {
+                console.warn("Mazo sin id");
+                return;
+            }
+
+            const [deck, state] = await Promise.all([
+                fetchDeckById(deckId),
+                fetchDeckState(deckId)
+            ]);
+
+            console.log("deck:", deck);
+            console.log("state:", state);
+
+            if (!deck) {
+                console.warn("No se pudo cargar el mazo");
+                return;
+            }
+
+            if (!state) {
+                console.warn("No se pudo cargar el estado del mazo");
+                return;
+            }
+
+            window.__currentDeck = deck;
+            window.__currentState = state;
+
+            if (typeof renderMazobar === "function") {
+                renderMazobar(deck, state.plays || [], state.userId);
+            }
+            const usuariosEl = document.getElementById("usuarios-container");
+
+            if (
+                usuariosEl &&
+                typeof window.renderUsersPicker === "function"
+            ) {
+                window.renderUsersPicker("usuarios-container", {
+                    currentUserId: state.userId || 0,
+                    deckId: deck.id,
+                    plays: state.plays || [],
+                    readonly: true,
+                    hideSearch: true
+                });
+            }
+        }
+
+        async function initMazoUsersPage() {
+            const params = new URLSearchParams(window.location.search);
+            const deckId = params.get("id");
+
+            clearDeckView();
+            await loadMazoUsersPage(deckId);
+        }
+
+        document.addEventListener("DOMContentLoaded", initMazoUsersPage);
+
+        document.addEventListener("plays:changed", async (event) => {
+            const deckId =
+                event?.detail?.deckId ||
+                new URLSearchParams(window.location.search).get("id");
+
+            if (!deckId) return;
+
+            await loadMazoUsersPage(deckId);
+        });
+    </script>
+</body>
+
+</html>

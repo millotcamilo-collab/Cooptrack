@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="/css/help.css" />
   <link rel="stylesheet" href="/css/tablero.css" />
   <link rel="stylesheet" href="/css/jokerazul.css" />
-  <link rel="stylesheet" href="/css/users.css" />
   <link rel="icon" type="image/png" href="/assets/icons/bigote.png">
 </head>
 
@@ -34,7 +33,7 @@
   <script src="/js/topbar.js"></script>
   <script src="/js/mazobar.js"></script>
   <script src="/js/administradores.js"></script>
-  <script src="/js/users.js"></script>
+
 
   <script>
     window.API_BASE_URL = window.API_BASE_URL || "https://cooptrack-backend.onrender.com";
@@ -177,23 +176,6 @@
 
 
       const administradoresEl = document.getElementById("administradores-container");
-      if (
-        administradoresEl &&
-        typeof window.renderUsersPicker === "function"
-      ) {
-        const usersHost = document.createElement("div");
-        usersHost.id = "usuarios-mazo-view";
-
-        administradoresEl.appendChild(usersHost);
-
-        window.renderUsersPicker("usuarios-mazo-view", {
-          currentUserId: state.userId || 0,
-          deckId: deck.id,
-          plays: state.plays || [],
-          readonly: true,
-          hideSearch: true
-        });
-      }
 
       if (administradoresEl) {
         administradoresEl.style.display = "";

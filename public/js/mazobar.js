@@ -19,6 +19,13 @@
     };
   }
 
+function goToMazoUsersPage() {
+  const deckId = window.__currentDeck?.id;
+  if (!deckId) return;
+
+  window.location.href = `/mazoUsers.html?id=${deckId}`;
+}
+
   function getFigureImageSrc(rank, suit) {
     const r = String(rank || "").toUpperCase();
     const s = String(suit || "").toUpperCase();
@@ -1043,15 +1050,13 @@ ${isAdminPage ? `
       });
     }
 
-    const btnUsersByDeck = document.getElementById("btnUsersByDeck");
+const btnUsersByDeck = document.getElementById("btnUsersByDeck");
 
-    if (btnUsersByDeck) {
-      btnUsersByDeck.addEventListener("click", () => {
-        document.dispatchEvent(
-          new CustomEvent("mazobar:showUsersByDeck")
-        );
-      });
-    }
+if (btnUsersByDeck) {
+  btnUsersByDeck.addEventListener("click", () => {
+    goToMazoUsersPage();
+  });
+}
 
     const btnAdminArchive = document.getElementById("btnAdminArchive");
 
