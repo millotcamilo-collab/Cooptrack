@@ -722,14 +722,16 @@ function animateUserFaceToCard(user) {
     user?.profile_photo_url ||
     "/assets/icons/singeta120.gif";
 
-  const colombes = document.getElementById("colombes");
+  const sourceAvatar = document.querySelector(
+  `[data-users-row-id="${CSS.escape(String(user?.id || ""))}"] .users-picker__row-photo`
+);
   const targetAvatar = document.querySelector(
     "#amsterdam .lv2-play-card__owner-avatar"
   );
 
-  if (!colombes || !targetAvatar) return;
+  if (!sourceAvatar || !targetAvatar) return;
 
-  const fromRect = colombes.getBoundingClientRect();
+const fromRect = sourceAvatar.getBoundingClientRect();
   const toRect = targetAvatar.getBoundingClientRect();
 
   const flyer = document.createElement("img");
