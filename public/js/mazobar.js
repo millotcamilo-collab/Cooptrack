@@ -19,12 +19,12 @@
     };
   }
 
-function goToMazoUsersPage() {
-  const deckId = window.__currentDeck?.id;
-  if (!deckId) return;
+  function goToMazoUsersPage() {
+    const deckId = window.__currentDeck?.id;
+    if (!deckId) return;
 
-  window.location.href = `/mazoUsers.html?id=${deckId}`;
-}
+    window.location.href = `/mazoUsers.html?id=${deckId}`;
+  }
 
   function getFigureImageSrc(rank, suit) {
     const r = String(rank || "").toUpperCase();
@@ -127,24 +127,24 @@ function goToMazoUsersPage() {
 
 
 
-function getCardImageSrc(rank, suit) {
-  const r = String(rank || "").toUpperCase();
-  const s = String(suit || "").toUpperCase();
+  function getCardImageSrc(rank, suit) {
+    const r = String(rank || "").toUpperCase();
+    const s = String(suit || "").toUpperCase();
 
-  const map = {
-    A_HEART: "/assets/icons/Acorazon.png",
-    A_SPADE: "/assets/icons/Apike.png",
-    A_DIAMOND: "/assets/icons/Adiamante.png",
-    A_CLUB: "/assets/icons/Atrebol.png",
+    const map = {
+      A_HEART: "/assets/icons/Acorazon.png",
+      A_SPADE: "/assets/icons/Apike.png",
+      A_DIAMOND: "/assets/icons/Adiamante.png",
+      A_CLUB: "/assets/icons/Atrebol.png",
 
-    K_HEART: "/assets/icons/Kcorazon.png",
-    K_SPADE: "/assets/icons/Kpike.png",
-    K_DIAMOND: "/assets/icons/Kdiamante.png",
-    K_CLUB: "/assets/icons/Ktrebol.png"
-  };
+      K_HEART: "/assets/icons/Kcorazon.png",
+      K_SPADE: "/assets/icons/Kpike.png",
+      K_DIAMOND: "/assets/icons/Kdiamante.png",
+      K_CLUB: "/assets/icons/Ktrebol.png"
+    };
 
-  return map[`${r}_${s}`] || null;
-}
+    return map[`${r}_${s}`] || null;
+  }
 
   function getDeckAvatarSrc(deck) {
     const raw = String(deck?.deck_image_url || "").trim();
@@ -196,6 +196,22 @@ function getCardImageSrc(rank, suit) {
   function buildPageHeroIconHTML(plays, currentUserId) {
     const pageType = getCurrentPageType();
 
+if (pageType === "users") {
+  return `
+    <button
+      id="btnUsersByDeck"
+      type="button"
+      class="mazobar__hero-icon mazobar__hero-icon--team"
+      title="Usuarios del mazo"
+      aria-label="Usuarios del mazo"
+    >
+      <img
+        src="/assets/icons/Gente60.gif"
+        alt="Usuarios"
+      />
+    </button>
+  `;
+}
     if (pageType === "mazo" && canUserCreateJ(plays, currentUserId)) {
       return `
       <div
@@ -551,6 +567,9 @@ ${draggable ? `data-play-id="${playId}" data-rank="${rank}" data-suit="${suit}"`
     if (path.includes("mazoarchivo.html")) {
       return "archivo";
     }
+    if (path.includes("mazousers.html")) {
+      return "users";
+    }
 
     return "mazo";
   }
@@ -622,12 +641,12 @@ ${draggable ? `data-play-id="${playId}" data-rank="${rank}" data-suit="${suit}"`
   }
 
   function buildAdminSuitButtonsHTML() {
-  const suits = ["HEART", "SPADE", "DIAMOND", "CLUB"];
+    const suits = ["HEART", "SPADE", "DIAMOND", "CLUB"];
 
-  return suits.map((suit) => {
-    const symbol = getSuitSymbol(suit);
+    return suits.map((suit) => {
+      const symbol = getSuitSymbol(suit);
 
-    return `
+      return `
       <button
         type="button"
         class="mazobar__cmd-btn mazobar__cmd-btn--suit mazobar__cmd-btn--admin-suit"
@@ -638,8 +657,8 @@ ${draggable ? `data-play-id="${playId}" data-rank="${rank}" data-suit="${suit}"`
         ${symbol}
       </button>
     `;
-  }).join("");
-}
+    }).join("");
+  }
 
   function buildDeckPhotoHTML(deck, plays, currentUserId) {
     const avatarSrc = getDeckAvatarSrc(deck);
@@ -751,12 +770,12 @@ ${draggable ? `data-play-id="${playId}" data-rank="${rank}" data-suit="${suit}"`
             <div class="mazobar__top-left">
               <div class="mazobar__topcards">
 ${isAdminPage
-  ? buildTopCardsHTML(
-      enabledCards.filter((card) => String(card.rank || "").toUpperCase() === "K"),
-      { draggable: true }
-    )
-  : buildTopCardsHTML(corporateCards, { draggable: false })
-}
+        ? buildTopCardsHTML(
+          enabledCards.filter((card) => String(card.rank || "").toUpperCase() === "K"),
+          { draggable: true }
+        )
+        : buildTopCardsHTML(corporateCards, { draggable: false })
+      }
               </div>
               
               ${buildDeckPhotoHTML(deck, normalizedPlays, currentUserId)}
@@ -860,8 +879,9 @@ ${isAdminPage
     const isMazoPage =
       pageType === "mazo" ||
       pageType === "archivo";
-    const isAdminPage = pageType === "administradores";
-    const isArchivoPage = pageType === "archivo";
+const isAdminPage = pageType === "administradores";
+const isArchivoPage = pageType === "archivo";
+const isUsersPage = pageType === "users";
     const hasArchive = hasArchivedPlays(plays);
 
     const mazoArchiveButton =
@@ -985,7 +1005,7 @@ ${isArchivoPage ? `
       </button>
     ` : ""}
 
-${isAdminPage ? `
+${!isUsersPage ? `
   <button
     id="btnUsersByDeck"
     type="button"
@@ -1050,13 +1070,13 @@ ${isAdminPage ? `
       });
     }
 
-const btnUsersByDeck = document.getElementById("btnUsersByDeck");
+    const btnUsersByDeck = document.getElementById("btnUsersByDeck");
 
-if (btnUsersByDeck) {
-  btnUsersByDeck.addEventListener("click", () => {
-    goToMazoUsersPage();
-  });
-}
+    if (btnUsersByDeck) {
+      btnUsersByDeck.addEventListener("click", () => {
+        goToMazoUsersPage();
+      });
+    }
 
     const btnAdminArchive = document.getElementById("btnAdminArchive");
 
@@ -1142,8 +1162,8 @@ if (btnUsersByDeck) {
     });
 
     document.querySelectorAll(
-  ".mazobar__topcard-image.is-draggable, .mazobar__topcard-fallback.is-draggable, .mazobar__topcard-button.is-draggable"
-)
+      ".mazobar__topcard-image.is-draggable, .mazobar__topcard-fallback.is-draggable, .mazobar__topcard-button.is-draggable"
+    )
       .forEach((cardEl) => {
         cardEl.addEventListener("dragstart", (event) => {
           const playId = Number(cardEl.dataset.playId || 0);
