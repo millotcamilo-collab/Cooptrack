@@ -1008,7 +1008,7 @@ ${isArchivoPage ? `
 
 ${!isUsersPage ? `
   <button
-    id="btnUsersHero"
+    id="btnUsersByDeck"
     type="button"
     class="mazobar__cmd-btn"
     title="Usuarios del mazo"
