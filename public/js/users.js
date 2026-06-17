@@ -645,6 +645,9 @@ function renderUsersPicker(containerId, options = {}) {
   }
 
   function renderSearchState() {
+    if (options.hideSearch) {
+      return "";
+    }
     console.log("EXTRA ACTIONS", options.extraActions);
     return `
     <div class="users-picker__top">
@@ -795,19 +798,21 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
             ${renderUserDeckSummary(user, options.plays || [])}
           </button>
 
-          ${alreadyInvited
-              ? `<span class="users-picker__row-action users-picker__row-action--disabled" title="Ya invitado">${escapeHtml(actionLabel)}</span>`
-              : `
-              <button
-                type="button"
-                class="users-picker__row-action"
-                data-users-row-animate-id="${escapeHtml(user.id)}"
-                title="Asignar usuario"
-              >
-                <img src="/assets/icons/ClaquetaAbierta.gif" alt="Asignar usuario" />
-              </button>
-            `
-            }
+${options.readonly
+  ? ""
+  : alreadyInvited
+    ? `<span class="users-picker__row-action users-picker__row-action--disabled" title="Ya invitado">${escapeHtml(actionLabel)}</span>`
+    : `
+      <button
+        type="button"
+        class="users-picker__row-action"
+        data-users-row-animate-id="${escapeHtml(user.id)}"
+        title="Asignar usuario"
+      >
+        <img src="/assets/icons/ClaquetaAbierta.gif" alt="Asignar usuario" />
+      </button>
+    `
+}
         </div>
       `;
         }).join("");
