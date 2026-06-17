@@ -534,25 +534,51 @@
 
 
     if (sendBtn) {
-      sendBtn.addEventListener("click", async () => {
-        const result = await patchPlay(play.id, {
-          play_status: "SENT"
-        });
+  sendBtn.addEventListener("click", async () => {
+    const draft = window.__lienzoAceTransferDraft || {};
+    const targetUserId = Number(draft.target_user_id || 0);
+    const token = localStorage.getItem("cooptrackToken");
 
-        if (result.ok) {
-          const deckId =
-            Number(play?.deck_id || 0) ||
-            Number(getCurrentDeck()?.id || 0);
-
-          if (deckId) {
-            window.location.href = `/mazoAdministradores.html?id=${deckId}`;
-            return;
-          }
-
-          window.location.href = "/mazoAdministradores.html";
-        }
-      });
+    if (!targetUserId) {
+      alert("Seleccioná el nuevo propietario del As.");
+      return;
     }
+
+    if (!token) {
+      alert("No estás logueado.");
+      return;
+    }
+
+    const response = await fetch(`/plays/${play.id}/transfer-ace`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        target_user_id: targetUserId
+      })
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data?.ok) {
+      alert(data?.error || "No se pudo transferir el As.");
+      return;
+    }
+
+    const deckId =
+      Number(play?.deck_id || 0) ||
+      Number(getCurrentDeck()?.id || 0);
+
+    if (deckId) {
+      window.location.href = `/mazoAdministradores.html?id=${deckId}`;
+      return;
+    }
+
+    window.location.href = "/mazoAdministradores.html";
+  });
+}
 
     if (dismissBtn) {
       dismissBtn.addEventListener("click", async () => {

@@ -2356,6 +2356,125 @@ async function removeUserFromAclLines(client, deckId, userId) {
   }
 }
 
+app.post('/plays/:id/transfer-ace', requireAuth, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const sourceAceId = Number(req.params.id || 0);
+    const currentUserId = Number(req.auth.userId || 0);
+    const newOwnerId = Number(req.body.target_user_id || 0);
+
+    if (!sourceAceId || !newOwnerId) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Faltan sourceAceId o target_user_id'
+      });
+    }
+
+    await client.query('BEGIN');
+
+    const sourceResult = await client.query(
+      `
+      SELECT *
+      FROM plays
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [sourceAceId]
+    );
+
+    const sourceAce = sourceResult.rows[0];
+
+    if (!sourceAce) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ ok: false, error: 'As no encontrado' });
+    }
+
+    const rank = String(sourceAce.card_rank || '').toUpperCase();
+    const suit = String(sourceAce.card_suit || '').toUpperCase();
+    const flow = String(sourceAce.play_code || '').split('§')[7] || '';
+
+    if (rank !== 'A' || flow !== 'foundation') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ ok: false, error: 'La jugada madre debe ser un As fundacional' });
+    }
+
+    if (suit === 'HEART') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ ok: false, error: 'El A♥ no se transfiere' });
+    }
+
+    const oldOwnerId = Number(sourceAce.target_user_id || sourceAce.created_by_user_id || 0);
+
+    if (oldOwnerId !== currentUserId) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ ok: false, error: 'Solo el propietario actual puede transferir este As' });
+    }
+
+    if (newOwnerId === oldOwnerId) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ ok: false, error: 'El nuevo propietario debe ser otro usuario' });
+    }
+
+    const targetCheck = await client.query(
+      `SELECT id FROM users WHERE id = $1 LIMIT 1`,
+      [newOwnerId]
+    );
+
+    if (!targetCheck.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ ok: false, error: 'Usuario destino no encontrado' });
+    }
+
+    const issuedWith = await getIssuedWithForUser(
+      client,
+      sourceAce.deck_id,
+      currentUserId
+    );
+
+    const acePlayCode = buildPlayCode({
+      mazoId: sourceAce.deck_id,
+      userId: currentUserId,
+      rank: 'A',
+      suit,
+      action: 'transfer_ace',
+      authorized: `U:${currentUserId}`,
+      flow: `child_of:${sourceAce.id};transfer:${sourceAce.id};from:U:${oldOwnerId};to:U:${newOwnerId}`,
+      recipients: `U:${newOwnerId}`
+    });
+
+    const createdAce = await insertInstitutionalPlay(client, {
+      mazoId: sourceAce.deck_id,
+      createdByUserId: currentUserId,
+      parentPlayId: sourceAce.id,
+      targetUserId: newOwnerId,
+      playCode: acePlayCode,
+      playText: '',
+      playStatus: 'SENT',
+      issuedWith
+    });
+
+    await handleReadersOnPlayCreate(client, createdAce.row);
+    await expandReadersForASend(client, createdAce.row);
+
+    await client.query('COMMIT');
+
+    return res.json({
+      ok: true,
+      aceTransfer: createdAce.row,
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error en transfer-ace', error);
+    return res.status(error.statusCode || 500).json({
+      ok: false,
+      error: error.message || 'No se pudo transferir el As'
+    });
+  } finally {
+    client.release();
+  }
+});
+
 app.patch('/plays/:id', requireAuth, async (req, res) => {
   const client = await pool.connect();
 

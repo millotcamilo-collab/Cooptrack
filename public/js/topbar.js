@@ -359,16 +359,14 @@ if (
   return "/lienzoJcorazon.html";
 }
 
-    // 1) TARGET: Si es destinatario y hay acción pendiente (SENT/PENDING)
 if (
-  rank === "K" &&
+  (rank === "K" || rank === "A") &&
   isTarget &&
   (status === "SENT" || status === "PENDING")
 ) {
   return "/america.html";
 }
 
-// 1) TARGET: Si es destinatario y hay acción pendiente (SENT/PENDING)
 if (isTarget && (status === "SENT" || status === "PENDING")) {
   return "/amsterdam.html";
 }
