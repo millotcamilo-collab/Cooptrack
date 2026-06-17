@@ -113,7 +113,7 @@ function addUserToMap(map, user) {
   });
 }
 
-function getDeckUsersFromPlays(plays = []) {
+function getDeckUsersFromPlays(plays = [], currentUserId = 0) {
   const map = new Map();
 
   plays.forEach((play) => {
@@ -132,7 +132,10 @@ function getDeckUsersFromPlays(plays = []) {
     });
   });
 
-  return Array.from(map.values());
+  return Array.from(map.values()).filter(
+    (user) => Number(user.id) !== Number(currentUserId || 0)
+  );
+
 }
 
 function getSuitSymbol(suit) {
@@ -206,7 +209,10 @@ function renderUsersPicker(containerId, options = {}) {
     deckId: options.deckId || null,
     allUsers: [],
     filteredUsers: [],
-    deckUsers: getDeckUsersFromPlays(options.plays || []),
+    deckUsers: getDeckUsersFromPlays(
+      options.plays || [],
+      options.currentUserId || 0
+    ),
     selectedUser: options.selectedUser || null,
     searchValue: "",
     loaded: false,
