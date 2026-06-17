@@ -725,13 +725,21 @@ function animateUserFaceToCard(user) {
   const sourceAvatar = document.querySelector(
   `[data-users-row-id="${CSS.escape(String(user?.id || ""))}"] .users-picker__row-photo`
 );
-  const targetAvatar = document.querySelector(
-    "#amsterdam .lv2-play-card__owner-avatar"
-  );
 
-  if (!sourceAvatar || !targetAvatar) return;
+const selectedAvatar = document.querySelector(
+  "#colombes .users-picker__people-icon"
+);
 
-const fromRect = sourceAvatar.getBoundingClientRect();
+const targetAvatar = document.querySelector(
+  "#amsterdam .lv2-play-card__owner-avatar"
+);
+
+const originAvatar = sourceAvatar || selectedAvatar;
+
+if (!originAvatar || !targetAvatar) return;
+
+const fromRect = originAvatar.getBoundingClientRect();
+
   const toRect = targetAvatar.getBoundingClientRect();
 
   const flyer = document.createElement("img");
