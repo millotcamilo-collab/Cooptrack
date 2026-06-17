@@ -336,3 +336,35 @@
   line-height: 1.1;
   opacity: .8;
 }
+
+@media (min-width: 900px) {
+
+  .users-picker {
+    width: 520px;
+  }
+
+  .users-picker__search-input {
+    width: 260px;
+  }
+
+  .users-picker__row-main {
+    grid-template-columns: 50px 56px 1fr;
+  }
+
+  .users-picker__row-photo {
+    width: 56px;
+    height: 56px;
+  }
+
+  .users-picker__row-type-icon {
+    height: 56px;
+  }
+
+  .users-picker__row-name {
+    font-size: 18px;
+  }
+
+  .users-picker__row-summary {
+    font-size: 14px;
+  }
+}
