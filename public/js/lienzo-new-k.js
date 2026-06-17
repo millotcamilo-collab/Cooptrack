@@ -825,6 +825,8 @@ console.log("USERS PICKER PARAMS", {
                             `Usuario ${user.id}`);
                 }
 
+const dropzone = document.getElementById("lienzo-target-dropzone");
+
 if (dropzone) {
   dropzone.innerHTML = renderKCardBox(window.__lienzoNewDraft, true);
 
