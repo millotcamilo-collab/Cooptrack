@@ -23,16 +23,14 @@
 function buildKeyUrl(play, context) {
   const playId = Number(play?.id || 0);
   const deckId = resolveDeckId(play, context);
-  const suit = String(play?.suit || play?.card_suit || "").toUpperCase();
 
-  if (!playId || !deckId || !suit) return "";
+  if (!playId || !deckId) return "";
 
   return (
-    `/lienzo-new-k.html` +
+    `/lienzo.html` +
     `?deckId=${deckId}` +
-    `&parentPlayId=${playId}` +
-    `&childRank=K` +
-    `&childSuit=${encodeURIComponent(suit)}`
+    `&playId=${playId}` +
+    `&action=view`
   );
 }
 
