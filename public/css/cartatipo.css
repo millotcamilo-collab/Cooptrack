@@ -117,10 +117,9 @@
   pointer-events: none;
 }
 
-.lv2-play-card--authority::after {
+.lv2-play-card.lv2-play-card--authority:has(.lv2-play-card__inner--figure)::after {
   height: 40%;
 }
-
 
 .lv2-play-card__title,
 .lv2-play-card__meta,
