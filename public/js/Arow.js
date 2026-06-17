@@ -44,7 +44,7 @@ function shouldShowAceKey(play, context) {
       `/lienzo.html` +
       `?deckId=${deckId}` +
       `&playId=${playId}` +
-      `&action=view`
+      `&action=transfer`
     );
   }
 
@@ -465,7 +465,6 @@ ${transferPending ? `
   </div>
 ` : ""}
 
-</article>
       </article>
     `;
   }
