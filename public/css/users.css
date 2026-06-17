@@ -277,3 +277,8 @@
   color: #cc0000;
 }
 
+.users-picker__row-summary {
+  font-size: 11px;
+  line-height: 1.2;
+  opacity: .8;
+}

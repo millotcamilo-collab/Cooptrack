@@ -135,6 +135,66 @@ function getDeckUsersFromPlays(plays = []) {
   return Array.from(map.values());
 }
 
+function getSuitSymbol(suit) {
+  const s = String(suit || "").toUpperCase();
+
+  if (s === "HEART") return "♥";
+  if (s === "SPADE") return "♠";
+  if (s === "DIAMOND") return "♦";
+  if (s === "CLUB") return "♣";
+
+  return "";
+}
+
+function getUserDeckSummary(userId, plays = []) {
+  const uid = Number(userId || 0);
+
+  const aces = new Set();
+  const kings = new Set();
+  let qspades = 0;
+
+  plays.forEach((play) => {
+    const ownerId =
+      Number(play?.target_user_id || 0) ||
+      Number(play?.created_by_user_id || 0);
+
+    if (ownerId !== uid) return;
+
+    const rank = String(play?.card_rank || play?.rank || "").toUpperCase();
+    const suit = String(play?.card_suit || play?.suit || "").toUpperCase();
+
+    if (rank === "A") {
+      aces.add(getSuitSymbol(suit));
+    }
+
+    if (rank === "K") {
+      kings.add(getSuitSymbol(suit));
+    }
+
+    if (rank === "Q" && suit === "SPADE") {
+      qspades += 1;
+    }
+  });
+
+  return {
+    aces: Array.from(aces),
+    kings: Array.from(kings),
+    qspades
+  };
+}
+
+function renderUserDeckSummary(user, plays) {
+  const s = getUserDeckSummary(user.id, plays);
+
+  return `
+    <div class="users-picker__row-summary">
+      ${s.aces.length ? `A ${s.aces.join(" ")}` : ""}
+      ${s.kings.length ? ` K ${s.kings.join(" ")}` : ""}
+      ${s.qspades ? ` Q♠ ${s.qspades}` : ""}
+    </div>
+  `;
+}
+
 function renderUsersPicker(containerId, options = {}) {
   const container = document.getElementById(containerId);
   if (!container) {
@@ -203,8 +263,10 @@ function renderUsersPicker(containerId, options = {}) {
   }
 
   function handleSelect(userId) {
-    const selected = state.filteredUsers.find((u) => String(u.id) === String(userId))
-      || state.allUsers.find((u) => String(u.id) === String(userId));
+    const selected =
+      state.filteredUsers.find((u) => String(u.id) === String(userId)) ||
+      state.deckUsers.find((u) => String(u.id) === String(userId)) ||
+      state.allUsers.find((u) => String(u.id) === String(userId));
 
     if (!selected) return;
 
@@ -443,6 +505,7 @@ function renderUsersPicker(containerId, options = {}) {
 
         const selected =
           state.filteredUsers.find((u) => String(u.id) === String(userId)) ||
+          state.deckUsers.find((u) => String(u.id) === String(userId)) ||
           state.allUsers.find((u) => String(u.id) === String(userId));
 
         if (!selected) return;
@@ -648,7 +711,9 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
         .trim()
         .toUpperCase();
 
-      if (status === "REJECTED" || status === "CANCELLED") return false;
+      const inactiveStatuses = ["REJECTED", "CANCELLED", "QUIT", "FIRED"];
+
+      if (inactiveStatuses.includes(status)) return false;
 
       const playDeckId = Number(play?.deck_id || 0);
       const playTargetId = Number(play?.target_user_id || 0);
@@ -660,14 +725,18 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
       if (playRank !== childRank) return false;
       if (playSuit !== childSuit) return false;
 
-      if (childRank === "K") {
+      if (childRank === "Q" && childSuit === "SPADE") {
+        return (
+          playTargetId === userId &&
+          Number(play?.parent_play_id || 0) === parentPlayId
+        );
+      }
+
+      if (childRank === "K" || childRank === "A") {
         return playTargetId === userId;
       }
 
-      return (
-        playTargetId === userId &&
-        Number(play?.parent_play_id || 0) === parentPlayId
-      );
+      return false;
     });
   }
 
@@ -717,6 +786,7 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
             <span class="users-picker__row-name">
               ${escapeHtml(getUserDisplayName(user))}
             </span>
+            ${renderUserDeckSummary(user, options.plays || [])}
           </button>
 
           ${alreadyInvited
@@ -735,10 +805,10 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
         </div>
       `;
         }).join("");
-        }
       }
+    }
 
-      return `
+    return `
     ${state.isCreatingUser ? renderCreateUserState() : renderSearchState()}
     ${state.isCreatingUser ? "" : `
       <div class="users-picker__results">
@@ -746,12 +816,12 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
       </div>
     `}
   `;
-    }
+  }
 
-    function renderSelectedState() {
-      const user = state.selectedUser;
+  function renderSelectedState() {
+    const user = state.selectedUser;
 
-      return `
+    return `
     <div class="users-picker__top">
       <img
         class="users-picker__people-icon"
@@ -775,33 +845,33 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
       </div>
     </div>
   `;
-    }
+  }
 
-    function rerender() {
-      const html = `
+  function rerender() {
+    const html = `
     <section class="users-picker">
       ${state.selectedUser ? renderSelectedState() : renderResultsState()}
     </section>
   `;
 
-      container.innerHTML = html;
-      bindEvents();
-    }
-
-    rerender();
-
-    return {
-      rerender,
-      clear() {
-        container.innerHTML = "";
-      },
-      getSelectedUser() {
-        return state.selectedUser;
-      },
-      setSelectedUser(user) {
-        state.selectedUser = user || null;
-        rerender();
-      },
-    };
+    container.innerHTML = html;
+    bindEvents();
   }
-  window.renderUsersPicker = renderUsersPicker;
+
+  rerender();
+
+  return {
+    rerender,
+    clear() {
+      container.innerHTML = "";
+    },
+    getSelectedUser() {
+      return state.selectedUser;
+    },
+    setSelectedUser(user) {
+      state.selectedUser = user || null;
+      rerender();
+    },
+  };
+}
+window.renderUsersPicker = renderUsersPicker;
