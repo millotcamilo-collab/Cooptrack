@@ -985,67 +985,67 @@
     }
 
     function getCorporateCardsForCurrentUser(plays, currentUserId) {
-  const viewerId = Number(currentUserId || 0);
-  if (!viewerId) return [];
+        const viewerId = Number(currentUserId || 0);
+        if (!viewerId) return [];
 
-  const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
+        const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
 
-  return plays
-    .filter((p) => {
-      const parsed = p.parsed || parsePlayCode(p.play_code || "");
+        return plays
+            .filter((p) => {
+                const parsed = p.parsed || parsePlayCode(p.play_code || "");
 
-      const rank = normalizeRank(p.card_rank || p.rank || parsed.rank);
-      const suit = normalizeSuit(p.card_suit || p.suit || parsed.suit);
-      const status = normalizeRank(p.play_status || p.status);
-      const flow = String(parsed.flow || "").toLowerCase();
-      const action = String(parsed.action || p.action || "").toLowerCase();
+                const rank = normalizeRank(p.card_rank || p.rank || parsed.rank);
+                const suit = normalizeSuit(p.card_suit || p.suit || parsed.suit);
+                const status = normalizeRank(p.play_status || p.status);
+                const flow = String(parsed.flow || "").toLowerCase();
+                const action = String(parsed.action || p.action || "").toLowerCase();
 
-      if (!["A", "K"].includes(rank)) return false;
-      if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
-      if (finalStatuses.includes(status)) return false;
-      if (flow === "acl") return false;
-      if (action === "puedejugar" || action === "puede jugar") return false;
+                if (!["A", "K"].includes(rank)) return false;
+                if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+                if (finalStatuses.includes(status)) return false;
+                if (flow === "acl") return false;
+                if (action === "puedejugar" || action === "puede jugar") return false;
 
-      let ownerId = 0;
+                let ownerId = 0;
 
-      if (rank === "A") {
-        ownerId =
-          Number(p.target_user_id || 0) ||
-          Number(p.created_by_user_id || 0) ||
-          Number(parsed.userId || 0);
+                if (rank === "A") {
+                    ownerId =
+                        Number(p.target_user_id || 0) ||
+                        Number(p.created_by_user_id || 0) ||
+                        Number(parsed.userId || 0);
 
-        return ownerId === viewerId;
-      }
+                    return ownerId === viewerId;
+                }
 
-      if (rank === "K") {
-        ownerId =
-          Number(p.target_user_id || 0) ||
-          Number(p.created_by_user_id || 0) ||
-          Number(parsed.userId || 0);
+                if (rank === "K") {
+                    ownerId =
+                        Number(p.target_user_id || 0) ||
+                        Number(p.created_by_user_id || 0) ||
+                        Number(parsed.userId || 0);
 
-        return ["ACTIVE", "APPROVED", "SENT", "PENDING"].includes(status) &&
-          ownerId === viewerId;
-      }
+                    return ["ACTIVE", "APPROVED", "SENT", "PENDING"].includes(status) &&
+                        ownerId === viewerId;
+                }
 
-      return false;
-    })
-    .map((p) => {
-      const parsed = p.parsed || parsePlayCode(p.play_code || "");
+                return false;
+            })
+            .map((p) => {
+                const parsed = p.parsed || parsePlayCode(p.play_code || "");
 
-      return {
-        id: p.id,
-        card_rank: normalizeRank(p.card_rank || p.rank || parsed.rank),
-        card_suit: normalizeSuit(p.card_suit || p.suit || parsed.suit)
-      };
-    })
-    .filter((card, index, self) => {
-      const key = `${card.card_rank}_${card.card_suit}`;
-      return index === self.findIndex((c) => {
-        return `${c.card_rank}_${c.card_suit}` === key;
-      });
-    })
-    .sort(compareCorporateCards);
-}
+                return {
+                    id: p.id,
+                    card_rank: normalizeRank(p.card_rank || p.rank || parsed.rank),
+                    card_suit: normalizeSuit(p.card_suit || p.suit || parsed.suit)
+                };
+            })
+            .filter((card, index, self) => {
+                const key = `${card.card_rank}_${card.card_suit}`;
+                return index === self.findIndex((c) => {
+                    return `${c.card_rank}_${c.card_suit}` === key;
+                });
+            })
+            .sort(compareCorporateCards);
+    }
 
 
     function renderPlayCardBox(play) {
@@ -1073,9 +1073,9 @@
                 ? resolveTargetUser(play)
                 : resolveSourceUser(play);
 
-const ownerCards = ownerUser?.id
-  ? getCorporateCardsForCurrentUser(getAllPlays(), Number(ownerUser.id))
-  : [];
+        const ownerCards = ownerUser?.id
+            ? getCorporateCardsForCurrentUser(getAllPlays(), Number(ownerUser.id))
+            : [];
 
         return window.CartaTipo.renderPlayCardBox({
             rank,
@@ -1547,6 +1547,7 @@ const ownerCards = ownerUser?.id
 
         const sendIcon = "/assets/icons/buzon60.gif";
         const saveIcon = "/assets/icons/salvar40.gif";
+        const deleteIcon = "/assets/icons/papelera80.gif";
 
         const canOperate =
             rank === "Q" &&
@@ -1565,18 +1566,23 @@ const ownerCards = ownerUser?.id
         const qHeartMode = hasDroppedQHeart();
 
         return `
-      <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
-${qHeartMode
+  <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
+
+    ${qHeartMode
                 ? ``
                 : `
-    <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
-      <img src="${sendIcon}" alt="Enviar" />
-    </button>
-  `
+      <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
+        <img src="${sendIcon}" alt="Enviar" />
+      </button>
+
+      <button id="lienzo-delete-btn" class="icon-btn" title="Borrar invitación">
+        <img src="${deleteIcon}" alt="Borrar invitación" />
+      </button>
+    `
             }
 
-      </div>
-    `;
+  </div>
+`;
     }
 
 
@@ -1682,7 +1688,7 @@ ${qHeartMode
 
 
         ${parentJSpadeText
-  ? `
+                ? `
     <button
       type="button"
       class="lienzo-parent-jpica-btn"
@@ -1690,38 +1696,38 @@ ${qHeartMode
       title="Abrir J♠"
     >
       ${window.CartaTipo.renderPlayCardBox({
-        rank: "J",
-        suit: "SPADE",
-        title: parentJSpadeText,
-        play_text: parentPlay?.play_text || "",
-        start_date: parentPlay?.start_date || null,
-        end_date: parentPlay?.end_date || null,
-        location: parentPlay?.location || "",
-        dayItems: getDayItemsForPlay(parentPlay || play),
-        ownerUser: user,
-        ownerCards: getCorporateCardsForCurrentUser(
-          getAllPlays(),
-          Number(user?.id || 0)
-        ),
-        metas: [
-          parentPlay?.start_date
-            ? {
-                icon: "/assets/icons/reloj60.gif",
-                text: formatTimeLabel(parentPlay.start_date)
-              }
-            : null,
-          parentPlay?.location
-            ? {
-                icon: "/assets/icons/LocGlobito80.gif",
-                text: parentPlay.location
-              }
-            : null
-        ].filter(Boolean)
-      })}
+                    rank: "J",
+                    suit: "SPADE",
+                    title: parentJSpadeText,
+                    play_text: parentPlay?.play_text || "",
+                    start_date: parentPlay?.start_date || null,
+                    end_date: parentPlay?.end_date || null,
+                    location: parentPlay?.location || "",
+                    dayItems: getDayItemsForPlay(parentPlay || play),
+                    ownerUser: user,
+                    ownerCards: getCorporateCardsForCurrentUser(
+                        getAllPlays(),
+                        Number(user?.id || 0)
+                    ),
+                    metas: [
+                        parentPlay?.start_date
+                            ? {
+                                icon: "/assets/icons/reloj60.gif",
+                                text: formatTimeLabel(parentPlay.start_date)
+                            }
+                            : null,
+                        parentPlay?.location
+                            ? {
+                                icon: "/assets/icons/LocGlobito80.gif",
+                                text: parentPlay.location
+                            }
+                            : null
+                    ].filter(Boolean)
+                })}
     </button>
   `
-  : ""
-}
+                : ""
+            }
   ${qHeartBoxHtml}
 </div>
 
@@ -1897,23 +1903,23 @@ ${qHeartMode
                     : "Invitación enviada"
             );
 
-const deckId =
-  Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
+            const deckId =
+                Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
 
-const parentPlayId = Number(play?.parent_play_id || 0);
+            const parentPlayId = Number(play?.parent_play_id || 0);
 
-if (deckId && parentPlayId) {
-  window.location.href =
-    `/lienzoJpica.html?deckId=${deckId}&playId=${parentPlayId}`;
-  return;
-}
+            if (deckId && parentPlayId) {
+                window.location.href =
+                    `/lienzoJpica.html?deckId=${deckId}&playId=${parentPlayId}`;
+                return;
+            }
 
-if (deckId) {
-  window.location.href = `/mazo.html?id=${deckId}`;
-  return;
-}
+            if (deckId) {
+                window.location.href = `/mazo.html?id=${deckId}`;
+                return;
+            }
 
-window.history.back();
+            window.history.back();
 
         } catch (error) {
             console.error("Error en handleSendPlay", error);
@@ -2203,6 +2209,52 @@ window.history.back();
         window.history.back();
     }
 
+async function handleDeletePlay(play) {
+    try {
+        const playId = Number(play?.id || 0);
+        const token = localStorage.getItem("cooptrackToken");
+
+        if (!playId) {
+            alert("playId inválido");
+            return;
+        }
+
+        const confirmed = window.confirm(
+            "¿Querés borrar esta invitación?"
+        );
+
+        if (!confirmed) return;
+
+        const response = await fetch(`/plays/${playId}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            alert(data?.error || "No se pudo borrar la invitación");
+            return;
+        }
+
+        const deckId =
+            Number(play?.deck_id || 0) ||
+            Number(getCurrentDeck()?.id || 0);
+
+        const parentPlayId =
+            Number(play?.parent_play_id || 0);
+
+        window.location.href =
+            `/lienzoJpica.html?deckId=${deckId}&playId=${parentPlayId}`;
+
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo borrar la invitación");
+    }
+}
+
     function bindLienzoActions(play) {
         const saveBtn = document.getElementById("lienzo-save-btn");
         const sendBtn = document.getElementById("lienzo-send-btn");
@@ -2210,6 +2262,7 @@ window.history.back();
         const rejectBtn = document.getElementById("lienzo-reject-btn");
         const cancelBtn = document.getElementById("lienzo-cancel-btn");
         const validatorRejectBtn = document.getElementById("lienzo-validator-reject-btn");
+        const deleteBtn = document.getElementById("lienzo-delete-btn");
 
         const validatorSendBtn = document.getElementById("lienzo-validator-send-btn");
 
@@ -2224,6 +2277,11 @@ window.history.back();
 
         syncQHeartSendButtonVisibility();
 
+        if (deleteBtn) {
+            deleteBtn.addEventListener("click", () => {
+                handleDeletePlay(play);
+            });
+        }
 
         if (validatorSendBtn) {
             validatorSendBtn.addEventListener("click", () => {
