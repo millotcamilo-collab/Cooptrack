@@ -178,6 +178,16 @@
 
   function renderColombes(play) {
 
+    const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
+const isDeadline = spadeMode === "DEADLINE";
+
+const mainDate = isDeadline
+  ? play.end_date
+  : play.start_date;
+
+const mainIcon = isDeadline
+  ? "/assets/icons/bombaRedonda60.gif"
+  : "/assets/icons/reloj60.gif";
 
     return `
     <section class="lienzo-tribune lienzo-tribune--source">
@@ -198,12 +208,12 @@
       ownerUser: getPlayOwnerUser(play),
       ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
       metas: [
-        play.start_date
-          ? {
-            icon: "/assets/icons/reloj60.gif",
-            text: formatTime(play.start_date)
-          }
-          : null,
+mainDate
+  ? {
+    icon: mainIcon,
+    text: formatTime(mainDate)
+  }
+  : null,
         play.location
           ? {
             icon: "/assets/icons/LocGlobito80.gif",

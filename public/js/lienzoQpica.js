@@ -1484,7 +1484,12 @@
 
       ${window.CartaTipo.renderCardCorners("Q", "HEART")}
 
-      <div class="lv2-play-card__inner lv2-play-card__inner--figure" style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');">
+      <div
+        class="lv2-play-card__figure"
+        style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
+    ></div>
+
+<div class="lv2-play-card__inner lv2-play-card__inner--figure">
 
 
 
