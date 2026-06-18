@@ -408,3 +408,16 @@ font-size: 1.5em;
 .lv2-mini-day__location {
   cursor: pointer;
 }
+
+.lv2-mini-day__text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lv2-mini-day__activity-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}

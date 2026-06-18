@@ -107,6 +107,15 @@
         .sort((a, b) => new Date(a.date) - new Date(b.date))
       : [];
 
+const playType = String(location || "")
+  .trim()
+  .toUpperCase();
+
+const activityIcon =
+  playType === "DEADLINE"
+    ? "/assets/icons/bombaRedonda60.gif"
+    : "/assets/icons/reloj60.gif";
+
     return `
     <div class="lv2-mini-day">
       ${dayLabel ? `
@@ -120,12 +129,24 @@
 
       <div class="lv2-mini-day__row lv2-mini-day__row--active">
         <span class="lv2-mini-day__hour">${escapeHtml(formatHour(date))}</span>
-        <span class="lv2-mini-day__text">${escapeHtml(play_text)}</span>
+        <span class="lv2-mini-day__text">
+  <img
+    class="lv2-mini-day__activity-icon"
+    src="${activityIcon}"
+    alt=""
+  />
+  ${escapeHtml(play_text)}
+</span>
+
 ${location ? `
-<span class="lv2-mini-day__location">
-  📍 ${escapeHtml(location)}
+<span
+  class="lv2-mini-day__location"
+  title="${escapeHtml(location)}"
+>
+  📍
 </span>
 ` : ""}
+
       </div>
 
       ${otherRows
@@ -135,10 +156,13 @@ ${location ? `
               ${item.hour ? `<span class="lv2-mini-day__hour">${escapeHtml(item.hour)}</span>` : ""}
               <span class="lv2-mini-day__text">${escapeHtml(item.play_text || "")}</span>
               ${item.location ? `
-<span class="lv2-mini-day__location">
-  📍 ${escapeHtml(item.location)}
+<span
+  class="lv2-mini-day__location"
+  title="${escapeHtml(item.location)}"
+>
+  📍
 </span>
-              ` : ""}
+` : ""}
             </div>
           `
         )
