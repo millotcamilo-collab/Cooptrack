@@ -70,7 +70,15 @@
     spade_mode = "",
     dayItems = []
   }) {
-    const date = start_date || end_date;
+    const playType = String(spade_mode || "")
+      .trim()
+      .toUpperCase();
+
+    const isDeadline = playType === "DEADLINE";
+
+    const date = isDeadline
+      ? (end_date || start_date)
+      : (start_date || end_date);
     const [h1, h2, h3, h4] = getMiniDayHours(date);
     const range = getMiniDayRange(date);
 
@@ -108,14 +116,13 @@
         .sort((a, b) => new Date(a.date) - new Date(b.date))
       : [];
 
-const playType = String(spade_mode || "")
-  .trim()
-  .toUpperCase();
+    const playType = String(spade_mode || "")
+      .trim()
+      .toUpperCase();
 
-const activityIcon =
-  playType === "DEADLINE"
-    ? "/assets/icons/bombaRedonda60.gif"
-    : "/assets/icons/reloj60.gif";
+const activityIcon = isDeadline
+  ? "/assets/icons/bombaRedonda60.gif"
+  : "/assets/icons/reloj60.gif";
 
     return `
     <div class="lv2-mini-day">
