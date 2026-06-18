@@ -61,7 +61,7 @@
 
     <!-- Situaciones Amsterdam -->
     <script src="/js/situaciones/K_ENTRA.js"></script>
-        <script src="/js/situaciones/AS_ENTRA.js"></script>
+    <script src="/js/situaciones/AS_ENTRA.js"></script>
 
 
 
@@ -275,8 +275,8 @@
                 ].filter(Boolean);
 
                 return window.CartaTipo.renderPlayCardBox({
-                    rank: play?.card_rank,
-                    suit: play?.card_suit,
+                    rank: play?.rank || play?.card_rank,
+                    suit: play?.suit || play?.card_suit,
                     title,
                     status: play?.play_status || "",
 
@@ -324,9 +324,9 @@
                 }
             }
 
-window.bindAmericaTargetActions = bindTargetActions;
-            
-        function isMobileViewport() {
+            window.bindAmericaTargetActions = bindTargetActions;
+
+            function isMobileViewport() {
                 return window.matchMedia("(max-width: 900px)").matches;
             }
 
@@ -366,28 +366,28 @@ window.bindAmericaTargetActions = bindTargetActions;
                 return `/mazo.html${deckQuery}`;
             }
 
-async function updatePlayStatus(play, status) {
-  const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({
-      play_status: status
-    })
-  });
+            async function updatePlayStatus(play, status) {
+                const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        play_status: status
+                    })
+                });
 
-  const data = await response.json().catch(() => null);
+                const data = await response.json().catch(() => null);
 
-  if (!response.ok || !data?.ok) {
-    alert("No se pudo actualizar la jugada.");
-    return;
-  }
+                if (!response.ok || !data?.ok) {
+                    alert("No se pudo actualizar la jugada.");
+                    return;
+                }
 
-  window.location.href =
-    resolveAfterAmsterdamActionUrl(play, status);
-}
+                window.location.href =
+                    resolveAfterAmsterdamActionUrl(play, status);
+            }
 
 
 
@@ -449,8 +449,8 @@ async function updatePlayStatus(play, status) {
                 }
                 let play = data.play;
                 let deckState = null;
-let senderOwner = null;
-let parentOwner = null;
+                let senderOwner = null;
+                let parentOwner = null;
 
                 const stateResponse = await fetch(`${API_BASE_URL}/mazos/${play.deck_id}/state`, {
                     headers: {
@@ -490,43 +490,42 @@ let parentOwner = null;
                 }
 
                 console.log("PLAY COMPLETO", play);
-console.log("PLAY CREATED BY", play.created_by_user_id);
-console.log("DECKSTATE COMPLETO", deckState);
-console.log("DECKSTATE USERS", deckState?.users);
+                console.log("PLAY CREATED BY", play.created_by_user_id);
+                console.log("DECKSTATE COMPLETO", deckState);
+                console.log("DECKSTATE USERS", deckState?.users);
 
-senderOwner = deckState?.users?.find((u) => {
-  console.log("COMPARO USER", u);
+                senderOwner = deckState?.users?.find((u) => {
+                    console.log("COMPARO USER", u);
 
-  return Number(u.id || u.user_id) === Number(play.created_by_user_id);
-});
+                    return Number(u.id || u.user_id) === Number(play.created_by_user_id);
+                });
 
-console.log("SENDER OWNER FINAL", senderOwner);
+                console.log("SENDER OWNER FINAL", senderOwner);
 
-console.log("SENDER OWNER", senderOwner);
-console.log("K_ENTRA cargado:", window.K_ENTRA);
+                console.log("SENDER OWNER", senderOwner);
+                console.log("K_ENTRA cargado:", window.K_ENTRA);
 
-const rank = normalizeText(play?.card_rank || play?.rank);
+                const rank = normalizeText(play?.card_rank || play?.rank);
 
-const situation =
-  rank === "A"
-    ? window.AS_ENTRA
-    : window.K_ENTRA;
+                const situation =
+                    rank === "A"
+                        ? window.AS_ENTRA
+                        : window.K_ENTRA;
 
-const html = situation.render({
-  play,
-  senderOwner,
-  parentOwner,
-  helpers: {
-    renderPlayCardBox,
-    escapeHtml
-  }
-});
+                const html = situation.render({
+                    play,
+                    senderOwner,
+                    parentOwner,
+                    helpers: {
+                        renderPlayCardBox,
+                        escapeHtml
+                    }
+                });
 
                 document.getElementById("tribuna-content").innerHTML = html;
-if (situation?.start) {
-  console.log("VOY A EJECUTAR START K_ENTRA");
-  window.K_ENTRA.start(play);
-}
+                if (situation?.start) {
+                    situation.start(play);
+                }
                 if (typeof window.enableAmsterdamPeek === "function") {
                     window.enableAmsterdamPeek();
                 }
