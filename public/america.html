@@ -61,6 +61,7 @@
 
     <!-- Situaciones Amsterdam -->
     <script src="/js/situaciones/K_ENTRA.js"></script>
+        <script src="/js/situaciones/AS_ENTRA.js"></script>
 
 
 
@@ -503,7 +504,15 @@ console.log("SENDER OWNER FINAL", senderOwner);
 
 console.log("SENDER OWNER", senderOwner);
 console.log("K_ENTRA cargado:", window.K_ENTRA);
-const html = window.K_ENTRA.render({
+
+const rank = normalizeText(play?.card_rank || play?.rank);
+
+const situation =
+  rank === "A"
+    ? window.AS_ENTRA
+    : window.K_ENTRA;
+
+const html = situation.render({
   play,
   senderOwner,
   parentOwner,
@@ -514,7 +523,7 @@ const html = window.K_ENTRA.render({
 });
 
                 document.getElementById("tribuna-content").innerHTML = html;
-if (window.K_ENTRA?.start) {
+if (situation?.start) {
   console.log("VOY A EJECUTAR START K_ENTRA");
   window.K_ENTRA.start(play);
 }
