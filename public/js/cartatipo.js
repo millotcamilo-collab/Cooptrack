@@ -63,12 +63,12 @@
   }
 
   function renderMiniDay({
-    play_text = "",
-    location = "",
-    start_date = null,
-    end_date = null,
-    spade_mode = "",
-    dayItems = []
+    play_text,
+    start_date,
+    end_date,
+    location,
+    spade_mode,
+    dayItems
   }) {
     const playType = String(spade_mode || "")
       .trim()
@@ -116,13 +116,10 @@
         .sort((a, b) => new Date(a.date) - new Date(b.date))
       : [];
 
-    const playType = String(spade_mode || "")
-      .trim()
-      .toUpperCase();
 
-const activityIcon = isDeadline
-  ? "/assets/icons/bombaRedonda60.gif"
-  : "/assets/icons/reloj60.gif";
+    const activityIcon = isDeadline
+      ? "/assets/icons/bombaRedonda60.gif"
+      : "/assets/icons/reloj60.gif";
 
     return `
     <div class="lv2-mini-day">
