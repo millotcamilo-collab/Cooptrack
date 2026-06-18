@@ -956,15 +956,17 @@
             status !== "CANCELLED"
         ) {
             const qHeartIncomplete = hasDroppedQHeart();
+            const deleteIcon = "/assets/icons/papelera80.gif";
 
-            return `
-      <button
-        id="lienzo-send-btn"
-        class="icon-btn"
-        title="Enviar"
-        style="${qHeartIncomplete ? "display:none;" : ""}"
-      >
+            return qHeartIncomplete
+                ? ""
+                : `
+      <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
         <img src="${sendIcon}" alt="Enviar" />
+      </button>
+
+      <button id="lienzo-delete-btn" class="icon-btn" title="Borrar invitación">
+        <img src="${deleteIcon}" alt="Borrar invitación" />
       </button>
     `;
         }
@@ -2209,51 +2211,51 @@
         window.history.back();
     }
 
-async function handleDeletePlay(play) {
-    try {
-        const playId = Number(play?.id || 0);
-        const token = localStorage.getItem("cooptrackToken");
+    async function handleDeletePlay(play) {
+        try {
+            const playId = Number(play?.id || 0);
+            const token = localStorage.getItem("cooptrackToken");
 
-        if (!playId) {
-            alert("playId inválido");
-            return;
-        }
-
-        const confirmed = window.confirm(
-            "¿Querés borrar esta invitación?"
-        );
-
-        if (!confirmed) return;
-
-        const response = await fetch(`/plays/${playId}`, {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${token}`
+            if (!playId) {
+                alert("playId inválido");
+                return;
             }
-        });
 
-        const data = await response.json();
+            const confirmed = window.confirm(
+                "¿Querés borrar esta invitación?"
+            );
 
-        if (!response.ok || !data.ok) {
-            alert(data?.error || "No se pudo borrar la invitación");
-            return;
+            if (!confirmed) return;
+
+            const response = await fetch(`/plays/${playId}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                alert(data?.error || "No se pudo borrar la invitación");
+                return;
+            }
+
+            const deckId =
+                Number(play?.deck_id || 0) ||
+                Number(getCurrentDeck()?.id || 0);
+
+            const parentPlayId =
+                Number(play?.parent_play_id || 0);
+
+            window.location.href =
+                `/lienzoJpica.html?deckId=${deckId}&playId=${parentPlayId}`;
+
+        } catch (error) {
+            console.error(error);
+            alert("No se pudo borrar la invitación");
         }
-
-        const deckId =
-            Number(play?.deck_id || 0) ||
-            Number(getCurrentDeck()?.id || 0);
-
-        const parentPlayId =
-            Number(play?.parent_play_id || 0);
-
-        window.location.href =
-            `/lienzoJpica.html?deckId=${deckId}&playId=${parentPlayId}`;
-
-    } catch (error) {
-        console.error(error);
-        alert("No se pudo borrar la invitación");
     }
-}
 
     function bindLienzoActions(play) {
         const saveBtn = document.getElementById("lienzo-save-btn");
