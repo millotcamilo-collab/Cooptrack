@@ -202,6 +202,8 @@ const mainIcon = isDeadline
       suit: "SPADE",
       title: play.play_text || "Sin texto",
       play_text: play.play_text,
+      spade_mode: play.spade_mode,spade_mode: play.spade_mode,
+
       start_date: play.start_date,
       end_date: play.end_date,
       location: play.location,

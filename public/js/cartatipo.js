@@ -67,6 +67,7 @@
     location = "",
     start_date = null,
     end_date = null,
+    spade_mode = "",
     dayItems = []
   }) {
     const date = start_date || end_date;
@@ -107,7 +108,7 @@
         .sort((a, b) => new Date(a.date) - new Date(b.date))
       : [];
 
-const playType = String(location || "")
+const playType = String(spade_mode || "")
   .trim()
   .toUpperCase();
 
@@ -270,6 +271,7 @@ ${location ? `
     title = "",
     metas = [],
     status = "",
+    spade_mode = "",
     start_date = null,
     end_date = null,
     location = "",

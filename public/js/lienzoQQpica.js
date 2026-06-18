@@ -2169,6 +2169,7 @@ return `
       suit,
       title: parentText,
       play_text: play.play_text,
+      spade_mode: parentPlay?.spade_mode,
       start_date: play.start_date,
       end_date: play.end_date,
       location: play.location,
