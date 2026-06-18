@@ -553,3 +553,38 @@ min-height: var(--lv2-tribune-h);
     grid-template-columns: 1fr;
   }
 }
+
+.asentra-remitente {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.asentra-remitente__photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.asentra-remitente__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.asentra-remitente__nick {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.asentra-remitente__cards {
+  color: rgba(255,255,255,0.85);
+  font-size: 0.9rem;
+  line-height: 1.2;
+  letter-spacing: 1px;
+}
