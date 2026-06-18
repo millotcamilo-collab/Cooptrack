@@ -2222,41 +2222,19 @@ return `
     return `
     <section class="lienzo-tribune lienzo-tribune--source">
 
-      <div class="lienzo-tribune__corporates">
-        ${scene.backgroundCards.map(renderBackgroundCard).join("")}
-      </div>
-
-      <div class="lienzo-tribune__identity">
-        <img
-          class="lienzo-tribune__avatar"
-          src="${escapeHtml(userPhoto)}"
-          alt="${escapeHtml(userName)}"
-        />
-
-        <div class="lienzo-tribune__name">
-          ${escapeHtml(userName)}
-        </div>
-
-        ${actionsHtml ? `
-          <div class="lienzo-tribune__identity-actions">
-            ${actionsHtml}
-          </div>
-        ` : ""}
-      </div>
-
-      <div class="lienzo-tribune__stage">
-        ${parentJSpadeText
-        ? renderPlayCardBox(play, {
+  <div class="lienzo-tribune__stage">
+    ${parentJSpadeText
+      ? renderPlayCardBox(play, {
           rank: "J",
           suit: "SPADE"
         })
-        : ""
-      }
+      : ""
+    }
 
-        ${qHeartBoxHtml}
-      </div>
+    ${qHeartBoxHtml}
+  </div>
 
-    </section>
+</section>
   `;
   }
 
