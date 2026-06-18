@@ -280,7 +280,7 @@
                     title,
                     status: play?.play_status || "",
                     hideInnerSuit: play?.hideInnerSuit || false,
-                    
+
                     play_text: title,
                     start_date: parent?.start_date || play?.start_date || null,
                     end_date: parent?.end_date || play?.end_date || null,
@@ -513,15 +513,16 @@
                         ? window.AS_ENTRA
                         : window.K_ENTRA;
 
-                const html = situation.render({
-                    play,
-                    senderOwner,
-                    parentOwner,
-                    helpers: {
-                        renderPlayCardBox,
-                        escapeHtml
-                    }
-                });
+const html = situation.render({
+  play,
+  senderOwner,
+  parentOwner,
+  plays: Array.isArray(deckState?.plays) ? deckState.plays : [],
+  helpers: {
+    renderPlayCardBox,
+    escapeHtml
+  }
+});
 
                 document.getElementById("tribuna-content").innerHTML = html;
                 if (situation?.start) {
