@@ -62,6 +62,7 @@
     <!-- Situaciones Amsterdam -->
     <script src="/js/situaciones/K_ENTRA.js"></script>
     <script src="/js/situaciones/AS_ENTRA.js"></script>
+    <script src="/js/situaciones/AS_RESPONDE.js"></script>
 
 
 
@@ -507,22 +508,32 @@
                 console.log("K_ENTRA cargado:", window.K_ENTRA);
 
                 const rank = normalizeText(play?.card_rank || play?.rank);
+                const status = normalizeText(play?.play_status || play?.status);
+
+                const isReadOnlyResponse =
+                    status === "APPROVED" ||
+                    status === "REJECTED" ||
+                    status === "CANCELLED" ||
+                    status === "QUIT" ||
+                    status === "FIRED";
 
                 const situation =
-                    rank === "A"
-                        ? window.AS_ENTRA
-                        : window.K_ENTRA;
+                    rank === "A" && isReadOnlyResponse
+                        ? window.AS_RESPONDE
+                        : rank === "A"
+                            ? window.AS_ENTRA
+                            : window.K_ENTRA;
 
-const html = situation.render({
-  play,
-  senderOwner,
-  parentOwner,
-  plays: Array.isArray(deckState?.plays) ? deckState.plays : [],
-  helpers: {
-    renderPlayCardBox,
-    escapeHtml
-  }
-});
+                const html = situation.render({
+                    play,
+                    senderOwner,
+                    parentOwner,
+                    plays: Array.isArray(deckState?.plays) ? deckState.plays : [],
+                    helpers: {
+                        renderPlayCardBox,
+                        escapeHtml
+                    }
+                });
 
                 document.getElementById("tribuna-content").innerHTML = html;
                 if (situation?.start) {

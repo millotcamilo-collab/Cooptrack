@@ -1,11 +1,6 @@
 window.AS_ENTRA = {
     render(ctx) {
-        const {
-            play,
-            plays = [],
-            senderOwner = null,
-            helpers
-        } = ctx;
+        const { play, helpers } = ctx;
 
         const senderNick =
             play?.created_by_nickname ||
@@ -32,57 +27,7 @@ window.AS_ENTRA = {
             play?.created_by_profile_photo_url ||
             "/assets/icons/singeta120.gif";
 
-        const suit = String(play?.card_suit || "")
-            .trim()
-            .toUpperCase();
-
-        const shouldShowFallbackKing =
-            String(play?.play_status || "").toUpperCase() === "APPROVED" &&
-            (suit === "SPADE" || suit === "DIAMOND");
-
-        const fallbackKing = shouldShowFallbackKing
-            ? plays.find((p) =>
-                String(p?.card_rank || "").toUpperCase() === "K" &&
-                String(p?.card_suit || "").toUpperCase() === suit &&
-                Number(p?.parent_play_id || 0) === Number(play?.parent_play_id || 0) &&
-                Number(p?.created_by_user_id || 0) === Number(play?.created_by_user_id || 0) &&
-                String(p?.play_status || "").toUpperCase() === "APPROVED"
-            )
-            : null;
-
-        const fallbackKingHtml = fallbackKing
-            ? `
-    <div class="asentra-fallback-king">
-      ${helpers.renderPlayCardBox({
-                ...fallbackKing,
-
-                rank: "K",
-                suit,
-
-                play_text: fallbackKing.play_text || "K conservada por transferencia de A",
-                title: fallbackKing.play_text || "K conservada por transferencia de A",
-
-                ownerUser: {
-                    nickname:
-                        senderOwner?.nickname ||
-                        play?.created_by_nickname ||
-                        "Antiguo propietario",
-
-                    profile_photo_url:
-                        senderOwner?.profile_photo_url ||
-                        play?.created_by_profile_photo_url ||
-                        "/assets/icons/singeta120.gif"
-                },
-
-                ownerCards: [],
-                showOwner: true,
-                showActions: false
-            })}
-    </div>
-  `
-            : "";
-
-console.log("FALLBACK KING", fallbackKing);
+      
 
         return `
       <section class="lienzo-tribune lienzo-tribune--target tribuna-single tribuna-single--america">
@@ -133,7 +78,6 @@ console.log("FALLBACK KING", fallbackKing);
     hideInnerSuit: true
   })}
 
-  ${fallbackKingHtml}
 </div>
 
             </div>
