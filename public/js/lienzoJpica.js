@@ -807,7 +807,7 @@ function bindJpicaChildHeader(parentPlay) {
       <div class="lienzo-v2-shell">
         <div class="lienzo-v2-main">
 
-          <div class="lienzo-v2-grid lienzo-v2-grid--2">
+          <div class="lienzo-v2-grid lienzo-v2-grid--jpica">
             <div id="colombes">
               ${renderColombes(play)}
             </div>

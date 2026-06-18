@@ -785,8 +785,7 @@ ${action.id === "jheart" ? " users-picker__extra-btn--heart" : ""}
             class="users-picker__row-main"
             data-users-row-select-id="${escapeHtml(user.id)}"
           >
-            <img class="users-picker__row-type-icon"
-              src="${escapeHtml(getUserTypeIcon(user))}" alt="" />
+
 
             <img class="users-picker__row-photo"
               src="${escapeHtml(getUserPhoto(user))}"

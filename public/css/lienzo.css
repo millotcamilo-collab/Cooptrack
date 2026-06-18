@@ -588,3 +588,27 @@ min-height: var(--lv2-tribune-h);
   line-height: 1.2;
   letter-spacing: 1px;
 }
+
+.lienzo-v2-grid--jpica {
+  grid-template-columns: minmax(300px, 0.8fr) minmax(520px, 1.2fr);
+}
+
+.lienzo-v2-grid--jpica #amsterdam .users-picker {
+  width: 100%;
+  max-width: none;
+}
+
+.lienzo-v2-grid--jpica #amsterdam .users-picker__search-wrap {
+  width: 100%;
+}
+
+.lienzo-v2-grid--jpica #amsterdam .users-picker__search-input {
+  flex: 1;
+  min-width: 260px;
+}
+
+@media (max-width: 900px) {
+  .lienzo-v2-grid--jpica {
+    grid-template-columns: 1fr;
+  }
+}
