@@ -73,63 +73,49 @@ const fallbackKingHtml = fallbackKing
     })
   : "";
 
- return `
+return `
   <section class="lienzo-tribune lienzo-tribune--target tribuna-single tribuna-single--america">
     <div class="lienzo-tribune__corporates"></div>
 
     <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-      <div class="amsterdam-card-stack">
-        <div class="amsterdam-card-stack__primary">
+      <div class="asresponde-stack">
 
-          <div class="asentra-remitente">
-            <img
-              class="asentra-remitente__photo"
-              src="${helpers.escapeHtml(senderPhoto)}"
-              alt=""
-            />
+        <div class="asresponde-card">
+          ${helpers.renderPlayCardBox({
+            ...play,
 
-            <div class="asentra-remitente__info">
-              <div class="asentra-remitente__nick">
-                ${helpers.escapeHtml(senderNick)}
-              </div>
+            rank: "A",
+            suit: play.card_suit,
 
-              <div class="asentra-remitente__cards">
-                ${helpers.escapeHtml(senderCards)}
-              </div>
-            </div>
-          </div>
+            play_text: play.play_text || "",
+            title: play.play_text || "Transferencia de As",
 
-          <div class="asentra-a-wrapper asentra-a-wrapper--open">
+            ownerUser: {
+              nickname:
+                play?.target_user_nickname || "Nuevo propietario",
 
-            ${helpers.renderPlayCardBox({
-              ...play,
+              profile_photo_url:
+                play?.target_user_profile_photo_url ||
+                "/assets/icons/singeta120.gif"
+            },
 
-              rank: "A",
-              suit: play.card_suit,
-
-              play_text: play.play_text || "",
-              title: play.play_text || "Transferencia de As",
-
-              ownerUser: {
-                nickname:
-                  play?.target_user_nickname || "Invitado",
-
-                profile_photo_url:
-                  play?.target_user_profile_photo_url ||
-                  "/assets/icons/singeta120.gif"
-              },
-
-              ownerCards: [],
-              showOwner: true,
-              hideInnerSuit: true,
-              showActions: false
-            })}
-
-            ${fallbackKingHtml}
-
-          </div>
-
+            ownerCards: [],
+            showOwner: true,
+            hideInnerSuit: true,
+            showActions: false
+          })}
         </div>
+
+        ${
+          fallbackKingHtml
+            ? `
+              <div class="asresponde-card">
+                ${fallbackKingHtml}
+              </div>
+            `
+            : ""
+        }
+
       </div>
     </div>
   </section>
