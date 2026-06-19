@@ -333,17 +333,19 @@ top: 20px;
 
 .qpica-q-wrapper--back-only {
   position: relative;
-  width: 100%;
-  min-height: 220px;
+  width: var(--lv2-card-w);
+  min-height: var(--lv2-card-h);
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: -72px;
 }
 
 .qpica-q-wrapper--back-only .qpica-q-back {
   position: static;
   display: block;
-  width: 120px;
-  height: auto;
+  width: var(--lv2-card-w);
+  height: var(--lv2-card-h);
+  object-fit: cover;
   cursor: pointer;
 }

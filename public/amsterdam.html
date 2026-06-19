@@ -307,22 +307,27 @@
   `;
             }
 
-            function bindTargetActions(play) {
-                const acceptBtn = document.getElementById("lienzo-accept-btn");
-                const rejectBtn = document.getElementById("lienzo-reject-btn");
+function bindTargetActions(play) {
+  document
+    .querySelectorAll("#lienzo-accept-btn")
+    .forEach((btn) => {
+      btn.addEventListener("click", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        await updatePlayStatus(play, "APPROVED");
+      });
+    });
 
-                if (acceptBtn) {
-                    acceptBtn.addEventListener("click", async () => {
-                        await updatePlayStatus(play, "APPROVED");
-                    });
-                }
-
-                if (rejectBtn) {
-                    rejectBtn.addEventListener("click", async () => {
-                        await updatePlayStatus(play, "REJECTED");
-                    });
-                }
-            }
+  document
+    .querySelectorAll("#lienzo-reject-btn")
+    .forEach((btn) => {
+      btn.addEventListener("click", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        await updatePlayStatus(play, "REJECTED");
+      });
+    });
+}
 
             window.bindAmsterdamTargetActions = bindTargetActions;
 
