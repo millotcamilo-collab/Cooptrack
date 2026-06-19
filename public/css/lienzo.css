@@ -612,3 +612,21 @@ min-height: var(--lv2-tribune-h);
     grid-template-columns: 1fr;
   }
 }
+
+.lienzo-card-button {
+  display: block;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+.lienzo-card-button:hover {
+  transform: translateY(-1px);
+}
+
+.lienzo-card-button:active {
+  transform: translateY(0);
+}
