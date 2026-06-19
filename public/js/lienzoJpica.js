@@ -352,8 +352,11 @@
             getCurrentDeck()?.id || 0
           );
 
-          window.location.href =
-            `/lienzoQpica.html?deckId=${deckId}&playId=${playId}`;
+document.getElementById("jpica-help-btn")?.addEventListener("click", () => {
+  if (typeof window.openPlayHelp === "function") {
+    window.openPlayHelp("J_SPADE");
+  }
+});
         });
       });
   }
