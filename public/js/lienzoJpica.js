@@ -114,42 +114,61 @@
     return (order[aKey] || 999) - (order[bKey] || 999);
   }
 
-function getOwnerIdFromPlayCode(play) {
-  const parts = String(play?.play_code || "").split("§");
-
-  const userToken = parts.find((part) =>
-    /^U:\d+$/.test(String(part || "").trim())
-  );
-
-  if (!userToken) return 0;
-
-  return Number(userToken.replace("U:", ""));
-}
-
   function getCardsOwnedByUser(userId) {
-  const ownerId = Number(userId || 0);
-  if (!ownerId) return [];
+    const ownerId = Number(userId || 0);
+    if (!ownerId) return [];
 
-  return getAllPlays()
-    .map((play) => ({
-      rank: normalizeRank(play?.card_rank || play?.rank),
-      suit: normalizeSuit(play?.card_suit || play?.suit),
-      ownerId: getOwnerIdFromPlayCode(play)
-    }))
-    .filter((card) => {
-      return (
-        ["A", "K"].includes(card.rank) &&
-        ["HEART", "SPADE", "DIAMOND", "CLUB"].includes(card.suit) &&
-        card.ownerId === ownerId
-      );
-    })
-    .map((card) => ({ card_rank: card.rank, card_suit: card.suit }))
-    .filter((card, index, self) => {
-      const key = `${card.card_rank}_${card.card_suit}`;
-      return index === self.findIndex((c) => `${c.card_rank}_${c.card_suit}` === key);
-    })
-    .sort(compareCorporateCards);
-}
+    const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
+    const activeStatuses = ["ACTIVE", "APPROVED", "SENT", "PENDING"];
+
+    return getAllPlays()
+      .filter((p, index) => {
+        if (index < 10) return false;
+
+        const parts = String(p?.play_code || "").split("§");
+
+        const rank = normalizeRank(p?.card_rank || p?.rank || parts[3]);
+        const suit = normalizeSuit(p?.card_suit || p?.suit || parts[4]);
+        const action = String(parts[5] || "").trim().toLowerCase();
+        const flow = String(parts[7] || "").trim().toLowerCase();
+        const status = normalizeRank(p?.play_status || p?.status);
+
+        if (!["A", "K"].includes(rank)) return false;
+        if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+
+        if (finalStatuses.includes(status)) return false;
+        if (flow === "acl") return false;
+        if (action === "puedejugar") return false;
+        if (!activeStatuses.includes(status)) return false;
+
+        let cardOwnerId = 0;
+
+        if (rank === "A") {
+          cardOwnerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
+        }
+
+        if (rank === "K") {
+          if (status === "APPROVED") {
+            cardOwnerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
+          } else {
+            cardOwnerId = Number(p?.created_by_user_id || 0);
+          }
+        }
+
+        return cardOwnerId === ownerId;
+      })
+      .map((p) => ({
+        card_rank: normalizeRank(p?.card_rank || p?.rank),
+        card_suit: normalizeSuit(p?.card_suit || p?.suit)
+      }))
+      .filter((card, index, self) => {
+        const key = `${card.card_rank}_${card.card_suit}`;
+        return index === self.findIndex((c) => {
+          return `${c.card_rank}_${c.card_suit}` === key;
+        });
+      })
+      .sort(compareCorporateCards);
+  }
 
   function hasDroppedQHeart() {
     const selection = window.__lienzoJpicaDropSelection || null;
@@ -190,15 +209,15 @@ function getOwnerIdFromPlayCode(play) {
   function renderColombes(play) {
 
     const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
-const isDeadline = spadeMode === "DEADLINE";
+    const isDeadline = spadeMode === "DEADLINE";
 
-const mainDate = isDeadline
-  ? play.end_date
-  : play.start_date;
+    const mainDate = isDeadline
+      ? play.end_date
+      : play.start_date;
 
-const mainIcon = isDeadline
-  ? "/assets/icons/bombaRedonda60.gif"
-  : "/assets/icons/reloj60.gif";
+    const mainIcon = isDeadline
+      ? "/assets/icons/bombaRedonda60.gif"
+      : "/assets/icons/reloj60.gif";
 
     return `
     <section class="lienzo-tribune lienzo-tribune--source">
@@ -220,12 +239,12 @@ const mainIcon = isDeadline
       ownerUser: getPlayOwnerUser(play),
       ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
       metas: [
-mainDate
-  ? {
-    icon: mainIcon,
-    text: formatTime(mainDate)
-  }
-  : null,
+        mainDate
+          ? {
+            icon: mainIcon,
+            text: formatTime(mainDate)
+          }
+          : null,
         play.location
           ? {
             icon: "/assets/icons/LocGlobito80.gif",
@@ -497,20 +516,20 @@ mainDate
 
     window.location.reload();
   }
-  
-function bindJpicaChildHeader(parentPlay) {
-  document.getElementById("jpica-toggle-users-btn")?.addEventListener("click", () => {
-    document.getElementById("jpica-users-picker")?.classList.toggle("is-hidden");
-  });
 
-  document.getElementById("jpica-create-jclub-btn")?.addEventListener("click", () => {
-    createJtrebolFromJpica(parentPlay);
-  });
+  function bindJpicaChildHeader(parentPlay) {
+    document.getElementById("jpica-toggle-users-btn")?.addEventListener("click", () => {
+      document.getElementById("jpica-users-picker")?.classList.toggle("is-hidden");
+    });
 
-  document.getElementById("jpica-create-jheart-btn")?.addEventListener("click", () => {
-    createJcorazonFromJpica(parentPlay);
-  });
-}
+    document.getElementById("jpica-create-jclub-btn")?.addEventListener("click", () => {
+      createJtrebolFromJpica(parentPlay);
+    });
+
+    document.getElementById("jpica-create-jheart-btn")?.addEventListener("click", () => {
+      createJcorazonFromJpica(parentPlay);
+    });
+  }
 
   function mountUsersPickerForQpica(parentPlay) {
     if (typeof window.renderUsersPicker !== "function") {
@@ -541,13 +560,13 @@ function bindJpicaChildHeader(parentPlay) {
       },
 
       onAnimateSelect(user) {
-  if (!canLaunchQspade(parentPlay)) {
-    alert("Ya no se pueden agregar invitaciones a esta actividad.");
-    return;
-  }
+        if (!canLaunchQspade(parentPlay)) {
+          alert("Ya no se pueden agregar invitaciones a esta actividad.");
+          return;
+        }
 
-  createQpicaFromUser(parentPlay, user);
-}
+        createQpicaFromUser(parentPlay, user);
+      }
     });
   }
 
