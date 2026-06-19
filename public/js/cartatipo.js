@@ -299,7 +299,8 @@ ${location ? `
         end_date: end_date,
         location: location,
         dayItems: dayItems,
-        metas: metas
+        metas: metas,
+        ownerCards: ownerCards
       });
     } catch (e) {
       // noop
