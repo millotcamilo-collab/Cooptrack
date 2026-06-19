@@ -163,3 +163,11 @@
     gap: 8px;
   }
 }
+
+:root {
+  --topbar-height: 72px;
+}
+
+body {
+  padding-top: var(--topbar-height);
+}
