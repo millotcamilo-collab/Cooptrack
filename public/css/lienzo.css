@@ -630,3 +630,9 @@ min-height: var(--lv2-tribune-h);
 .lienzo-card-button:active {
   transform: translateY(0);
 }
+
+.jpica-child-btn img {
+  width: auto;
+  height: 24px;
+  object-fit: contain;
+}

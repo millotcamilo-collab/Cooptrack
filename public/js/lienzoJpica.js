@@ -633,14 +633,36 @@
   <button type="button" id="jpica-create-jheart-btn" class="jpica-child-btn jpica-child-btn--heart">J♥</button>
 
   ${showApprove ? `
-<button type="button" id="jpica-approve-btn" class="jpica-child-btn">✔</button>
+<button
+  type="button"
+  id="jpica-approve-btn"
+  class="jpica-child-btn"
+  title="Aprobar"
+>
+  <img src="${window.ICONS.actions.approve}" alt="Aprobar" />
+</button>
+
 ` : ""}
 
 ${showCancel ? `
-<button type="button" id="jpica-cancel-btn" class="jpica-child-btn">✖</button>
+<button
+  type="button"
+  id="jpica-cancel-btn"
+  class="jpica-child-btn"
+  title="Cancelar"
+>
+  <img src="${window.ICONS.actions.cancel}" alt="Cancelar" />
+</button>
 ` : ""}
 
-<button type="button" id="jpica-help-btn" class="jpica-child-btn">?</button>
+<button
+  type="button"
+  id="jpica-help-btn"
+  class="jpica-child-btn"
+  title="Ayuda"
+>
+  <img src="${window.ICONS.actions.help}" alt="Ayuda" />
+</button>
 </div>
 
   <div id="jpica-users-picker" class="jpica-users-picker is-hidden"></div>
