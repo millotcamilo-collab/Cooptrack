@@ -193,178 +193,7 @@
     });
   }
 
-  function getQpicaHeadline(config) {
-    const play = config?.play || null;
-    if (!play) return "Nueva jugada Q";
-
-    const status = String(play?.play_status || "").trim().toUpperCase();
-    const targetNickname = getNickname(play?.target_user_nickname, "invitado");
-
-    if (status === "ACTIVE") {
-      return `Invitación a ${targetNickname}. Pendiente de envío`;
-    }
-
-    if (status === "SENT" || status === "PENDING") {
-      return `Invitación a ${targetNickname}. Enviada`;
-    }
-
-    if (status === "APPROVED") {
-      return `Invitación a ${targetNickname} aceptada`;
-    }
-
-    if (status === "REJECTED") {
-      return `Invitación a ${targetNickname} rechazada`;
-    }
-
-    if (status === "CANCELLED") {
-      return `Invitación a ${targetNickname} cancelada`;
-    }
-
-    return "Nueva jugada Q";
-  }
-
-  function getQQpicaHeadline(config) {
-    const play = config?.play || null;
-    if (!play) return "Nueva jugada Q";
-
-    const status = String(play?.play_status || "").trim().toUpperCase();
-    const targetNickname = getNickname(play?.target_user_nickname, "invitado");
-    const resolution = getInvitationResolutionLabel(status);
-    const settlementStatus = getSettlementStatus(config);
-
-    if (status === "ACTIVE") {
-      return `Invitación a ${targetNickname}. Pendiente de envío`;
-    }
-
-    if (status === "SENT" || status === "PENDING") {
-      return `Invitación a ${targetNickname}. Enviada`;
-    }
-
-    if (status === "APPROVED") {
-      if (settlementStatus === "PAID") {
-        return `Invitación a ${targetNickname} aceptada. Pago confirmado`;
-      }
-
-      return `Invitación a ${targetNickname} aceptada. Pago sin confirmar`;
-    }
-
-    if (status === "REJECTED") {
-      return `Invitación a ${targetNickname} rechazada`;
-    }
-
-    if (status === "CANCELLED") {
-      return `Invitación a ${targetNickname} cancelada`;
-    }
-
-    if (resolution) {
-      return `Invitación a ${targetNickname} ${resolution}`;
-    }
-
-    return "Nueva jugada Q";
-  }
-
-  function getKHeadline(config) {
-    const play = config?.play || null;
-    if (!play) return "Nueva jugada K";
-
-    const status = String(play?.play_status || "").trim().toUpperCase();
-    const targetNickname = getNickname(play?.target_user_nickname, "invitado");
-
-    if (status === "ACTIVE") {
-      return `Invitación a ${targetNickname}. Pendiente de envío`;
-    }
-
-    if (status === "SENT" || status === "PENDING") {
-      return `Invitación a ${targetNickname}. Enviada`;
-    }
-
-    if (status === "APPROVED") {
-      return `Invitación a ${targetNickname} aceptada`;
-    }
-
-    if (status === "REJECTED") {
-      return `Invitación a ${targetNickname} rechazada`;
-    }
-
-    if (status === "QUIT") {
-      return `Invitación a ${targetNickname}. Renunció`;
-    }
-
-    if (status === "FIRED") {
-      return `Invitación a ${targetNickname}. Despedido`;
-    }
-
-    if (status === "CANCELLED") {
-      return `Invitación a ${targetNickname}. Cancelada`;
-    }
-
-    return "Nueva jugada K";
-  }
-
-  function getJHeartHeadline(config) {
-    const play = config?.play || null;
-    if (!play) return "Solicitud de aprobación";
-
-    const status = String(play?.play_status || "").trim().toUpperCase();
-
-    if (status === "ACTIVE") {
-      return "Solicitud de aprobación";
-    }
-
-    if (status === "SENT" || status === "PENDING") {
-      return "Solicitud de aprobación enviada";
-    }
-
-    if (status === "APPROVED") {
-      return "Solicitud de aprobación aceptada";
-    }
-
-    if (status === "REJECTED") {
-      return "Solicitud de aprobación rechazada";
-    }
-
-    if (status === "CANCELLED") {
-      return "Solicitud de aprobación rechazada";
-    }
-
-    return "Solicitud de aprobación";
-  }
-
-  function getAHeadline(config) {
-    const play = config?.play || null;
-    const suitLabel = getSuitLabelEs(play?.card_suit || config?.suit || "HEART");
-
-    if (!play) {
-      return `Transferir el As de ${suitLabel}`;
-    }
-
-    const status = String(play?.play_status || "").trim().toUpperCase();
-    const sourceNickname = getNickname(play?.created_by_nickname, "anfitrión");
-    const targetNickname = getNickname(play?.target_user_nickname, "invitado");
-
-    if (status === "ACTIVE") {
-      return `Transferencia del as de ${suitLabel} de ${sourceNickname} a ${targetNickname}. Pendiente de envío`;
-    }
-
-    if (status === "SENT" || status === "PENDING") {
-      return `Transferencia del as de ${suitLabel} de ${sourceNickname} a ${targetNickname}. Enviado`;
-    }
-
-    if (status === "REJECTED" || status === "QUIT") {
-      return `Transferencia del as de ${suitLabel} de ${sourceNickname} a ${targetNickname}. Rechazada`;
-    }
-
-    if (status === "APPROVED") {
-      return `As de ${suitLabel} transferido de ${sourceNickname} a ${targetNickname}`;
-    }
-
-    if (status === "CANCELLED") {
-      return "Transferencia invalidada";
-    }
-
-    return `Transferir el As de ${suitLabel}`;
-  }
-
+  
   function getNickname(value, fallback = "invitado") {
     const text = String(value || "").trim();
     return text || fallback;
@@ -471,7 +300,7 @@
     const showCurrency = Boolean(config?.showCurrency);
 
     const mode = String(config?.mode || "DEFAULT").trim().toUpperCase();
-    const headline = getPlacardHeadline(config);
+
 
     const deckId =
       config?.deckId ||
@@ -511,9 +340,9 @@ function getApprovedJHeartTexts(plays, parentPlayId = null) {
     .filter(Boolean);
 }
 
-    const jHeartTexts = getApprovedJHeartTexts(
+const jHeartTexts = getApprovedJHeartTexts(
   config?.plays || [],
-  config?.page === "lienzo-jpica" ? config?.play?.id : null
+  null
 );
 
     let subtitleHtml = "";
@@ -536,6 +365,7 @@ function getApprovedJHeartTexts(plays, parentPlayId = null) {
   `;
     }
 
+    const contextHtml = String(config?.contextHtml || "").trim();
     container.innerHTML = `
   <section class="placard">
     <div class="placard__row">
@@ -571,16 +401,15 @@ function getApprovedJHeartTexts(plays, parentPlayId = null) {
       }
   </div>
 
-  ${subtitleHtml}
+${subtitleHtml}
 
-  ${headline ? `
-    <div class="placard__headline-inline">
-      <span class="placard__headline-text">
-        ${escapeHtml(headline)}
-      </span>
+${contextHtml ? `
+  <div class="placard__context">
+    ${contextHtml}
+  </div>
+` : ""}
 
-    </div>
-  ` : ""}
+
 
 
 </div>

@@ -560,16 +560,36 @@ body: JSON.stringify({
         if (!placardHost) return;
         if (typeof window.renderPlacard !== "function") return;
 
-        window.renderPlacard(placardHost, {
-            page: "lienzo-new",
-            photoUrl: placardHost.dataset.photoUrl || "",
-            rank: placardHost.dataset.rank || "A",
-            suit: placardHost.dataset.suit || "HEART",
-            title: placardHost.dataset.title || "Mazo",
-            currencyCode: placardHost.dataset.currencyCode || "",
-            currencyName: placardHost.dataset.currencyName || "",
-            showCurrency: false
-        });
+const draft = window.__lienzoNewDraft;
+
+const suitSymbol = getSuitSymbol(
+  draft?.card_suit || "SPADE"
+);
+
+const contextHtml = draft?.target_user
+  ? `
+      <div>Designación del rey de ${suitSymbol}</div>
+      <div>
+        Entregarle a ${escapeHtml(draft.target_user.nickname)}
+        un rey de ${suitSymbol}
+      </div>
+    `
+  : `
+      <div>Designación del rey de ${suitSymbol}</div>
+      <div>Seleccione un usuario</div>
+    `;
+
+window.renderPlacard(placardHost, {
+    page: "lienzo-new",
+    photoUrl: placardHost.dataset.photoUrl || "",
+    rank: placardHost.dataset.rank || "A",
+    suit: placardHost.dataset.suit || "HEART",
+    title: placardHost.dataset.title || "Mazo",
+    currencyCode: placardHost.dataset.currencyCode || "",
+    currencyName: placardHost.dataset.currencyName || "",
+    showCurrency: false,
+    contextHtml
+});
     }
 
     function getDraftOwnerUser(draft) {
@@ -824,7 +844,7 @@ console.log("USERS PICKER PARAMS", {
                     target_user: user || null
                 };
 
-
+                mountPlacardFromDataset();
 
                 if (selectedBox && user) {
                     selectedBox.textContent =

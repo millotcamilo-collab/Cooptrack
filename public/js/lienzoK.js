@@ -318,21 +318,44 @@ function renderBackgroundCard(card, index = 0) {
         const playId = Number(new URLSearchParams(window.location.search).get("playId") || 0);
         const currentPlay = getPlayById(playId);
 
-        window.renderPlacard(placardHost, {
-            page: "lienzo-k",
-            mode: "K",
-            play: currentPlay,
-            currentUserId: Number(getCurrentUser()?.id || 0),
-            plays: getAllPlays(),
+const suitSymbol = getSuitSymbol(
+  currentPlay?.card_suit || "SPADE"
+);
 
-            photoUrl: placardHost.dataset.photoUrl || "",
-            rank: placardHost.dataset.rank || "A",
-            suit: placardHost.dataset.suit || "HEART",
-            title: placardHost.dataset.title || "Mazo",
-            currencyCode: placardHost.dataset.currencyCode || "",
-            currencyName: placardHost.dataset.currencyName || "",
-            showCurrency: false
-        });
+const targetNickname =
+  currentPlay?.target_user_nickname ||
+  "Usuario";
+
+const status =
+  String(currentPlay?.play_status || "")
+    .trim()
+    .toUpperCase();
+    
+const contextHtml = `
+  <div>
+    Rey de ${suitSymbol} asignado a ${escapeHtml(targetNickname)}
+  </div>
+  <div>
+    ${escapeHtml(status)}
+  </div>
+`;    
+        window.renderPlacard(placardHost, {
+    page: "lienzo-k",
+    mode: "K",
+    play: currentPlay,
+    currentUserId: Number(getCurrentUser()?.id || 0),
+    plays: getAllPlays(),
+
+    photoUrl: placardHost.dataset.photoUrl || "",
+    rank: placardHost.dataset.rank || "A",
+    suit: placardHost.dataset.suit || "HEART",
+    title: placardHost.dataset.title || "Mazo",
+    currencyCode: placardHost.dataset.currencyCode || "",
+    currencyName: placardHost.dataset.currencyName || "",
+    showCurrency: false,
+
+    contextHtml
+});
     }
 
     function resolveSourceUser(play) {
