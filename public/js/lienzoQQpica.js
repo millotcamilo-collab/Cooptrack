@@ -2143,6 +2143,25 @@
       });
     }
 
+    document
+      .querySelectorAll("[data-open-jpica-play-id]")
+      .forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const parentPlayId = Number(
+            btn.getAttribute("data-open-jpica-play-id") || 0
+          );
+
+          const deckId =
+            Number(play?.deck_id || 0) ||
+            Number(getCurrentDeck()?.id || 0);
+
+          if (!parentPlayId || !deckId) return;
+
+          window.location.href =
+            `/lienzoJpica.html?deckId=${deckId}&playId=${parentPlayId}`;
+        });
+      });
+
   }
 
 
@@ -2230,12 +2249,21 @@
     <section class="lienzo-tribune lienzo-tribune--source">
 
   <div class="lienzo-tribune__stage">
-    ${parentJSpadeText
-        ? renderPlayCardBox(play, {
+${parentJSpadeText
+        ? `
+    <button
+      type="button"
+      class="lienzo-card-button"
+      data-open-jpica-play-id="${Number(play?.parent_play_id || 0)}"
+      title="Abrir J♠"
+    >
+      ${renderPlayCardBox(play, {
           rank: "J",
           suit: "SPADE",
           ownerUser: resolveSourceUser(play)
-        })
+        })}
+    </button>
+  `
         : ""
       }
 
