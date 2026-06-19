@@ -33,25 +33,6 @@ window.QQPICA_ENTRA = {
                 showActions: false
               }) : ""}
 
-              <div class="qpica-q-wrapper">
-                ${helpers.renderPlayCardBox({
-                  ...play,
-                  play_text: parent?.play_text || play.play_text,
-                  start_date: parent?.start_date || play.start_date,
-                  end_date: parent?.end_date || play.end_date,
-                  location: parent?.location || play.location,
-                  figureOverrideSrc: this.buildFrame("QPMira", 0)
-                })}
-
-                <img class="qpica-q-back" src="/assets/icons/DorsoAzul.png" alt="" />
-              </div>
-
-              <div class="qpica-q-wrapper qqpica-qheart-wrapper">
-                ${helpers.renderEconomicCard
-                  ? helpers.renderEconomicCard(play)
-                  : ""}
-              </div>
-
             </div>
           </div>
         </div>
