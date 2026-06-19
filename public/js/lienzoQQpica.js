@@ -2147,52 +2147,58 @@
 
 
   function renderPlayCardBox(play, options = {}) {
-  const parentPlay = getPlayById(play?.parent_play_id);
-  const sessionPlay = parentPlay || play;
+    const parentPlay = getPlayById(play?.parent_play_id);
+    const sessionPlay = parentPlay || play;
 
-  const rank = normalizeRank(options.rank || play?.card_rank || play?.rank);
-  const suit = normalizeSuit(options.suit || play?.card_suit || play?.suit);
+    const rank = normalizeRank(options.rank || play?.card_rank || play?.rank);
+    const suit = normalizeSuit(options.suit || play?.card_suit || play?.suit);
 
-  const parentText = sessionPlay?.play_text || "";
-  const spadeMode = String(sessionPlay?.spade_mode || "").trim().toUpperCase();
-  const isDeadline = spadeMode === "DEADLINE";
+    const parentText = sessionPlay?.play_text || "";
+    const spadeMode = String(sessionPlay?.spade_mode || "").trim().toUpperCase();
+    const isDeadline = spadeMode === "DEADLINE";
 
-  const timeLabel = isDeadline
-    ? formatTimeLabel(sessionPlay?.end_date)
-    : formatTimeLabel(sessionPlay?.start_date);
+    const timeLabel = isDeadline
+      ? formatTimeLabel(sessionPlay?.end_date)
+      : formatTimeLabel(sessionPlay?.start_date);
 
-  const location = isDeadline
-    ? ""
-    : String(sessionPlay?.location || "").trim();
+    const location = isDeadline
+      ? ""
+      : String(sessionPlay?.location || "").trim();
 
-  return window.CartaTipo.renderPlayCardBox({
-    rank,
-    suit,
-    title: parentText,
-    play_text: sessionPlay?.play_text || play?.play_text || "",
-    spade_mode: sessionPlay?.spade_mode,
-    start_date: sessionPlay?.start_date,
-    end_date: sessionPlay?.end_date,
-    location,
-    status: play?.play_status,
-    ownerUser: getPlayOwnerUser(play),
-    ownerCards: getPlayOwnerCards(play),
-    metas: [
-      timeLabel
-        ? {
+    const ownerUser = options.ownerUser || getPlayOwnerUser(play);
+
+    const ownerCards = ownerUser?.id
+      ? deriveOwnedCorporateCards(getAllPlays(), Number(ownerUser.id)).sort(compareCorporateCards)
+      : [];
+
+    return window.CartaTipo.renderPlayCardBox({
+      rank,
+      suit,
+      title: parentText,
+      play_text: sessionPlay?.play_text || play?.play_text || "",
+      spade_mode: sessionPlay?.spade_mode,
+      start_date: sessionPlay?.start_date,
+      end_date: sessionPlay?.end_date,
+      location,
+      status: play?.play_status,
+      ownerUser,
+      ownerCards,
+      metas: [
+        timeLabel
+          ? {
             icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
             text: timeLabel
           }
-        : null,
-      location
-        ? {
+          : null,
+        location
+          ? {
             icon: "/assets/icons/LocGlobito80.gif",
             text: location
           }
-        : null
-    ].filter(Boolean)
-  });
-}
+          : null
+      ].filter(Boolean)
+    });
+  }
 
   function renderSourcePlayerPanel(play) {
     const user = resolveSourceUser(play);
@@ -2227,7 +2233,8 @@
     ${parentJSpadeText
         ? renderPlayCardBox(play, {
           rank: "J",
-          suit: "SPADE"
+          suit: "SPADE",
+          ownerUser: resolveSourceUser(play)
         })
         : ""
       }
