@@ -1333,6 +1333,53 @@
     `;
     }
 
+function buildStampedChildJHeartsHtml(play) {
+    const stamps = Array.isArray(play?.stamps) ? play.stamps : [];
+
+    const stampedTexts = stamps
+        .filter((stamp) => {
+            return String(stamp?.stamp_type || "").toUpperCase() === "APPROVED_CHILD_J_HEART";
+        })
+        .map((stamp) => {
+            return String(
+                stamp?.stamp_data?.play_text ||
+                stamp?.stamp_data?.text ||
+                ""
+            ).trim();
+        })
+        .filter(Boolean);
+
+    const parentPlayId = Number(play?.parent_play_id || 0);
+
+    const liveTexts = getAllPlays()
+        .filter((p) => {
+            const rank = String(p?.card_rank || "").toUpperCase();
+            const suit = String(p?.card_suit || "").toUpperCase();
+            const status = String(p?.play_status || "").toUpperCase();
+
+            return (
+                rank === "J" &&
+                suit === "HEART" &&
+                status === "APPROVED" &&
+                Number(p?.parent_play_id || 0) === parentPlayId
+            );
+        })
+        .map((p) => String(p?.play_text || "").trim())
+        .filter(Boolean);
+
+    const texts = stampedTexts.length ? stampedTexts : liveTexts;
+
+    if (!texts.length) return "";
+
+    return `
+        <div class="placard__child-jhearts">
+            ${texts
+                .map((text) => `<span class="placard__child-jheart">${escapeHtml(text)}</span>`)
+                .join("")}
+        </div>
+    `;
+}
+
     function mountPlacardFromDataset() {
         const placardHost = document.getElementById("lienzo-placard");
         if (!placardHost) return;
@@ -1374,6 +1421,8 @@
                 ? getSessionDateFromPlay(currentPlay)
                 : null;
 
+const childJHeartsHtml = buildStampedChildJHeartsHtml(currentPlay);
+
         window.renderPlacard(placardHost, {
             page: "lienzo-qpica",
             mode: "QPICA",
@@ -1390,7 +1439,8 @@
             currencyName: placardHost.dataset.currencyName || "",
             showCurrency: false,
             leftCards: visibleCards,
-            plays: getAllPlays()
+            plays: getAllPlays(),
+            contextHtml: childJHeartsHtml
         });
     }
 

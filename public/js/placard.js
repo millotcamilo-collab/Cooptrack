@@ -340,10 +340,12 @@ function getApprovedJHeartTexts(plays, parentPlayId = null) {
     .filter(Boolean);
 }
 
-const jHeartTexts = getApprovedJHeartTexts(
-  config?.plays || [],
-  null
-);
+const jHeartTexts =
+  config?.stamps
+    ?.filter(s => s.stamp_type === "APPROVED_J_HEART")
+    ?.map(s => s.stamp_data?.play_text)
+    ?.filter(Boolean)
+  || [];
 
     let subtitleHtml = "";
 

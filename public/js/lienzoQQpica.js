@@ -897,6 +897,25 @@
     );
   }
 
+function buildStampedChildJHeartsHtml(stamps) {
+  const texts = Array.isArray(stamps)
+    ? stamps
+        .filter((stamp) => String(stamp?.stamp_type || "").toUpperCase() === "APPROVED_CHILD_J_HEART")
+        .map((stamp) => String(stamp?.stamp_data?.play_text || "").trim())
+        .filter(Boolean)
+    : [];
+
+  if (!texts.length) return "";
+
+  return `
+    <div class="placard__child-jhearts">
+      ${texts
+        .map((text) => `<span class="placard__child-jheart">${escapeHtml(text)}</span>`)
+        .join("")}
+    </div>
+  `;
+}
+
   function formatSessionDayHeader(date) {
     if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "—";
 
@@ -1225,6 +1244,7 @@
 
     const settlement = getQQPicaSettlementState(play);
     const qqDisplayedSuit = getQQPicaDisplayedSuit(play);
+const childJHeartsHtml = buildStampedChildJHeartsHtml(play?.stamps || []);
 
     window.renderPlacard(placardHost, {
       page: "lienzo-qqpica",
@@ -1244,7 +1264,8 @@
       currencyName: placardHost.dataset.currencyName || "",
       showCurrency: false,
       leftCards: [],
-      plays: getAllPlays()
+      plays: getAllPlays(),
+      contextHtml: childJHeartsHtml
     });
   }
 

@@ -258,13 +258,13 @@ function normalizeCredentialList(value) {
     ? value
     : typeof value === 'string'
       ? (() => {
-          try {
-            const parsed = JSON.parse(value);
-            return Array.isArray(parsed) ? parsed : [];
-          } catch (_) {
-            return [];
-          }
-        })()
+        try {
+          const parsed = JSON.parse(value);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+          return [];
+        }
+      })()
       : [];
 
   return [...new Set(
@@ -589,6 +589,18 @@ async function applySettlementToUserProfile(client, play, settlementInfo) {
     entry,
     sourcePlayId,
   });
+}
+
+async function stampPlayIfNeeded(client, play, options = {}) {
+  const reason = String(options.reason || '').toUpperCase();
+
+  if (reason === 'SEND_Q_SPADE') {
+    await stampQSpadeContextOnce(client, play);
+  }
+
+  if (reason === 'SEND_K_CLUB') {
+    await stampKClubFinancialSummaryOnce(client, play);
+  }
 }
 
 // =====================================================
@@ -2174,6 +2186,7 @@ app.post('/plays', requireAuth, async (req, res) => {
 
     // Readers iniciales de la jugada recién creada
     await handleReadersOnPlayCreate(client, created.row);
+    await stampPlayIfNeeded(client, created.row);
 
     await client.query('COMMIT');
 
@@ -3182,7 +3195,9 @@ RETURNING *
           error: 'La Q♠ enviada debe tener target_user_id'
         });
       }
-
+      await stampPlayIfNeeded(client, updatedPlay, {
+        reason: 'SEND_Q_SPADE'
+      });
       await expandReadersForQSpadeSend(client, updatedPlay);
     }
 

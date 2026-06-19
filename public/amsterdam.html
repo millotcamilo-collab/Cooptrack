@@ -307,27 +307,27 @@
   `;
             }
 
-function bindTargetActions(play) {
-  document
-    .querySelectorAll("#lienzo-accept-btn")
-    .forEach((btn) => {
-      btn.addEventListener("click", async (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        await updatePlayStatus(play, "APPROVED");
-      });
-    });
+            function bindTargetActions(play) {
+                document
+                    .querySelectorAll("#lienzo-accept-btn")
+                    .forEach((btn) => {
+                        btn.addEventListener("click", async (event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            await updatePlayStatus(play, "APPROVED");
+                        });
+                    });
 
-  document
-    .querySelectorAll("#lienzo-reject-btn")
-    .forEach((btn) => {
-      btn.addEventListener("click", async (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        await updatePlayStatus(play, "REJECTED");
-      });
-    });
-}
+                document
+                    .querySelectorAll("#lienzo-reject-btn")
+                    .forEach((btn) => {
+                        btn.addEventListener("click", async (event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            await updatePlayStatus(play, "REJECTED");
+                        });
+                    });
+            }
 
             window.bindAmsterdamTargetActions = bindTargetActions;
 
@@ -394,7 +394,32 @@ function bindTargetActions(play) {
                     resolveAfterAmsterdamActionUrl(play, status);
             }
 
+            function buildStampedChildJHeartsHtml(play) {
+                const stamps = Array.isArray(play?.stamps) ? play.stamps : [];
 
+                const texts = stamps
+                    .filter((stamp) => {
+                        return String(stamp?.stamp_type || "").toUpperCase() === "APPROVED_CHILD_J_HEART";
+                    })
+                    .map((stamp) => {
+                        return String(
+                            stamp?.stamp_data?.play_text ||
+                            stamp?.stamp_data?.text ||
+                            ""
+                        ).trim();
+                    })
+                    .filter(Boolean);
+
+                if (!texts.length) return "";
+
+                return `
+    <div class="placard__child-jhearts">
+      ${texts
+                        .map((text) => `<span class="placard__child-jheart">${escapeHtml(text)}</span>`)
+                        .join("")}
+    </div>
+  `;
+            }
 
             function renderTribunaPlacard(play, deckState) {
                 const host = document.getElementById("tribuna-placard");
@@ -402,6 +427,8 @@ function bindTargetActions(play) {
 
                 const parent = play?.parent_play || null;
                 const deck = deckState?.mazo || deckState?.deck || {};
+
+                const childJHeartsHtml = buildStampedChildJHeartsHtml(play);
 
                 window.renderPlacard(host, {
                     page: "tribuna-amsterdam",
@@ -422,7 +449,10 @@ function bindTargetActions(play) {
                     leftCards: [],
                     plays: Array.isArray(deckState?.plays)
                         ? deckState.plays
-                        : [parent, play].filter(Boolean)
+                        : [parent, play].filter(Boolean),
+
+                    contextHtml: childJHeartsHtml,
+                    stamps: play?.stamps || []
                 });
             }
 
