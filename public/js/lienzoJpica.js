@@ -118,6 +118,20 @@
     const ownerId = Number(userId || 0);
     if (!ownerId) return [];
 
+console.log(
+  "CARDS FOR USER",
+  ownerId,
+  getAllPlays()
+    .filter((p) => ["A", "K"].includes(normalizeRank(p.card_rank)))
+    .map((p) => ({
+      id: p.id,
+      rank: p.card_rank,
+      suit: p.card_suit,
+      target: p.target_user_id,
+      created: p.created_by_user_id
+    }))
+);
+
     return getAllPlays()
       .map((play) => ({
         rank: normalizeRank(play?.card_rank || play?.rank),
