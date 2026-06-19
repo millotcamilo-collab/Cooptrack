@@ -337,29 +337,22 @@
       .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
   }
 
-  function bindInvitationRows() {
-    document
-      .querySelectorAll(".jpica-q-row")
-      .forEach((row) => {
-        row.addEventListener("click", () => {
-          const playId = Number(
-            row.getAttribute("data-play-id") || 0
-          );
+function bindInvitationRows() {
+  document
+    .querySelectorAll(".jpica-q-row")
+    .forEach((row) => {
+      row.addEventListener("click", () => {
+        const playId = Number(row.getAttribute("data-play-id") || 0);
+        if (!playId) return;
 
-          if (!playId) return;
+        const deckId = Number(getCurrentDeck()?.id || 0);
+        if (!deckId) return;
 
-          const deckId = Number(
-            getCurrentDeck()?.id || 0
-          );
-
-document.getElementById("jpica-help-btn")?.addEventListener("click", () => {
-  if (typeof window.openPlayHelp === "function") {
-    window.openPlayHelp("J_SPADE");
-  }
-});
-        });
+        window.location.href =
+          `/lienzoQpica.html?deckId=${deckId}&playId=${playId}`;
       });
-  }
+    });
+}
 
   async function createQpicaFromUser(parentPlay, user) {
     const token = localStorage.getItem("cooptrackToken");
@@ -545,10 +538,7 @@ document.getElementById("jpica-help-btn")?.addEventListener("click", () => {
       createJcorazonFromJpica(parentPlay);
     });
 
-    document.getElementById("jpica-help-btn")?.addEventListener("click", () => {
-      window.location.href =
-        `/help.html?rank=J&suit=SPADE&playId=${parentPlay.id}`;
-    });
+
 
     document.getElementById("jpica-approve-btn")?.addEventListener("click", async () => {
       // PATCH APPROVED
