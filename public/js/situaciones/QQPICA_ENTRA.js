@@ -33,15 +33,13 @@ window.QQPICA_ENTRA = {
             showActions: false
         }) : ""}
 
-                <div class="qpica-q-wrapper">
-
-    <img
-      class="qpica-q-back"
-      src="/assets/icons/DorsoAzul.png"
-      alt=""
-    />
-
-  </div>
+<div class="qpica-q-wrapper qpica-q-wrapper--back-only">
+  <img
+    class="qpica-q-back"
+    src="/assets/icons/DorsoAzul.png"
+    alt=""
+  />
+</div>
 
             </div>
           </div>

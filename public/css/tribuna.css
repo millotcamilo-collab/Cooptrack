@@ -330,3 +330,20 @@ top: 20px;
   max-height: calc(var(--lv2-card-h) - 140px);
   overflow: auto;
 }
+
+.qpica-q-wrapper--back-only {
+  position: relative;
+  width: 100%;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qpica-q-wrapper--back-only .qpica-q-back {
+  position: static;
+  display: block;
+  width: 120px;
+  height: auto;
+  cursor: pointer;
+}
