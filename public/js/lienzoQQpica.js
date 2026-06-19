@@ -368,7 +368,7 @@
       ) ||
       "/assets/icons/singeta120.gif";
 
-return `
+    return `
 <section class="lienzo-tribune">
 
   <div class="lienzo-tribune__corporates">
@@ -2152,8 +2152,10 @@ return `
     const rank = normalizeRank(options.rank || play?.card_rank || play?.rank);
     const suit = normalizeSuit(options.suit || play?.card_suit || play?.suit);
 
-    const parentText = parentPlay?.play_text || "";
-    const spadeMode = String(parentPlay?.spade_mode || "").trim().toUpperCase();
+    const sessionPlay = parentPlay || play;
+
+    const parentText = sessionPlay?.play_text || "";
+    const spadeMode = String(sessionPlay?.spade_mode || "").trim().toUpperCase();
     const isDeadline = spadeMode === "DEADLINE";
 
     const timeLabel = isDeadline
@@ -2164,15 +2166,17 @@ return `
       ? ""
       : String(parentPlay?.location || "").trim();
 
+    const sessionPlay = parentPlay || play;
+
     return window.CartaTipo.renderPlayCardBox({
       rank,
       suit,
       title: parentText,
-      play_text: play.play_text,
-      spade_mode: parentPlay?.spade_mode,
-      start_date: play.start_date,
-      end_date: play.end_date,
-      location: play.location,
+      play_text: sessionPlay?.play_text || play?.play_text || "",
+      spade_mode: sessionPlay?.spade_mode,
+      start_date: sessionPlay?.start_date,
+      end_date: sessionPlay?.end_date,
+      location: isDeadline ? "" : String(sessionPlay?.location || "").trim(),
       status: play?.play_status,
       ownerUser: getPlayOwnerUser(play),
       ownerCards: getPlayOwnerCards(play),
@@ -2225,12 +2229,12 @@ return `
 
   <div class="lienzo-tribune__stage">
     ${parentJSpadeText
-      ? renderPlayCardBox(play, {
+        ? renderPlayCardBox(play, {
           rank: "J",
           suit: "SPADE"
         })
-      : ""
-    }
+        : ""
+      }
 
     ${qHeartBoxHtml}
   </div>
