@@ -12,6 +12,29 @@
     return new URLSearchParams(window.location.search);
   }
 
+  function isFutureDate(value) {
+    if (!value) return false;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return false;
+    return date.getTime() > Date.now();
+  }
+
+  function userIsSpadeAceHolder() {
+    const userId = Number(window.__currentUser?.id || getCurrentState()?.userId || 0);
+
+    return getCardsOwnedByUser(userId).some((card) =>
+      normalizeRank(card.card_rank) === "A" &&
+      normalizeSuit(card.card_suit) === "SPADE"
+    );
+  }
+
+  function canCancelApprovedJpica(play) {
+    const status = String(play?.play_status || "").trim().toUpperCase();
+    if (status !== "APPROVED") return false;
+
+    return isFutureDate(play?.end_date || play?.start_date);
+  }
+
   function getPlayIdFromUrl() {
     return Number(getParams().get("playId") || 0);
   }
@@ -115,49 +138,49 @@
   }
 
   function getCardsOwnedByUser(userId) {
-  const ownerId = Number(userId || 0);
-  if (!ownerId) return [];
+    const ownerId = Number(userId || 0);
+    if (!ownerId) return [];
 
-  const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
+    const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
 
-  return getAllPlays()
-    .filter((p) => {
-      const parts = String(p?.play_code || "").split("§");
+    return getAllPlays()
+      .filter((p) => {
+        const parts = String(p?.play_code || "").split("§");
 
-      const rank = normalizeRank(p?.card_rank || p?.rank || parts[3]);
-      const suit = normalizeSuit(p?.card_suit || p?.suit || parts[4]);
-      const action = String(parts[5] || "").trim().toLowerCase();
-      const status = normalizeRank(p?.play_status || p?.status);
+        const rank = normalizeRank(p?.card_rank || p?.rank || parts[3]);
+        const suit = normalizeSuit(p?.card_suit || p?.suit || parts[4]);
+        const action = String(parts[5] || "").trim().toLowerCase();
+        const status = normalizeRank(p?.play_status || p?.status);
 
-      if (!["A", "K"].includes(rank)) return false;
-      if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+        if (!["A", "K"].includes(rank)) return false;
+        if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
 
-      if (finalStatuses.includes(status)) return false;
-      if (action === "puedejugar") return false;
+        if (finalStatuses.includes(status)) return false;
+        if (action === "puedejugar") return false;
 
-      const cardOwnerId =
-        Number(p?.target_user_id || 0) ||
-        Number(p?.created_by_user_id || 0) ||
-        Number(parts[1] || 0);
+        const cardOwnerId =
+          Number(p?.target_user_id || 0) ||
+          Number(p?.created_by_user_id || 0) ||
+          Number(parts[1] || 0);
 
-      return cardOwnerId === ownerId;
-    })
-    .map((p) => {
-      const parts = String(p?.play_code || "").split("§");
+        return cardOwnerId === ownerId;
+      })
+      .map((p) => {
+        const parts = String(p?.play_code || "").split("§");
 
-      return {
-        card_rank: normalizeRank(p?.card_rank || p?.rank || parts[3]),
-        card_suit: normalizeSuit(p?.card_suit || p?.suit || parts[4])
-      };
-    })
-    .filter((card, index, self) => {
-      const key = `${card.card_rank}_${card.card_suit}`;
-      return index === self.findIndex((c) => {
-        return `${c.card_rank}_${c.card_suit}` === key;
-      });
-    })
-    .sort(compareCorporateCards);
-}
+        return {
+          card_rank: normalizeRank(p?.card_rank || p?.rank || parts[3]),
+          card_suit: normalizeSuit(p?.card_suit || p?.suit || parts[4])
+        };
+      })
+      .filter((card, index, self) => {
+        const key = `${card.card_rank}_${card.card_suit}`;
+        return index === self.findIndex((c) => {
+          return `${c.card_rank}_${c.card_suit}` === key;
+        });
+      })
+      .sort(compareCorporateCards);
+  }
 
   function hasDroppedQHeart() {
     const selection = window.__lienzoJpicaDropSelection || null;
@@ -518,6 +541,19 @@
     document.getElementById("jpica-create-jheart-btn")?.addEventListener("click", () => {
       createJcorazonFromJpica(parentPlay);
     });
+
+    document.getElementById("jpica-help-btn")?.addEventListener("click", () => {
+      window.location.href =
+        `/help.html?rank=J&suit=SPADE&playId=${parentPlay.id}`;
+    });
+
+    document.getElementById("jpica-approve-btn")?.addEventListener("click", async () => {
+      // PATCH APPROVED
+    });
+
+    document.getElementById("jpica-cancel-btn")?.addEventListener("click", async () => {
+      // PATCH CANCELLED
+    });
   }
 
   function mountUsersPickerForQpica(parentPlay) {
@@ -560,6 +596,16 @@
   }
 
   function renderAmsterdam(play) {
+
+    const isApproved =
+      String(play?.play_status || "").toUpperCase() === "APPROVED";
+
+    const showApprove =
+      !isApproved && userIsSpadeAceHolder();
+
+    const showCancel =
+      canCancelApprovedJpica(play);
+
     const childPlays = getAllPlays()
       .filter(
         (p) => Number(p?.parent_play_id || 0) === Number(play.id)
@@ -580,11 +626,22 @@
         <div class="lienzo-jpica-panel">
 
 <div class="jpica-users-header">
-  <div class="jpica-child-actions">
-    <button type="button" id="jpica-toggle-users-btn" class="jpica-child-btn">Q♠</button>
-    <button type="button" id="jpica-create-jclub-btn" class="jpica-child-btn">J♣</button>
-    <button type="button" id="jpica-create-jheart-btn" class="jpica-child-btn jpica-child-btn--heart">J♥</button>
-  </div>
+
+<div class="jpica-child-actions">
+  <button type="button" id="jpica-toggle-users-btn" class="jpica-child-btn">Q♠</button>
+  <button type="button" id="jpica-create-jclub-btn" class="jpica-child-btn">J♣</button>
+  <button type="button" id="jpica-create-jheart-btn" class="jpica-child-btn jpica-child-btn--heart">J♥</button>
+
+  ${showApprove ? `
+<button type="button" id="jpica-approve-btn" class="jpica-child-btn">✔</button>
+` : ""}
+
+${showCancel ? `
+<button type="button" id="jpica-cancel-btn" class="jpica-child-btn">✖</button>
+` : ""}
+
+<button type="button" id="jpica-help-btn" class="jpica-child-btn">?</button>
+</div>
 
   <div id="jpica-users-picker" class="jpica-users-picker is-hidden"></div>
 </div>
