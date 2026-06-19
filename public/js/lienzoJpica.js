@@ -116,7 +116,14 @@
 
 function getOwnerIdFromPlayCode(play) {
   const parts = String(play?.play_code || "").split("§");
-  return Number(parts[1] || 0);
+
+  const userToken = parts.find((part) =>
+    /^U:\d+$/.test(String(part || "").trim())
+  );
+
+  if (!userToken) return 0;
+
+  return Number(userToken.replace("U:", ""));
 }
 
   function getCardsOwnedByUser(userId) {
