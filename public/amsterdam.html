@@ -61,6 +61,7 @@
 
     <!-- Situaciones Amsterdam -->
     <script src="/js/situaciones/QPICA_ENTRA.js"></script>
+    <script src="/js/situaciones/QQPICA_ENTRA.js"></script>
 
 
 
@@ -323,9 +324,9 @@
                 }
             }
 
-window.bindAmsterdamTargetActions = bindTargetActions;
-            
-        function isMobileViewport() {
+            window.bindAmsterdamTargetActions = bindTargetActions;
+
+            function isMobileViewport() {
                 return window.matchMedia("(max-width: 900px)").matches;
             }
 
@@ -365,28 +366,28 @@ window.bindAmsterdamTargetActions = bindTargetActions;
                 return `/mazo.html${deckQuery}`;
             }
 
-async function updatePlayStatus(play, status) {
-  const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({
-      play_status: status
-    })
-  });
+            async function updatePlayStatus(play, status) {
+                const response = await fetch(`${API_BASE_URL}/plays/${play.id}`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        play_status: status
+                    })
+                });
 
-  const data = await response.json().catch(() => null);
+                const data = await response.json().catch(() => null);
 
-  if (!response.ok || !data?.ok) {
-    alert("No se pudo actualizar la jugada.");
-    return;
-  }
+                if (!response.ok || !data?.ok) {
+                    alert("No se pudo actualizar la jugada.");
+                    return;
+                }
 
-  window.location.href =
-    resolveAfterAmsterdamActionUrl(play, status);
-}
+                window.location.href =
+                    resolveAfterAmsterdamActionUrl(play, status);
+            }
 
 
 
@@ -487,19 +488,26 @@ async function updatePlayStatus(play, status) {
                     console.log("DECK USERS", deckState?.users);
                 }
                 console.log("QPICA_ENTRA cargado:", window.QPICA_ENTRA);
-                const html = window.QPICA_ENTRA.render({
+                const situacion =
+                    parseFlowPayment(parsePlayCode(play?.play_code).flow)
+                        ? window.QQPICA_ENTRA
+                        : window.QPICA_ENTRA;
+
+                const html = situacion.render({
                     play,
                     parentOwner,
                     helpers: {
                         renderPlayCardBox,
+                        renderEconomicCard,
                         escapeHtml
                     }
                 });
 
                 document.getElementById("tribuna-content").innerHTML = html;
-                if (window.QPICA_ENTRA?.start) {
+
+                if (situacion?.start) {
                     console.log("VOY A EJECUTAR START");
-                    window.QPICA_ENTRA.start(play);
+                    situacion.start(play);
                 }
                 if (typeof window.enableAmsterdamPeek === "function") {
                     window.enableAmsterdamPeek();
