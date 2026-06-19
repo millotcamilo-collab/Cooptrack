@@ -114,45 +114,35 @@
     return (order[aKey] || 999) - (order[bKey] || 999);
   }
 
+function getOwnerIdFromPlayCode(play) {
+  const parts = String(play?.play_code || "").split("§");
+  return Number(parts[1] || 0);
+}
+
   function getCardsOwnedByUser(userId) {
-    const ownerId = Number(userId || 0);
-    if (!ownerId) return [];
+  const ownerId = Number(userId || 0);
+  if (!ownerId) return [];
 
-console.log(
-  "CARDS FOR USER",
-  ownerId,
-  getAllPlays()
-    .filter((p) => ["A", "K"].includes(normalizeRank(p.card_rank)))
-    .map((p) => ({
-      id: p.id,
-      rank: p.card_rank,
-      suit: p.card_suit,
-      target: p.target_user_id,
-      created: p.created_by_user_id
+  return getAllPlays()
+    .map((play) => ({
+      rank: normalizeRank(play?.card_rank || play?.rank),
+      suit: normalizeSuit(play?.card_suit || play?.suit),
+      ownerId: getOwnerIdFromPlayCode(play)
     }))
-);
-
-    return getAllPlays()
-      .map((play) => ({
-        rank: normalizeRank(play?.card_rank || play?.rank),
-        suit: normalizeSuit(play?.card_suit || play?.suit),
-        ownerId:
-          Number(play?.target_user_id || 0) || Number(play?.created_by_user_id || 0)
-      }))
-      .filter((card) => {
-        return (
-          ["A", "K"].includes(card.rank) &&
-          ["HEART", "SPADE", "DIAMOND", "CLUB"].includes(card.suit) &&
-          card.ownerId === ownerId
-        );
-      })
-      .map((card) => ({ card_rank: card.rank, card_suit: card.suit }))
-      .filter((card, index, self) => {
-        const key = `${card.card_rank}_${card.card_suit}`;
-        return index === self.findIndex((c) => `${c.card_rank}_${c.card_suit}` === key);
-      })
-      .sort(compareCorporateCards);
-  }
+    .filter((card) => {
+      return (
+        ["A", "K"].includes(card.rank) &&
+        ["HEART", "SPADE", "DIAMOND", "CLUB"].includes(card.suit) &&
+        card.ownerId === ownerId
+      );
+    })
+    .map((card) => ({ card_rank: card.rank, card_suit: card.suit }))
+    .filter((card, index, self) => {
+      const key = `${card.card_rank}_${card.card_suit}`;
+      return index === self.findIndex((c) => `${c.card_rank}_${c.card_suit}` === key);
+    })
+    .sort(compareCorporateCards);
+}
 
   function hasDroppedQHeart() {
     const selection = window.__lienzoJpicaDropSelection || null;
