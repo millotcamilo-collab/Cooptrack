@@ -325,18 +325,21 @@ const ownerCardsHtml = Array.isArray(ownerCards) && ownerCards.length
         const r = normalizeRank(card.card_rank || card.rank);
         const s = normalizeSuit(card.card_suit || card.suit);
 
-        if ((r === "A" || r === "K") && s) {
+        if ((r === "A" || r === "K") && s && !groups[r].includes(s)) {
           groups[r].push(s);
         }
       });
 
+      const suitOrder = ["HEART", "SPADE", "DIAMOND", "CLUB"];
+
       const renderGroup = (rank) => {
-        if (!groups[rank].length) return "";
+        const suits = suitOrder.filter((s) => groups[rank].includes(s));
+        if (!suits.length) return "";
 
         return `
           <div class="lv2-play-card__owner-card-group">
             <span class="lv2-play-card__owner-card-rank">${rank}</span>
-            ${groups[rank].map((s) => {
+            ${suits.map((s) => {
               const redClass =
                 s === "HEART" || s === "DIAMOND"
                   ? " lv2-play-card__owner-card--red"
@@ -361,33 +364,34 @@ const ownerCardsHtml = Array.isArray(ownerCards) && ownerCards.length
     })()
   : "";
 
-    const ownerHtml = showOwner && ownerUser ? `
-    
+const ownerHtml = showOwner && ownerUser ? `
   <div class="lv2-play-card__owner">
     <img
       class="lv2-play-card__owner-avatar"
       src="${escapeHtml(
-      ownerUser.profile_photo_url ||
-      "/assets/icons/singeta120.gif"
-    )}"
+        ownerUser.profile_photo_url ||
+        "/assets/icons/singeta120.gif"
+      )}"
       alt="${escapeHtml(
-      ownerUser.nickname ||
-      ownerUser.full_name ||
-      ownerUser.name ||
-      "Usuario"
-    )}"
+        ownerUser.nickname ||
+        ownerUser.full_name ||
+        ownerUser.name ||
+        "Usuario"
+      )}"
     />
 
-   <span class="lv2-play-card__owner-name">
-  ${escapeHtml(
-      ownerUser.nickname ||
-      ownerUser.full_name ||
-      ownerUser.name ||
-      "Usuario"
-    )}
-   </span>
+    <div class="lv2-play-card__owner-info">
+      <span class="lv2-play-card__owner-name">
+        ${escapeHtml(
+          ownerUser.nickname ||
+          ownerUser.full_name ||
+          ownerUser.name ||
+          "Usuario"
+        )}
+      </span>
 
-    ${ownerCardsHtml}
+      ${ownerCardsHtml}
+    </div>
   </div>
 ` : "";
 
