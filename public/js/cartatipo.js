@@ -317,28 +317,49 @@ ${location ? `
       ? " lv2-play-card__center-suit--red"
       : "";
 
-    const ownerCardsHtml = Array.isArray(ownerCards) && ownerCards.length
-      ? `
-    <div class="lv2-play-card__owner-cards">
-      ${ownerCards.map((card) => {
+const ownerCardsHtml = Array.isArray(ownerCards) && ownerCards.length
+  ? (() => {
+      const groups = { A: [], K: [] };
+
+      ownerCards.forEach((card) => {
         const r = normalizeRank(card.card_rank || card.rank);
         const s = normalizeSuit(card.card_suit || card.suit);
-        const redClass =
-          s === "HEART" || s === "DIAMOND"
-            ? " lv2-play-card__owner-card--red"
-            : "";
 
+        if ((r === "A" || r === "K") && s) {
+          groups[r].push(s);
+        }
+      });
 
+      const renderGroup = (rank) => {
+        if (!groups[rank].length) return "";
 
         return `
-  <span class="lv2-play-card__owner-card${redClass}">
-    ${escapeHtml(getSuitSymbol(s))}
-  </span>
-`;
-      }).join("")}
-    </div>
-  `
-      : "";
+          <div class="lv2-play-card__owner-card-group">
+            <span class="lv2-play-card__owner-card-rank">${rank}</span>
+            ${groups[rank].map((s) => {
+              const redClass =
+                s === "HEART" || s === "DIAMOND"
+                  ? " lv2-play-card__owner-card--red"
+                  : "";
+
+              return `
+                <span class="lv2-play-card__owner-card${redClass}">
+                  ${escapeHtml(getSuitSymbol(s))}
+                </span>
+              `;
+            }).join("")}
+          </div>
+        `;
+      };
+
+      return `
+        <div class="lv2-play-card__owner-cards">
+          ${renderGroup("A")}
+          ${renderGroup("K")}
+        </div>
+      `;
+    })()
+  : "";
 
     const ownerHtml = showOwner && ownerUser ? `
     
@@ -364,9 +385,7 @@ ${location ? `
       ownerUser.name ||
       "Usuario"
     )}
-</span>
-
-
+   </span>
 
     ${ownerCardsHtml}
   </div>
@@ -385,6 +404,7 @@ ${location ? `
         start_date,
         end_date,
         location,
+        spade_mode,
         dayItems
       })
       : metas.map((meta) => `
