@@ -115,60 +115,49 @@
   }
 
   function getCardsOwnedByUser(userId) {
-    const ownerId = Number(userId || 0);
-    if (!ownerId) return [];
+  const ownerId = Number(userId || 0);
+  if (!ownerId) return [];
 
-    const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
-    const activeStatuses = ["ACTIVE", "APPROVED", "SENT", "PENDING"];
+  const finalStatuses = ["QUIT", "FIRED", "REJECTED", "CANCELLED"];
 
-    return getAllPlays()
-      .filter((p, index) => {
-        if (index < 10) return false;
+  return getAllPlays()
+    .filter((p) => {
+      const parts = String(p?.play_code || "").split("§");
 
-        const parts = String(p?.play_code || "").split("§");
+      const rank = normalizeRank(p?.card_rank || p?.rank || parts[3]);
+      const suit = normalizeSuit(p?.card_suit || p?.suit || parts[4]);
+      const action = String(parts[5] || "").trim().toLowerCase();
+      const status = normalizeRank(p?.play_status || p?.status);
 
-        const rank = normalizeRank(p?.card_rank || p?.rank || parts[3]);
-        const suit = normalizeSuit(p?.card_suit || p?.suit || parts[4]);
-        const action = String(parts[5] || "").trim().toLowerCase();
-        const flow = String(parts[7] || "").trim().toLowerCase();
-        const status = normalizeRank(p?.play_status || p?.status);
+      if (!["A", "K"].includes(rank)) return false;
+      if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
 
-        if (!["A", "K"].includes(rank)) return false;
-        if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return false;
+      if (finalStatuses.includes(status)) return false;
+      if (action === "puedejugar") return false;
 
-        if (finalStatuses.includes(status)) return false;
-        if (flow === "acl") return false;
-        if (action === "puedejugar") return false;
-        if (!activeStatuses.includes(status)) return false;
+      const cardOwnerId =
+        Number(p?.target_user_id || 0) ||
+        Number(p?.created_by_user_id || 0) ||
+        Number(parts[1] || 0);
 
-        let cardOwnerId = 0;
+      return cardOwnerId === ownerId;
+    })
+    .map((p) => {
+      const parts = String(p?.play_code || "").split("§");
 
-        if (rank === "A") {
-          cardOwnerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
-        }
-
-        if (rank === "K") {
-          if (status === "APPROVED") {
-            cardOwnerId = Number(p?.target_user_id || p?.created_by_user_id || 0);
-          } else {
-            cardOwnerId = Number(p?.created_by_user_id || 0);
-          }
-        }
-
-        return cardOwnerId === ownerId;
-      })
-      .map((p) => ({
-        card_rank: normalizeRank(p?.card_rank || p?.rank),
-        card_suit: normalizeSuit(p?.card_suit || p?.suit)
-      }))
-      .filter((card, index, self) => {
-        const key = `${card.card_rank}_${card.card_suit}`;
-        return index === self.findIndex((c) => {
-          return `${c.card_rank}_${c.card_suit}` === key;
-        });
-      })
-      .sort(compareCorporateCards);
-  }
+      return {
+        card_rank: normalizeRank(p?.card_rank || p?.rank || parts[3]),
+        card_suit: normalizeSuit(p?.card_suit || p?.suit || parts[4])
+      };
+    })
+    .filter((card, index, self) => {
+      const key = `${card.card_rank}_${card.card_suit}`;
+      return index === self.findIndex((c) => {
+        return `${c.card_rank}_${c.card_suit}` === key;
+      });
+    })
+    .sort(compareCorporateCards);
+}
 
   function hasDroppedQHeart() {
     const selection = window.__lienzoJpicaDropSelection || null;
