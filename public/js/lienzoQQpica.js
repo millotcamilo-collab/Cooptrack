@@ -2147,56 +2147,52 @@
 
 
   function renderPlayCardBox(play, options = {}) {
-    const parentPlay = getPlayById(play?.parent_play_id);
+  const parentPlay = getPlayById(play?.parent_play_id);
+  const sessionPlay = parentPlay || play;
 
-    const rank = normalizeRank(options.rank || play?.card_rank || play?.rank);
-    const suit = normalizeSuit(options.suit || play?.card_suit || play?.suit);
+  const rank = normalizeRank(options.rank || play?.card_rank || play?.rank);
+  const suit = normalizeSuit(options.suit || play?.card_suit || play?.suit);
 
-    const sessionPlay = parentPlay || play;
+  const parentText = sessionPlay?.play_text || "";
+  const spadeMode = String(sessionPlay?.spade_mode || "").trim().toUpperCase();
+  const isDeadline = spadeMode === "DEADLINE";
 
-    const parentText = sessionPlay?.play_text || "";
-    const spadeMode = String(sessionPlay?.spade_mode || "").trim().toUpperCase();
-    const isDeadline = spadeMode === "DEADLINE";
+  const timeLabel = isDeadline
+    ? formatTimeLabel(sessionPlay?.end_date)
+    : formatTimeLabel(sessionPlay?.start_date);
 
-    const timeLabel = isDeadline
-      ? formatTimeLabel(parentPlay?.end_date)
-      : formatTimeLabel(parentPlay?.start_date);
+  const location = isDeadline
+    ? ""
+    : String(sessionPlay?.location || "").trim();
 
-    const location = isDeadline
-      ? ""
-      : String(parentPlay?.location || "").trim();
-
-    const sessionPlay = parentPlay || play;
-
-    return window.CartaTipo.renderPlayCardBox({
-      rank,
-      suit,
-      title: parentText,
-      play_text: sessionPlay?.play_text || play?.play_text || "",
-      spade_mode: sessionPlay?.spade_mode,
-      start_date: sessionPlay?.start_date,
-      end_date: sessionPlay?.end_date,
-      location: isDeadline ? "" : String(sessionPlay?.location || "").trim(),
-      status: play?.play_status,
-      ownerUser: getPlayOwnerUser(play),
-      ownerCards: getPlayOwnerCards(play),
-      metas: [
-        timeLabel
-          ? {
+  return window.CartaTipo.renderPlayCardBox({
+    rank,
+    suit,
+    title: parentText,
+    play_text: sessionPlay?.play_text || play?.play_text || "",
+    spade_mode: sessionPlay?.spade_mode,
+    start_date: sessionPlay?.start_date,
+    end_date: sessionPlay?.end_date,
+    location,
+    status: play?.play_status,
+    ownerUser: getPlayOwnerUser(play),
+    ownerCards: getPlayOwnerCards(play),
+    metas: [
+      timeLabel
+        ? {
             icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
             text: timeLabel
           }
-          : null,
-        location
-          ? {
+        : null,
+      location
+        ? {
             icon: "/assets/icons/LocGlobito80.gif",
             text: location
           }
-          : null
-      ].filter(Boolean)
-    });
-  }
-
+        : null
+    ].filter(Boolean)
+  });
+}
 
   function renderSourcePlayerPanel(play) {
     const user = resolveSourceUser(play);
