@@ -619,6 +619,12 @@ document.getElementById("jpica-help-btn")?.addEventListener("click", () => {
           new Date(b.created_at || 0)
       );
 
+const status = String(play?.play_status || "").toUpperCase();
+
+const showQpica =
+  status === "APPROVED" &&
+  canLaunchQspade(play);
+
     return `
     <section class="lienzo-tribune lienzo-tribune--target">
 
@@ -631,7 +637,9 @@ document.getElementById("jpica-help-btn")?.addEventListener("click", () => {
 <div class="jpica-users-header">
 
 <div class="jpica-child-actions">
+  ${showQpica ? `
   <button type="button" id="jpica-toggle-users-btn" class="jpica-child-btn">Q♠</button>
+` : ""}
   <button type="button" id="jpica-create-jclub-btn" class="jpica-child-btn">J♣</button>
   <button type="button" id="jpica-create-jheart-btn" class="jpica-child-btn jpica-child-btn--heart">J♥</button>
 
