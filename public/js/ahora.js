@@ -24,6 +24,31 @@
     });
   }
 
+  function isBombCandidate(play) {
+    const rank = String(play.card_rank || "").toUpperCase();
+    const suit = String(play.card_suit || "").toUpperCase();
+    const mode = String(play.spade_mode || play.parent_spade_mode || "").toUpperCase();
+
+    return (
+      suit === "SPADE" &&
+      mode === "DEADLINE" &&
+      ["J", "Q"].includes(rank)
+    );
+  }
+
+  function isWithinBombWindow(play) {
+    const value =
+      play.end_date ||
+      play.parent_end_date;
+
+    const end = new Date(value);
+    if (Number.isNaN(end.getTime())) return false;
+
+    const diff = end.getTime() - Date.now();
+
+    return diff <= 30 * 60 * 1000;
+  }
+
   function getCardLabel(play) {
     const rank = String(play.card_rank || "").trim().toUpperCase();
     const suit = String(play.card_suit || "").trim().toUpperCase();
@@ -87,17 +112,22 @@
     const playId = Number(play.id || 0);
     const deckId = Number(play.deck_id || 0);
     const rank = String(play.card_rank || "").trim().toUpperCase();
-const suit = String(play.card_suit || "").trim().toUpperCase();
+    const suit = String(play.card_suit || "").trim().toUpperCase();
 
-let targetHref = `/lienzo.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+    let targetHref = `/lienzo.html?deckId=${deckId}&playId=${playId}&mobile=1`;
 
-if (rank === "Q" && suit === "SPADE") {
-  targetHref = `/lienzoQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
-}
+    if (isBombCandidate(play) && isWithinBombWindow(play)) {
+      targetHref = `/bomba.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+    } else if (rank === "Q" && suit === "SPADE") {
+      const playCode = String(play.play_code || "");
+      const hasPayment = playCode.includes("pay:QHEART");
 
-if (rank === "K") {
-  targetHref = `/lienzoK.html?deckId=${deckId}&playId=${playId}&mobile=1`;
-}
+      targetHref = hasPayment
+        ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`
+        : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+    } else if (rank === "K") {
+      targetHref = `/lienzoK.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+    }
 
     return `
       <article class="ahora-card">

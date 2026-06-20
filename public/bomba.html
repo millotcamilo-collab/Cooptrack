@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bomba - CoopTrack</title>
+    <link rel="icon" type="image/png" href="/assets/icons/bigote.png" />
+
+    <!-- Global styles -->
+    <link rel="stylesheet" href="/css/global.css" />
+
+    <!-- Tribuna page specific styles (future) -->
+    <link rel="stylesheet" href="/css/tribuna.css" />
+
+    <!-- Card type render -->
+    <link rel="stylesheet" href="/css/cartatipo.css" />
+    <link rel="stylesheet" href="/css/lienzo.css" />
+    <!-- Placard styles -->
+    <link rel="stylesheet" href="/css/placard.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
+</head>
+
+<body>
+    <!-- Topbar container (rendered by topbar.js) -->
+    <div id="topbar-container"></div>
+
+    <!-- Main tribuna page content -->
+    <main class="tribuna-page tribuna-page--bomba">
+        <section id="tribuna-root" class="tribuna-page__root">
+            <!-- Placard container (optional) -->
+            <div id="tribuna-placard" class="tribuna__placard-zone"></div>
+
+            <!-- Tribuna content (rendered by amsterdam.js) -->
+            <div id="tribuna-content" class="tribuna__content-zone"></div>
+
+            <!-- Actions container -->
+            <div id="tribuna-actions" class="tribuna__actions-zone"></div>
+
+
+            <!-- Chat/Talud container (future) -->
+            <!-- <div id="tribuna-talud" class="tribuna__talud-zone"></div> -->
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <!-- Topbar (required for all pages) -->
+    <script src="/js/topbar.js"></script>
+
+    <!-- Card type helper (used in tribuna render) -->
+    <script src="/js/cartatipo.js"></script>
+
+    <!-- Placard helper -->
+    <script src="/js/placard.js"></script>
+
+    <!-- Chat helper (future) -->
+    <!-- <script src="/js/chat.js"></script> -->
+
+    <!-- Amsterdam tribuna module -->
+    <script src="/js/amsterdam.js"></script>
+
+    <!-- Situaciones Amsterdam -->
+    <script src="/js/situaciones/bomba.js"></script>
+
+    <!-- Tribuna initialization script (future: move to tribuna-core.js) -->
+    <!-- Tribuna initialization script -->
+    <script>
+       
+    </script>
+</body>
+
+</html>
