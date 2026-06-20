@@ -731,6 +731,14 @@ if (currentUserId) {
                     >
                       <img src="/assets/icons/maquina80.gif" class="topbar__icon-img" />
                     </button>
+                    
+                    <a
+                      href="/qs.html"
+                      class="topbar__icon-btn topbar__desktop-only"
+                      title="Qs"
+                    >
+                    <img src="/assets/icons/BUZONCASA120.gif" class="topbar__icon-img" />
+                    </a>
 
                     <button
                       class="topbar__icon-btn topbar__desktop-only"
