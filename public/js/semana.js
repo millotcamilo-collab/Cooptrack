@@ -44,6 +44,42 @@
       .replace(/'/g, "&#39;");
   }
 
+function getPlayHref(item) {
+  const deckId = item.deck_id;
+  const playId = item.id;
+
+  if (!deckId || !playId) return "#";
+
+  const rank = String(item.card_rank || "").toUpperCase();
+  const suit = String(item.card_suit || "").toUpperCase();
+  const code = String(item.play_code || "");
+
+  if (rank === "A" && suit === "HEART") {
+    return `/mazo.html?id=${encodeURIComponent(deckId)}`;
+  }
+
+  if (rank === "J" && suit === "HEART") {
+    return `/lienzoJcorazon.html?deckId=${encodeURIComponent(deckId)}&playId=${encodeURIComponent(playId)}`;
+  }
+
+  if (rank === "J" && suit === "SPADE") {
+    return `/lienzoJpica.html?deckId=${encodeURIComponent(deckId)}&playId=${encodeURIComponent(playId)}`;
+  }
+
+  if (rank === "J" && suit === "CLUB") {
+    return `/lienzoJtrebol.html?deckId=${encodeURIComponent(deckId)}&playId=${encodeURIComponent(playId)}`;
+  }
+
+  if (rank === "Q" && suit === "SPADE") {
+    const hasPayment = code.includes("pay:QHEART");
+    const page = hasPayment ? "lienzoQQpica.html" : "lienzoQpica.html";
+
+    return `/${page}?deckId=${encodeURIComponent(deckId)}&playId=${encodeURIComponent(playId)}`;
+  }
+
+  return `/mazo.html?id=${encodeURIComponent(deckId)}`;
+}
+
   function renderJotasBody(items = []) {
     if (!items.length) {
       return "";
@@ -60,8 +96,7 @@
         item.description ||
         "";
       const deckName = item.deck_name || "";
-      const deckId = item.deck_id;
-      const href = deckId ? `/mazo.html?id=${encodeURIComponent(deckId)}` : "#";
+      const href = getPlayHref(item);
 
       const visibleLabel = compactMode
         ? symbol
