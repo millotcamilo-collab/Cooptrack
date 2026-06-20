@@ -337,6 +337,11 @@
       .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
   }
 
+function qspadeHasPayment(play) {
+  const playCode = String(play?.play_code || "");
+  return playCode.includes("pay:QHEART");
+}
+
 function bindInvitationRows() {
   document
     .querySelectorAll(".jpica-q-row")
@@ -348,8 +353,14 @@ function bindInvitationRows() {
         const deckId = Number(getCurrentDeck()?.id || 0);
         if (!deckId) return;
 
-        window.location.href =
-          `/lienzoQpica.html?deckId=${deckId}&playId=${playId}`;
+        const childPlay = getPlayById(playId);
+        if (!childPlay) return;
+
+        const targetPage = qspadeHasPayment(childPlay)
+          ? "lienzoQQpica.html"
+          : "lienzoQpica.html";
+
+        window.location.href = `/${targetPage}?deckId=${deckId}&playId=${playId}`;
       });
     });
 }
