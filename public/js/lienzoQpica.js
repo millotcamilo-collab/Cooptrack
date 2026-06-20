@@ -1084,7 +1084,7 @@
             suit,
             title: parentText,
             play_text: effective.play_text,
-            spade_mode: play.spade_mode,
+            spade_mode: spadeMode || play.spade_mode,
             start_date: effective.start_date,
             end_date: effective.end_date,
             location,
@@ -1333,52 +1333,52 @@
     `;
     }
 
-function buildStampedChildJHeartsHtml(play) {
-    const stamps = Array.isArray(play?.stamps) ? play.stamps : [];
+    function buildStampedChildJHeartsHtml(play) {
+        const stamps = Array.isArray(play?.stamps) ? play.stamps : [];
 
-    const stampedTexts = stamps
-        .filter((stamp) => {
-            return String(stamp?.stamp_type || "").toUpperCase() === "APPROVED_CHILD_J_HEART";
-        })
-        .map((stamp) => {
-            return String(
-                stamp?.stamp_data?.play_text ||
-                stamp?.stamp_data?.text ||
-                ""
-            ).trim();
-        })
-        .filter(Boolean);
+        const stampedTexts = stamps
+            .filter((stamp) => {
+                return String(stamp?.stamp_type || "").toUpperCase() === "APPROVED_CHILD_J_HEART";
+            })
+            .map((stamp) => {
+                return String(
+                    stamp?.stamp_data?.play_text ||
+                    stamp?.stamp_data?.text ||
+                    ""
+                ).trim();
+            })
+            .filter(Boolean);
 
-    const parentPlayId = Number(play?.parent_play_id || 0);
+        const parentPlayId = Number(play?.parent_play_id || 0);
 
-    const liveTexts = getAllPlays()
-        .filter((p) => {
-            const rank = String(p?.card_rank || "").toUpperCase();
-            const suit = String(p?.card_suit || "").toUpperCase();
-            const status = String(p?.play_status || "").toUpperCase();
+        const liveTexts = getAllPlays()
+            .filter((p) => {
+                const rank = String(p?.card_rank || "").toUpperCase();
+                const suit = String(p?.card_suit || "").toUpperCase();
+                const status = String(p?.play_status || "").toUpperCase();
 
-            return (
-                rank === "J" &&
-                suit === "HEART" &&
-                status === "APPROVED" &&
-                Number(p?.parent_play_id || 0) === parentPlayId
-            );
-        })
-        .map((p) => String(p?.play_text || "").trim())
-        .filter(Boolean);
+                return (
+                    rank === "J" &&
+                    suit === "HEART" &&
+                    status === "APPROVED" &&
+                    Number(p?.parent_play_id || 0) === parentPlayId
+                );
+            })
+            .map((p) => String(p?.play_text || "").trim())
+            .filter(Boolean);
 
-    const texts = stampedTexts.length ? stampedTexts : liveTexts;
+        const texts = stampedTexts.length ? stampedTexts : liveTexts;
 
-    if (!texts.length) return "";
+        if (!texts.length) return "";
 
-    return `
+        return `
         <div class="placard__child-jhearts">
             ${texts
                 .map((text) => `<span class="placard__child-jheart">${escapeHtml(text)}</span>`)
                 .join("")}
         </div>
     `;
-}
+    }
 
     function mountPlacardFromDataset() {
         const placardHost = document.getElementById("lienzo-placard");
@@ -1421,7 +1421,7 @@ function buildStampedChildJHeartsHtml(play) {
                 ? getSessionDateFromPlay(currentPlay)
                 : null;
 
-const childJHeartsHtml = buildStampedChildJHeartsHtml(currentPlay);
+        const childJHeartsHtml = buildStampedChildJHeartsHtml(currentPlay);
 
         window.renderPlacard(placardHost, {
             page: "lienzo-qpica",
@@ -2813,6 +2813,6 @@ const childJHeartsHtml = buildStampedChildJHeartsHtml(currentPlay);
         setLienzoDropSelection(null);
         renderLienzo(play);
     }
-
+    window.bindLienzoActions = bindLienzoActions;
     window.openLienzoByPlayId = openLienzoByPlayId;
 })();

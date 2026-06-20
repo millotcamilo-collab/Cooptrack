@@ -45,8 +45,7 @@
     if (Number.isNaN(end.getTime())) return false;
 
     const diff = end.getTime() - Date.now();
-
-    return diff <= 30 * 60 * 1000;
+    return diff >= 0 && diff <= 30 * 60 * 1000;
   }
 
   function getCardLabel(play) {
