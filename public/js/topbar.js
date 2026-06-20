@@ -727,7 +727,7 @@ if (currentUserId) {
                     <button
                       class="topbar__icon-btn topbar__desktop-only"
                       id="bitacoraBtn"
-                      title="log de jotas"
+                      title="Bitácora"
                     >
                       <img src="/assets/icons/maquina80.gif" class="topbar__icon-img" />
                     </button>
@@ -735,7 +735,7 @@ if (currentUserId) {
                     <a
                       href="/qs.html"
                       class="topbar__icon-btn topbar__desktop-only"
-                      title="Qs"
+                      title="Invitaciones"
                     >
                     <img src="/assets/icons/BUZONCASA120.gif" class="topbar__icon-img" />
                     </a>

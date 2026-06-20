@@ -1340,7 +1340,7 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
         AND UPPER(COALESCE(p.play_status, '')) IN ('ACTIVE', 'SENT', 'PENDING')
         AND (
           (p.start_date IS NOT NULL AND p.start_date <= NOW())
-          OR (p.end_date IS NOT NULL AND p.end_date <= NOW())
+          OR (p.end_date IS NOT NULL AND p.end_date BETWEEN NOW() AND NOW() + INTERVAL '30 minutes')
         )
       ORDER BY p.start_date ASC NULLS LAST, p.end_date ASC NULLS LAST, p.created_at DESC
       `,
@@ -1362,7 +1362,7 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
         AND UPPER(COALESCE(q.play_status, '')) IN ('ACTIVE', 'SENT', 'PENDING')
         AND (
           (parent.start_date IS NOT NULL AND parent.start_date <= NOW())
-          OR (parent.end_date IS NOT NULL AND parent.end_date <= NOW())
+          OR (parent.end_date IS NOT NULL AND parent.end_date BETWEEN NOW() AND NOW() + INTERVAL '30 minutes')
         )
       ORDER BY q.created_at DESC
       `,
