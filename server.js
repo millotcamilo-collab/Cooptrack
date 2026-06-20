@@ -196,7 +196,7 @@ async function getAceClubOwnerUserId(client, deckId) {
       AND card_rank = 'A'
       AND card_suit = 'CLUB'
       AND split_part(play_code, '§', 8) = 'foundation'
-    ORDER BY id ASC
+    ORDER BY id DESC
     LIMIT 1
     `,
     [deckId]
