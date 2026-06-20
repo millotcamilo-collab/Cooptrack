@@ -36,7 +36,10 @@
       suits: Array.isArray(custom.suits) && custom.suits.length
         ? custom.suits
         : ["HEART", "SPADE", "DIAMOND", "CLUB"],
-      showSuitFilters: custom.showSuitFilters !== false
+      showSuitFilters: custom.showSuitFilters !== false,
+      defaultActiveSuits: Array.isArray(custom.defaultActiveSuits)
+        ? custom.defaultActiveSuits.map((s) => String(s).toUpperCase())
+        : [],
     };
   }
 
@@ -45,16 +48,16 @@
       const symbol = getSuitSymbol(suit);
 
       return `
-        <button
-          type="button"
-          class="mazobar__cmd-btn mazobar__cmd-btn--suit bitacorabar__filter-btn"
-          data-${config.filterPrefix}-suit="${suit}"
-          title="${symbol}"
-          aria-label="${symbol}"
-        >
-          ${symbol}
-        </button>
-      `;
+  <button
+    type="button"
+    class="mazobar__cmd-btn mazobar__cmd-btn--suit bitacorabar__filter-btn bitacorabar__filter-btn--${String(suit).toLowerCase()}"
+    data-${config.filterPrefix}-suit="${suit}"
+    title="${symbol}"
+    aria-label="${symbol}"
+  >
+    ${symbol}
+  </button>
+`;
     }).join("");
   }
 
@@ -115,7 +118,11 @@
   }
 
   function bindBitacorabarEvents(config) {
-    const activeSuits = new Set();
+    const activeSuits = new Set(
+      Array.isArray(config.defaultActiveSuits)
+        ? config.defaultActiveSuits.map((s) => String(s).toUpperCase())
+        : []
+    );
 
     function runSearch() {
       const query = String(searchInput?.value || "").trim();

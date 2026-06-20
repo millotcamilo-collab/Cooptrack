@@ -181,7 +181,7 @@
 
     let currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     let allPlays = [];
-    let activeSuitFilters = [];
+    let activeSuitFilters = ["SPADE"];
     let activeSearchQuery = "";
 
 
