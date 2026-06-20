@@ -93,14 +93,13 @@
 
         if (suit === "SPADE") {
             if (spadeMode === "APPOINTMENT") {
-                selectedValue = play?.start_date || play?.created_at;
+                selectedValue = play?.start_date;
             } else if (spadeMode === "DEADLINE") {
-                selectedValue = play?.end_date || play?.created_at;
+                selectedValue = play?.end_date;
             } else {
                 selectedValue =
                     play?.start_date ||
-                    play?.end_date ||
-                    play?.created_at;
+                    play?.end_date;
             }
         } else {
             selectedValue = play?.created_at;
