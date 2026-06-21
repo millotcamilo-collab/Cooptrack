@@ -1327,6 +1327,7 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
   try {
     const userId = req.auth.userId;
 
+    // Bombas propias: J♠ DEADLINE dentro de los próximos 30 minutos
     const esAhoraJResult = await pool.query(
       `
       SELECT
@@ -1337,20 +1338,27 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
       WHERE p.created_by_user_id = $1
         AND p.card_rank = 'J'
         AND p.card_suit = 'SPADE'
-        AND UPPER(COALESCE(p.play_status, '')) IN ('ACTIVE', 'SENT', 'PENDING')
-        AND (
-          (p.start_date IS NOT NULL AND p.start_date <= NOW())
-          OR (p.end_date IS NOT NULL AND p.end_date BETWEEN NOW() AND NOW() + INTERVAL '30 minutes')
-        )
-      ORDER BY p.start_date ASC NULLS LAST, p.end_date ASC NULLS LAST, p.created_at DESC
+        AND UPPER(COALESCE(p.spade_mode, '')) = 'DEADLINE'
+        AND UPPER(COALESCE(p.play_status, '')) IN ('ACTIVE', 'SENT', 'PENDING', 'APPROVED')
+        AND p.end_date IS NOT NULL
+        AND p.end_date BETWEEN NOW() AND NOW() + INTERVAL '30 minutes'
+        AND COALESCE(p.play_code, '') NOT ILIKE '%bomb:DISABLED%'
+      ORDER BY p.end_date ASC, p.created_at DESC
       `,
       [userId]
     );
 
+    // Bombas recibidas: Q♠ cuya J♠ madre es DEADLINE y está dentro de los próximos 30 minutos
     const esAhoraQResult = await pool.query(
       `
       SELECT
-        q.*, d.name AS deck_name
+        q.*,
+        d.name AS deck_name,
+        parent.spade_mode AS parent_spade_mode,
+        parent.start_date AS parent_start_date,
+        parent.end_date AS parent_end_date,
+        parent.location AS parent_location,
+        parent.play_text AS parent_play_text
       FROM plays q
       LEFT JOIN plays parent
         ON parent.id = q.parent_play_id
@@ -1359,12 +1367,12 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
       WHERE q.target_user_id = $1
         AND q.card_rank = 'Q'
         AND q.card_suit = 'SPADE'
-        AND UPPER(COALESCE(q.play_status, '')) IN ('ACTIVE', 'SENT', 'PENDING')
-        AND (
-          (parent.start_date IS NOT NULL AND parent.start_date <= NOW())
-          OR (parent.end_date IS NOT NULL AND parent.end_date BETWEEN NOW() AND NOW() + INTERVAL '30 minutes')
-        )
-      ORDER BY q.created_at DESC
+        AND UPPER(COALESCE(q.play_status, '')) IN ('ACTIVE', 'SENT', 'PENDING', 'APPROVED')
+        AND UPPER(COALESCE(parent.spade_mode, '')) = 'DEADLINE'
+        AND parent.end_date IS NOT NULL
+        AND parent.end_date BETWEEN NOW() AND NOW() + INTERVAL '30 minutes'
+        AND COALESCE(parent.play_code, '') NOT ILIKE '%bomb:DISABLED%'
+      ORDER BY parent.end_date ASC, q.created_at DESC
       `,
       [userId]
     );
