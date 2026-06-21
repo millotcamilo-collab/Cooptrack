@@ -1916,6 +1916,47 @@
     }
 
 
+    async function handleValidatorApprove(play) {
+        try {
+            const playId = Number(play?.id || 0);
+            const token = localStorage.getItem("cooptrackToken");
+
+            if (!playId || !token) {
+                alert("Falta sesión o playId");
+                return;
+            }
+
+            const response = await fetch(`/plays/${playId}/validate`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    decision: "APPROVED"
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                console.error("Error validando Q♠:", data);
+                alert(data?.error || "No se pudo validar la jugada");
+                return;
+            }
+
+            alert("Validación aprobada");
+
+            const deckId =
+                Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
+
+            window.location.href = deckId ? `/mazo.html?id=${deckId}` : "/mazos.html";
+        } catch (error) {
+            console.error("Error en handleValidatorApprove", error);
+            alert("No se pudo validar la jugada");
+        }
+    }
+
     async function handleSendPlay(play) {
         try {
             const playId = Number(play?.id || 0);
@@ -2344,7 +2385,7 @@
 
         if (validatorSendBtn) {
             validatorSendBtn.addEventListener("click", () => {
-                handleSendPlay(play);
+                handleValidatorApprove(play);
             });
         }
 
