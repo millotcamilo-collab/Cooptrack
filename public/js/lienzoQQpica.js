@@ -1517,16 +1517,74 @@ const childJHeartsHtml = buildStampedChildJHeartsHtml(play?.stamps || []);
     return status === "SENT" || status === "PENDING";
   }
 
+function isDeadlineFromParent(play) {
+  const parent = getPlayById(play?.parent_play_id);
+  return String(parent?.spade_mode || play?.spade_mode || "").toUpperCase() === "DEADLINE";
+}
+
+function canResolveTargetBomb(play) {
+  const status = String(play?.play_status || "").trim().toUpperCase();
+
+  return (
+    isCurrentUserTarget(play) &&
+    status === "APPROVED" &&
+    isDeadlineFromParent(play)
+  );
+}
+
+async function patchPlay(playId, payload) {
+  const token = localStorage.getItem("cooptrackToken");
+  if (!token) return { ok: false };
+
+  const response = await fetch(`/plays/${playId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return response.json();
+}
+
+async function patchParentJAndSiblingQs(play, payload) {
+  const parentId = Number(play?.parent_play_id || 0);
+  if (!parentId) return;
+
+  await patchPlay(parentId, payload);
+
+  const siblings = getAllPlays().filter((p) => {
+    const status = String(p?.play_status || "").toUpperCase();
+
+    return (
+      Number(p?.parent_play_id || 0) === parentId &&
+      Number(p?.id || 0) !== Number(play?.id || 0) &&
+      normalizeRank(p?.card_rank || p?.rank) === "Q" &&
+      normalizeSuit(p?.card_suit || p?.suit) === "SPADE" &&
+      !["DONE", "QUIT", "CANCELLED", "REJECTED"].includes(status)
+    );
+  });
+
+  for (const sibling of siblings) {
+    await patchPlay(sibling.id, payload);
+  }
+}
+
   function renderTargetActions(play) {
-    const acceptIcon = "/assets/icons/Sello40.gif";
-    const rejectIcon = "/assets/icons/stepback40.gif";
-    const cancelIcon = "/assets/icons/stop60.gif";
-    const awardIcon = "/assets/icons/award60oro.gif";
-    const complainIcon = "/assets/icons/ticket80g.gif";
+const acceptIcon = window.ICONS?.actions?.approve || "/assets/icons/Sello40.gif";
+const rejectIcon = window.ICONS?.actions?.reject || "/assets/icons/stepback40.gif";
+const cancelIcon = window.ICONS?.actions?.cancel || "/assets/icons/stop60.gif";
+const doneIcon = window.ICONS?.actions?.deadline || "/assets/icons/META60.gif";
+const quitIcon = window.ICONS?.actions?.quit || "/assets/icons/step60.gif";
+
+const awardIcon = "/assets/icons/award60oro.gif";
+const complainIcon = "/assets/icons/ticket80g.gif";
 
     const showDecisionButtons = shouldShowTargetDecisionButtons(play);
-    const showCancel = canCancelTargetPlay(play);
+
     const showSettlementActions = canShowSettlementActions(play, "AMSTERDAM");
+    const showBombActions = canResolveTargetBomb(play);
 
     return `
     <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
@@ -1543,15 +1601,18 @@ const childJHeartsHtml = buildStampedChildJHeartsHtml(play?.stamps || []);
         : ""
       }
 
-      ${showCancel
-        ? `
-          <button id="lienzo-cancel-btn" class="icon-btn" title="Cancelar">
-            <img src="${cancelIcon}" alt="Cancelar" />
-          </button>
-        `
-        : ""
-      }
+${showBombActions
+  ? `
+    <button id="lienzo-done-btn" class="icon-btn" title="Hecho / apagar bomba">
+      <img src="${doneIcon}" alt="Hecho" />
+    </button>
 
+    <button id="lienzo-quit-btn" class="icon-btn" title="Renunciar">
+      <img src="${quitIcon}" alt="Renunciar" />
+    </button>
+  `
+  : ""
+}
       ${showSettlementActions
         ? `
           <button id="lienzo-award-btn" class="icon-btn" title="Confirmar pago">
@@ -1875,6 +1936,38 @@ const nextStatus = userIsAceClub ? "SENT" : "PENDING";
     return true;
   }
 
+async function handleDoneBomb(play) {
+  const ok = await patchPlay(play.id, {
+    play_status: "DONE",
+    play_code: `${play.play_code || ""}§BOMB:DONE`
+  });
+
+  if (!ok?.ok) {
+    alert("No se pudo marcar como hecho.");
+    return;
+  }
+
+  await patchParentJAndSiblingQs(play, {
+    play_status: "DONE"
+  });
+
+  window.location.reload();
+}
+
+async function handleQuitBomb(play) {
+  const ok = await patchPlay(play.id, {
+    play_status: "QUIT",
+    play_code: `${play.play_code || ""}§BOMB:QUIT`
+  });
+
+  if (!ok?.ok) {
+    alert("No se pudo renunciar.");
+    return;
+  }
+
+  window.location.reload();
+}
+
   async function handleCancelPlay(play) {
     try {
       const playId = Number(play?.id || 0);
@@ -2115,6 +2208,9 @@ const nextStatus = userIsAceClub ? "SENT" : "PENDING";
     const awardBtn = document.getElementById("lienzo-award-btn");
     const complainBtn = document.getElementById("lienzo-complain-btn");
 
+    const doneBtn = document.getElementById("lienzo-done-btn");
+const quitBtn = document.getElementById("lienzo-quit-btn");
+
     const validatorSendBtn = document.getElementById("lienzo-validator-send-btn");
     const validatorRejectBtn = document.getElementById("lienzo-validator-reject-btn");
 
@@ -2165,6 +2261,18 @@ const nextStatus = userIsAceClub ? "SENT" : "PENDING";
         handleComplaint(play);
       });
     }
+
+if (doneBtn) {
+  doneBtn.addEventListener("click", () => {
+    handleDoneBomb(play);
+  });
+}
+
+if (quitBtn) {
+  quitBtn.addEventListener("click", () => {
+    handleQuitBomb(play);
+  });
+}
 
     document
       .querySelectorAll("[data-open-jpica-play-id]")

@@ -948,6 +948,18 @@
     `;
         }
 
+if (isTarget && status === "APPROVED" && isDeadlineFromParent(play)) {
+  return `
+    <button id="lienzo-done-btn" class="icon-btn" title="Hecho">
+      <img src="${window.ICONS.actions.deadline}" alt="Hecho" />
+    </button>
+
+    <button id="lienzo-quit-btn" class="icon-btn" title="Renunciar">
+      <img src="${window.ICONS.actions.quit}" alt="Renunciar" />
+    </button>
+  `;
+}
+
         if (
             isSource &&
             status !== "SENT" &&
@@ -2352,6 +2364,72 @@ const nextStatus = userIsAceClub ? "SENT" : "PENDING";
         }
     }
 
+function isDeadlineFromParent(play) {
+  const parent = getPlayById(play?.parent_play_id);
+  return String(parent?.spade_mode || play?.spade_mode || "").toUpperCase() === "DEADLINE";
+}
+
+async function patchPlay(playId, payload) {
+  const token = localStorage.getItem("cooptrackToken");
+  if (!token) return { ok: false };
+
+  const response = await fetch(`/plays/${playId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return response.json();
+}
+
+async function patchParentJAndSiblingQs(play, payload) {
+  const parentId = Number(play?.parent_play_id || 0);
+  if (!parentId) return;
+
+  await patchPlay(parentId, payload);
+
+  const siblings = getAllPlays().filter((p) => {
+    return (
+      Number(p?.parent_play_id || 0) === parentId &&
+      Number(p?.id || 0) !== Number(play?.id || 0) &&
+      normalizeRank(p?.card_rank || p?.rank) === "Q" &&
+      normalizeSuit(p?.card_suit || p?.suit) === "SPADE" &&
+      !["DONE", "QUIT", "CANCELLED", "REJECTED"].includes(
+        String(p?.play_status || "").toUpperCase()
+      )
+    );
+  });
+
+  for (const sibling of siblings) {
+    await patchPlay(sibling.id, payload);
+  }
+}
+
+async function handleDoneBomb(play) {
+  await patchPlay(play.id, {
+    play_status: "DONE",
+    play_code: `${play.play_code || ""}§BOMB:DONE`
+  });
+
+  await patchParentJAndSiblingQs(play, {
+    play_status: "DONE"
+  });
+
+  window.location.reload();
+}
+
+async function handleQuitBomb(play) {
+  await patchPlay(play.id, {
+    play_status: "QUIT",
+    play_code: `${play.play_code || ""}§BOMB:QUIT`
+  });
+
+  window.location.reload();
+}
+
     function bindLienzoActions(play) {
         const saveBtn = document.getElementById("lienzo-save-btn");
         const sendBtn = document.getElementById("lienzo-send-btn");
@@ -2360,7 +2438,20 @@ const nextStatus = userIsAceClub ? "SENT" : "PENDING";
         const cancelBtn = document.getElementById("lienzo-cancel-btn");
         const validatorRejectBtn = document.getElementById("lienzo-validator-reject-btn");
         const deleteBtn = document.getElementById("lienzo-delete-btn");
+const doneBtn = document.getElementById("lienzo-done-btn");
+const quitBtn = document.getElementById("lienzo-quit-btn");
 
+if (doneBtn) {
+  doneBtn.addEventListener("click", () => {
+    handleDoneBomb(play);
+  });
+}
+
+if (quitBtn) {
+  quitBtn.addEventListener("click", () => {
+    handleQuitBomb(play);
+  });
+}
         const validatorSendBtn = document.getElementById("lienzo-validator-send-btn");
 
         document
