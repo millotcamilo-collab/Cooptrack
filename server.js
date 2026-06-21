@@ -591,6 +591,12 @@ async function applySettlementToUserProfile(client, play, settlementInfo) {
   });
 }
 
+async function stampQSpadeContextOnce(client, play) {
+  // TODO: implementar estampado real de contexto Q♠
+  // Por ahora no hace nada, pero evita que SEND_Q_SPADE rompa.
+  return;
+}
+
 async function stampPlayIfNeeded(client, play, options = {}) {
   const reason = String(options.reason || '').toUpperCase();
 
@@ -3203,6 +3209,7 @@ RETURNING *
           error: 'La Q♠ enviada debe tener target_user_id'
         });
       }
+      
       await stampPlayIfNeeded(client, updatedPlay, {
         reason: 'SEND_Q_SPADE'
       });
