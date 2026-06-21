@@ -61,12 +61,30 @@
   }
 
   function renderEsAhoraItem(play) {
-    const cardLabel = getCardLabel(play);
-    const deckName = escapeHtml(play.deck_name || "Sin mazo");
-    const playText = escapeHtml(play.play_text || "Sin concepto");
-    const dateText = formatDateTime(play.start_date || play.end_date || play.created_at);
-    const location = String(play.location || "").trim();
+  const cardLabel = getCardLabel(play);
+  const deckName = escapeHtml(play.deck_name || "Sin mazo");
+  const playText = escapeHtml(play.play_text || play.parent_play_text || "Sin concepto");
+  const dateText = formatDateTime(
+    play.end_date ||
+    play.parent_end_date ||
+    play.start_date ||
+    play.parent_start_date ||
+    play.created_at
+  );
+  const location = String(play.location || play.parent_location || "").trim();
 
+  const playId = Number(play.id || 0);
+  const deckId = Number(play.deck_id || 0);
+  const isBomb = isBombCandidate(play) && isWithinBombWindow(play);
+
+  let actionHtml = "";
+  if (isBomb) {
+    actionHtml = `
+      <a href="/bomba.html?deckId=${deckId}&playId=${playId}&mobile=1" class="ahora-link">
+        Abrir bomba
+      </a>
+    `;
+  } else {
     const buttons = [];
 
     if (play.card_rank === "Q" && String(play.card_suit || "").toUpperCase() === "SPADE") {
@@ -83,27 +101,30 @@
       );
     }
 
-    return `
-      <article class="ahora-card">
-        <div class="ahora-card__header">
-          <span class="ahora-card__label">${escapeHtml(cardLabel)}</span>
-          <div class="ahora-card__title">
-            <p class="ahora-card__deck">${deckName}</p>
-            <p class="ahora-card__text">${playText}</p>
-          </div>
-        </div>
-
-        <div class="ahora-card__meta">
-          <span>${escapeHtml(dateText)}</span>
-          ${location ? `<span>${escapeHtml(location)}</span>` : ""}
-        </div>
-
-        <div class="ahora-actions">
-          ${buttons.join("")}
-        </div>
-      </article>
-    `;
+    actionHtml = buttons.join("");
   }
+
+  return `
+    <article class="ahora-card">
+      <div class="ahora-card__header">
+        <span class="ahora-card__label">${escapeHtml(cardLabel)}</span>
+        <div class="ahora-card__title">
+          <p class="ahora-card__deck">${deckName}</p>
+          <p class="ahora-card__text">${playText}</p>
+        </div>
+      </div>
+
+      <div class="ahora-card__meta">
+        <span>${escapeHtml(dateText)}</span>
+        ${location ? `<span>${escapeHtml(location)}</span>` : ""}
+      </div>
+
+      <div class="ahora-actions">
+        ${actionHtml}
+      </div>
+    </article>
+  `;
+}
 
   function renderTeMandanAhoraItem(play) {
     const deckName = escapeHtml(play.deck_name || "Sin mazo");
