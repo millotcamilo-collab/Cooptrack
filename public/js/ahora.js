@@ -49,7 +49,15 @@
         href = `/lienzoK.html?deckId=${deckId}&playId=${playId}&mobile=1`;
       }
 
-      const label = `${getCardLabel(play)} ${play.play_text || play.parent_play_text || ""}`.trim();
+      const dateText = formatDateTime(
+  play.end_date ||
+  play.parent_end_date ||
+  play.start_date ||
+  play.parent_start_date ||
+  play.created_at
+);
+
+const label = `${getCardLabel(play)} · ${dateText} · ${play.play_text || play.parent_play_text || ""}`.trim();
 
       const icon = getAhoraItemIcon(play);
 
