@@ -1972,11 +1972,12 @@
                 return;
             }
 
-            const nextStatus = isCurrentUserValidator(play)
-                ? "SENT"
-                : getValidatorTribunesForPlay(play).length > 0
-                    ? "PENDING"
-                    : "SENT";
+const currentUserId = getCurrentUserId();
+const aceClubTribune = getAceOwnerTribune("CLUB");
+const userIsAceClub =
+    Number(aceClubTribune?.userId || 0) === Number(currentUserId || 0);
+
+const nextStatus = userIsAceClub ? "SENT" : "PENDING";
 
             const response = await fetch(`/plays/${playId}`, {
                 method: "PATCH",
