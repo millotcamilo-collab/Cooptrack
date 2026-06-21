@@ -536,29 +536,43 @@ function bindInvitationRows() {
     window.location.reload();
   }
 
-  function bindJpicaChildHeader(parentPlay) {
-    document.getElementById("jpica-toggle-users-btn")?.addEventListener("click", () => {
-      document.getElementById("jpica-users-picker")?.classList.toggle("is-hidden");
+function bindJpicaChildHeader(parentPlay) {
+  document.getElementById("jpica-toggle-users-btn")?.addEventListener("click", () => {
+    document.getElementById("jpica-users-picker")?.classList.toggle("is-hidden");
+  });
+
+  document.getElementById("jpica-create-jclub-btn")?.addEventListener("click", () => {
+    createJtrebolFromJpica(parentPlay);
+  });
+
+  document.getElementById("jpica-create-jheart-btn")?.addEventListener("click", () => {
+    createJcorazonFromJpica(parentPlay);
+  });
+
+  document.getElementById("jpica-help-btn")?.addEventListener("click", () => {
+    window.location.href = `/help.html?rank=J&suit=SPADE&playId=${parentPlay.id}`;
+  });
+
+  document.getElementById("jpica-approve-btn")?.addEventListener("click", async () => {
+    const ok = await patchJpica(parentPlay.id, {
+      play_status: "APPROVED"
     });
 
-    document.getElementById("jpica-create-jclub-btn")?.addEventListener("click", () => {
-      createJtrebolFromJpica(parentPlay);
+    if (ok) {
+      window.location.reload();
+    }
+  });
+
+  document.getElementById("jpica-cancel-btn")?.addEventListener("click", async () => {
+    const ok = await patchJpica(parentPlay.id, {
+      play_status: "CANCELLED"
     });
 
-    document.getElementById("jpica-create-jheart-btn")?.addEventListener("click", () => {
-      createJcorazonFromJpica(parentPlay);
-    });
-
-
-
-    document.getElementById("jpica-approve-btn")?.addEventListener("click", async () => {
-      // PATCH APPROVED
-    });
-
-    document.getElementById("jpica-cancel-btn")?.addEventListener("click", async () => {
-      // PATCH CANCELLED
-    });
-  }
+    if (ok) {
+      window.location.reload();
+    }
+  });
+}
 
   function mountUsersPickerForQpica(parentPlay) {
     if (typeof window.renderUsersPicker !== "function") {
@@ -809,6 +823,34 @@ ${showCancel ? `
       alert("Acá seguimos: crear publicación económica / QQpica desde esta J♠.");
     });
   }
+
+async function patchJpica(playId, payload) {
+  const token = localStorage.getItem("cooptrackToken");
+
+  if (!token) {
+    alert("No estás logueado");
+    return false;
+  }
+
+  const response = await fetch(`/plays/${playId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    console.error("Error actualizando J♠:", data);
+    alert(data?.error || "No se pudo actualizar la J♠.");
+    return false;
+  }
+
+  return true;
+}
 
   async function patchJtrebol(playId, payload) {
     const token = localStorage.getItem("cooptrackToken");
