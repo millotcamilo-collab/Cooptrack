@@ -78,13 +78,28 @@
   const isBomb = isBombCandidate(play) && isWithinBombWindow(play);
 
   let actionHtml = "";
-  if (isBomb) {
-    actionHtml = `
-      <a href="/bomba.html?deckId=${deckId}&playId=${playId}&mobile=1" class="ahora-link">
-        Abrir bomba
-      </a>
-    `;
-  } else {
+if (isBomb) {
+  const rank = String(play.card_rank || "").trim().toUpperCase();
+  const suit = String(play.card_suit || "").trim().toUpperCase();
+  const playCode = String(play.play_code || "");
+  const hasPayment = playCode.includes("pay:QHEART");
+
+  let targetHref = `/lienzo.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+
+  if (rank === "J" && suit === "SPADE") {
+    targetHref = `/lienzoJpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+  } else if (rank === "Q" && suit === "SPADE") {
+    targetHref = hasPayment
+      ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`
+      : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+  }
+
+  actionHtml = `
+    <a href="${escapeHtml(targetHref)}" class="ahora-link">
+      Abrir
+    </a>
+  `;
+} else {
     const buttons = [];
 
     if (play.card_rank === "Q" && String(play.card_suit || "").toUpperCase() === "SPADE") {
@@ -127,45 +142,45 @@
 }
 
   function renderTeMandanAhoraItem(play) {
-    const deckName = escapeHtml(play.deck_name || "Sin mazo");
-    const statusText = String(play.play_status || "").trim() || "Pendiente";
-    const playId = Number(play.id || 0);
-    const deckId = Number(play.deck_id || 0);
-    const rank = String(play.card_rank || "").trim().toUpperCase();
-    const suit = String(play.card_suit || "").trim().toUpperCase();
+  const deckName = escapeHtml(play.deck_name || "Sin mazo");
+  const statusText = String(play.play_status || "").trim() || "Pendiente";
+  const playId = Number(play.id || 0);
+  const deckId = Number(play.deck_id || 0);
+  const rank = String(play.card_rank || "").trim().toUpperCase();
+  const suit = String(play.card_suit || "").trim().toUpperCase();
 
-    let targetHref = `/lienzo.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+  let targetHref = `/lienzo.html?deckId=${deckId}&playId=${playId}&mobile=1`;
 
-    if (isBombCandidate(play) && isWithinBombWindow(play)) {
-      targetHref = `/bomba.html?deckId=${deckId}&playId=${playId}&mobile=1`;
-    } else if (rank === "Q" && suit === "SPADE") {
-      const playCode = String(play.play_code || "");
-      const hasPayment = playCode.includes("pay:QHEART");
+  if (rank === "Q" && suit === "SPADE") {
+    const playCode = String(play.play_code || "");
+    const hasPayment = playCode.includes("pay:QHEART");
 
-      targetHref = hasPayment
-        ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`
-        : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
-    } else if (rank === "K") {
-      targetHref = `/lienzoK.html?deckId=${deckId}&playId=${playId}&mobile=1`;
-    }
+    targetHref = hasPayment
+      ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`
+      : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+  } else if (rank === "J" && suit === "SPADE") {
+    targetHref = `/lienzoJpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+  } else if (rank === "K") {
+    targetHref = `/lienzoK.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+  }
 
-    return `
-      <article class="ahora-card">
-        <div class="ahora-summary">
-          <div class="ahora-card-back">
-            <img src="/assets/icons/Dorso70.gif" alt="Tarjeta cerrada" />
-          </div>
-
-          <div class="ahora-summary__body">
-            <p class="ahora-card__deck">${deckName}</p>
-            <p class="ahora-summary__status">${escapeHtml(statusText)}</p>
-          </div>
+  return `
+    <article class="ahora-card">
+      <div class="ahora-summary">
+        <div class="ahora-card-back">
+          <img src="/assets/icons/Dorso70.gif" alt="Tarjeta cerrada" />
         </div>
 
-        <a href="${escapeHtml(targetHref)}" class="ahora-link">Abrir</a>
-      </article>
-    `;
-  }
+        <div class="ahora-summary__body">
+          <p class="ahora-card__deck">${deckName}</p>
+          <p class="ahora-summary__status">${escapeHtml(statusText)}</p>
+        </div>
+      </div>
+
+      <a href="${escapeHtml(targetHref)}" class="ahora-link">Abrir</a>
+    </article>
+  `;
+}
 
   function renderEmptyMessage(container, message) {
     container.innerHTML = `<div class="ahora-empty">${escapeHtml(message)}</div>`;

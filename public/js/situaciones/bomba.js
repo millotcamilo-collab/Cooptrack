@@ -98,17 +98,28 @@
     const parent = getParentPlay(play);
     const host = isCurrentUserHost(play);
 
-    if (host && parent) {
+    const rank = normalizeRank(play?.card_rank || play?.rank);
+    const suit = normalizeSuit(play?.card_suit || play?.suit);
+
+    const shouldShowJ =
+      host && (
+        (rank === "J" && suit === "SPADE") ||
+        parent
+      );
+
+    if (shouldShowJ) {
+      const source = parent || play;
+
       return {
-        ...parent,
+        ...source,
         rank: "J",
         card_rank: "J",
         suit: "SPADE",
         card_suit: "SPADE",
-        play_text: parent.play_text || play.play_text || "",
-        start_date: parent.start_date || play.start_date,
-        end_date: parent.end_date || play.end_date,
-        location: parent.location || play.location
+        play_text: source.play_text || play.play_text || "",
+        start_date: source.start_date || play.start_date,
+        end_date: source.end_date || play.end_date,
+        location: source.location || play.location
       };
     }
 
@@ -185,7 +196,8 @@
       location: cardPlay.location,
       spade_mode: "DEADLINE",
       showOwner: true,
-      showActions: false
+      showActions: true,
+      actionsHtml: buildStampHtml(play)
     });
 
     if (typeof window.renderAmsterdamMobile === "function") {
@@ -206,9 +218,73 @@
     }
 
     if (actions) {
-      actions.innerHTML = buildStampHtml(play);
+      actions.innerHTML = "";
     }
   }
+
+async function disableBomb(play) {
+  const token = localStorage.getItem("cooptrackToken");
+  if (!token) {
+    alert("No estás logueado.");
+    return false;
+  }
+
+  const parent = getParentPlay(play) || play;
+  const playId = Number(parent?.id || play?.id || 0);
+  if (!playId) {
+    alert("No se encontró la jugada de la bomba.");
+    return false;
+  }
+
+  const currentCode = String(parent?.play_code || play?.play_code || "");
+  const nextCode = currentCode.includes("bomb:DISABLED")
+    ? currentCode
+    : `${currentCode}§bomb:DISABLED`;
+
+  const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      play_code: nextCode
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    console.error("No se pudo desactivar la bomba", data);
+    alert(data?.error || "No se pudo desactivar la bomba.");
+    return false;
+  }
+
+  return true;
+}
+
+function bindBombActions(play, deckId) {
+  const disableBtn = document.getElementById("bomba-disable-btn");
+  if (!disableBtn) return;
+
+  disableBtn.addEventListener("click", async () => {
+    disableBtn.disabled = true;
+
+    const ok = await disableBomb(play);
+
+    if (!ok) {
+      disableBtn.disabled = false;
+      return;
+    }
+
+    const playId = Number(play?.id || 0);
+    const freshPlay = await fetchBombPlay(deckId, playId);
+    if (freshPlay) {
+      renderBomb(freshPlay);
+      bindBombActions(freshPlay, deckId);
+    }
+  });
+}
 
   async function initBomba() {
     const params = getParams();
@@ -232,6 +308,7 @@
       }
 
       renderBomb(play);
+        bindBombActions(play, deckId);
     } catch (error) {
       console.error("Error cargando bomba:", error);
       if (content) {
