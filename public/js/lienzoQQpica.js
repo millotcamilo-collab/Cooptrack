@@ -1725,10 +1725,12 @@ const childJHeartsHtml = buildStampedChildJHeartsHtml(play?.stamps || []);
         return;
       }
 
-      const nextStatus =
-        getValidatorTribunesForPlay(play).length > 0
-          ? "PENDING"
-          : "SENT";
+const currentUserId = Number(getCurrentUser()?.id || 0);
+const aceClubTribune = getAceOwnerTribune("CLUB");
+const userIsAceClub =
+  Number(aceClubTribune?.userId || 0) === Number(currentUserId || 0);
+
+const nextStatus = userIsAceClub ? "SENT" : "PENDING";
 
       const response = await fetch(`/plays/${playId}`, {
         method: "PATCH",

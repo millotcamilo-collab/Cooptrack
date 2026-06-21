@@ -1603,7 +1603,7 @@
         const rank = normalizeRank(play?.card_rank || play?.rank);
         const suit = normalizeSuit(play?.card_suit || play?.suit);
 
-        const sendIcon = "/assets/icons/buzon60.gif";
+        //const sendIcon = "/assets/icons/buzon60.gif";
         const saveIcon = "/assets/icons/salvar40.gif";
         const deleteIcon = "/assets/icons/papelera80.gif";
 
