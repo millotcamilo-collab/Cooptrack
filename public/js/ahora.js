@@ -49,10 +49,13 @@ function renderAhoraSlotBody(items = []) {
 
     const label = `${getCardLabel(play)} ${play.play_text || play.parent_play_text || ""}`.trim();
 
-    return `
-      <a class="dia__item-link" href="${escapeHtml(href)}">
-        ${escapeHtml(label)}
-      </a>
+const icon = getAhoraItemIcon(play);
+
+return `
+  <a class="dia__item-link ahora-slot__item" href="${escapeHtml(href)}">
+    ${icon ? `<img class="ahora-slot__icon" src="${escapeHtml(icon)}" alt="" />` : ""}
+    <span>${escapeHtml(label)}</span>
+  </a>
     `;
   }).join("");
 }
@@ -74,6 +77,31 @@ function renderAhoraSlotBody(items = []) {
 
     return date.getHours();
   }
+
+function isBombDisabled(play) {
+  const code = String(play.play_code || "").toUpperCase();
+  return code.includes("BOMB:DISABLED");
+}
+
+function isBombExpired(play) {
+  const value = play.end_date || play.parent_end_date;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+  return date.getTime() <= Date.now();
+}
+
+function getAhoraItemIcon(play) {
+  const ICONS = window.ICONS || {};
+  const ACTIONS = ICONS.actions || {};
+
+  if (isBombCandidate(play)) {
+    if (isBombDisabled(play)) return ACTIONS.deadline || ACTIONS.approve || "";
+    if (isBombExpired(play)) return ACTIONS.boom || "";
+    return ACTIONS.bomb || "";
+  }
+
+  return "";
+}
 
 function renderAhoraDayGrid(esAhoraList = [], teMandanList = []) {
   const now = new Date();
