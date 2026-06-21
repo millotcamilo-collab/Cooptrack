@@ -1,5 +1,7 @@
 (function () {
   const API_BASE_URL = "";
+  const AHORA_SLOT_COUNT = 12;
+  const ES_AHORA_MINUTES = 30;
 
   function escapeHtml(value) {
     return String(value || "")
@@ -24,47 +26,43 @@
     });
   }
 
-function renderAhoraSlotBody(items = []) {
-  if (!items.length) return "";
+  function renderAhoraSlotBody(items = []) {
+    if (!items.length) return "";
 
-  return items.map((play) => {
-    const rank = String(play.card_rank || "").toUpperCase();
-    const suit = String(play.card_suit || "").toUpperCase();
-    const deckId = Number(play.deck_id || 0);
-    const playId = Number(play.id || 0);
-    const playCode = String(play.play_code || "");
-    const hasPayment = playCode.includes("pay:QHEART");
+    return items.map((play) => {
+      const rank = String(play.card_rank || "").toUpperCase();
+      const suit = String(play.card_suit || "").toUpperCase();
+      const deckId = Number(play.deck_id || 0);
+      const playId = Number(play.id || 0);
+      const playCode = String(play.play_code || "");
+      const hasPayment = playCode.includes("pay:QHEART");
 
-    let href = `/lienzo.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+      let href = `/lienzo.html?deckId=${deckId}&playId=${playId}&mobile=1`;
 
-    if (rank === "J" && suit === "SPADE") {
-      href = `/lienzoJpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
-    } else if (rank === "Q" && suit === "SPADE") {
-      href = hasPayment
-        ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`
-        : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
-    } else if (rank === "K") {
-      href = `/lienzoK.html?deckId=${deckId}&playId=${playId}&mobile=1`;
-    }
+      if (rank === "J" && suit === "SPADE") {
+        href = `/lienzoJpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+      } else if (rank === "Q" && suit === "SPADE") {
+        href = hasPayment
+          ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`
+          : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+      } else if (rank === "K") {
+        href = `/lienzoK.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+      }
 
-    const label = `${getCardLabel(play)} ${play.play_text || play.parent_play_text || ""}`.trim();
+      const label = `${getCardLabel(play)} ${play.play_text || play.parent_play_text || ""}`.trim();
 
-const icon = getAhoraItemIcon(play);
+      const icon = getAhoraItemIcon(play);
 
-return `
+      return `
   <a class="dia__item-link ahora-slot__item" href="${escapeHtml(href)}">
     ${icon ? `<img class="ahora-slot__icon" src="${escapeHtml(icon)}" alt="" />` : ""}
     <span>${escapeHtml(label)}</span>
   </a>
     `;
-  }).join("");
-}
-
-  function getHourLabel(hour) {
-    return `${String(hour).padStart(2, "0")}:00`;
+    }).join("");
   }
 
-  function getPlayHour(play) {
+  function getPlayDate(play) {
     const value =
       play.end_date ||
       play.parent_end_date ||
@@ -73,64 +71,87 @@ return `
       play.created_at;
 
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return null;
-
-    return date.getHours();
+    return Number.isNaN(date.getTime()) ? null : date;
   }
 
-function isBombDisabled(play) {
-  const code = String(play.play_code || "").toUpperCase();
-  return code.includes("BOMB:DISABLED");
-}
+  function getSlotIndex(play, startDate = new Date(), slotCount = 12) {
+    const date = getPlayDate(play);
+    if (!date) return -1;
 
-function isBombExpired(play) {
-  const value = play.end_date || play.parent_end_date;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return false;
-  return date.getTime() <= Date.now();
-}
+    const diffMs = date.getTime() - startDate.getTime();
+    const diffHours = Math.floor(diffMs / (60 * 60 * 1000));
 
-function getAhoraItemIcon(play) {
-  const ICONS = window.ICONS || {};
-  const ACTIONS = ICONS.actions || {};
-
-  if (isBombCandidate(play)) {
-    if (isBombDisabled(play)) return ACTIONS.deadline || ACTIONS.approve || "";
-    if (isBombExpired(play)) return ACTIONS.boom || "";
-    return ACTIONS.bomb || "";
+    if (diffHours < 0 || diffHours >= slotCount) return -1;
+    return diffHours;
   }
 
-  return "";
-}
+  function getHourLabel(hour) {
+    return `${String(hour).padStart(2, "0")}:00`;
+  }
 
-function renderAhoraDayGrid(esAhoraList = [], teMandanList = []) {
-  const now = new Date();
-  const startHour = now.getHours();
-  const allItems = [...esAhoraList, ...teMandanList];
+  function isBombDisabled(play) {
+    const code = String(play.play_code || "").toUpperCase();
+    return code.includes("BOMB:DISABLED");
+  }
 
-  const slotsHtml = Array.from({ length: 12 }, (_, index) => {
-    const hour = (startHour + index) % 24;
-    const items = allItems.filter((play) => getPlayHour(play) === hour);
+  function isBombExpired(play) {
+    const value = play.end_date || play.parent_end_date;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return false;
+    return date.getTime() <= Date.now();
+  }
 
-    if (typeof window.renderDia === "function") {
-      return window.renderDia({
-        headerText: getHourLabel(hour),
-        bodyHtml: renderAhoraSlotBody(items),
-        isCurrent: index === 0,
-        extraClass: "ahora-slot"
-      });
+  function getAhoraItemIcon(play) {
+    const ICONS = window.ICONS || {};
+    const ACTIONS = ICONS.actions || {};
+
+    if (isBombCandidate(play)) {
+      if (isBombDisabled(play)) return ACTIONS.deadline || ACTIONS.approve || "";
+      if (isBombExpired(play)) return ACTIONS.boom || "";
+      return ACTIONS.bomb || "";
     }
 
-    return `
+    return "";
+  }
+
+  function renderAhoraDayGrid(esAhoraList = [], teMandanList = []) {
+    const now = new Date();
+    const allItems = [...esAhoraList, ...teMandanList];
+
+    const slotsHtml = Array.from({ length: AHORA_SLOT_COUNT }, (_, index) => {
+      const slotStart = new Date(now);
+      slotStart.setMinutes(0, 0, 0);
+      slotStart.setHours(slotStart.getHours() + index);
+
+      const hour = slotStart.getHours();
+
+      const items = allItems.filter((play) => {
+        return getSlotIndex(
+          play,
+          new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0),
+          AHORA_SLOT_COUNT
+        ) === index;
+      });
+
+      if (typeof window.renderDia === "function") {
+        return window.renderDia({
+          headerText: getHourLabel(hour),
+          bodyHtml: renderAhoraSlotBody(items),
+          isCurrent: index === 0,
+          extraClass: "ahora-slot"
+        });
+      }
+
+      return `
       <article class="dia ahora-slot ${index === 0 ? "dia--current" : ""}">
         <div class="dia__header">${getHourLabel(hour)}</div>
         <div class="dia__body">${renderAhoraSlotBody(items)}</div>
       </article>
     `;
-  }).join("");
+    }).join("");
 
-  return `<section class="ahora-grid">${slotsHtml}</section>`;
-}
+    return `<section class="ahora-grid">${slotsHtml}</section>`;
+  }
 
   function formatAhoraHeading(value = new Date()) {
     const date = value instanceof Date ? value : new Date(value);
