@@ -1623,21 +1623,17 @@
 
         const qHeartMode = hasDroppedQHeart();
 
-        return `
+return `
   <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
 
     ${qHeartMode
-                ? ``
-                : `
-      <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
-        <img src="${sendIcon}" alt="Enviar" />
-      </button>
-
+      ? ``
+      : `
       <button id="lienzo-delete-btn" class="icon-btn" title="Borrar invitación">
         <img src="${deleteIcon}" alt="Borrar invitación" />
       </button>
     `
-            }
+    }
 
   </div>
 `;
