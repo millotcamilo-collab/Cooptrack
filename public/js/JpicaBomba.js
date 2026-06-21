@@ -304,12 +304,52 @@
     const isApproved = statusRaw === "APPROVED";
     const isCancelled = statusRaw === "CANCELLED";
 
+    function isBombDisabled(play) {
+      return String(play?.play_code || "")
+        .toUpperCase()
+        .includes("BOMB:DISABLED");
+    }
+
+    function isPastDeadline(play) {
+      if (!play?.end_date) return false;
+
+      const end = new Date(play.end_date);
+      if (Number.isNaN(end.getTime())) return false;
+
+      return end.getTime() <= Date.now();
+    }
+
+    function getBombVisualState(play) {
+      if (isBombDisabled(play)) return "DONE";
+      if (isPastDeadline(play)) return "BOOM";
+      return "BOMB";
+    }
+
     function canCancelApprovedPlay() {
       if (!isApproved) return false;
       return isFutureDate(play?.end_date);
     }
 
     const bombIcon = escapeHtml(ACTIONS.bomb || "");
+    const boomIcon = escapeHtml(ACTIONS.boom || ACTIONS.bomb || "");
+    const deadlineIcon = escapeHtml(ACTIONS.deadline || ACTIONS.approve || ACTIONS.bomb || "");
+
+    const bombVisualState = getBombVisualState(play);
+
+    const deadlineVisualIcon =
+      bombVisualState === "DONE"
+        ? deadlineIcon
+        : bombVisualState === "BOOM"
+          ? boomIcon
+          : bombIcon;
+
+    const deadlineVisualAlt =
+      bombVisualState === "DONE"
+        ? "Deadline cumplido"
+        : bombVisualState === "BOOM"
+          ? "Deadline vencido"
+          : "Bomba activa";
+
     const saveIcon = escapeHtml(ACTIONS.save || "");
     const approveIcon = escapeHtml(ACTIONS.approve || "");
     const deleteIcon = escapeHtml(ACTIONS.delete || "");
@@ -538,27 +578,27 @@
         paintRecurrenceControls();
       }
 
-function localDateTimeToIso(value) {
-  if (!value) return "";
+      function localDateTimeToIso(value) {
+        if (!value) return "";
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
 
-  return date.toISOString();
-}
+        return date.toISOString();
+      }
 
-function buildPayload() {
-  const { endDate } = getFieldValues();
+      function buildPayload() {
+        const { endDate } = getFieldValues();
 
-  return {
-    playId,
-    text: getCurrentText(),
-    spadeMode: "DEADLINE",
-    startDate: "",
-    endDate: localDateTimeToIso(endDate),
-    location: "",
-  };
-}
+        return {
+          playId,
+          text: getCurrentText(),
+          spadeMode: "DEADLINE",
+          startDate: "",
+          endDate: localDateTimeToIso(endDate),
+          location: "",
+        };
+      }
 
       function buildRecurrencePayload() {
         return {
@@ -595,12 +635,12 @@ function buildPayload() {
           return;
         }
 
-dispatch("tablero:save-play", {
-  ...payload,
-  play_status: userIsSpadeAceHolder ? "ACTIVE" : "SENT",
-  issued_with: getIssuedWithForSpadeAction(),
-  recurrence: recurrencePayload.recurrence_type ? recurrencePayload : null
-});
+        dispatch("tablero:save-play", {
+          ...payload,
+          play_status: userIsSpadeAceHolder ? "ACTIVE" : "SENT",
+          issued_with: getIssuedWithForSpadeAction(),
+          recurrence: recurrencePayload.recurrence_type ? recurrencePayload : null
+        });
         originalText = payload.text || "";
         if (textView) textView.textContent = originalText || "Sin texto";
 
@@ -761,7 +801,7 @@ dispatch("tablero:save-play", {
   </div>
 
   <div class="tablero-row__field-inline">
-    <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
+    <img src="${deadlineVisualIcon}" alt="${deadlineVisualAlt}" class="tablero-row__field-icon" />
     <span>${escapeHtml(
       getDeadlineReadLabel(
         play?.end_date,
@@ -787,7 +827,7 @@ dispatch("tablero:save-play", {
           data-role="deadline-edit"
         >
           <div class="tablero-row__field-inline">
-            <img src="${bombIcon}" alt="Deadline" class="tablero-row__field-icon" />
+            <img src="${deadlineVisualIcon}" alt="${deadlineVisualAlt}" class="tablero-row__field-icon" />
             <input
               type="datetime-local"
               value="${escapeHtml(endDateValue)}"
