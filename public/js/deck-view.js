@@ -9,6 +9,8 @@ function getDecksMode() {
   return mode === "archived" ? "archived" : "active";
 }
 
+
+
 function goToMazoPage(deck) {
   if (!deck || !deck.id) {
     console.warn("Deck inválido", deck);
@@ -81,6 +83,27 @@ function buildDeckRowViewModel(deck) {
   };
 }
 
+function userHasAorKDeckAccess(deck) {
+  const cards = Array.isArray(deck?.current_user_cards)
+    ? deck.current_user_cards
+    : [];
+
+  return cards.some((card) => {
+    const value = String(card || "").toUpperCase();
+    return value.startsWith("A_") || value.startsWith("K_");
+  });
+}
+
+function filterDecksForMazosView(decks, mode) {
+  const safeDecks = Array.isArray(decks) ? decks : [];
+
+  if (mode === "archived") {
+    return safeDecks;
+  }
+
+  return safeDecks.filter(userHasAorKDeckAccess);
+}
+
 async function renderDecksView() {
   const container = document.getElementById("decks-view-container");
   if (!container) return;
@@ -91,7 +114,8 @@ async function renderDecksView() {
   }
 
   const mode = getDecksMode();
-  const decks = await fetchDecks(mode);
+  const allDecks = await fetchDecks(mode);
+  const decks = filterDecksForMazosView(allDecks, mode);
 
   if (!decks.length) {
     container.innerHTML = `

@@ -1,0 +1,243 @@
+(function () {
+  const API_BASE_URL = "https://cooptrack-backend.onrender.com";
+
+  let allQs = [];
+  let activeSuitFilter = "";
+  let activeSearchQuery = "";
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function normalizeRank(value) {
+    return String(value || "").trim().toUpperCase();
+  }
+
+  function normalizeSuit(value) {
+    return String(value || "").trim().toUpperCase();
+  }
+
+  function getCurrentUserIdFromToken() {
+    try {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return null;
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return Number(payload.userId || 0) || null;
+    } catch (error) {
+      console.error("No se pudo leer userId del token:", error);
+      return null;
+    }
+  }
+
+  function getAllowedQSuits() {
+    const config = window.transversalBarConfig || {};
+    if (Array.isArray(config.allowedSuits) && config.allowedSuits.length) {
+      return config.allowedSuits.map((suit) => String(suit || "").toUpperCase());
+    }
+
+    return ["SPADE", "DIAMOND"];
+  }
+
+  async function fetchQs() {
+    try {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return [];
+
+      const currentUserId = getCurrentUserIdFromToken();
+      if (!currentUserId) return [];
+
+      const response = await fetch(`${API_BASE_URL}/plays/pending`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const plays = Array.isArray(data?.plays) ? data.plays : [];
+      const allowedSuits = getAllowedQSuits();
+
+      return plays.filter((play) => {
+        const rank = normalizeRank(play.card_rank || play.rank);
+        const suit = normalizeSuit(play.card_suit || play.suit);
+        const targetId = Number(play.target_user_id || 0);
+        const creatorId = Number(play.created_by_user_id || 0);
+
+        return (
+          rank === "Q" &&
+          allowedSuits.includes(suit) &&
+          (targetId === currentUserId || creatorId === currentUserId)
+        );
+      });
+    } catch (error) {
+      console.error("Error cargando Qs:", error);
+      return [];
+    }
+  }
+
+  function getCardLabel(play) {
+    const suit = normalizeSuit(play.card_suit || play.suit);
+
+    if (suit === "SPADE") return "Q♠";
+    if (suit === "DIAMOND") return "Q♦";
+    if (suit === "HEART") return "Q♥";
+    if (suit === "CLUB") return "Q♣";
+
+    return "Q";
+  }
+
+  function getDescription(play) {
+    return String(play.play_text || play.text || "").trim() || "Sin descripción";
+  }
+
+  function getDeckId(play) {
+    return play.deck_id || play.deckId || null;
+  }
+
+  function getPlayId(play) {
+    return Number(play.id || 0) || null;
+  }
+
+  function getQCssClass(play) {
+    const suit = normalizeSuit(play.card_suit || play.suit);
+
+    if (suit === "SPADE") return "tablero-row--qpike";
+    if (suit === "DIAMOND") return "tablero-row--qdiamante";
+
+    return "";
+  }
+
+  function buildQRowHTML(play) {
+    const playId = getPlayId(play);
+    const cardLabel = getCardLabel(play);
+    const description = getDescription(play);
+    const deckId = getDeckId(play);
+    const deckName = String(play.deck_name || play.deckName || "").trim();
+
+    return `
+      <button
+        type="button"
+        class="tablero-row tablero-row--bitacora ${getQCssClass(play)}"
+        data-play-id="${playId || ""}"
+        data-deck-id="${deckId || ""}"
+        data-rank="${escapeHtml(normalizeRank(play.card_rank || play.rank))}"
+        data-suit="${escapeHtml(normalizeSuit(play.card_suit || play.suit))}"
+        data-has-qheart="${playHasQHeartAttachment(play) ? "1" : "0"}"
+      >
+        <div class="tablero-row__left">
+          <div class="tablero-row__card">${escapeHtml(cardLabel)}</div>
+        </div>
+
+        <div class="tablero-row__center">
+          ${deckName
+            ? `<div class="tablero-row__deck"><strong>${escapeHtml(deckName)}</strong></div>`
+            : ""
+          }
+
+          <div class="tablero-row__title" style="font-weight: 400;">
+            ${escapeHtml(description)}
+          </div>
+        </div>
+
+        <div class="tablero-row__right"></div>
+      </button>
+    `;
+  }
+
+  function playHasQHeartAttachment(play) {
+    const flow = String(play?.play_code || "").toUpperCase();
+    return flow.includes("PAY:QHEART");
+  }
+
+  function applyFilters(plays) {
+    return plays.filter((play) => {
+      const suit = normalizeSuit(play.card_suit || play.suit);
+      const description = getDescription(play).toLowerCase();
+      const deckName = String(play.deck_name || play.deckName || "").trim().toLowerCase();
+
+      const suitOk = !activeSuitFilter || suit === activeSuitFilter;
+      const searchOk =
+        !activeSearchQuery ||
+        description.includes(activeSearchQuery.toLowerCase()) ||
+        deckName.includes(activeSearchQuery.toLowerCase());
+
+      return suitOk && searchOk;
+    });
+  }
+
+  function resolveQHref(row) {
+    const deckId = row.dataset.deckId;
+    const playId = row.dataset.playId;
+    const suit = String(row.dataset.suit || "").toUpperCase();
+    const hasQHeart = row.dataset.hasQheart === "1" || row.dataset.hasQHeart === "1";
+
+    if (!deckId || !playId) return null;
+
+    if (suit === "SPADE") {
+      return hasQHeart
+        ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}`
+        : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}`;
+    }
+
+    if (suit === "DIAMOND") {
+      return `/lienzo.html?deckId=${deckId}&playId=${playId}`;
+    }
+
+    return `/lienzo.html?deckId=${deckId}&playId=${playId}`;
+  }
+
+  function bindRowEvents() {
+    document.querySelectorAll(".tablero-row--bitacora").forEach((row) => {
+      row.addEventListener("click", () => {
+        const href = resolveQHref(row);
+        if (href) window.location.href = href;
+      });
+    });
+  }
+
+  function renderQs() {
+    const container = document.getElementById("qs-container");
+    if (!container) return;
+
+    const visibleQs = applyFilters(allQs);
+
+    if (!visibleQs.length) {
+      container.innerHTML = `
+        <div class="tablero-empty-state">
+          No hay invitaciones para mostrar.
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = visibleQs.map(buildQRowHTML).join("");
+    bindRowEvents();
+  }
+
+  async function initQs() {
+    allQs = await fetchQs();
+    renderQs();
+  }
+
+  document.addEventListener("qs:filterSuit", (event) => {
+    activeSuitFilter = String(event.detail?.suit || "").toUpperCase();
+    renderQs();
+  });
+
+  document.addEventListener("qs:search", (event) => {
+    activeSearchQuery = String(event.detail?.query || "").trim();
+    renderQs();
+  });
+
+  document.addEventListener("DOMContentLoaded", initQs);
+})();

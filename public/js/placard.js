@@ -193,7 +193,7 @@
     });
   }
 
-  
+
   function getNickname(value, fallback = "invitado") {
     const text = String(value || "").trim();
     return text || fallback;
@@ -310,6 +310,7 @@
       new URLSearchParams(window.location.search).get("deckId") ||
       new URLSearchParams(window.location.search).get("id");
 
+    const canOpenMazo = config?.canOpenMazo !== false;
     const photoHtml = buildPhotoHTML(photoUrl);
 
 
@@ -317,35 +318,35 @@
       config?.leftCardsHtml || buildTopCardsHTML(config?.leftCards || [])
     );
 
-function getApprovedJHeartTexts(plays, parentPlayId = null) {
-  if (!Array.isArray(plays)) return [];
+    function getApprovedJHeartTexts(plays, parentPlayId = null) {
+      if (!Array.isArray(plays)) return [];
 
-  return plays
-    .filter((p) => {
-      const rank = String(p?.card_rank || "").toUpperCase();
-      const suit = String(p?.card_suit || "").toUpperCase();
-      const status = String(p?.play_status || "").toUpperCase();
+      return plays
+        .filter((p) => {
+          const rank = String(p?.card_rank || "").toUpperCase();
+          const suit = String(p?.card_suit || "").toUpperCase();
+          const status = String(p?.play_status || "").toUpperCase();
 
-      if (rank !== "J" || suit !== "HEART" || status !== "APPROVED") {
-        return false;
-      }
+          if (rank !== "J" || suit !== "HEART" || status !== "APPROVED") {
+            return false;
+          }
 
-      if (parentPlayId) {
-        return Number(p?.parent_play_id || 0) === Number(parentPlayId);
-      }
+          if (parentPlayId) {
+            return Number(p?.parent_play_id || 0) === Number(parentPlayId);
+          }
 
-      return true;
-    })
-    .map((p) => String(p?.play_text || "").trim())
-    .filter(Boolean);
-}
+          return true;
+        })
+        .map((p) => String(p?.play_text || "").trim())
+        .filter(Boolean);
+    }
 
-const jHeartTexts =
-  config?.stamps
-    ?.filter(s => s.stamp_type === "APPROVED_J_HEART")
-    ?.map(s => s.stamp_data?.play_text)
-    ?.filter(Boolean)
-  || [];
+    const jHeartTexts =
+      config?.stamps
+        ?.filter(s => s.stamp_type === "APPROVED_J_HEART")
+        ?.map(s => s.stamp_data?.play_text)
+        ?.filter(Boolean)
+      || [];
 
     let subtitleHtml = "";
 
@@ -367,54 +368,82 @@ const jHeartTexts =
   `;
     }
 
-    const contextHtml = String(config?.contextHtml || "").trim();
-    container.innerHTML = `
+const contextHtml = String(config?.contextHtml || "").trim();
+const canOpenMazo = config?.canOpenMazo !== false;
+
+container.innerHTML = `
   <section class="placard">
     <div class="placard__row">
+
       <div class="placard__lead">
         ${leftCardsHtml}
         <div class="placard__photo-wrap">
-          ${photoHtml}
+          ${canOpenMazo
+            ? photoHtml
+            : `
+              <div class="placard__photo-static">
+                <img
+                  src="${escapeHtml(photoUrl)}"
+                  alt="Foto del mazo"
+                  class="placard__photo"
+                  onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
+                />
+              </div>
+            `
+          }
         </div>
       </div>
 
-<div class="placard__maincard">
-  <button
-    type="button"
-    class="placard__maincard-btn"
-    id="placardAdminBtn"
-    title="Ir a administradores"
-    aria-label="Ir a administradores"
-  >
-    <img
-      src="/assets/icons/Acorazon.png"
-      alt="A♥"
-      class="placard__maincard-image"
-    />
-  </button>
-</div>
+      <div class="placard__maincard">
+        ${canOpenMazo
+          ? `
+            <button
+              type="button"
+              class="placard__maincard-btn"
+              id="placardAdminBtn"
+              title="Ir a administradores"
+              aria-label="Ir a administradores"
+            >
+              <img
+                src="/assets/icons/Acorazon.png"
+                alt="A♥"
+                class="placard__maincard-image"
+              />
+            </button>
+          `
+          : `
+            <div class="placard__maincard-static">
+              <img
+                src="/assets/icons/Acorazon.png"
+                alt="A♥"
+                class="placard__maincard-image"
+              />
+            </div>
+          `
+        }
+      </div>
 
       <div class="placard__text">
-  <div class="placard__titleline">
-    <span class="placard__name">${escapeHtml(title)}</span>
-    ${showCurrency
-        ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
-        : ""
-      }
-  </div>
+        <div class="placard__titleline">
+          <span class="placard__name">${escapeHtml(title)}</span>
+          ${showCurrency
+            ? buildCurrencyHTML("DIAMOND", currencyCode, currencyName)
+            : ""
+          }
+        </div>
 
-${subtitleHtml}
+        ${subtitleHtml}
 
-${contextHtml ? `
-  <div class="placard__context">
-    ${contextHtml}
-  </div>
-` : ""}
+        ${contextHtml
+          ? `
+            <div class="placard__context">
+              ${contextHtml}
+            </div>
+          `
+          : ""
+        }
+      </div>
 
-
-
-
-</div>
     </div>
   </section>
 
@@ -422,7 +451,7 @@ ${contextHtml ? `
     // 👉 ir a administradores (A♥)
     const adminBtn = container.querySelector("#placardAdminBtn");
 
-    if (adminBtn) {
+    if (adminBtn && canOpenMazo) {
       adminBtn.addEventListener("click", () => {
         if (!deckId) return;
         window.location.href = `/mazoAdministradores.html?id=${deckId}`;
@@ -430,9 +459,9 @@ ${contextHtml ? `
     }
 
     // 👉 ir a mazo (foto)
-
     const photoBtn = container.querySelector("#placardPhotoBtn");
-    if (photoBtn) {
+
+    if (photoBtn && canOpenMazo) {
       photoBtn.addEventListener("click", () => {
         if (!deckId) return;
         window.location.href = `/mazo.html?id=${deckId}`;
@@ -440,7 +469,8 @@ ${contextHtml ? `
     }
 
     const tickerBtn = container.querySelector("#placardTickerBtn");
-    if (tickerBtn) {
+
+    if (tickerBtn && canOpenMazo) {
       tickerBtn.addEventListener("click", () => {
         if (!deckId) return;
         window.location.href = `/mazo.html?id=${deckId}&suit=HEART`;
