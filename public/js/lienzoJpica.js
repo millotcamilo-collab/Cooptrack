@@ -286,53 +286,50 @@ function getOpenChildQspades(parentPlayId) {
       <div class="lienzo-tribune__stage">
 <div id="lienzo-jpica-card">
   ${window.CartaTipo.renderPlayCardBox({
-      rank: "J",
-      suit: "SPADE",
-      title: play.play_text || "Sin texto",
-      play_text: play.play_text,
-      spade_mode: play.spade_mode,
-      start_date: play.start_date,
-      end_date: play.end_date,
-      location: play.location,
-      ownerUser: getPlayOwnerUser(play),
-      ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
-      metas: [
-        mainDate
-          ? {
-            icon: mainIcon,
-            text: formatTime(mainDate)
-          }
-          : null,
-        play.location
-          ? {
-            icon: "/assets/icons/LocGlobito80.gif",
-            text: play.location
-          }
-          : null
-      ].filter(Boolean)
-    })}
+  rank: "J",
+  suit: "SPADE",
+  title: play.play_text || "Sin texto",
+  play_text: play.play_text,
+  spade_mode: play.spade_mode,
+  start_date: play.start_date,
+  end_date: play.end_date,
+  location: play.location,
+  ownerUser: getPlayOwnerUser(play),
+  ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
+  metas: [
+    mainDate
+      ? {
+          icon: mainIcon,
+          text: formatTime(mainDate)
+        }
+      : null,
+    play.location
+      ? {
+          icon: "/assets/icons/LocGlobito80.gif",
+          text: play.location
+        }
+      : null
+  ].filter(Boolean),
+  actionsHtml: showBombActions ? `
+    <button
+      type="button"
+      id="jpica-done-btn"
+      class="jpica-child-btn"
+      title="Hecho / apagar bomba"
+    >
+      <img src="${window.ICONS.actions.deadline}" alt="Hecho" />
+    </button>
 
-  ${showBombActions ? `
-    <div class="jpica-card-actions">
-      <button
-        type="button"
-        id="jpica-done-btn"
-        class="jpica-child-btn"
-        title="Hecho / apagar bomba"
-      >
-        <img src="${window.ICONS.actions.deadline}" alt="Hecho" />
-      </button>
-
-      <button
-        type="button"
-        id="jpica-cancel-btn"
-        class="jpica-child-btn"
-        title="Cancelar / apagar bomba"
-      >
-        <img src="${window.ICONS.actions.cancel}" alt="Cancelar" />
-      </button>
-    </div>
-  ` : ""}
+    <button
+      type="button"
+      id="jpica-cancel-bomb-btn"
+      class="jpica-child-btn"
+      title="Cancelar / apagar bomba"
+    >
+      <img src="${window.ICONS.actions.cancel}" alt="Cancelar" />
+    </button>
+  ` : ""
+})}
 </div>
       </div>
 
@@ -631,7 +628,7 @@ function getOpenChildQspades(parentPlayId) {
       }
     });
 
-document.getElementById("jpica-cancel-btn")?.addEventListener("click", async () => {
+document.getElementById("jpica-cancel-bomb-btn")?.addEventListener("click", async () => {
   const ok = await patchJpica(parentPlay.id, {
     play_status: "CANCELLED",
     play_code: `${parentPlay.play_code || ""}§BOMB:DISABLED`
