@@ -549,17 +549,6 @@
         return (limit.getTime() + margen) > Date.now();
       }
 
-      function canPublishNews(play) {
-        if (!play?.start_date) return false;
-
-        const start = new Date(play.start_date);
-
-        if (Number.isNaN(start.getTime())) {
-          return false;
-        }
-
-        return start.getTime() > Date.now();
-      }
 
       function renderMode() {
         const visualMode = row.dataset.mode || "read";
