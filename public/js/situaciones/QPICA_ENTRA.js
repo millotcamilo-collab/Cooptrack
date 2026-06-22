@@ -109,32 +109,32 @@ window.QPICA_ENTRA = {
       back.classList.add("qpica-q-back--opening");
     }
 
-setTimeout(() => {
-  host.innerHTML = this.renderOpen(this.currentCtx);
+    setTimeout(() => {
+      host.innerHTML = this.renderOpen(this.currentCtx);
 
-  if (typeof window.bindAmsterdamTargetActions === "function") {
-    window.bindAmsterdamTargetActions(this.currentCtx.play);
-  }
+      if (typeof window.bindAmsterdamTargetActions === "function") {
+        window.bindAmsterdamTargetActions(this.currentCtx.play);
+      }
 
-  if (typeof window.bindLienzoActions === "function") {
-    window.bindLienzoActions();
-  }
+      if (typeof window.bindLienzoActions === "function") {
+        window.bindLienzoActions();
+      }
 
-  if (typeof window.bindQpicaActions === "function") {
-    window.bindQpicaActions();
-  }
+      if (typeof window.bindQpicaActions === "function") {
+        window.bindQpicaActions();
+      }
 
-  const openFigures = host.querySelectorAll(".lv2-play-card__figure");
-  const openQFigure = openFigures[1];
+      const openFigures = host.querySelectorAll(".lv2-play-card__figure");
+      const openQFigure = openFigures[1];
 
-  this.playSequence({
-    figureEl: openQFigure,
-    prefix: "QPMira",
-    from: 0,
-    to: 8,
-    fps: 12
-  });
-}, 700);
+      this.playSequence({
+        figureEl: openQFigure,
+        prefix: "QPMira",
+        from: 0,
+        to: 8,
+        fps: 12
+      });
+    }, 700);
 
   },
 
@@ -166,6 +166,7 @@ ${parent ? helpers.renderPlayCardBox({
       start_date: parent.start_date,
       end_date: parent.end_date,
       location: parent.location,
+      spade_mode: parent?.spade_mode || play.spade_mode,
       figureOverrideSrc: this.buildFrame(jPrefix, 0),
 
       ownerUser: {
@@ -220,7 +221,7 @@ ${parent ? helpers.renderPlayCardBox({
       start_date: parent.start_date,
       end_date: parent.end_date,
       location: parent.location,
-
+      spade_mode: parent?.spade_mode || play.spade_mode,
       ownerUser: {
         nickname: parent.created_by_nickname,
         profile_photo_url: parent.created_by_profile_photo_url
@@ -238,6 +239,7 @@ ${helpers.renderPlayCardBox({
       start_date: parent?.start_date || play.start_date,
       end_date: parent?.end_date || play.end_date,
       location: parent?.location || play.location,
+      spade_mode: parent?.spade_mode || play.spade_mode,
       figureOverrideSrc: this.buildFrame("QPMira", 0)
     })}
     </div>

@@ -22,6 +22,7 @@ window.QQPICA_ENTRA = {
             start_date: parent.start_date,
             end_date: parent.end_date,
             location: parent.location,
+            spade_mode: parent?.spade_mode || play.spade_mode,
             figureOverrideSrc: this.buildFrame(jPrefix, 0),
             ownerUser: {
                 nickname: parent.created_by_nickname,
@@ -59,6 +60,7 @@ window.QQPICA_ENTRA = {
             start_date: parent.start_date,
             end_date: parent.end_date,
             location: parent.location,
+            spade_mode: parent?.spade_mode || play.spade_mode,
             ownerUser: {
                 nickname: parent.created_by_nickname,
                 profile_photo_url: parent.created_by_profile_photo_url
