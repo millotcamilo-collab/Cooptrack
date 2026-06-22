@@ -344,9 +344,12 @@
 
                 const deckQuery = deckId ? `?id=${deckId}` : "";
 
-                if (!isMobileViewport()) {
-                    return `/mazo.html${deckQuery}`;
-                }
+if (!isMobileViewport()) {
+  const ymd = getPlayCalendarYmd(play);
+  return ymd
+    ? `/almanaque.html?date=${encodeURIComponent(ymd)}`
+    : "/almanaque.html";
+}
 
                 // Todo rechazo va al archivo
                 if (
@@ -368,6 +371,27 @@
                 if (rank === "A") {
                     return `/mazoAdministradores.html${deckQuery}`;
                 }
+
+function getPlayCalendarYmd(play) {
+  const parent = play?.parent_play || play?.parent || null;
+  const spadeMode = normalizeText(parent?.spade_mode || play?.spade_mode);
+
+  const value =
+    spadeMode === "DEADLINE"
+      ? parent?.end_date || play?.end_date
+      : parent?.start_date || play?.start_date;
+
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
 
                 return `/mazo.html${deckQuery}`;
             }

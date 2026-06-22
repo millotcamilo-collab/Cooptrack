@@ -178,7 +178,21 @@
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    function getInitialDateFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const rawDate = params.get("date");
+        const parsed = parseLocalDate(rawDate);
+
+        if (!parsed) return null;
+
+        parsed.setHours(0, 0, 0, 0);
+        return parsed;
+    }
+
+    let currentDate =
+        getInitialDateFromUrl() ||
+        new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
     let allPlays = [];
     let activeSuitFilters = ["SPADE"];
     let activeSearchQuery = "";
