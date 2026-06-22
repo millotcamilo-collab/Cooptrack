@@ -369,7 +369,6 @@
     }
 
 const contextHtml = String(config?.contextHtml || "").trim();
-const canOpenMazo = config?.canOpenMazo !== false;
 
 container.innerHTML = `
   <section class="placard">
