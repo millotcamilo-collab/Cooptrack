@@ -47,21 +47,21 @@
     return !!userId && userId === ownerId;
   }
 
-function getOpenChildQspades(parentPlayId) {
-  const closed = ["DONE", "CANCELLED", "REJECTED"];
-  return getAllPlays().filter((p) => {
-    const rank = normalizeRank(p?.card_rank || p?.rank);
-    const suit = normalizeSuit(p?.card_suit || p?.suit);
-    const status = normalizeRank(p?.play_status || p?.status);
+  function getOpenChildQspades(parentPlayId) {
+    const closed = ["DONE", "CANCELLED", "REJECTED"];
+    return getAllPlays().filter((p) => {
+      const rank = normalizeRank(p?.card_rank || p?.rank);
+      const suit = normalizeSuit(p?.card_suit || p?.suit);
+      const status = normalizeRank(p?.play_status || p?.status);
 
-    return (
-      Number(p?.parent_play_id || 0) === Number(parentPlayId) &&
-      rank === "Q" &&
-      suit === "SPADE" &&
-      !closed.includes(status)
-    );
-  });
-}
+      return (
+        Number(p?.parent_play_id || 0) === Number(parentPlayId) &&
+        rank === "Q" &&
+        suit === "SPADE" &&
+        !closed.includes(status)
+      );
+    });
+  }
 
   function canResolveBomb(play) {
     return (
@@ -286,31 +286,31 @@ function getOpenChildQspades(parentPlayId) {
       <div class="lienzo-tribune__stage">
 <div id="lienzo-jpica-card">
   ${window.CartaTipo.renderPlayCardBox({
-  rank: "J",
-  suit: "SPADE",
-  title: play.play_text || "Sin texto",
-  play_text: play.play_text,
-  spade_mode: play.spade_mode,
-  start_date: play.start_date,
-  end_date: play.end_date,
-  location: play.location,
-  ownerUser: getPlayOwnerUser(play),
-  ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
-  metas: [
-    mainDate
-      ? {
-          icon: mainIcon,
-          text: formatTime(mainDate)
-        }
-      : null,
-    play.location
-      ? {
-          icon: "/assets/icons/LocGlobito80.gif",
-          text: play.location
-        }
-      : null
-  ].filter(Boolean),
-  actionsHtml: showBombActions ? `
+      rank: "J",
+      suit: "SPADE",
+      title: play.play_text || "Sin texto",
+      play_text: play.play_text,
+      spade_mode: play.spade_mode,
+      start_date: play.start_date,
+      end_date: play.end_date,
+      location: play.location,
+      ownerUser: getPlayOwnerUser(play),
+      ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
+      metas: [
+        mainDate
+          ? {
+            icon: mainIcon,
+            text: formatTime(mainDate)
+          }
+          : null,
+        play.location
+          ? {
+            icon: "/assets/icons/LocGlobito80.gif",
+            text: play.location
+          }
+          : null
+      ].filter(Boolean),
+      actionsHtml: showBombActions ? `
     <button
       type="button"
       id="jpica-done-btn"
@@ -329,7 +329,7 @@ function getOpenChildQspades(parentPlayId) {
       <img src="${window.ICONS.actions.cancel}" alt="Cancelar" />
     </button>
   ` : ""
-})}
+    })}
 </div>
       </div>
 
@@ -628,35 +628,38 @@ function getOpenChildQspades(parentPlayId) {
       }
     });
 
-document.getElementById("jpica-cancel-bomb-btn")?.addEventListener("click", async () => {
-  const ok = await patchJpica(parentPlay.id, {
-    play_status: "CANCELLED",
-    play_code: `${parentPlay.play_code || ""}§BOMB:DISABLED`
-  });
+    document.getElementById("jpica-cancel-bomb-btn")?.addEventListener("click", async () => {
+      const ok = await patchJpica(parentPlay.id, {
+        play_status: "CANCELLED",
+        play_code: `${parentPlay.play_code || ""}§BOMB:DISABLED`
+      });
 
-  if (!ok) return;
+      if (!ok) return;
 
-  await patchChildQspades(parentPlay.id, {
-    play_status: "CANCELLED"
-  });
+      await patchChildQspades(parentPlay.id, {
+        play_status: "CANCELLED"
+      });
 
-  window.location.reload();
-});
+      window.location.reload();
+    });
 
-document.getElementById("jpica-done-btn")?.addEventListener("click", async () => {
-  const ok = await patchJpica(parentPlay.id, {
-    play_status: "DONE",
-    play_code: `${parentPlay.play_code || ""}§BOMB:DONE`
-  });
+    document.getElementById("jpica-done-btn")?.addEventListener("click", async () => {
+      const ok = await patchJpica(parentPlay.id, {
+        play_status: "APPROVED",
+        text: parentPlay.play_text,
+        play_code: `${parentPlay.play_code || ""}§BOMB:DONE`
+      });
 
-  if (!ok) return;
+      if (!ok) return;
 
-  await patchChildQspades(parentPlay.id, {
-    play_status: "DONE"
-  });
+      await patchChildQspades(parentPlay.id, {
+        play_status: "APPROVED",
+        play_code: `${parentPlay.play_code || ""}§BOMB:DONE`
+      });
 
-  window.location.reload();
-});
+      window.location.reload();
+    });
+
   }
 
   function mountUsersPickerForQpica(parentPlay) {
@@ -909,13 +912,13 @@ ${showCancel ? `
     });
   }
 
-async function patchChildQspades(parentPlayId, payload) {
-  const children = getOpenChildQspades(parentPlayId);
+  async function patchChildQspades(parentPlayId, payload) {
+    const children = getOpenChildQspades(parentPlayId);
 
-  for (const child of children) {
-    await patchJpica(child.id, payload);
+    for (const child of children) {
+      await patchJpica(child.id, payload);
+    }
   }
-}
 
   async function patchJpica(playId, payload) {
     const token = localStorage.getItem("cooptrackToken");
@@ -924,6 +927,8 @@ async function patchChildQspades(parentPlayId, payload) {
       alert("No estás logueado");
       return false;
     }
+
+console.log("PATCH J♠ payload", playId, payload);
 
     const response = await fetch(`/plays/${playId}`, {
       method: "PATCH",
