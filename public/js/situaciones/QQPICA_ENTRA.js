@@ -76,6 +76,7 @@ window.QQPICA_ENTRA = {
             start_date: parent?.start_date || play.start_date,
             end_date: parent?.end_date || play.end_date,
             location: parent?.location || play.location,
+            spade_mode: parent?.spade_mode || play.spade_mode,
             figureOverrideSrc: this.buildFrame("QPMira", 0)
         })}
       </div>
