@@ -886,7 +886,7 @@
     <div class="tablero-row__left">
   <button
     type="button"
-    class="tablero-row__card tablero-row__card--with-news tablero-row__card--open-lienzo"
+    class="tablero-row__card tablero-row__card--open-lienzo"
     data-open-lienzo="true"
     data-play-id="${play.id}"
     data-deck-id="${context?.deck?.id || context?.state?.deck?.id || ""}"
@@ -894,14 +894,7 @@
   >
     <span>J♠</span>
 
-    ${isPublished ? `
-      <img
-        src="${extraIcon}"
-        alt="Publicada"
-        title="Noticia publicada"
-        class="tablero-row__news-badge"
-      />
-    ` : ""}
+
   </button>
 </div>
 
