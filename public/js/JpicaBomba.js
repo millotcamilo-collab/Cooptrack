@@ -325,11 +325,6 @@
       return "BOMB";
     }
 
-    function canCancelApprovedPlay() {
-      if (!isApproved) return false;
-      return isFutureDate(play?.end_date);
-    }
-
     const bombIcon = escapeHtml(ACTIONS.bomb || "");
     const boomIcon = escapeHtml(ACTIONS.boom || ACTIONS.bomb || "");
     const deadlineIcon = escapeHtml(ACTIONS.deadline || ACTIONS.approve || ACTIONS.bomb || "");
@@ -380,10 +375,6 @@
       const btnExit = row.querySelector('[data-action="exit-edit"]');
 
       const btnHelp = row.querySelector('[data-action="help-play"]');
-      const btnCancel = row.querySelector('[data-action="cancel-play"]');
-
-
-      const btnRoutine = row.querySelector('[data-action="toggle-routine"]');
 
       const deadlineRead = row.querySelector('[data-role="deadline-read"]');
       const deadlineEdit = row.querySelector('[data-role="deadline-edit"]');
@@ -499,7 +490,7 @@
         const userCanCreateChildren = !!window.__canPlay || userOwnsAnyActiveK();
         const showApprovedExtras =
           isApproved && !isCancelled && userCanCreateChildren;
-        const showCancelApproved = canCancelApprovedPlay();
+
         const { endDate } = getFieldValues();
         const routineAvailable = !isApproved && !!endDate;
 
@@ -522,9 +513,6 @@
           recurrenceEdit.style.display = isEdit && recurrenceOpen ? "flex" : "none";
         }
 
-        if (btnRoutine) {
-          btnRoutine.style.display = routineAvailable ? "inline-flex" : "none";
-        }
 
         if (isCancelled) {
           if (btnEdit) btnEdit.style.display = "none";
@@ -532,9 +520,7 @@
           if (btnApprove) btnApprove.style.display = "none";
           if (btnDelete) btnDelete.style.display = "none";
           if (btnExit) btnExit.style.display = "none";
-          if (btnCancel) btnCancel.style.display = "none";
           if (btnHelp) btnHelp.style.display = "inline-flex";
-          if (btnRoutine) btnRoutine.style.display = "none";
           return;
         }
 
@@ -566,9 +552,6 @@
           btnHelp.style.display = "inline-flex";
         }
 
-        if (btnCancel) {
-          btnCancel.style.display = showCancelApproved ? "inline-flex" : "none";
-        }
 
         if (isEdit && textInput) {
           textInput.focus();
@@ -717,17 +700,6 @@
         renderMode();
       });
 
-      btnRoutine?.addEventListener("click", async () => {
-        await loadRecurrenceIfNeeded();
-
-        if (!recurrenceEdit) return;
-
-        const currentlyOpen = recurrenceEdit.dataset.open === "true";
-        recurrenceEdit.dataset.open = currentlyOpen ? "false" : "true";
-
-        renderMode();
-      });
-
       recurrenceTypeSelect?.addEventListener("change", () => {
         paintRecurrenceControls();
       });
@@ -740,13 +712,6 @@
           spadeMode: "DEADLINE",
         });
       });
-
-      btnCancel?.addEventListener("click", () => {
-        dispatch("tablero:cancel-play", {
-          playId,
-        });
-      });
-
 
       textInput?.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
@@ -907,10 +872,6 @@
         <img src="${saveIcon}" alt="Salvar" />
       </button>
 
-      <button type="button" data-action="toggle-routine" title="Rutina" style="display:none;">
-        ${routineIcon ? `<img src="${routineIcon}" alt="Rutina" />` : `<span>R</span>`}
-      </button>
-
       <button type="button" data-action="exit-edit" title="Salir edición" style="display:none;">
         <img src="${exitIcon}" alt="Salir edición" />
       </button>
@@ -921,10 +882,6 @@
 
       <button type="button" data-action="delete-play" title="Borrar">
         <img src="${deleteIcon}" alt="Borrar" />
-      </button>
-
-      <button type="button" data-action="cancel-play" title="Cancelar" style="display:none;">
-        ${cancelIcon ? `<img src="${cancelIcon}" alt="Cancelar" />` : `<span>X</span>`}
       </button>
 
 

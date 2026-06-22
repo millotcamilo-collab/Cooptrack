@@ -217,17 +217,6 @@
       });
     }
 
-    function isPublishedNews(play) {
-      const readers = play?.reader_user_ids;
-
-      if (Array.isArray(readers)) {
-        return readers.includes("TODOS");
-      }
-
-      const raw = String(readers || "").toUpperCase();
-      return raw.includes("TODOS");
-    }
-
     function resolveClubAceHolderUserId(plays) {
       const aceClubPlays = plays
         .filter((p) => {
@@ -338,11 +327,6 @@
     const isApproved = statusRaw === "APPROVED";
     const isCancelled = statusRaw === "CANCELLED";
 
-    function canCancelApprovedPlay() {
-      if (!isApproved) return false;
-      return isFutureDate(play?.end_date);
-    }
-
     const startIcon = escapeHtml(ACTIONS.start || "");
     const endIcon = escapeHtml(ACTIONS.end || "");
     const locationIcon = escapeHtml(ACTIONS.location || "");
@@ -353,10 +337,6 @@
     const exitIcon = escapeHtml(ACTIONS.exit || ACTIONS.cancel || "");
     const helpIcon = escapeHtml(ACTIONS.help || "");
     const cancelIcon = escapeHtml(ACTIONS.cancel || ACTIONS.exit || "");
-    const clubIcon = escapeHtml(ACTIONS.club || "");
-    const qspadeIcon = escapeHtml(ACTIONS.qspade || ACTIONS.spade || "");
-    const extraIcon = "/assets/icons/Extra120.gif";
-    const isPublished = isPublishedNews(play);
     const routineIcon = escapeHtml(ACTIONS.routine || "");
 
     setTimeout(() => {
@@ -381,9 +361,7 @@
       const btnExit = row.querySelector('[data-action="exit-edit"]');
 
       const btnHelp = row.querySelector('[data-action="help-play"]');
-      const btnCancel = row.querySelector('[data-action="cancel-play"]');
 
-      const btnPublishNews = row.querySelector('[data-action="publish-news"]');
       const btnRoutine = row.querySelector('[data-action="toggle-routine"]');
 
       const appointmentRead = row.querySelector('[data-role="appointment-read"]');
@@ -591,18 +569,9 @@
         const userCanCreateChildren = !!window.__canPlay || userOwnsAnyActiveK();
         const showApprovedExtras =
           isApproved && !isCancelled && userCanCreateChildren;
-        const showCancelApproved = canCancelApprovedPlay();
 
         const { startDate } = getFieldValues();
         const routineAvailable = !isApproved && canHaveRoutine(startDate);
-        const canPublish = canPublishNews(play);
-
-        const showPublishNews =
-          isApproved &&
-          !isCancelled &&
-          userIsClubAceHolder &&
-          canPublish &&
-          !isPublished;
 
         if (modeRead) modeRead.style.display = isRead ? "flex" : "none";
         if (modeEdit) modeEdit.style.display = isEdit ? "flex" : "none";
@@ -633,7 +602,6 @@
           if (btnApprove) btnApprove.style.display = "none";
           if (btnDelete) btnDelete.style.display = "none";
           if (btnExit) btnExit.style.display = "none";
-          if (btnCancel) btnCancel.style.display = "none";
 
           if (btnHelp) btnHelp.style.display = "inline-flex";
           if (btnRoutine) btnRoutine.style.display = "none";
@@ -666,16 +634,6 @@
 
         if (btnHelp) {
           btnHelp.style.display = "inline-flex";
-        }
-
-        if (btnCancel) {
-          btnCancel.style.display = showCancelApproved ? "inline-flex" : "none";
-        }
-
-
-        if (btnPublishNews) {
-          btnPublishNews.style.display =
-            showPublishNews ? "inline-flex" : "none";
         }
 
         if (isEdit && textInput) {
@@ -917,12 +875,6 @@
         });
       });
 
-      btnCancel?.addEventListener("click", () => {
-        dispatch("tablero:cancel-play", {
-          playId,
-        });
-      });
-
       textInput?.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
           event.preventDefault();
@@ -1141,9 +1093,6 @@
         <img src="${deleteIcon}" alt="Borrar" />
       </button>
 
-      <button type="button" data-action="cancel-play" title="Cancelar" style="display:none;">
-        ${cancelIcon ? `<img src="${cancelIcon}" alt="Cancelar" />` : `<span>X</span>`}
-      </button>
 
       <button type="button" data-action="help-play" title="Help">
         ${helpIcon ? `<img src="${helpIcon}" alt="Help" />` : `<span>?</span>`}
