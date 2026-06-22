@@ -90,7 +90,7 @@
 
 .lv2-play-card__figure {
   position: absolute;
-  inset: 22px;
+  inset: 25px;
   background-image: var(--lv2-figure-url);
   background-repeat: no-repeat;
   background-position: center top;
@@ -359,11 +359,7 @@ font-size: 1.5em;
 .lv2-play-card::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
+  inset: 0;
   background: #fff;
 
   clip-path: polygon(
@@ -373,11 +369,11 @@ font-size: 1.5em;
     0 100%,
     0 0,
 
-    25px 23px,
-    25px calc(100% - 23px),
-    calc(100% - 25px) calc(100% - 23px),
-    calc(100% - 25px) 23px,
-    25px 23px
+    calc(var(--lv2-card-w) * 0.125) calc(var(--lv2-card-h) * 0.082),
+    calc(var(--lv2-card-w) * 0.125) calc(100% - (var(--lv2-card-h) * 0.11)),
+    calc(100% - (var(--lv2-card-w) * 0.125)) calc(100% - (var(--lv2-card-h) * 0.11)),
+    calc(100% - (var(--lv2-card-w) * 0.125)) calc(var(--lv2-card-h) * 0.082),
+    calc(var(--lv2-card-w) * 0.125) calc(var(--lv2-card-h) * 0.082)
   );
 
   z-index: 2;
