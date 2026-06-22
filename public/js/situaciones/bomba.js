@@ -50,6 +50,16 @@
     return parent?.end_date || play?.end_date || null;
   }
 
+function getBombMode(play) {
+  const parent = getParentPlay(play) || null;
+  return String(
+    play?.spade_mode ||
+    parent?.spade_mode ||
+    play?.parent_spade_mode ||
+    ""
+  ).trim().toUpperCase();
+}
+
   function isBombExploded(play) {
     const value = getBombDate(play);
     const date = new Date(value);

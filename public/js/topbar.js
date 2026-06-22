@@ -107,11 +107,10 @@ function resolveAlgoAhoraHref(play) {
   const playId = Number(play.id || 0);
   const rank = String(play.card_rank || "").toUpperCase();
   const suit = String(play.card_suit || "").toUpperCase();
-  const spadeMode = String(play.spade_mode || "").toUpperCase();
+  const spadeMode = String(play.spade_mode || play.parent_spade_mode || "").toUpperCase();
 
   if (!deckId || !playId) return null;
 
-  // Por ahora el único "es ahora" real es la bomba
   if (
     suit === "SPADE" &&
     ["J", "Q"].includes(rank) &&
@@ -917,7 +916,7 @@ ${hasAuthorDecks
                   `
           : ""
         }
-        
+
         ${hasQInbox
   ? `
     <a
