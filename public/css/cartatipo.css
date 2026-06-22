@@ -25,26 +25,26 @@
 }
 
 .lv2-card-corner--tl {
-  top: 6px;
-  left: 4px;
+  top: 9px;
+  left: 7px;
 }
 
 .lv2-card-corner--br {
-  right: 4px;
-  bottom: 6px;
+  right: 7px;
+  bottom: 9px;
   transform: rotate(180deg);
 }
 
 .lv2-card-corner__rank {
   display: block;
-  font-size: 17px;
+  font-size: 18px;
   transform: scaleX(0.72);
   transform-origin: center;
 }
 
 .lv2-card-corner__suit {
   display: block;
-  font-size: 21px;
+  font-size: 23px;
 }
 
 .lv2-card-corner--red {
