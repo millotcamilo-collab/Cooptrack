@@ -74,7 +74,11 @@
       .trim()
       .toUpperCase();
 
-    const isDeadline = playType === "DEADLINE";
+    const inferredType =
+      playType ||
+      (end_date && !start_date ? "DEADLINE" : "APPOINTMENT");
+
+    const isDeadline = inferredType === "DEADLINE";
 
     const date = isDeadline
       ? (end_date || start_date)
@@ -318,77 +322,77 @@ ${location ? `
       ? " lv2-play-card__center-suit--red"
       : "";
 
-const ownerCardsHtml = Array.isArray(ownerCards) && ownerCards.length
-  ? (() => {
-      const groups = { A: [], K: [] };
+    const ownerCardsHtml = Array.isArray(ownerCards) && ownerCards.length
+      ? (() => {
+        const groups = { A: [], K: [] };
 
-      ownerCards.forEach((card) => {
-        const r = normalizeRank(card.card_rank || card.rank);
-        const s = normalizeSuit(card.card_suit || card.suit);
+        ownerCards.forEach((card) => {
+          const r = normalizeRank(card.card_rank || card.rank);
+          const s = normalizeSuit(card.card_suit || card.suit);
 
-        if ((r === "A" || r === "K") && s && !groups[r].includes(s)) {
-          groups[r].push(s);
-        }
-      });
+          if ((r === "A" || r === "K") && s && !groups[r].includes(s)) {
+            groups[r].push(s);
+          }
+        });
 
-      const suitOrder = ["HEART", "SPADE", "DIAMOND", "CLUB"];
+        const suitOrder = ["HEART", "SPADE", "DIAMOND", "CLUB"];
 
-      const renderGroup = (rank) => {
-        const suits = suitOrder.filter((s) => groups[rank].includes(s));
-        if (!suits.length) return "";
+        const renderGroup = (rank) => {
+          const suits = suitOrder.filter((s) => groups[rank].includes(s));
+          if (!suits.length) return "";
 
-        return `
+          return `
           <div class="lv2-play-card__owner-card-group">
             <span class="lv2-play-card__owner-card-rank">${rank}</span>
             ${suits.map((s) => {
-              const redClass =
-                s === "HEART" || s === "DIAMOND"
-                  ? " lv2-play-card__owner-card--red"
-                  : "";
+            const redClass =
+              s === "HEART" || s === "DIAMOND"
+                ? " lv2-play-card__owner-card--red"
+                : "";
 
-              return `
+            return `
                 <span class="lv2-play-card__owner-card${redClass}">
                   ${escapeHtml(getSuitSymbol(s))}
                 </span>
               `;
-            }).join("")}
+          }).join("")}
           </div>
         `;
-      };
+        };
 
-      return `
+        return `
         <div class="lv2-play-card__owner-cards">
           ${renderGroup("A")}
           ${renderGroup("K")}
         </div>
       `;
-    })()
-  : "";
+      })()
+      : "";
 
-const ownerHtml = showOwner && ownerUser ? `
+    const ownerHtml = showOwner && ownerUser ? `
   <div class="lv2-play-card__owner">
     <img
       class="lv2-play-card__owner-avatar"
       src="${escapeHtml(
-        ownerUser.profile_photo_url ||
-        "/assets/icons/singeta120.gif"
-      )}"
+      ownerUser.profile_photo_url ||
+      "/assets/icons/singeta120.gif"
+    )}"
       alt="${escapeHtml(
-        ownerUser.nickname ||
-        ownerUser.full_name ||
-        ownerUser.name ||
-        "Usuario"
-      )}"
+      ownerUser.nickname ||
+      ownerUser.full_name ||
+      ownerUser.name ||
+      "Usuario"
+    )}"
     />
 
     <div class="lv2-play-card__owner-info">
       <span class="lv2-play-card__owner-name">
         ${escapeHtml(
-          ownerUser.nickname ||
-          ownerUser.full_name ||
-          ownerUser.name ||
-          "Usuario"
-        )}
+      ownerUser.nickname ||
+      ownerUser.full_name ||
+      ownerUser.name ||
+      "Usuario"
+    )}
       </span>
 
       ${ownerCardsHtml}
