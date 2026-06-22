@@ -342,13 +342,13 @@ font-size: 1.5em;
 }
 
 .lv2-play-card__inner-suit--tl {
-  top: 27px;
-  left: 38px;
+  top: 28px;
+  left: 42px;
 }
 
 .lv2-play-card__inner-suit--br {
-  right: 38px;
-  bottom: 27px;
+  right: 42px;
+  bottom: 32px;
   transform: rotate(180deg);
 }
 

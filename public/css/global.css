@@ -194,3 +194,13 @@ body {
 .icon-btn:hover img {
   transform: scale(1.15);
 }
+
+/* =========================================================
+   Inbox / Qs: tamaño de renglón alineado con global
+========================================================= */
+
+#qs-container .tablero-row--bitacora {
+  min-height: 88px;
+  padding: 10px 12px;
+  gap: 14px;
+}
