@@ -1,6 +1,106 @@
 (() => {
   const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
+  // es ahora
+  function isPicaConActividad(play) {
+    const rank = String(play.card_rank || "").toUpperCase();
+    const suit = String(play.card_suit || "").toUpperCase();
+
+    return (
+      suit === "SPADE" &&
+      ["J", "Q"].includes(rank) &&
+      (
+        play.start_date ||
+        play.end_date ||
+        play.parent_start_date ||
+        play.parent_end_date
+      )
+    );
+  }
+
+  function isQDiamanteConFecha(play) {
+    const rank = String(play.card_rank || "").toUpperCase();
+    const suit = String(play.card_suit || "").toUpperCase();
+
+    return (
+      rank === "Q" &&
+      suit === "DIAMOND" &&
+      (
+        play.start_date ||
+        play.end_date ||
+        play.due_date ||
+        play.parent_start_date ||
+        play.parent_end_date
+      )
+    );
+  }
+
+  function isAlgoAhoraCandidate(play) {
+    return isPicaConActividad(play) || isQDiamanteConFecha(play);
+  }
+
+  function getAhoraDate(play) {
+    const value =
+      play.end_date ||
+      play.due_date ||
+      play.parent_end_date ||
+      play.start_date ||
+      play.parent_start_date;
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  function isDentroDeVentanaAhora(play, minutes = 30) {
+    const date = getAhoraDate(play);
+    if (!date) return false;
+
+    const diff = date.getTime() - Date.now();
+    return diff >= 0 && diff <= minutes * 60 * 1000;
+  }
+
+  function findAlgoAhora(items = []) {
+    return (
+      items.find((play) => {
+        return (
+          isAlgoAhoraCandidate(play) &&
+          isDentroDeVentanaAhora(play, 30)
+        );
+      }) || null
+    );
+  }
+
+  async function checkAlgoAhora() {
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) return null;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/plays/ahora`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (!res.ok) return null;
+
+      const data = await res.json();
+
+      const items = [
+        ...(data.esAhora || []),
+        ...(data.teMandanAhora || []),
+      ];
+
+console.log("ESAHORA RAW ITEMS", items);
+
+      return findAlgoAhora(items);
+    } catch (err) {
+      console.warn("No se pudo revisar algo ahora:", err);
+      return null;
+    }
+  }
+  //fin del esahora
+
   async function getLoggedUser() {
     try {
       const token = localStorage.getItem("cooptrackToken");
@@ -189,30 +289,30 @@
         .filter((play) => play.pendingKind === "ACTION_REQUIRED")
         .sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
 
-const readOnlyRaw = candidates
-  .filter((play) => play.pendingKind === "READ_ONLY")
-  .sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+      const readOnlyRaw = candidates
+        .filter((play) => play.pendingKind === "READ_ONLY")
+        .sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
 
-const seenQpicaParents = new Set();
+      const seenQpicaParents = new Set();
 
-const readOnly = readOnlyRaw.filter((play) => {
-  const rank = normalizeText(play?.card_rank || play?.rank);
-  const suit = normalizeText(play?.card_suit || play?.suit);
-  const parentId = Number(play?.parent_play_id || 0);
+      const readOnly = readOnlyRaw.filter((play) => {
+        const rank = normalizeText(play?.card_rank || play?.rank);
+        const suit = normalizeText(play?.card_suit || play?.suit);
+        const parentId = Number(play?.parent_play_id || 0);
 
-  if (rank === "Q" && suit === "SPADE" && parentId) {
-    const key = `QSPADE_PARENT_${parentId}`;
+        if (rank === "Q" && suit === "SPADE" && parentId) {
+          const key = `QSPADE_PARENT_${parentId}`;
 
-    if (seenQpicaParents.has(key)) {
-      return false;
-    }
+          if (seenQpicaParents.has(key)) {
+            return false;
+          }
 
-    seenQpicaParents.add(key);
-    return true;
-  }
+          seenQpicaParents.add(key);
+          return true;
+        }
 
-  return true;
-});
+        return true;
+      });
 
       return {
         latestActionRequired: actionRequired[0] || null,
@@ -348,28 +448,28 @@ const readOnly = readOnlyRaw.filter((play) => {
 
     const status = normalizeText(play?.play_status || play?.status);
 
-const rank = normalizeText(play?.card_rank || play?.rank);
-const suit = normalizeText(play?.card_suit || play?.suit);
+    const rank = normalizeText(play?.card_rank || play?.rank);
+    const suit = normalizeText(play?.card_suit || play?.suit);
 
-if (
-  rank === "J" &&
-  suit === "HEART" &&
-  (status === "SENT" || status === "PENDING")
-) {
-  return "/lienzoJcorazon.html";
-}
+    if (
+      rank === "J" &&
+      suit === "HEART" &&
+      (status === "SENT" || status === "PENDING")
+    ) {
+      return "/lienzoJcorazon.html";
+    }
 
-if (
-  (rank === "K" || rank === "A") &&
-  isTarget &&
-  (status === "SENT" || status === "PENDING")
-) {
-  return "/america.html";
-}
+    if (
+      (rank === "K" || rank === "A") &&
+      isTarget &&
+      (status === "SENT" || status === "PENDING")
+    ) {
+      return "/america.html";
+    }
 
-if (isTarget && (status === "SENT" || status === "PENDING")) {
-  return "/amsterdam.html";
-}
+    if (isTarget && (status === "SENT" || status === "PENDING")) {
+      return "/amsterdam.html";
+    }
 
     // 2) VALIDATOR with A_DIAMOND: Si es validador con rol A_DIAMOND
     if (isValidator) {
@@ -391,37 +491,37 @@ if (isTarget && (status === "SENT" || status === "PENDING")) {
     return null;
   }
 
-function resolveReadOnlyPageForPlay(play, currentUserId) {
-  if (!play || !currentUserId) return null;
+  function resolveReadOnlyPageForPlay(play, currentUserId) {
+    if (!play || !currentUserId) return null;
 
-  const rank = normalizeText(play?.card_rank || play?.rank);
-  const suit = normalizeText(play?.card_suit || play?.suit);
-  const status = normalizeText(play?.play_status || play?.status);
+    const rank = normalizeText(play?.card_rank || play?.rank);
+    const suit = normalizeText(play?.card_suit || play?.suit);
+    const status = normalizeText(play?.play_status || play?.status);
 
-  const isSource =
-    Number(play?.created_by_user_id || 0) === Number(currentUserId);
+    const isSource =
+      Number(play?.created_by_user_id || 0) === Number(currentUserId);
 
-  if (!isSource) return null;
+    if (!isSource) return null;
 
-  const finalStates = [
-    "APPROVED",
-    "REJECTED",
-    "CANCELLED",
-    "QUIT",
-    "FIRED"
-  ];
+    const finalStates = [
+      "APPROVED",
+      "REJECTED",
+      "CANCELLED",
+      "QUIT",
+      "FIRED"
+    ];
 
-  if (rank === "Q" && suit === "SPADE" && finalStates.includes(status)) {
-    return "/amsterdam.html";
+    if (rank === "Q" && suit === "SPADE" && finalStates.includes(status)) {
+      return "/amsterdam.html";
+    }
+
+    if ((rank === "K" || rank === "A") && finalStates.includes(status)) {
+      return "/america.html";
+    }
+
+
+    return null;
   }
-
-if ((rank === "K"  || rank === "A") && finalStates.includes(status)) {
-  return "/america.html";
-}
-
-
-  return null;
-}
 
   async function hasUserJPlays(userId) {
     try {
@@ -546,40 +646,40 @@ if ((rank === "K"  || rank === "A") && finalStates.includes(status)) {
           playForRouting = data.play;
         }
       }
-const rank = normalizeText(playForRouting?.card_rank || playForRouting?.rank);
-const suit = normalizeText(playForRouting?.card_suit || playForRouting?.suit);
-const status = normalizeText(playForRouting?.play_status || playForRouting?.status);
+      const rank = normalizeText(playForRouting?.card_rank || playForRouting?.rank);
+      const suit = normalizeText(playForRouting?.card_suit || playForRouting?.suit);
+      const status = normalizeText(playForRouting?.play_status || playForRouting?.status);
       // Get current user to check tribuna eligibility
       const currentUser = await getLoggedUser();
       const currentUserId = currentUser?.id;
 
-const isSource =
-  Number(playForRouting?.created_by_user_id || 0) === Number(currentUserId);
+      const isSource =
+        Number(playForRouting?.created_by_user_id || 0) === Number(currentUserId);
 
-const finalStates = ["APPROVED", "REJECTED", "CANCELLED"];
+      const finalStates = ["APPROVED", "REJECTED", "CANCELLED"];
 
-if (
-  rank === "Q" &&
-  suit === "SPADE" &&
-  isSource &&
-  finalStates.includes(status) &&
-  Number(playForRouting?.parent_play_id || 0)
-) {
-  await acknowledgePlay(playForRouting.id);
-  window.location.href =
-    `/lienzoJpica.html?deckId=${playForRouting.deck_id}&playId=${playForRouting.parent_play_id}`;
-  return;
-}
+      if (
+        rank === "Q" &&
+        suit === "SPADE" &&
+        isSource &&
+        finalStates.includes(status) &&
+        Number(playForRouting?.parent_play_id || 0)
+      ) {
+        await acknowledgePlay(playForRouting.id);
+        window.location.href =
+          `/lienzoJpica.html?deckId=${playForRouting.deck_id}&playId=${playForRouting.parent_play_id}`;
+        return;
+      }
 
 
       // Try tribuna route first
-let nextPage = null;
+      let nextPage = null;
 
-if (currentUserId) {
-  nextPage =
-    resolveResponsePageForPlay(playForRouting, currentUserId) ||
-    resolveReadOnlyPageForPlay(playForRouting, currentUserId);
-}
+      if (currentUserId) {
+        nextPage =
+          resolveResponsePageForPlay(playForRouting, currentUserId) ||
+          resolveReadOnlyPageForPlay(playForRouting, currentUserId);
+      }
 
       // Fallback to full lienzo if no tribuna
       if (!nextPage) {
@@ -890,6 +990,11 @@ if (currentUserId) {
         await renderTopbar();
         goToPlayNotification(play);
       });
+    }
+
+    const play = await checkAlgoAhora();
+    if (play) {
+      console.log("HAY ALGO AHORA:", play);
     }
 
   }
