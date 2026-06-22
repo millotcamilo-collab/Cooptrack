@@ -125,6 +125,55 @@ function resolveAlgoAhoraHref(play) {
 
   //fin del esahora
 
+  function userHasAorKInDeck(deck) {
+  const cards = Array.isArray(deck?.current_user_cards)
+    ? deck.current_user_cards
+    : [];
+
+  return cards.some((card) => {
+    const value = String(card || "").toUpperCase();
+    return value.startsWith("A_") || value.startsWith("K_");
+  });
+}
+
+function userHasQInDeck(deck) {
+  const cards = Array.isArray(deck?.current_user_cards)
+    ? deck.current_user_cards
+    : [];
+
+  return cards.some((card) => {
+    const value = String(card || "").toUpperCase();
+    return value.startsWith("Q_");
+  });
+}
+
+async function getTopbarDeckAccess() {
+  try {
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) return { hasAuthorDecks: false, hasQInbox: false };
+
+    const response = await fetch(`${API_BASE_URL}/decks`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!response.ok) return { hasAuthorDecks: false, hasQInbox: false };
+
+    const data = await response.json();
+    const mazos = Array.isArray(data?.mazos)
+      ? data.mazos
+      : Array.isArray(data?.decks)
+        ? data.decks
+        : [];
+
+    return {
+      hasAuthorDecks: mazos.some(userHasAorKInDeck),
+      hasQInbox: mazos.some(userHasQInDeck)
+    };
+  } catch (error) {
+    console.error("Error leyendo acceso topbar:", error);
+    return { hasAuthorDecks: false, hasQInbox: false };
+  }
+}
   async function getLoggedUser() {
     try {
       const token = localStorage.getItem("cooptrackToken");
@@ -752,7 +801,7 @@ function resolveAlgoAhoraHref(play) {
 
   async function renderTopbar() {
     const user = await getLoggedUser();
-    const userHasDecks = await hasDecks();
+    const { hasAuthorDecks, hasQInbox } = await getTopbarDeckAccess();
     const userHasJPlays = user ? await hasUserJPlays(user.id) : false;
 
     const onMazosPage = isMazosPage();
@@ -814,24 +863,26 @@ function resolveAlgoAhoraHref(play) {
           : ""
         }
 
-              ${userHasDecks
-          ? `
-                    <a
-                      href="${onMazosPage ? "/index.html" : "/mazos.html"}"
-                      class="topbar__icon-btn topbar__desktop-only"
-                      title="Aqui estan los mazos"
-                    >
-                      <img
-                        src="${onMazosPage
-            ? "/assets/icons/portafolioAbierto.png"
-            : "/assets/icons/portafolios80.gif"
-          }"
-                        class="topbar__icon-img"
-                      />
-                    </a>
-                  `
-          : ""
-        }
+${hasAuthorDecks
+  ? `
+    <a
+      href="${onMazosPage ? "/index.html" : "/mazos.html"}"
+      class="topbar__icon-btn topbar__desktop-only"
+      title="Aquí están los mazos"
+    >
+      <img
+        src="${onMazosPage
+          ? "/assets/icons/portafolioAbierto.png"
+          : "/assets/icons/portafolios80.gif"
+        }"
+        class="topbar__icon-img"
+      />
+    </a>
+  `
+  : ""
+}
+
+
 
               ${userHasArchivedDecks
           ? `
@@ -856,14 +907,6 @@ function resolveAlgoAhoraHref(play) {
                       <img src="/assets/icons/maquina80.gif" class="topbar__icon-img" />
                     </button>
                     
-                    <a
-                      href="/qs.html"
-                      class="topbar__icon-btn topbar__desktop-only"
-                      title="Invitaciones"
-                    >
-                    <img src="/assets/icons/BUZONCASA120.gif" class="topbar__icon-img" />
-                    </a>
-
                     <button
                       class="topbar__icon-btn topbar__desktop-only"
                       id="contabilidadBtn"
@@ -874,6 +917,19 @@ function resolveAlgoAhoraHref(play) {
                   `
           : ""
         }
+        
+        ${hasQInbox
+  ? `
+    <a
+      href="/qs.html"
+      class="topbar__icon-btn topbar__desktop-only"
+      title="Invitaciones"
+    >
+      <img src="/assets/icons/BUZONCASA120.gif" class="topbar__icon-img" />
+    </a>
+  `
+  : ""
+}
 
               <a
                 href="/almanaque.html"
