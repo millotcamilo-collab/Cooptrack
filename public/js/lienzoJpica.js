@@ -72,6 +72,25 @@
     );
   }
 
+  function getBombStampIcon(play) {
+    const code = String(play?.play_code || "").toUpperCase();
+    const actions = window.ICONS?.actions || {};
+
+    if (code.includes("BOMB:DONE")) {
+      return actions.deadline || "/assets/icons/META60.gif";
+    }
+
+    if (code.includes("BOMB:EXPLODED")) {
+      return actions.boom || "/assets/icons/Boom80.gif";
+    }
+
+    if (code.includes("BOMB:DISABLED")) {
+      return actions.stop || actions.cancel || "/assets/icons/stop60.gif";
+    }
+
+    return "";
+  }
+
   function canCancelApprovedJpica(play) {
     const status = String(play?.play_status || "").trim().toUpperCase();
     if (status !== "APPROVED") return false;
@@ -262,80 +281,83 @@
     });
   }
 
-  function renderColombes(play) {
+function renderColombes(play) {
+  const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
+  const isDeadline = spadeMode === "DEADLINE";
 
-    const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
-    const isDeadline = spadeMode === "DEADLINE";
+  const mainDate = isDeadline
+    ? play.end_date
+    : play.start_date;
 
-    const mainDate = isDeadline
-      ? play.end_date
-      : play.start_date;
+  const mainIcon = isDeadline
+    ? "/assets/icons/bombaRedonda60.gif"
+    : "/assets/icons/reloj60.gif";
 
-    const mainIcon = isDeadline
-      ? "/assets/icons/bombaRedonda60.gif"
-      : "/assets/icons/reloj60.gif";
+  const showBombActions = canResolveBomb(play);
+  const bombStampIcon = isDeadline ? getBombStampIcon(play) : "";
 
-    const showBombActions = canResolveBomb(play);
-
-    return `
+  return `
     <section class="lienzo-tribune lienzo-tribune--source">
-
       <div class="lienzo-tribune__corporates"></div>
 
-
       <div class="lienzo-tribune__stage">
-<div id="lienzo-jpica-card">
-  ${window.CartaTipo.renderPlayCardBox({
-      rank: "J",
-      suit: "SPADE",
-      title: play.play_text || "Sin texto",
-      play_text: play.play_text,
-      spade_mode: play.spade_mode,
-      start_date: play.start_date,
-      end_date: play.end_date,
-      location: play.location,
-      ownerUser: getPlayOwnerUser(play),
-      ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
-      metas: [
-        mainDate
-          ? {
-            icon: mainIcon,
-            text: formatTime(mainDate)
-          }
-          : null,
-        play.location
-          ? {
-            icon: "/assets/icons/LocGlobito80.gif",
-            text: play.location
-          }
-          : null
-      ].filter(Boolean),
-      actionsHtml: showBombActions ? `
-    <button
-      type="button"
-      id="jpica-done-btn"
-      class="icon-btn"
-      title="Hecho / apagar bomba"
-    >
-      <img src="${window.ICONS.actions.deadline}" alt="Hecho" />
-    </button>
+        <div id="lienzo-jpica-card">
+          ${window.CartaTipo.renderPlayCardBox({
+            rank: "J",
+            suit: "SPADE",
+            title: play.play_text || "Sin texto",
+            play_text: play.play_text,
+            spade_mode: play.spade_mode,
+            start_date: play.start_date,
+            end_date: play.end_date,
+            location: play.location,
+            ownerUser: getPlayOwnerUser(play),
+            ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
+            metas: [
+              mainDate
+                ? {
+                    icon: mainIcon,
+                    text: formatTime(mainDate)
+                  }
+                : null,
+              play.location
+                ? {
+                    icon: "/assets/icons/LocGlobito80.gif",
+                    text: play.location
+                  }
+                : null
+            ].filter(Boolean),
+            actionsHtml: bombStampIcon ? `
+              <img
+                class="lv2-play-card__decision-icon"
+                src="${bombStampIcon}"
+                alt="Estado de bomba"
+              />
+            ` : showBombActions ? `
+              <button
+                type="button"
+                id="jpica-done-btn"
+                class="icon-btn"
+                title="Hecho / apagar bomba"
+              >
+                <img src="${window.ICONS.actions.deadline}" alt="Hecho" />
+              </button>
 
-    <button
-      type="button"
-      id="jpica-cancel-bomb-btn"
-      class="icon-btn"
-      title="Cancelar / apagar bomba"
-    >
-      <img src="${window.ICONS.actions.cancel}" alt="Cancelar" />
-    </button>
-  ` : ""
-    })}
-</div>
+              <button
+                type="button"
+                id="jpica-cancel-bomb-btn"
+                class="icon-btn"
+                title="Cancelar / apagar bomba"
+              >
+                <img src="${window.ICONS.actions.cancel}" alt="Cancelar" />
+              </button>
+            ` : ""
+          })}
+        </div>
       </div>
-
     </section>
   `;
-  }
+}
 
   function renderQHeartBox(play) {
     const deck = getCurrentDeck();
@@ -928,7 +950,7 @@ ${showCancel ? `
       return false;
     }
 
-console.log("PATCH J♠ payload", playId, payload);
+    console.log("PATCH J♠ payload", playId, payload);
 
     const response = await fetch(`/plays/${playId}`, {
       method: "PATCH",
