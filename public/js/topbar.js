@@ -100,29 +100,28 @@
     }
   }
 
-  function resolveAlgoAhoraHref(play) {
-    if (!play) return null;
+function resolveAlgoAhoraHref(play) {
+  if (!play) return null;
 
-    const deckId = Number(play.deck_id || 0);
-    const playId = Number(play.id || 0);
-    const rank = String(play.card_rank || "").toUpperCase();
-    const suit = String(play.card_suit || "").toUpperCase();
-    const code = String(play.play_code || "");
+  const deckId = Number(play.deck_id || 0);
+  const playId = Number(play.id || 0);
+  const rank = String(play.card_rank || "").toUpperCase();
+  const suit = String(play.card_suit || "").toUpperCase();
+  const spadeMode = String(play.spade_mode || "").toUpperCase();
 
-    if (!deckId || !playId) return null;
+  if (!deckId || !playId) return null;
 
-    if (rank === "J" && suit === "SPADE") {
-      return `/lienzoJpica.html?deckId=${deckId}&playId=${playId}`;
-    }
-
-    if (rank === "Q" && suit === "SPADE") {
-      return code.includes("pay:QHEART")
-        ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}`
-        : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}`;
-    }
-
-    return null;
+  // Por ahora el único "es ahora" real es la bomba
+  if (
+    suit === "SPADE" &&
+    ["J", "Q"].includes(rank) &&
+    spadeMode === "DEADLINE"
+  ) {
+    return `/bomba.html?deckId=${deckId}&playId=${playId}`;
   }
+
+  return null;
+}
 
   //fin del esahora
 
