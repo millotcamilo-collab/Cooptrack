@@ -314,7 +314,7 @@ function getOpenChildQspades(parentPlayId) {
     <button
       type="button"
       id="jpica-done-btn"
-      class="jpica-child-btn"
+      class="icon-btn"
       title="Hecho / apagar bomba"
     >
       <img src="${window.ICONS.actions.deadline}" alt="Hecho" />
@@ -323,7 +323,7 @@ function getOpenChildQspades(parentPlayId) {
     <button
       type="button"
       id="jpica-cancel-bomb-btn"
-      class="jpica-child-btn"
+      class="icon-btn"
       title="Cancelar / apagar bomba"
     >
       <img src="${window.ICONS.actions.cancel}" alt="Cancelar" />

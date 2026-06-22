@@ -91,7 +91,7 @@
         ...(data.teMandanAhora || []),
       ];
 
-console.log("ESAHORA RAW ITEMS", items);
+      console.log("ESAHORA RAW ITEMS", items);
 
       return findAlgoAhora(items);
     } catch (err) {
@@ -99,6 +99,31 @@ console.log("ESAHORA RAW ITEMS", items);
       return null;
     }
   }
+
+  function resolveAlgoAhoraHref(play) {
+    if (!play) return null;
+
+    const deckId = Number(play.deck_id || 0);
+    const playId = Number(play.id || 0);
+    const rank = String(play.card_rank || "").toUpperCase();
+    const suit = String(play.card_suit || "").toUpperCase();
+    const code = String(play.play_code || "");
+
+    if (!deckId || !playId) return null;
+
+    if (rank === "J" && suit === "SPADE") {
+      return `/lienzoJpica.html?deckId=${deckId}&playId=${playId}`;
+    }
+
+    if (rank === "Q" && suit === "SPADE") {
+      return code.includes("pay:QHEART")
+        ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}`
+        : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}`;
+    }
+
+    return null;
+  }
+
   //fin del esahora
 
   async function getLoggedUser() {
@@ -994,9 +1019,13 @@ console.log("ESAHORA RAW ITEMS", items);
 
     const play = await checkAlgoAhora();
     if (play) {
-      console.log("HAY ALGO AHORA:", play);
-    }
+      const href = resolveAlgoAhoraHref(play);
+      console.log("HAY ALGO AHORA:", play, href);
 
+      if (href && window.location.pathname !== new URL(href, window.location.origin).pathname) {
+        window.location.href = href;
+      }
+    }
   }
 
   document.addEventListener("DOMContentLoaded", renderTopbar);
