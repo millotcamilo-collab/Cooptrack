@@ -50,15 +50,15 @@
     return parent?.end_date || play?.end_date || null;
   }
 
-function getBombMode(play) {
-  const parent = getParentPlay(play) || null;
-  return String(
-    play?.spade_mode ||
-    parent?.spade_mode ||
-    play?.parent_spade_mode ||
-    ""
-  ).trim().toUpperCase();
-}
+  function getBombMode(play) {
+    const parent = getParentPlay(play) || null;
+    return String(
+      play?.spade_mode ||
+      parent?.spade_mode ||
+      play?.parent_spade_mode ||
+      ""
+    ).trim().toUpperCase();
+  }
 
   function isBombExploded(play) {
     const value = getBombDate(play);
@@ -258,10 +258,30 @@ function getBombMode(play) {
       return false;
     }
 
+
+    function appendFlowFlag(playCode, flag) {
+      const parts = String(playCode || "").split("§");
+
+      while (parts.length < 9) {
+        parts.push("");
+      }
+
+      const flowIndex = 7;
+      const currentFlow = String(parts[flowIndex] || "");
+
+      if (currentFlow.toUpperCase().includes(flag.toUpperCase())) {
+        return parts.slice(0, 9).join("§");
+      }
+
+      parts[flowIndex] = currentFlow
+        ? `${currentFlow};${flag}`
+        : flag;
+
+      return parts.slice(0, 9).join("§");
+    }
+
     const currentCode = String(parent?.play_code || play?.play_code || "");
-    const nextCode = currentCode.toUpperCase().includes("BOMB:DISABLED")
-      ? currentCode
-      : `${currentCode}§BOMB:DISABLED`;
+    const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
 
     const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
       method: "PATCH",
