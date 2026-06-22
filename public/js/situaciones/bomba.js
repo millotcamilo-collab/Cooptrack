@@ -244,6 +244,27 @@
     }
   }
 
+  function appendFlowFlag(playCode, flag) {
+    const parts = String(playCode || "").split("§");
+
+    while (parts.length < 9) {
+      parts.push("");
+    }
+
+    const flowIndex = 7;
+    const currentFlow = String(parts[flowIndex] || "");
+
+    if (currentFlow.toUpperCase().includes(flag.toUpperCase())) {
+      return parts.slice(0, 9).join("§");
+    }
+
+    parts[flowIndex] = currentFlow
+      ? `${currentFlow};${flag}`
+      : flag;
+
+    return parts.slice(0, 9).join("§");
+  }
+
   async function disableBomb(play) {
     const token = localStorage.getItem("cooptrackToken");
     if (!token) {
@@ -256,28 +277,6 @@
     if (!playId) {
       alert("No se encontró la jugada de la bomba.");
       return false;
-    }
-
-
-    function appendFlowFlag(playCode, flag) {
-      const parts = String(playCode || "").split("§");
-
-      while (parts.length < 9) {
-        parts.push("");
-      }
-
-      const flowIndex = 7;
-      const currentFlow = String(parts[flowIndex] || "");
-
-      if (currentFlow.toUpperCase().includes(flag.toUpperCase())) {
-        return parts.slice(0, 9).join("§");
-      }
-
-      parts[flowIndex] = currentFlow
-        ? `${currentFlow};${flag}`
-        : flag;
-
-      return parts.slice(0, 9).join("§");
     }
 
     const currentCode = String(parent?.play_code || play?.play_code || "");
