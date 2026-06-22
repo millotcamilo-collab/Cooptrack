@@ -72,24 +72,32 @@
     );
   }
 
-  function getBombStampIcon(play) {
-    const code = String(play?.play_code || "").toUpperCase();
-    const actions = window.ICONS?.actions || {};
+function getBombStampIcon(play) {
+  const code = String(play?.play_code || "").toUpperCase();
+  const actions = window.ICONS?.actions || {};
 
-    if (code.includes("BOMB:DONE")) {
-      return actions.deadline || "/assets/icons/META60.gif";
-    }
-
-    if (code.includes("BOMB:EXPLODED")) {
-      return actions.boom || "/assets/icons/Boom80.gif";
-    }
-
-    if (code.includes("BOMB:DISABLED")) {
-      return actions.stop || actions.cancel || "/assets/icons/stop60.gif";
-    }
-
-    return "";
+  if (code.includes("BOMB:DONE")) {
+    return actions.deadline || "/assets/icons/META60.gif";
   }
+
+  if (code.includes("BOMB:EXPLODED")) {
+    return actions.boom || "/assets/icons/Boom80.gif";
+  }
+
+  if (code.includes("BOMB:DISABLED")) {
+    return actions.stop || actions.cancel || "/assets/icons/stop60.gif";
+  }
+
+  if (
+    isDeadlineJpica(play) &&
+    play?.end_date &&
+    !isFutureDate(play.end_date)
+  ) {
+    return actions.boom || "/assets/icons/Boom80.gif";
+  }
+
+  return "";
+}
 
   function canCancelApprovedJpica(play) {
     const status = String(play?.play_status || "").trim().toUpperCase();
