@@ -40,7 +40,7 @@
 }
 
 .topbar__logo-img {
-  height: 34px;
+  height: 27px;
   width: auto;
   display: block;
 }
@@ -164,4 +164,37 @@
   }
 }
 
+.topbar__esahora-counter {
+  min-width: 48px;
+  height: 32px;
+  padding: 0 10px;
+  margin-right: 10px;
 
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.10);
+
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+
+  cursor: pointer;
+  transition: background 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
+}
+
+.topbar__esahora-counter:hover,
+.topbar__esahora-counter:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.topbar__esahora-counter.is-snoozed {
+  opacity: 0.45;
+}

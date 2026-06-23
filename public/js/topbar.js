@@ -2,32 +2,67 @@
   const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
   // es ahora
-function isPicaConActividad(play) {
-  const rank = String(play.card_rank || "").toUpperCase();
-  const suit = String(play.card_suit || "").toUpperCase();
-  const status = String(play.play_status || play.status || "").toUpperCase();
+  function isPicaConActividad(play) {
+    const rank = String(play.card_rank || "").toUpperCase();
+    const suit = String(play.card_suit || "").toUpperCase();
+    const status = String(play.play_status || play.status || "").toUpperCase();
 
-  if (suit !== "SPADE") return false;
+    if (suit !== "SPADE") return false;
 
-  // J♠: la bomba del anfitrión sí puede aparecer como actividad propia.
-  if (rank === "J") {
-    return !!(play.start_date || play.end_date);
+    // J♠: la bomba del anfitrión sí puede aparecer como actividad propia.
+    if (rank === "J") {
+      return !!(play.start_date || play.end_date);
+    }
+
+    // Q♠: al invitado sólo le aparece bomba si aceptó.
+    if (rank === "Q") {
+      if (status !== "APPROVED") return false;
+
+      return !!(
+        play.start_date ||
+        play.end_date ||
+        play.parent_start_date ||
+        play.parent_end_date
+      );
+    }
+
+    return false;
   }
 
-  // Q♠: al invitado sólo le aparece bomba si aceptó.
-  if (rank === "Q") {
-    if (status !== "APPROVED") return false;
+  const ES_AHORA_SNOOZE_KEY = "cooptrack.esAhora.snoozeUntil.v1";
 
-    return !!(
-      play.start_date ||
-      play.end_date ||
-      play.parent_start_date ||
-      play.parent_end_date
-    );
+  function getEsAhoraSnoozeUntil() {
+    return Number(localStorage.getItem(ES_AHORA_SNOOZE_KEY) || 0);
   }
 
-  return false;
-}
+  function isEsAhoraSnoozed() {
+    const until = getEsAhoraSnoozeUntil();
+
+    if (!until) return false;
+
+    if (Date.now() >= until) {
+      localStorage.removeItem(ES_AHORA_SNOOZE_KEY);
+      return false;
+    }
+
+    return true;
+  }
+
+  function snoozeEsAhora(minutes = 5) {
+    const until = Date.now() + minutes * 60 * 1000;
+    localStorage.setItem(ES_AHORA_SNOOZE_KEY, String(until));
+    return until;
+  }
+
+  function getMinutesUntilAhora(play) {
+    const date = getAhoraDate(play);
+    if (!date) return null;
+
+    const diff = date.getTime() - Date.now();
+    if (diff <= 0) return 0;
+
+    return Math.ceil(diff / 60000);
+  }
 
   function isQDiamanteConFecha(play) {
     const rank = String(play.card_rank || "").toUpperCase();
@@ -111,79 +146,79 @@ function isPicaConActividad(play) {
     }
   }
 
-function resolveAlgoAhoraHref(play) {
-  if (!play) return null;
+  function resolveAlgoAhoraHref(play) {
+    if (!play) return null;
 
-  const deckId = Number(play.deck_id || 0);
-  const playId = Number(play.id || 0);
-  const rank = String(play.card_rank || "").toUpperCase();
-  const suit = String(play.card_suit || "").toUpperCase();
-  const spadeMode = String(play.spade_mode || play.parent_spade_mode || "").toUpperCase();
+    const deckId = Number(play.deck_id || 0);
+    const playId = Number(play.id || 0);
+    const rank = String(play.card_rank || "").toUpperCase();
+    const suit = String(play.card_suit || "").toUpperCase();
+    const spadeMode = String(play.spade_mode || play.parent_spade_mode || "").toUpperCase();
 
-  if (!deckId || !playId) return null;
+    if (!deckId || !playId) return null;
 
-  if (
-    suit === "SPADE" &&
-    ["J", "Q"].includes(rank) &&
-    spadeMode === "DEADLINE"
-  ) {
-    return `/bomba.html?deckId=${deckId}&playId=${playId}`;
+    if (
+      suit === "SPADE" &&
+      ["J", "Q"].includes(rank) &&
+      spadeMode === "DEADLINE"
+    ) {
+      return `/bomba.html?deckId=${deckId}&playId=${playId}`;
+    }
+
+    return null;
   }
-
-  return null;
-}
 
   //fin del esahora
 
   function userHasAorKInDeck(deck) {
-  const cards = Array.isArray(deck?.current_user_cards)
-    ? deck.current_user_cards
-    : [];
+    const cards = Array.isArray(deck?.current_user_cards)
+      ? deck.current_user_cards
+      : [];
 
-  return cards.some((card) => {
-    const value = String(card || "").toUpperCase();
-    return value.startsWith("A_") || value.startsWith("K_");
-  });
-}
-
-function userHasQInDeck(deck) {
-  const cards = Array.isArray(deck?.current_user_cards)
-    ? deck.current_user_cards
-    : [];
-
-  return cards.some((card) => {
-    const value = String(card || "").toUpperCase();
-    return value.startsWith("Q_");
-  });
-}
-
-async function getTopbarDeckAccess() {
-  try {
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) return { hasAuthorDecks: false, hasQInbox: false };
-
-    const response = await fetch(`${API_BASE_URL}/decks`, {
-      headers: { Authorization: `Bearer ${token}` }
+    return cards.some((card) => {
+      const value = String(card || "").toUpperCase();
+      return value.startsWith("A_") || value.startsWith("K_");
     });
-
-    if (!response.ok) return { hasAuthorDecks: false, hasQInbox: false };
-
-    const data = await response.json();
-    const mazos = Array.isArray(data?.mazos)
-      ? data.mazos
-      : Array.isArray(data?.decks)
-        ? data.decks
-        : [];
-
-    return {
-      hasAuthorDecks: mazos.some(userHasAorKInDeck),
-      hasQInbox: mazos.some(userHasQInDeck)
-    };
-  } catch (error) {
-    console.error("Error leyendo acceso topbar:", error);
-    return { hasAuthorDecks: false, hasQInbox: false };
   }
-}
+
+  function userHasQInDeck(deck) {
+    const cards = Array.isArray(deck?.current_user_cards)
+      ? deck.current_user_cards
+      : [];
+
+    return cards.some((card) => {
+      const value = String(card || "").toUpperCase();
+      return value.startsWith("Q_");
+    });
+  }
+
+  async function getTopbarDeckAccess() {
+    try {
+      const token = localStorage.getItem("cooptrackToken");
+      if (!token) return { hasAuthorDecks: false, hasQInbox: false };
+
+      const response = await fetch(`${API_BASE_URL}/decks`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.ok) return { hasAuthorDecks: false, hasQInbox: false };
+
+      const data = await response.json();
+      const mazos = Array.isArray(data?.mazos)
+        ? data.mazos
+        : Array.isArray(data?.decks)
+          ? data.decks
+          : [];
+
+      return {
+        hasAuthorDecks: mazos.some(userHasAorKInDeck),
+        hasQInbox: mazos.some(userHasQInDeck)
+      };
+    } catch (error) {
+      console.error("Error leyendo acceso topbar:", error);
+      return { hasAuthorDecks: false, hasQInbox: false };
+    }
+  }
   async function getLoggedUser() {
     try {
       const token = localStorage.getItem("cooptrackToken");
@@ -824,8 +859,13 @@ async function getTopbarDeckAccess() {
     const latestActionRequired = notifications.latestActionRequired;
     const latestReadOnly = notifications.latestReadOnly;
 
+    const latestAhoraPlay = user ? await checkAlgoAhora() : null;
+    const esAhoraSnoozed = isEsAhoraSnoozed();
+
     const userHasPendingApprovals = !!latestActionRequired;
     const userHasReadNotifications = !!latestReadOnly;
+
+
 
     let topbarHTML = "";
 
@@ -835,6 +875,16 @@ async function getTopbarDeckAccess() {
           <div class="page-container topbar__inner">
 
             <div class="topbar__left">
+            ${latestAhoraPlay ? `
+  <button
+    type="button"
+    id="esAhoraCounterBtn"
+    class="topbar__esahora-counter ${esAhoraSnoozed ? "is-snoozed" : ""}"
+    title="Es ahora: clic para pausar 5 minutos"
+  >
+    ${getMinutesUntilAhora(latestAhoraPlay)} min
+  </button>
+` : ""}
               <a href="/index.html" class="topbar__logo" title="home">
                 <img src="/assets/icons/cooptrack3.png" class="topbar__logo-img" />
               </a>
@@ -874,7 +924,7 @@ async function getTopbarDeckAccess() {
         }
 
 ${hasAuthorDecks
-  ? `
+          ? `
     <a
       href="${onMazosPage ? "/index.html" : "/mazos.html"}"
       class="topbar__icon-btn topbar__desktop-only"
@@ -882,15 +932,15 @@ ${hasAuthorDecks
     >
       <img
         src="${onMazosPage
-          ? "/assets/icons/portafolioAbierto.png"
-          : "/assets/icons/portafolios80.gif"
-        }"
+            ? "/assets/icons/portafolioAbierto.png"
+            : "/assets/icons/portafolios80.gif"
+          }"
         class="topbar__icon-img"
       />
     </a>
   `
-  : ""
-}
+          : ""
+        }
 
 
 
@@ -929,7 +979,7 @@ ${hasAuthorDecks
         }
 
         ${hasQInbox
-  ? `
+          ? `
     <a
       href="/qs.html"
       class="topbar__icon-btn topbar__desktop-only"
@@ -938,8 +988,8 @@ ${hasAuthorDecks
       <img src="/assets/icons/BUZONCASA120.gif" class="topbar__icon-img" />
     </a>
   `
-  : ""
-}
+          : ""
+        }
 
               <a
                 href="/almanaque.html"
@@ -987,6 +1037,8 @@ ${hasAuthorDecks
         </header>
       `;
     } else {
+
+
       topbarHTML = `
         <header class="topbar">
           <div class="page-container topbar__inner">
@@ -1031,6 +1083,18 @@ ${hasAuthorDecks
     }
 
     container.innerHTML = topbarHTML;
+
+    const esAhoraCounterBtn = document.getElementById("esAhoraCounterBtn");
+
+    if (esAhoraCounterBtn) {
+      esAhoraCounterBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        snoozeEsAhora(5);
+        renderTopbar();
+      });
+    }
 
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
@@ -1082,15 +1146,17 @@ ${hasAuthorDecks
       });
     }
 
-    const play = await checkAlgoAhora();
-    if (play) {
-      const href = resolveAlgoAhoraHref(play);
-      console.log("HAY ALGO AHORA:", play, href);
+    if (latestAhoraPlay && !esAhoraSnoozed) {
+      const href = resolveAlgoAhoraHref(latestAhoraPlay);
 
-      if (href && window.location.pathname !== new URL(href, window.location.origin).pathname) {
+      if (
+        href &&
+        window.location.pathname !== new URL(href, window.location.origin).pathname
+      ) {
         window.location.href = href;
       }
     }
+
   }
 
   document.addEventListener("DOMContentLoaded", renderTopbar);
