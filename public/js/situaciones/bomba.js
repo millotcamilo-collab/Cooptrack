@@ -104,7 +104,7 @@
     `;
     }
 
-return `
+    return `
   <button
     type="button"
     id="bomba-disable-btn"
@@ -258,24 +258,26 @@ return `
 
     if (placard && typeof window.renderPlacard === "function") {
       placard.innerHTML = "";
-      const parent = getParentPlay(play);
 
-      const placardPlay = {
-        ...play,
-        parent_play: parent || play.parent_play || null,
-        parent: parent || play.parent || null,
-        display_play: cardPlay
-      };
+      const parent = getParentPlay(play);
+      const deck =
+        window.__currentDeck ||
+        window.__currentState?.deck ||
+        window.__currentState?.mazo ||
+        {};
+
+      const placardPlay = parent || play;
 
       window.renderPlacard(placard, {
+        page: "bomba",
         play: placardPlay,
-        deck:
-          window.__currentDeck ||
-          window.__currentState?.deck ||
-          window.__currentState?.mazo ||
-          null,
-        plays: window.__currentState?.plays || [],
-        mode: "bomba"
+        photoUrl: deck.deck_image_url || "/assets/icons/sinPicture.gif",
+        title: deck.name || "Mazo",
+        rank: "A",
+        suit: "HEART",
+        showCurrency: false,
+        leftCards: [],
+        plays: window.__currentState?.plays || []
       });
     }
 
@@ -314,6 +316,7 @@ return `
     if (actions) {
       actions.innerHTML = "";
     }
+    bindBombActions(play, Number(getParams().get("deckId") || 0));
   }
 
   function appendFlowFlag(playCode, flag) {
@@ -376,84 +379,84 @@ return `
     return true;
   }
 
-async function patchBomb(playId, payload) {
-  const token = localStorage.getItem("cooptrackToken");
+  async function patchBomb(playId, payload) {
+    const token = localStorage.getItem("cooptrackToken");
 
-  if (!token) {
-    alert("No estás logueado");
-    return false;
-  }
+    if (!token) {
+      alert("No estás logueado");
+      return false;
+    }
 
-  const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await response.json();
-
-  if (!response.ok || !data.ok) {
-    console.error("Error actualizando bomba:", data);
-    alert(data?.error || "No se pudo actualizar la bomba.");
-    return false;
-  }
-
-  return true;
-}
-
-function bindBombActions(play, deckId) {
-  const disableBtn = document.getElementById("bomba-disable-btn");
-
-  if (disableBtn) {
-    disableBtn.addEventListener("click", async () => {
-      disableBtn.disabled = true;
-
-      const ok = await disableBomb(play);
-
-      if (!ok) {
-        disableBtn.disabled = false;
-        return;
-      }
-
-      const parent = getParentPlay(play) || play;
-      const playId = Number(parent?.id || play?.id || 0);
-
-      const freshPlay = await fetchBombPlay(deckId, playId);
-      if (freshPlay) {
-        renderBomb(freshPlay);
-        bindBombActions(freshPlay, deckId);
-      }
+    const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
     });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      console.error("Error actualizando bomba:", data);
+      alert(data?.error || "No se pudo actualizar la bomba.");
+      return false;
+    }
+
+    return true;
   }
 
-  const cancelBtn = document.getElementById("bomba-cancel-btn");
+  function bindBombActions(play, deckId) {
+    const disableBtn = document.getElementById("bomba-disable-btn");
 
-  if (cancelBtn) {
-    cancelBtn.addEventListener("click", async () => {
-      cancelBtn.disabled = true;
+    if (disableBtn) {
+      disableBtn.addEventListener("click", async () => {
+        disableBtn.disabled = true;
 
-      const parent = getParentPlay(play) || play;
-      const playId = Number(parent?.id || play?.id || 0);
-      const currentCode = String(parent?.play_code || play?.play_code || "");
-      const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
+        const ok = await disableBomb(play);
 
-      const ok = await patchBomb(playId, {
-        play_status: "CANCELLED",
-        play_code: nextCode
+        if (!ok) {
+          disableBtn.disabled = false;
+          return;
+        }
+
+        const parent = getParentPlay(play) || play;
+        const playId = Number(parent?.id || play?.id || 0);
+
+        const freshPlay = await fetchBombPlay(deckId, playId);
+        if (freshPlay) {
+          renderBomb(freshPlay);
+          bindBombActions(freshPlay, deckId);
+        }
       });
+    }
 
-      if (!ok) {
-        cancelBtn.disabled = false;
-        return;
-      }
+    const cancelBtn = document.getElementById("bomba-cancel-btn");
 
-      window.location.reload();
-    });
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", async () => {
+        cancelBtn.disabled = true;
+
+        const parent = getParentPlay(play) || play;
+        const playId = Number(parent?.id || play?.id || 0);
+        const currentCode = String(parent?.play_code || play?.play_code || "");
+        const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
+
+        const ok = await patchBomb(playId, {
+          play_status: "CANCELLED",
+          play_code: nextCode
+        });
+
+        if (!ok) {
+          cancelBtn.disabled = false;
+          return;
+        }
+
+        window.location.reload();
+      });
+    }
   }
-}
 
   async function initBomba() {
     const params = getParams();
@@ -477,7 +480,7 @@ function bindBombActions(play, deckId) {
       }
 
       renderBomb(play);
-      bindBombActions(play, deckId);
+
     } catch (error) {
       console.error("Error cargando bomba:", error);
       if (content) {
