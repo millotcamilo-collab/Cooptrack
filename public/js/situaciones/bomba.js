@@ -127,17 +127,21 @@
   }
 
   function buildCardPlay(play) {
-    const parent = getParentPlay(play);
-    const host = isCurrentUserHost(play);
+  const parent = getParentPlay(play);
+  const host = isCurrentUserHost(play);
 
-    const rank = normalizeRank(play?.card_rank || play?.rank);
-    const suit = normalizeSuit(play?.card_suit || play?.suit);
+  const rank = normalizeRank(play?.card_rank || play?.rank);
+  const suit = normalizeSuit(play?.card_suit || play?.suit);
 
-    const shouldShowJ =
-      host && (
-        (rank === "J" && suit === "SPADE") ||
-        parent
-      );
+  const shouldShowJ =
+    host &&
+    (
+      (rank === "J" && suit === "SPADE") ||
+      parent
+    );
+
+  if (shouldShowJ) {
+    const source = parent || play;
 
     return {
       ...source,
