@@ -204,3 +204,25 @@ body {
   padding: 10px 12px;
   gap: 14px;
 }
+
+
+/* =========================================
+   Acciones de cartas: asegurar click real
+========================================= */
+.lv2-play-card__actions,
+.lv2-card__actions,
+.card-actions,
+.play-card-actions {
+  position: relative;
+  z-index: 50;
+  pointer-events: auto;
+}
+
+.lv2-play-card__actions .icon-btn,
+.lv2-card__actions .icon-btn,
+.card-actions .icon-btn,
+.play-card-actions .icon-btn {
+  position: relative;
+  z-index: 51;
+  pointer-events: auto;
+}
