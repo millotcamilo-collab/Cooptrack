@@ -349,3 +349,21 @@ top: 20px;
   object-fit: cover;
   cursor: pointer;
 }
+
+.tribuna-page--amsterdam .mobile-tribune {
+  width: 100%;
+  max-width: var(--lv2-card-w);
+  margin: 0 auto;
+  align-items: center;
+}
+
+.tribuna-page--amsterdam .mobile-tribune__stage {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.tribuna-page--amsterdam .mobile-tribune__stage > * {
+  margin-left: auto;
+  margin-right: auto;
+}

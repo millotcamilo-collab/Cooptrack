@@ -116,6 +116,16 @@
   `;
   }
 
+  function resolveBombFigure(rank) {
+    const normalized = normalizeRank(rank);
+
+    if (normalized === "J") {
+      return "/assets/figures/JpicaDeadline00.png";
+    }
+
+    return "/assets/figures/qmira1.png";
+  }
+
   function buildCardPlay(play) {
     const parent = getParentPlay(play);
     const host = isCurrentUserHost(play);
@@ -129,107 +139,118 @@
         parent
       );
 
-    if (shouldShowJ) {
-      const source = parent || play;
-
-      return {
-        ...source,
-        rank: "J",
-        card_rank: "J",
-        suit: "SPADE",
-        card_suit: "SPADE",
-        play_text: source.play_text || play.play_text || "",
-        start_date: source.start_date || play.start_date,
-        end_date: source.end_date || play.end_date,
-        location: source.location || play.location
-      };
-    }
-
     return {
-      ...play,
-      rank: "Q",
-      card_rank: "Q",
+      ...source,
+      rank: "J",
+      card_rank: "J",
       suit: "SPADE",
       card_suit: "SPADE",
-      play_text: parent?.play_text || play.play_text || "",
-      start_date: parent?.start_date || play.start_date,
-      end_date: parent?.end_date || play.end_date,
-      location: parent?.location || play.location
+      play_text: source.play_text || play.play_text || "",
+      start_date: source.start_date || play.start_date,
+      end_date: source.end_date || play.end_date,
+      location: source.location || play.location,
+      figure_src: resolveBombFigure("J")
     };
   }
 
+  return {
+    ...play,
+    rank: "Q",
+    card_rank: "Q",
+    suit: "SPADE",
+    card_suit: "SPADE",
+    play_text: parent?.play_text || play.play_text || "",
+    start_date: parent?.start_date || play.start_date,
+    end_date: parent?.end_date || play.end_date,
+    location: parent?.location || play.location,
+    figure_src: resolveBombFigure("Q")
+  };
+}
+
   async function fetchBombPlay(deckId, playId) {
-    const token = localStorage.getItem("cooptrackToken");
+  const token = localStorage.getItem("cooptrackToken");
 
-    const response = await fetch(
-      `${API_BASE_URL}/mazo/${deckId}/state`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json"
-        }
+  const response = await fetch(
+    `${API_BASE_URL}/mazo/${deckId}/state`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json"
       }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data.ok) {
-      throw new Error(data?.error || "No se pudo cargar la bomba");
     }
+  );
 
-    window.__currentState = data;
-    window.__currentDeck = data.deck || data.mazo || null;
+  const data = await response.json();
 
-    const plays = Array.isArray(data.plays) ? data.plays : [];
-
-    const play =
-      plays.find((p) => Number(p.id || 0) === Number(playId)) || null;
-
-    if (!play) return null;
-
-    const parent =
-      plays.find((p) => Number(p.id || 0) === Number(play.parent_play_id || 0)) ||
-      null;
-
-    if (parent) {
-      play.parent_play = parent;
-      play.parent = parent;
-    }
-
-    return play;
+  if (!response.ok || !data.ok) {
+    throw new Error(data?.error || "No se pudo cargar la bomba");
   }
 
-  function renderBomb(play) {
-    const content = document.getElementById("tribuna-content") ||
-      document.getElementById("bomba-content");
+  window.__currentState = data;
+  window.__currentDeck = data.deck || data.mazo || null;
 
-    const actions = document.getElementById("tribuna-actions") ||
-      document.getElementById("bomba-actions");
+  const plays = Array.isArray(data.plays) ? data.plays : [];
 
-    if (!content) return;
+  const play =
+    plays.find((p) => Number(p.id || 0) === Number(playId)) || null;
 
-    const cardPlay = buildCardPlay(play);
+  if (!play) return null;
 
-    const cardHtml = window.CartaTipo.renderPlayCardBox({
-      ...cardPlay,
-      play_text: cardPlay.play_text,
-      start_date: cardPlay.start_date,
-      end_date: cardPlay.end_date,
-      location: cardPlay.location,
-      spade_mode: "DEADLINE",
-      showOwner: true,
-      showActions: true,
-      actionsHtml: buildStampHtml(play)
+  const parent =
+    plays.find((p) => Number(p.id || 0) === Number(play.parent_play_id || 0)) ||
+    null;
+
+  if (parent) {
+    play.parent_play = parent;
+    play.parent = parent;
+  }
+
+  return play;
+}
+
+function renderBomb(play) {
+  const placard = document.getElementById("tribuna-placard") ||
+    document.getElementById("bomba-placard");
+  const content = document.getElementById("tribuna-content") ||
+    document.getElementById("bomba-content");
+
+  const actions = document.getElementById("tribuna-actions") ||
+    document.getElementById("bomba-actions");
+
+  if (!content) return;
+
+  const cardPlay = buildCardPlay(play);
+
+  if (placard && typeof window.renderPlacard === "function") {
+    placard.innerHTML = "";
+    window.renderPlacard(placard, {
+      play: cardPlay,
+      deck: window.__currentDeck || window.__currentState?.deck || null,
+      mode: "bomba"
+    });
+  }
+
+const cardHtml = window.CartaTipo.renderPlayCardBox({
+  ...cardPlay,
+  play_text: cardPlay.play_text,
+  start_date: cardPlay.start_date,
+  end_date: cardPlay.end_date,
+  location: cardPlay.location,
+  spade_mode: "DEADLINE",
+  figure_src: cardPlay.figure_src,
+  showOwner: true,
+  showActions: true,
+  actionsHtml: buildStampHtml(play)
+});
+
+  if (typeof window.renderAmsterdamMobile === "function") {
+    content.innerHTML = window.renderAmsterdamMobile(cardPlay, {
+      renderPlayCardBox: () => cardHtml
     });
 
-    if (typeof window.renderAmsterdamMobile === "function") {
-      content.innerHTML = window.renderAmsterdamMobile(cardPlay, {
-        renderPlayCardBox: () => cardHtml
-      });
-
-      window.enableAmsterdamPeek?.();
-    } else {
-      content.innerHTML = `
+    window.enableAmsterdamPeek?.();
+  } else {
+    content.innerHTML = `
         <section class="lienzo-tribune lienzo-tribune--target tribuna-single tribuna-single--amsterdam">
           <div class="lienzo-tribune__corporates"></div>
           <div class="lienzo-target-dropzone">
@@ -237,126 +258,126 @@
           </div>
         </section>
       `;
-    }
-
-    if (actions) {
-      actions.innerHTML = "";
-    }
   }
 
-  function appendFlowFlag(playCode, flag) {
-    const parts = String(playCode || "").split("§");
+  if (actions) {
+    actions.innerHTML = "";
+  }
+}
 
-    while (parts.length < 9) {
-      parts.push("");
-    }
+function appendFlowFlag(playCode, flag) {
+  const parts = String(playCode || "").split("§");
 
-    const flowIndex = 7;
-    const currentFlow = String(parts[flowIndex] || "");
+  while (parts.length < 9) {
+    parts.push("");
+  }
 
-    if (currentFlow.toUpperCase().includes(flag.toUpperCase())) {
-      return parts.slice(0, 9).join("§");
-    }
+  const flowIndex = 7;
+  const currentFlow = String(parts[flowIndex] || "");
 
-    parts[flowIndex] = currentFlow
-      ? `${currentFlow};${flag}`
-      : flag;
-
+  if (currentFlow.toUpperCase().includes(flag.toUpperCase())) {
     return parts.slice(0, 9).join("§");
   }
 
-  async function disableBomb(play) {
-    const token = localStorage.getItem("cooptrackToken");
-    if (!token) {
-      alert("No estás logueado.");
-      return false;
-    }
+  parts[flowIndex] = currentFlow
+    ? `${currentFlow};${flag}`
+    : flag;
 
-    const parent = getParentPlay(play) || play;
-    const playId = Number(parent?.id || play?.id || 0);
-    if (!playId) {
-      alert("No se encontró la jugada de la bomba.");
-      return false;
-    }
+  return parts.slice(0, 9).join("§");
+}
 
-    const currentCode = String(parent?.play_code || play?.play_code || "");
-    const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
-
-    const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        play_code: nextCode
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data.ok) {
-      console.error("No se pudo desactivar la bomba", data);
-      alert(data?.error || "No se pudo desactivar la bomba.");
-      return false;
-    }
-
-    return true;
+async function disableBomb(play) {
+  const token = localStorage.getItem("cooptrackToken");
+  if (!token) {
+    alert("No estás logueado.");
+    return false;
   }
 
-  function bindBombActions(play, deckId) {
-    const disableBtn = document.getElementById("bomba-disable-btn");
-    if (!disableBtn) return;
-
-    disableBtn.addEventListener("click", async () => {
-      disableBtn.disabled = true;
-
-      const ok = await disableBomb(play);
-
-      if (!ok) {
-        disableBtn.disabled = false;
-        return;
-      }
-
-      const playId = Number(play?.id || 0);
-      const freshPlay = await fetchBombPlay(deckId, playId);
-      if (freshPlay) {
-        renderBomb(freshPlay);
-        bindBombActions(freshPlay, deckId);
-      }
-    });
+  const parent = getParentPlay(play) || play;
+  const playId = Number(parent?.id || play?.id || 0);
+  if (!playId) {
+    alert("No se encontró la jugada de la bomba.");
+    return false;
   }
 
-  async function initBomba() {
-    const params = getParams();
-    const deckId = Number(params.get("deckId") || 0);
-    const playId = Number(params.get("playId") || 0);
+  const currentCode = String(parent?.play_code || play?.play_code || "");
+  const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
 
-    const content = document.getElementById("tribuna-content") ||
-      document.getElementById("bomba-content");
+  const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      play_code: nextCode
+    })
+  });
 
-    if (!deckId || !playId) {
-      if (content) content.innerHTML = `<div class="lienzo-error">Falta deckId o playId.</div>`;
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    console.error("No se pudo desactivar la bomba", data);
+    alert(data?.error || "No se pudo desactivar la bomba.");
+    return false;
+  }
+
+  return true;
+}
+
+function bindBombActions(play, deckId) {
+  const disableBtn = document.getElementById("bomba-disable-btn");
+  if (!disableBtn) return;
+
+  disableBtn.addEventListener("click", async () => {
+    disableBtn.disabled = true;
+
+    const ok = await disableBomb(play);
+
+    if (!ok) {
+      disableBtn.disabled = false;
       return;
     }
 
-    try {
-      const play = await fetchBombPlay(deckId, playId);
-
-      if (!play) {
-        if (content) content.innerHTML = `<div class="lienzo-error">No se encontró la bomba.</div>`;
-        return;
-      }
-
-      renderBomb(play);
-      bindBombActions(play, deckId);
-    } catch (error) {
-      console.error("Error cargando bomba:", error);
-      if (content) {
-        content.innerHTML = `<div class="lienzo-error">${escapeHtml(error.message)}</div>`;
-      }
+    const playId = Number(play?.id || 0);
+    const freshPlay = await fetchBombPlay(deckId, playId);
+    if (freshPlay) {
+      renderBomb(freshPlay);
+      bindBombActions(freshPlay, deckId);
     }
+  });
+}
+
+async function initBomba() {
+  const params = getParams();
+  const deckId = Number(params.get("deckId") || 0);
+  const playId = Number(params.get("playId") || 0);
+
+  const content = document.getElementById("tribuna-content") ||
+    document.getElementById("bomba-content");
+
+  if (!deckId || !playId) {
+    if (content) content.innerHTML = `<div class="lienzo-error">Falta deckId o playId.</div>`;
+    return;
   }
 
-  document.addEventListener("DOMContentLoaded", initBomba);
-})();
+  try {
+    const play = await fetchBombPlay(deckId, playId);
+
+    if (!play) {
+      if (content) content.innerHTML = `<div class="lienzo-error">No se encontró la bomba.</div>`;
+      return;
+    }
+
+    renderBomb(play);
+    bindBombActions(play, deckId);
+  } catch (error) {
+    console.error("Error cargando bomba:", error);
+    if (content) {
+      content.innerHTML = `<div class="lienzo-error">${escapeHtml(error.message)}</div>`;
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", initBomba);
+}) ();
