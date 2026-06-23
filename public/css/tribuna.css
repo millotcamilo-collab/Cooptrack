@@ -350,20 +350,23 @@ top: 20px;
   cursor: pointer;
 }
 
-.tribuna-page--amsterdam .mobile-tribune {
-  width: 100%;
-  max-width: var(--lv2-card-w);
-  margin: 0 auto;
-  align-items: center;
-}
-
-.tribuna-page--amsterdam .mobile-tribune__stage {
+/* Bomba: forzar carta centrada en la tribuna */
+.tribuna-page--bomba .tribuna__content-zone,
+.tribuna-page--bomba .mobile-tribune,
+.tribuna-page--bomba .mobile-tribune__stage {
   width: 100%;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
 }
 
-.tribuna-page--amsterdam .mobile-tribune__stage > * {
+.tribuna-page--bomba .amsterdam-card-stack {
+  width: var(--lv2-card-w);
   margin-left: auto;
   margin-right: auto;
+}
+
+.tribuna-page--bomba .amsterdam-card-stack__primary {
+  left: 50%;
+  transform: translateX(-50%);
 }

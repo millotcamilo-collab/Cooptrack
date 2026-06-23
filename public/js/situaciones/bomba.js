@@ -413,7 +413,7 @@ function bindBombActions(play, deckId) {
 
   if (!content) return;
 
-  content.addEventListener("click", async (event) => {
+  content.onclick = async (event) => {
     const disableBtn = event.target.closest("#bomba-disable-btn");
     const cancelBtn = event.target.closest("#bomba-cancel-btn");
 
@@ -433,18 +433,20 @@ function bindBombActions(play, deckId) {
     if (disableBtn) {
       disableBtn.disabled = true;
 
-      const ok = await disableBomb(play);
+      const currentCode = String(parent?.play_code || play?.play_code || "");
+      const nextCode = appendFlowFlag(currentCode, "bomb:DONE");
+
+      const ok = await patchBomb(playId, {
+        play_status: "APPROVED",
+        play_code: nextCode
+      });
 
       if (!ok) {
         disableBtn.disabled = false;
         return;
       }
 
-      const freshPlay = await fetchBombPlay(deckId, playId);
-      if (freshPlay) {
-        renderBomb(freshPlay);
-      }
-
+      window.location.reload();
       return;
     }
 
@@ -466,7 +468,7 @@ function bindBombActions(play, deckId) {
 
       window.location.reload();
     }
-  }, { once: true });
+  };
 }
 
   async function initBomba() {
