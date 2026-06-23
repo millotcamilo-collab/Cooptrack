@@ -294,24 +294,17 @@
       actionsHtml: buildStampHtml(play)
     });
 
-    if (typeof window.renderAmsterdamMobile === "function") {
-      content.innerHTML = window.renderAmsterdamMobile(cardPlay, {
-        renderPlayCardBox: () => cardHtml
-      });
+content.innerHTML = `
+  <section class="lienzo-tribune lienzo-tribune--target tribuna-single tribuna-single--amsterdam">
+    <div class="lienzo-tribune__corporates"></div>
 
-      window.enableAmsterdamPeek?.();
-      animateBombFigure(cardPlay.rank || cardPlay.card_rank);
-    } else {
-      content.innerHTML = `
-        <section class="lienzo-tribune lienzo-tribune--target tribuna-single tribuna-single--amsterdam">
-          <div class="lienzo-tribune__corporates"></div>
-          <div class="lienzo-target-dropzone">
-            ${cardHtml}
-          </div>
-        </section>
-      `;
-      animateBombFigure(cardPlay.rank || cardPlay.card_rank);
-    }
+    <div class="lienzo-tribune__stage bomba-card-stage">
+      ${cardHtml}
+    </div>
+  </section>
+`;
+
+animateBombFigure(cardPlay.rank || cardPlay.card_rank);
 
     if (actions) {
       actions.innerHTML = "";
