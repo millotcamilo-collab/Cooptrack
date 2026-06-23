@@ -104,16 +104,25 @@
     `;
     }
 
-    return `
-    <button
-      type="button"
-      id="bomba-disable-btn"
-      class="icon-btn bomba-disable-btn"
-      title="Desactivar bomba"
-    >
-      <img src="${actions.deadline || "/assets/icons/META60.gif"}" alt="Desactivar bomba" />
-    </button>
-  `;
+return `
+  <button
+    type="button"
+    id="bomba-disable-btn"
+    class="icon-btn bomba-disable-btn"
+    title="Hecho / apagar bomba"
+  >
+    <img src="${actions.deadline || "/assets/icons/META60.gif"}" alt="Hecho" />
+  </button>
+
+  <button
+    type="button"
+    id="bomba-cancel-btn"
+    class="icon-btn bomba-cancel-btn"
+    title="Cancelar / apagar bomba"
+  >
+    <img src="${actions.cancel || "/assets/icons/cancel40.gif"}" alt="Cancelar" />
+  </button>
+`;
   }
 
   function resolveBombFigure(rank) {
@@ -126,27 +135,27 @@
     return "/assets/figures/qmira1.png";
   }
 
-function animateBombFigure(rank) {
-  const normalized = normalizeRank(rank);
-  const cardFigure = document.querySelector(".lv2-card__figure img, .lv2-play-card__figure img");
+  function animateBombFigure(rank) {
+    const normalized = normalizeRank(rank);
+    const cardFigure = document.querySelector(".lv2-card__figure img, .lv2-play-card__figure img");
 
-  if (!cardFigure) return;
+    if (!cardFigure) return;
 
-  if (normalized === "J") {
-    let frame = 0;
+    if (normalized === "J") {
+      let frame = 0;
 
-    setInterval(() => {
-      const padded = String(frame).padStart(2, "0");
-      cardFigure.src = `/assets/figures/JpicaDeadline${padded}.png`;
-      frame = (frame + 1) % 30;
-    }, 90);
+      setInterval(() => {
+        const padded = String(frame).padStart(2, "0");
+        cardFigure.src = `/assets/figures/JpicaDeadline${padded}.png`;
+        frame = (frame + 1) % 30;
+      }, 90);
 
-    return;
+      return;
+    }
+
+    // Q fija por ahora
+    cardFigure.src = "/assets/figures/qmira1.png";
   }
-
-  // Q fija por ahora
-  cardFigure.src = "/assets/figures/qmira1.png";
-}
 
   function buildCardPlay(play) {
     const parent = getParentPlay(play);
@@ -249,9 +258,23 @@ function animateBombFigure(rank) {
 
     if (placard && typeof window.renderPlacard === "function") {
       placard.innerHTML = "";
+      const parent = getParentPlay(play);
+
+      const placardPlay = {
+        ...play,
+        parent_play: parent || play.parent_play || null,
+        parent: parent || play.parent || null,
+        display_play: cardPlay
+      };
+
       window.renderPlacard(placard, {
-        play: cardPlay,
-        deck: window.__currentDeck || window.__currentState?.deck || null,
+        play: placardPlay,
+        deck:
+          window.__currentDeck ||
+          window.__currentState?.deck ||
+          window.__currentState?.mazo ||
+          null,
+        plays: window.__currentState?.plays || [],
         mode: "bomba"
       });
     }
@@ -285,7 +308,7 @@ function animateBombFigure(rank) {
           </div>
         </section>
       `;
-       animateBombFigure(cardPlay.rank || cardPlay.card_rank);
+      animateBombFigure(cardPlay.rank || cardPlay.card_rank);
     }
 
     if (actions) {
@@ -353,10 +376,38 @@ function animateBombFigure(rank) {
     return true;
   }
 
-  function bindBombActions(play, deckId) {
-    const disableBtn = document.getElementById("bomba-disable-btn");
-    if (!disableBtn) return;
+async function patchBomb(playId, payload) {
+  const token = localStorage.getItem("cooptrackToken");
 
+  if (!token) {
+    alert("No estás logueado");
+    return false;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    console.error("Error actualizando bomba:", data);
+    alert(data?.error || "No se pudo actualizar la bomba.");
+    return false;
+  }
+
+  return true;
+}
+
+function bindBombActions(play, deckId) {
+  const disableBtn = document.getElementById("bomba-disable-btn");
+
+  if (disableBtn) {
     disableBtn.addEventListener("click", async () => {
       disableBtn.disabled = true;
 
@@ -367,7 +418,9 @@ function animateBombFigure(rank) {
         return;
       }
 
-      const playId = Number(play?.id || 0);
+      const parent = getParentPlay(play) || play;
+      const playId = Number(parent?.id || play?.id || 0);
+
       const freshPlay = await fetchBombPlay(deckId, playId);
       if (freshPlay) {
         renderBomb(freshPlay);
@@ -375,6 +428,32 @@ function animateBombFigure(rank) {
       }
     });
   }
+
+  const cancelBtn = document.getElementById("bomba-cancel-btn");
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", async () => {
+      cancelBtn.disabled = true;
+
+      const parent = getParentPlay(play) || play;
+      const playId = Number(parent?.id || play?.id || 0);
+      const currentCode = String(parent?.play_code || play?.play_code || "");
+      const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
+
+      const ok = await patchBomb(playId, {
+        play_status: "CANCELLED",
+        play_code: nextCode
+      });
+
+      if (!ok) {
+        cancelBtn.disabled = false;
+        return;
+      }
+
+      window.location.reload();
+    });
+  }
+}
 
   async function initBomba() {
     const params = getParams();
