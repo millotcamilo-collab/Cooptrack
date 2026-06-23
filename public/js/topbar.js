@@ -48,6 +48,10 @@
     return true;
   }
 
+  function clearEsAhoraSnooze() {
+    localStorage.removeItem(ES_AHORA_SNOOZE_KEY);
+  }
+
   function snoozeEsAhora(minutes = 5) {
     const until = Date.now() + minutes * 60 * 1000;
     localStorage.setItem(ES_AHORA_SNOOZE_KEY, String(until));
@@ -880,7 +884,9 @@
     type="button"
     id="esAhoraCounterBtn"
     class="topbar__esahora-counter ${esAhoraSnoozed ? "is-snoozed" : ""}"
-    title="Es ahora: clic para pausar 5 minutos"
+    title="${esAhoraSnoozed
+      ? "Es ahora pausado. Clic para reactivarlo"
+      : "Es ahora activo. Clic para pausarlo 5 minutos"}"
   >
     ${getMinutesUntilAhora(latestAhoraPlay)} min
   </button>
@@ -1091,7 +1097,12 @@ ${hasAuthorDecks
         event.preventDefault();
         event.stopPropagation();
 
-        snoozeEsAhora(5);
+        if (esAhoraSnoozed) {
+          clearEsAhoraSnooze();
+        } else {
+          snoozeEsAhora(5);
+        }
+
         renderTopbar();
       });
     }
