@@ -407,56 +407,67 @@
     return true;
   }
 
-  function bindBombActions(play, deckId) {
-    const disableBtn = document.getElementById("bomba-disable-btn");
+function bindBombActions(play, deckId) {
+  const content = document.getElementById("tribuna-content") ||
+    document.getElementById("bomba-content");
+
+  if (!content) return;
+
+  content.addEventListener("click", async (event) => {
+    const disableBtn = event.target.closest("#bomba-disable-btn");
+    const cancelBtn = event.target.closest("#bomba-cancel-btn");
+
+    if (!disableBtn && !cancelBtn) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const parent = getParentPlay(play) || play;
+    const playId = Number(parent?.id || play?.id || 0);
+
+    if (!playId) {
+      alert("No se encontró la jugada de la bomba.");
+      return;
+    }
 
     if (disableBtn) {
-      disableBtn.addEventListener("click", async () => {
-        disableBtn.disabled = true;
+      disableBtn.disabled = true;
 
-        const ok = await disableBomb(play);
+      const ok = await disableBomb(play);
 
-        if (!ok) {
-          disableBtn.disabled = false;
-          return;
-        }
+      if (!ok) {
+        disableBtn.disabled = false;
+        return;
+      }
 
-        const parent = getParentPlay(play) || play;
-        const playId = Number(parent?.id || play?.id || 0);
+      const freshPlay = await fetchBombPlay(deckId, playId);
+      if (freshPlay) {
+        renderBomb(freshPlay);
+      }
 
-        const freshPlay = await fetchBombPlay(deckId, playId);
-        if (freshPlay) {
-          renderBomb(freshPlay);
-          bindBombActions(freshPlay, deckId);
-        }
-      });
+      return;
     }
-
-    const cancelBtn = document.getElementById("bomba-cancel-btn");
 
     if (cancelBtn) {
-      cancelBtn.addEventListener("click", async () => {
-        cancelBtn.disabled = true;
+      cancelBtn.disabled = true;
 
-        const parent = getParentPlay(play) || play;
-        const playId = Number(parent?.id || play?.id || 0);
-        const currentCode = String(parent?.play_code || play?.play_code || "");
-        const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
+      const currentCode = String(parent?.play_code || play?.play_code || "");
+      const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
 
-        const ok = await patchBomb(playId, {
-          play_status: "CANCELLED",
-          play_code: nextCode
-        });
-
-        if (!ok) {
-          cancelBtn.disabled = false;
-          return;
-        }
-
-        window.location.reload();
+      const ok = await patchBomb(playId, {
+        play_status: "CANCELLED",
+        play_code: nextCode
       });
+
+      if (!ok) {
+        cancelBtn.disabled = false;
+        return;
+      }
+
+      window.location.reload();
     }
-  }
+  }, { once: true });
+}
 
   async function initBomba() {
     const params = getParams();
