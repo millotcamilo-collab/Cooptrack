@@ -2,21 +2,32 @@
   const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
   // es ahora
-  function isPicaConActividad(play) {
-    const rank = String(play.card_rank || "").toUpperCase();
-    const suit = String(play.card_suit || "").toUpperCase();
+function isPicaConActividad(play) {
+  const rank = String(play.card_rank || "").toUpperCase();
+  const suit = String(play.card_suit || "").toUpperCase();
+  const status = String(play.play_status || play.status || "").toUpperCase();
 
-    return (
-      suit === "SPADE" &&
-      ["J", "Q"].includes(rank) &&
-      (
-        play.start_date ||
-        play.end_date ||
-        play.parent_start_date ||
-        play.parent_end_date
-      )
+  if (suit !== "SPADE") return false;
+
+  // J♠: la bomba del anfitrión sí puede aparecer como actividad propia.
+  if (rank === "J") {
+    return !!(play.start_date || play.end_date);
+  }
+
+  // Q♠: al invitado sólo le aparece bomba si aceptó.
+  if (rank === "Q") {
+    if (status !== "APPROVED") return false;
+
+    return !!(
+      play.start_date ||
+      play.end_date ||
+      play.parent_start_date ||
+      play.parent_end_date
     );
   }
+
+  return false;
+}
 
   function isQDiamanteConFecha(play) {
     const rank = String(play.card_rank || "").toUpperCase();
