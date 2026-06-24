@@ -62,6 +62,22 @@
     return { from, to };
   }
 
+function getMiniDayHeaderParts(value) {
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const weekdays = ["DOM", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"];
+  const months = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+
+  return {
+    dow: weekdays[date.getDay()] || "",
+    day: String(date.getDate()),
+    month: months[date.getMonth()] || ""
+  };
+}
+
   function renderMiniDay({
     play_text,
     start_date,
@@ -86,12 +102,7 @@
     const [h1, h2, h3, h4] = getMiniDayHours(date);
     const range = getMiniDayRange(date);
 
-    const dayLabel = date
-      ? new Date(date).toLocaleDateString("es-UY", {
-        day: "numeric",
-        month: "short"
-      })
-      : "";
+const dayHeader = getMiniDayHeaderParts(date);
 
     const centerTime = date ? new Date(date).getTime() : null;
 

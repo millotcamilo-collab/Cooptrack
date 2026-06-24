@@ -457,12 +457,39 @@ font-size: 1.5em;
 
 .lv2-mini-day__header {
   margin-bottom: 4px;
-  padding: 0 2px;
+  padding: 4px 6px;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.48);
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 4px;
+
   font-size: 10px;
   line-height: 1;
   font-weight: 700;
-  color: rgba(0, 0, 0, 0.78);
-  text-transform: lowercase;
+  color: rgba(0, 0, 0, 0.82);
+  box-sizing: border-box;
+}
+
+.lv2-mini-day__header-part {
+  display: block;
+  text-transform: uppercase;
+}
+
+.lv2-mini-day__header-part--dow {
+  text-align: left;
+}
+
+.lv2-mini-day__header-part--day {
+  text-align: center;
+  min-width: 18px;
+}
+
+.lv2-mini-day__header-part--month {
+  text-align: right;
 }
 
 /* nuevo recuadro para las horas */
