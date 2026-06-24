@@ -66,7 +66,16 @@ window.QPICA_ENTRA = {
   },
 
   start(play) {
+    const status = String(play?.play_status || play?.status || "")
+      .trim()
+      .toUpperCase();
+
+    if (!["SENT", "PENDING"].includes(status)) {
+      return;
+    }
+
     const mode = this.getParentSpadeMode(play);
+
     const jPrefix = mode === "DEADLINE" ? "JpicaDeadline" : "JpicaCita";
 
     const figures = document.querySelectorAll(
@@ -140,7 +149,18 @@ window.QPICA_ENTRA = {
 
   render(ctx) {
     this.currentCtx = ctx;
-    return this.renderClosed(ctx);
+
+    const status = String(ctx?.play?.play_status || ctx?.play?.status || "")
+      .trim()
+      .toUpperCase();
+
+    const shouldAnimate =
+      status === "SENT" ||
+      status === "PENDING";
+
+    return shouldAnimate
+      ? this.renderClosed(ctx)
+      : this.renderFinal(ctx);
   },
 
   renderClosed(ctx) {
@@ -208,6 +228,22 @@ ${parent ? helpers.renderPlayCardBox({
         </div>
       </section>
     `;
+  },
+
+  renderFinal(ctx) {
+    return `
+    <section class="lienzo-tribune lienzo-tribune--target tribuna-single tribuna-single--amsterdam">
+      <div class="lienzo-tribune__corporates"></div>
+
+      <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
+        <div class="amsterdam-card-stack">
+          <div class="amsterdam-card-stack__primary">
+            ${this.renderOpen(ctx)}
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
   },
 
   renderOpen(ctx) {
