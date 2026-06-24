@@ -2,7 +2,7 @@
     const API_BASE_URL = "https://cooptrack-backend.onrender.com";
 
     let allQs = [];
-    let activeSuitFilter = "";
+    let activeSuitFilters = [];
     let activeSearchQuery = "";
 
     function escapeHtml(value) {
@@ -226,21 +226,40 @@
         return flow.includes("PAY:QHEART");
     }
 
-    function applyFilters(plays) {
-        return plays.filter((play) => {
-            const suit = normalizeSuit(play.card_suit || play.suit);
-            const description = getDescription(play).toLowerCase();
-            const deckName = String(play.deck_name || play.deckName || "").trim().toLowerCase();
+function applyFilters(plays) {
+    return plays.filter((play) => {
+        const suit = normalizeSuit(play.card_suit || play.suit);
+        const description = getDescription(play).toLowerCase();
+        const deckName = String(play.deck_name || play.deckName || "").trim().toLowerCase();
+        const hasQHeart = playHasQHeartAttachment(play);
 
-            const suitOk = !activeSuitFilter || suit === activeSuitFilter;
-            const searchOk =
-                !activeSearchQuery ||
-                description.includes(activeSearchQuery.toLowerCase()) ||
-                deckName.includes(activeSearchQuery.toLowerCase());
+        let suitOk = true;
 
-            return suitOk && searchOk;
-        });
-    }
+        if (Array.isArray(activeSuitFilters) && activeSuitFilters.length) {
+            const wantsSpade = activeSuitFilters.includes("SPADE");
+            const wantsDiamond = activeSuitFilters.includes("DIAMOND");
+
+            suitOk = false;
+
+            // ♠ = solo Q♠ simples
+            if (wantsSpade && suit === "SPADE" && !hasQHeart) {
+                suitOk = true;
+            }
+
+            // ♦ = solo QQ♠ (Q♠ con adjunto económico)
+            if (wantsDiamond && suit === "SPADE" && hasQHeart) {
+                suitOk = true;
+            }
+        }
+
+        const searchOk =
+            !activeSearchQuery ||
+            description.includes(activeSearchQuery.toLowerCase()) ||
+            deckName.includes(activeSearchQuery.toLowerCase());
+
+        return suitOk && searchOk;
+    });
+}
 
     function resolveQHref(row) {
         const deckId = row.dataset.deckId;
@@ -296,10 +315,13 @@ if (suit === "SPADE") {
         renderQs();
     }
 
-    document.addEventListener("qs:filterSuit", (event) => {
-        activeSuitFilter = String(event.detail?.suit || "").toUpperCase();
-        renderQs();
-    });
+document.addEventListener("qs:filterSuit", (event) => {
+    activeSuitFilters = Array.isArray(event.detail?.suits)
+        ? event.detail.suits.map((suit) => String(suit || "").toUpperCase())
+        : [];
+
+    renderQs();
+});
 
     document.addEventListener("qs:search", (event) => {
         activeSearchQuery = String(event.detail?.query || "").trim();

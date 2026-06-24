@@ -231,8 +231,8 @@
 }
 
 #qs-container .tablero-row--bitacora {
-  min-height: 88px;
-  padding: 10px 12px;
-  gap: 14px;
+  min-height: 58px;
+  padding: 8px 12px;
+  gap: 10px;
   margin: 0;
 }
