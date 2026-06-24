@@ -1467,15 +1467,6 @@
 
         <div class="lv2-play-card__actions">
 
-          ${showSend
-        ? `
-              <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
-                <img src="/assets/icons/buzon60.gif" alt="Enviar" />
-              </button>
-            `
-        : ""
-      }
-
           ${showTargetActions
         ? `
               <button id="lienzo-accept-btn" class="icon-btn" title="Aceptar">
@@ -2441,7 +2432,7 @@ ${showBombActions
           }
           : null
       ].filter(Boolean),
-      actionsHtml: renderPlayCardActions(play)
+      actionsHtml: options.actionsHtml || ""
     });
   }
 
@@ -2478,7 +2469,7 @@ ${parentJSpadeText
       data-open-jpica-play-id="${Number(play?.parent_play_id || 0)}"
       title="Abrir J♠"
     >
-      ${renderPlayCardBox(play, {
+${renderPlayCardBox(play, {
           rank: "J",
           suit: "SPADE",
           ownerUser: resolveSourceUser(play)
@@ -2523,7 +2514,8 @@ ${parentJSpadeText
         <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
           ${renderPlayCardBox(play, {
       rank: baseRank,
-      suit: baseSuit
+      suit: baseSuit,
+      actionsHtml: renderPlayCardActions(play)
     })}
         </div>
 
