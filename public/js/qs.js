@@ -126,10 +126,61 @@
         return status === "APPROVED" ? "Q♦" : "Q♥";
     }
 
+    function buildRowStampsHTML(play) {
+        const actions = window.ICONS?.actions || {};
+        const flow = String(play?.play_code || "").toUpperCase();
+        const status = String(play?.play_status || play?.status || "").trim().toUpperCase();
+
+        const stamps = [];
+
+        if (status === "APPROVED") {
+            stamps.push({
+                src: actions.approve || "/assets/icons/Sello40.gif",
+                alt: "Aprobada",
+                title: "Aprobada"
+            });
+        }
+
+        if (status === "REJECTED") {
+            stamps.push({
+                src: actions.reject || "/assets/icons/stepback40.gif",
+                alt: "Rechazada",
+                title: "Rechazada"
+            });
+        }
+
+        if (flow.includes("BOMB:EXPLODED")) {
+            stamps.push({
+                src: actions.boom || "/assets/icons/Boom80.gif",
+                alt: "Boom",
+                title: "Boom"
+            });
+        }
+
+        if (flow.includes("BOMB:DONE") || flow.includes("BOMB:DISABLED")) {
+            stamps.push({
+                src: actions.deadline || "/assets/icons/META60.gif",
+                alt: "Meta",
+                title: "Meta"
+            });
+        }
+
+        if (!stamps.length) return "";
+
+        return stamps
+            .map((stamp) => `
+                <span class="tablero-row__stamp" title="${escapeHtml(stamp.title)}">
+                  <img src="${escapeHtml(stamp.src)}" alt="${escapeHtml(stamp.alt)}" />
+                </span>
+              `)
+            .join("");
+    }
+
     function buildQRowHTML(play) {
         const playId = getPlayId(play);
         const cardLabel = getCardLabel(play);
         const qqpicaEconomicLabel = getQQPicaEconomicLabel(play);
+        const rowStampsHtml = buildRowStampsHTML(play);
         const description = getDescription(play);
         const deckId = getDeckId(play);
         const deckName = String(play.deck_name || play.deckName || "").trim();
@@ -165,7 +216,7 @@
           </div>
         </div>
 
-        <div class="tablero-row__right"></div>
+                <div class="tablero-row__right">${rowStampsHtml}</div>
       </button>
     `;
     }

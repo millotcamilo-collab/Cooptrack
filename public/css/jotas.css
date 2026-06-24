@@ -105,6 +105,18 @@
   color: #c62828;
 }
 
+.tablero-row__stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tablero-row__stamp img {
+  height: 22px;
+  width: auto;
+  display: block;
+}
+
 .tablero-row--bitacora .tablero-row__center,
 .tablero-row--jcorazon .tablero-row__center,
 .tablero-row--jpike .tablero-row__center,
