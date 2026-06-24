@@ -415,8 +415,14 @@
       event.preventDefault();
       event.stopPropagation();
 
-      const parent = getParentPlay(play) || play;
-      const playId = Number(parent?.id || play?.id || 0);
+      const parent = getParentPlay(play) || null;
+
+const isQSpade =
+  normalizeRank(play?.card_rank || play?.rank) === "Q" &&
+  normalizeSuit(play?.card_suit || play?.suit) === "SPADE";
+
+const targetPlay = isQSpade ? play : (parent || play);
+const playId = Number(targetPlay?.id || 0);
 
       if (!playId) {
         alert("No se encontró la jugada de la bomba.");
@@ -426,7 +432,7 @@
       if (disableBtn) {
         disableBtn.disabled = true;
 
-        const currentCode = String(parent?.play_code || play?.play_code || "");
+        const currentCode = String(targetPlay?.play_code || "");
         const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
 
         const ok = await patchBomb(playId, {
@@ -445,7 +451,7 @@
       if (cancelBtn) {
         cancelBtn.disabled = true;
 
-        const currentCode = String(parent?.play_code || play?.play_code || "");
+        const currentCode = String(targetPlay?.play_code || "");
         const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
 
         const ok = await patchBomb(playId, {
