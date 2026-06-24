@@ -1207,6 +1207,7 @@
         concept: draft.concept || "Ticket",
         amount: draft.amount || "",
         payDate: draft.payDate || "",
+        payAt: draft.payAt || draft.payDate || "",
         currency: getCurrencyCode(deck) || "",
         payerLabel,
         attachedRank: "Q",
@@ -1244,6 +1245,7 @@
           concept: payment.concept || "Ticket",
           amount: payment.amount || "",
           payDate: payment.payDate || "",
+          payAt: payment.payAt || payment.payDate || "",
           currency: payment.currency || getCurrencyCode(deck) || "",
           payerLabel,
           attachedRank: "Q",
@@ -1462,7 +1464,7 @@
         </div>
 
         <div class="lv2-play-card__meta">
-          <span>${escapeHtml(qqState.payDate || "")}</span>
+          <span>${escapeHtml(qqState.payAt || qqState.payDate || "")}</span>
         </div>
 
         <div class="lv2-play-card__actions">
@@ -1760,7 +1762,8 @@ ${showBombActions
       `|concept:${qqState.concept}` +
       `|amount:${qqState.amount}` +
       `|currency:${qqState.currency}` +
-      `|payDate:${qqState.payDate}`;
+      `|payDate:${String(qqState.payDate || qqState.payAt || "").split("T")[0]}` +
+      `|payAt:${qqState.payAt || qqState.payDate}`;
 
     const nextFlow = [...existingFlowChunks, paymentBlock].join(";");
 

@@ -1876,6 +1876,8 @@ return `
         const amount = String(amountInput?.value || "").trim();
         const payDate = String(payDateInput?.value || "").trim();
         const side = String(selection.targetZone || "").toUpperCase();
+        const payAt = payDate;
+        const payDay = payAt ? payAt.split("T")[0] : "";
 
         if (!concept) {
             return {
@@ -1909,7 +1911,8 @@ return `
                 side,
                 concept,
                 amount,
-                payDate
+                payDate: payDay,
+                payAt
             }
         };
     }
@@ -2075,8 +2078,8 @@ const nextStatus = userIsAceClub ? "SENT" : "PENDING";
             `|concept:${draft.concept}` +
             `|amount:${draft.amount}` +
             `|currency:${currency}` +
-            `|payDate:${draft.payDate.split("T")[0]}` +
-            `|payAt:${draft.payDate}`;
+            `|payDate:${draft.payDate}` +
+            `|payAt:${draft.payAt || draft.payDate}`;
 
         const nextFlow = [...existingFlowChunks, paymentBlock].join(";");
 
