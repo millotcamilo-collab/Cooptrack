@@ -279,6 +279,118 @@
     return "";
   }
 
+  function buildTickerHtml(texts, title, options = {}) {
+    const safeTexts = Array.isArray(texts)
+      ? texts.map((text) => String(text || "").trim()).filter(Boolean)
+      : [];
+
+    if (!safeTexts.length) return "";
+
+    const buttonId = String(options.buttonId || "").trim();
+    const extraClass = String(options.extraClass || "").trim();
+    const rootClass = [
+      "placard__subtitle",
+      "placard__subtitle--ticker",
+      extraClass
+    ].filter(Boolean).join(" ");
+
+    const trackHtml = `
+        <div class="placard__ticker-track">
+          ${safeTexts
+            .map((text) => `<span class="placard__ticker-item">${escapeHtml(text)}</span>`)
+            .join("")}
+        </div>
+      `;
+
+    if (buttonId) {
+      return `
+      <button
+        type="button"
+        class="${rootClass} placard__ticker-btn"
+        id="${escapeHtml(buttonId)}"
+        title="${escapeHtml(title || "Ver jugadas de corazón") }"
+        aria-label="${escapeHtml(title || "Ver jugadas de corazón") }"
+      >
+        ${trackHtml}
+      </button>
+    `;
+    }
+
+    return `
+      <div class="${rootClass}" title="${escapeHtml(title || "Ver jugadas de corazón") }">
+        ${trackHtml}
+      </div>
+    `;
+  }
+
+  function getStampedTexts(stamps, stampType) {
+    return Array.isArray(stamps)
+      ? stamps
+          .filter((stamp) => String(stamp?.stamp_type || "").toUpperCase() === String(stampType || "").toUpperCase())
+          .map((stamp) => String(stamp?.stamp_data?.play_text || stamp?.stamp_data?.text || "").trim())
+          .filter(Boolean)
+      : [];
+  }
+
+  function getLiveJHeartTexts(plays, parentPlayId = null) {
+    const list = Array.isArray(plays) ? plays : [];
+
+    return list
+      .filter((play) => {
+        const rank = String(play?.card_rank || play?.rank || "").trim().toUpperCase();
+        const suit = String(play?.card_suit || play?.suit || "").trim().toUpperCase();
+        const status = String(play?.play_status || play?.status || "").trim().toUpperCase();
+        const currentParentId = Number(play?.parent_play_id || 0);
+
+        const parentMatches = parentPlayId === null
+          ? !currentParentId
+          : currentParentId === Number(parentPlayId || 0);
+
+        return rank === "J" && suit === "HEART" && status === "APPROVED" && parentMatches;
+      })
+      .map((play) => String(play?.play_text || play?.text || "").trim())
+      .filter(Boolean);
+  }
+
+  function getJHeartSubtitleHtml(config) {
+    const page = String(config?.page || "").trim().toLowerCase();
+
+    if (page !== "lienzo-jpica") return "";
+
+    const currentPlay = config?.play || null;
+    const currentPlayId = Number(currentPlay?.id || 0);
+    const plays = Array.isArray(config?.plays) ? config.plays : [];
+
+    const stampedRootTexts = getStampedTexts(currentPlay?.stamps || config?.stamps || [], "APPROVED_J_HEART");
+    const stampedChildTexts = getStampedTexts(currentPlay?.stamps || config?.stamps || [], "APPROVED_CHILD_J_HEART");
+
+    const liveRootTexts = getLiveJHeartTexts(plays, null);
+    const liveChildTexts = currentPlayId ? getLiveJHeartTexts(plays, currentPlayId) : [];
+
+    const rootTexts = stampedRootTexts.length ? stampedRootTexts : liveRootTexts;
+    const childTexts = stampedChildTexts.length ? stampedChildTexts : liveChildTexts;
+
+    if (!rootTexts.length && !childTexts.length) return "";
+
+    return `
+      <div class="placard__subtitles placard__subtitles--jpica">
+        ${rootTexts.length
+          ? buildTickerHtml(rootTexts, "J corazones aprobadas del mazo", {
+              extraClass: "placard__subtitle--jpica-root"
+            })
+          : ""
+        }
+
+        ${childTexts.length
+          ? buildTickerHtml(childTexts, "J corazones hijas de J pica aprobadas", {
+              extraClass: "placard__subtitle--jpica-child"
+            })
+          : ""
+        }
+      </div>
+    `;
+  }
+
   function renderPlacard(containerId, config) {
     const container =
       typeof containerId === "string"
@@ -318,55 +430,7 @@
       config?.leftCardsHtml || buildTopCardsHTML(config?.leftCards || [])
     );
 
-    function getApprovedJHeartTexts(plays, parentPlayId = null) {
-      if (!Array.isArray(plays)) return [];
-
-      return plays
-        .filter((p) => {
-          const rank = String(p?.card_rank || "").toUpperCase();
-          const suit = String(p?.card_suit || "").toUpperCase();
-          const status = String(p?.play_status || "").toUpperCase();
-
-          if (rank !== "J" || suit !== "HEART" || status !== "APPROVED") {
-            return false;
-          }
-
-          if (parentPlayId) {
-            return Number(p?.parent_play_id || 0) === Number(parentPlayId);
-          }
-
-          return true;
-        })
-        .map((p) => String(p?.play_text || "").trim())
-        .filter(Boolean);
-    }
-
-    const jHeartTexts =
-      config?.stamps
-        ?.filter(s => s.stamp_type === "APPROVED_J_HEART")
-        ?.map(s => s.stamp_data?.play_text)
-        ?.filter(Boolean)
-      || [];
-
-    let subtitleHtml = "";
-
-    if (jHeartTexts.length) {
-      subtitleHtml = `
-    <button
-  type="button"
-  class="placard__subtitle placard__subtitle--ticker placard__ticker-btn"
-  id="placardTickerBtn"
-  title="Ver jugadas de corazón"
-  aria-label="Ver jugadas de corazón"
->
-  <div class="placard__ticker-track">
-    ${jHeartTexts
-          .map((text) => `<span class="placard__ticker-item">${escapeHtml(text)}</span>`)
-          .join("")}
-  </div>
-</button>
-  `;
-    }
+    const subtitleHtml = getJHeartSubtitleHtml(config);
 
 const contextHtml = String(config?.contextHtml || "").trim();
 
