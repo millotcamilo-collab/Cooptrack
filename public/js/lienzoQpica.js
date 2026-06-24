@@ -736,16 +736,18 @@
 `;
     }
 
-    function formatDateForInput(value) {
-        const date = parseLocalDateTime(value);
-        if (!date) return "";
+function formatDateForInput(value) {
+  const date = parseLocalDateTime(value);
+  if (!date) return "";
 
-        const year = date.getFullYear();
-        const month = pad2(date.getMonth() + 1);
-        const day = pad2(date.getDate());
+  const year = date.getFullYear();
+  const month = pad2(date.getMonth() + 1);
+  const day = pad2(date.getDate());
+  const hour = pad2(date.getHours());
+  const minute = pad2(date.getMinutes());
 
-        return `${year}-${month}-${day}`;
-    }
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}
 
     function pad2(value) {
         return String(value).padStart(2, "0");
@@ -1579,11 +1581,11 @@ if (isTarget && status === "APPROVED" && isDeadlineFromParent(play)) {
             />
           </div>
 
-          <input
-            type="date"
-            class="lienzo-qheart-box__paydate"
-            value="${safePayDate}"
-          />
+<input
+  type="datetime-local"
+  class="lienzo-qheart-box__paydate"
+  value="${safePayDate}"
+/>
 
         </div>
 
@@ -2073,7 +2075,8 @@ const nextStatus = userIsAceClub ? "SENT" : "PENDING";
             `|concept:${draft.concept}` +
             `|amount:${draft.amount}` +
             `|currency:${currency}` +
-            `|payDate:${draft.payDate}`;
+            `|payDate:${draft.payDate.split("T")[0]}` +
+            `|payAt:${draft.payDate}`;
 
         const nextFlow = [...existingFlowChunks, paymentBlock].join(";");
 
