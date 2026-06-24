@@ -117,9 +117,19 @@
         return "";
     }
 
+    function getQQPicaEconomicLabel(play) {
+        const suit = normalizeSuit(play?.card_suit || play?.suit);
+        if (suit !== "SPADE") return "";
+        if (!playHasQHeartAttachment(play)) return "";
+
+        const status = String(play?.play_status || play?.status || "").trim().toUpperCase();
+        return status === "APPROVED" ? "Q♦" : "Q♥";
+    }
+
     function buildQRowHTML(play) {
         const playId = getPlayId(play);
         const cardLabel = getCardLabel(play);
+        const qqpicaEconomicLabel = getQQPicaEconomicLabel(play);
         const description = getDescription(play);
         const deckId = getDeckId(play);
         const deckName = String(play.deck_name || play.deckName || "").trim();
@@ -135,7 +145,13 @@
         data-has-qheart="${playHasQHeartAttachment(play) ? "1" : "0"}"
       >
         <div class="tablero-row__left">
-          <div class="tablero-row__card">${escapeHtml(cardLabel)}</div>
+                    <div class="tablero-row__card">
+                        <span>${escapeHtml(cardLabel)}</span>
+                        ${qqpicaEconomicLabel
+                                ? `<span class="tablero-row__card-secondary tablero-row__card-secondary--economic">${escapeHtml(qqpicaEconomicLabel)}</span>`
+                                : ""
+                        }
+                    </div>
         </div>
 
         <div class="tablero-row__center">
