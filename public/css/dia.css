@@ -76,3 +76,48 @@
   font-size: 22px;
   line-height: 1;
 }
+
+.dia__item-link {
+  gap: 4px;
+  padding: 1px 2px;
+}
+
+.dia__item-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+  flex: 0 0 auto;
+}
+
+.dia__item-symbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  line-height: 1;
+}
+
+.dia__item-text {
+  display: inline-block;
+  font-size: 12px;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.dia__item-link--compact {
+  padding: 0;
+}
+
+.dia__item-link--compact .dia__item-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.dia__item-link--compact .dia__item-symbol {
+  min-width: 22px;
+  font-size: 22px;
+}

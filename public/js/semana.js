@@ -35,6 +35,79 @@
     }
   }
 
+  function isBombDisabled(item) {
+  const code = String(item?.play_code || "").toUpperCase();
+  return code.includes("BOMB:DISABLED");
+}
+
+function isBombCancelled(item) {
+  const status = String(item?.play_status || "").trim().toUpperCase();
+  return status === "CANCELLED";
+}
+
+function isBombApproved(item) {
+  const status = String(item?.play_status || "").trim().toUpperCase();
+  return status === "APPROVED";
+}
+
+function isBombExploded(item) {
+  const status = String(item?.play_status || "").trim().toUpperCase();
+  if (status === "EXPLODED") return true;
+
+  const endValue = item?.end_date;
+  if (!endValue) return false;
+
+  const date = new Date(endValue);
+  if (Number.isNaN(date.getTime())) return false;
+
+  return Date.now() >= date.getTime() && !isBombDisabled(item);
+}
+
+function getSpadeIconSrc(item) {
+  const mode = String(item?.spade_mode || "").trim().toUpperCase();
+
+  if (mode === "APPOINTMENT") {
+    return "/assets/icons/Reloj60.gif";
+  }
+
+  if (mode === "DEADLINE") {
+    if (isBombCancelled(item)) {
+      return "/assets/icons/stop60.gif";
+    }
+
+    if (isBombApproved(item) || isBombDisabled(item)) {
+      return "/assets/icons/META60.gif";
+    }
+
+    if (isBombExploded(item)) {
+      return "/assets/icons/Boom80.gif";
+    }
+
+    return "/assets/icons/bombaRedonda60.gif";
+  }
+
+  return null;
+}
+
+function getPlayLeadingVisual(item) {
+  const suit = String(item?.card_suit || "").toUpperCase();
+
+  if (suit === "SPADE") {
+    const iconSrc = getSpadeIconSrc(item);
+    if (iconSrc) {
+      return {
+        type: "icon",
+        value: iconSrc
+      };
+    }
+  }
+
+  return {
+    type: "text",
+    value: getSuitSymbol(suit)
+  };
+}
+
   function escapeHtml(value) {
     return String(value || "")
       .replace(/&/g, "&amp;")
@@ -80,43 +153,59 @@ function getPlayHref(item) {
   return `/mazo.html?id=${encodeURIComponent(deckId)}`;
 }
 
-  function renderJotasBody(items = []) {
-    if (!items.length) {
-      return "";
-    }
 
-    const compactMode = items.length > 4;
 
-    return items.map((item) => {
-      const suit = item.card_suit;
-      const symbol = getSuitSymbol(suit);
-      const text =
-        item.text ||
-        item.play_text ||
-        item.description ||
-        "";
-      const deckName = item.deck_name || "";
-      const href = getPlayHref(item);
+function renderJotasBody(items = []) {
+  if (!items.length) {
+    return "";
+  }
 
-      const visibleLabel = compactMode
-        ? symbol
-        : `${symbol} ${text}`;
+  const compactMode = items.length > 4;
 
-      const tooltipLabel = deckName
-        ? `${deckName} — ${text}`
-        : text;
+  return items.map((item) => {
+    const leadingVisual = getPlayLeadingVisual(item);
+    const text =
+      item.text ||
+      item.play_text ||
+      item.description ||
+      "";
+    const deckName = item.deck_name || "";
+    const href = getPlayHref(item);
 
-      return `
+    const leadingHtml =
+      leadingVisual.type === "icon"
+        ? `
+          <img
+            class="dia__item-icon"
+            src="${leadingVisual.value}"
+            alt=""
+          />
+        `
+        : `
+          <span class="dia__item-symbol">
+            ${escapeHtml(leadingVisual.value)}
+          </span>
+        `;
+
+    const visibleLabel = compactMode
+      ? leadingHtml
+      : `${leadingHtml}<span class="dia__item-text">${escapeHtml(text)}</span>`;
+
+    const tooltipLabel = deckName
+      ? `${deckName} — ${text}`
+      : text;
+
+    return `
       <a
         class="dia__item-link ${compactMode ? "dia__item-link--compact" : ""}"
         href="${href}"
         title="${escapeHtml(tooltipLabel)}"
       >
-        ${escapeHtml(visibleLabel)}
+        ${visibleLabel}
       </a>
     `;
-    }).join("");
-  }
+  }).join("");
+}
 
   function renderSemana({
     mondayDate,
