@@ -72,7 +72,8 @@
   function isBombDisabled(play) {
     const parent = getParentPlay(play) || play;
     const code = String(parent?.play_code || play?.play_code || "");
-    return code.toUpperCase().includes("BOMB:DISABLED");
+    const flow = code.toUpperCase();
+    return flow.includes("BOMB:DISABLED") || flow.includes("BOMB:DONE");
   }
 
   function buildStampHtml(play) {
@@ -348,7 +349,7 @@
     }
 
     const currentCode = String(parent?.play_code || play?.play_code || "");
-    const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
+    const nextCode = appendFlowFlag(currentCode, "BOMB:DISABLED");
 
     const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
       method: "PATCH",
@@ -433,10 +434,10 @@ const playId = Number(targetPlay?.id || 0);
         disableBtn.disabled = true;
 
         const currentCode = String(targetPlay?.play_code || "");
-        const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
+        const nextCode = appendFlowFlag(currentCode, "BOMB:DONE");
 
         const ok = await patchBomb(playId, {
-          play_status: "APPROVED",
+          play_status: "DONE",
           play_code: nextCode
         });
 
@@ -452,7 +453,7 @@ const playId = Number(targetPlay?.id || 0);
         cancelBtn.disabled = true;
 
         const currentCode = String(targetPlay?.play_code || "");
-        const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
+        const nextCode = appendFlowFlag(currentCode, "BOMB:DISABLED");
 
         const ok = await patchBomb(playId, {
           play_status: "CANCELLED",
