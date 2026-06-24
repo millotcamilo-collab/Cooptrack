@@ -445,3 +445,47 @@ font-size: 1.5em;
   font-weight: 700;
   color: rgba(0,0,0,.75);
 }
+
+.lv2-mini-day {
+  position: relative;
+  z-index: 6;
+  width: 100%;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.15;
+}
+
+.lv2-mini-day__header {
+  margin-bottom: 4px;
+  padding: 0 2px;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.78);
+  text-transform: lowercase;
+}
+
+/* nuevo recuadro para las horas */
+.lv2-mini-day__body {
+  padding: 5px 6px;
+  border: 1px solid rgba(0, 0, 0, 0.24);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.42);
+  box-sizing: border-box;
+}
+
+.lv2-mini-day__row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 4px;
+  min-height: 16px;
+  align-items: center;
+}
+
+.lv2-mini-day__row + .lv2-mini-day__row {
+  margin-top: 2px;
+}
+
+.lv2-mini-day__row--active {
+  font-weight: 700;
+}

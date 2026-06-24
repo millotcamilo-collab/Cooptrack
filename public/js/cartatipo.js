@@ -126,36 +126,36 @@
       : "/assets/icons/reloj60.gif";
 
     return `
-    <div class="lv2-mini-day">
-      ${dayLabel ? `
-        <div class="lv2-mini-day__header">
-          ${escapeHtml(dayLabel)}
-        </div>
-      ` : ""}
+  <div class="lv2-mini-day">
+    ${dayLabel ? `
+      <div class="lv2-mini-day__header">
+        ${escapeHtml(dayLabel)}
+      </div>
+    ` : ""}
 
+    <div class="lv2-mini-day__body">
       <div class="lv2-mini-day__row">${escapeHtml(h1)}</div>
       <div class="lv2-mini-day__row">${escapeHtml(h2)}</div>
 
       <div class="lv2-mini-day__row lv2-mini-day__row--active">
         <span class="lv2-mini-day__hour">${escapeHtml(formatHour(date))}</span>
         <span class="lv2-mini-day__text">
-  <img
-    class="lv2-mini-day__activity-icon"
-    src="${activityIcon}"
-    alt=""
-  />
-  ${escapeHtml(play_text)}
-</span>
+          <img
+            class="lv2-mini-day__activity-icon"
+            src="${activityIcon}"
+            alt=""
+          />
+          ${escapeHtml(play_text)}
+        </span>
 
-${location ? `
-<span
-  class="lv2-mini-day__location"
-  title="${escapeHtml(location)}"
->
-  📍
-</span>
-` : ""}
-
+        ${location ? `
+          <span
+            class="lv2-mini-day__location"
+            title="${escapeHtml(location)}"
+          >
+            📍
+          </span>
+        ` : ""}
       </div>
 
       ${otherRows
@@ -165,13 +165,13 @@ ${location ? `
               ${item.hour ? `<span class="lv2-mini-day__hour">${escapeHtml(item.hour)}</span>` : ""}
               <span class="lv2-mini-day__text">${escapeHtml(item.play_text || "")}</span>
               ${item.location ? `
-<span
-  class="lv2-mini-day__location"
-  title="${escapeHtml(item.location)}"
->
-  📍
-</span>
-` : ""}
+                <span
+                  class="lv2-mini-day__location"
+                  title="${escapeHtml(item.location)}"
+                >
+                  📍
+                </span>
+              ` : ""}
             </div>
           `
         )
@@ -180,6 +180,7 @@ ${location ? `
       <div class="lv2-mini-day__row">${escapeHtml(h3)}</div>
       <div class="lv2-mini-day__row">${escapeHtml(h4)}</div>
     </div>
+  </div>
   `;
   }
 
