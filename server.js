@@ -1354,6 +1354,53 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
       [userId]
     );
 
+    // PayNow: Q♠ APPROVED con pay:QHEART y vencimiento dentro de los próximos 30 minutos
+    const esAhoraQHeartResult = await pool.query(
+      `
+      WITH qheart_candidates AS (
+        SELECT
+          p.deck_id,
+          p.id,
+          p.card_rank,
+          p.card_suit,
+          p.play_status,
+          p.play_code,
+          d.name AS deck_name,
+          p.created_by_user_id,
+          p.target_user_id,
+          COALESCE(
+            NULLIF((regexp_match(COALESCE(split_part(p.play_code, '§', 8), ''), 'payAt:([^;|§]+)'))[1], ''),
+            NULLIF((regexp_match(COALESCE(split_part(p.play_code, '§', 8), ''), 'payDate:([^;|§]+)'))[1], '')
+          ) AS payment_at
+        FROM plays p
+        LEFT JOIN decks d
+          ON d.id = p.deck_id
+        WHERE p.card_rank = 'Q'
+          AND p.card_suit = 'SPADE'
+          AND UPPER(COALESCE(p.play_status, '')) = 'APPROVED'
+          AND COALESCE(p.play_code, '') ILIKE '%pay:QHEART%'
+          AND COALESCE(p.play_code, '') NOT ILIKE '%settlement:PAID%'
+          AND COALESCE(p.play_code, '') NOT ILIKE '%settlement:COMPLAINED%'
+          AND (p.created_by_user_id = $1 OR p.target_user_id = $1)
+      )
+      SELECT
+        deck_id,
+        id,
+        card_rank,
+        card_suit,
+        play_status,
+        play_code,
+        deck_name,
+        created_by_user_id,
+        target_user_id
+      FROM qheart_candidates
+      WHERE payment_at IS NOT NULL
+        AND payment_at::timestamp BETWEEN NOW() AND NOW() + INTERVAL '30 minutes'
+      ORDER BY payment_at::timestamp ASC, id DESC
+      `,
+      [userId]
+    );
+
     // Bombas recibidas: Q♠ cuya J♠ madre es DEADLINE y está dentro de los próximos 30 minutos
     const esAhoraQResult = await pool.query(
       `
@@ -1423,7 +1470,7 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
 
     return res.json({
       ok: true,
-      esAhora: [...esAhoraJResult.rows, ...esAhoraQResult.rows],
+      esAhora: [...esAhoraJResult.rows, ...esAhoraQResult.rows, ...esAhoraQHeartResult.rows],
       teMandanAhora: teMandanAhoraResult.rows,
     });
   } catch (error) {
