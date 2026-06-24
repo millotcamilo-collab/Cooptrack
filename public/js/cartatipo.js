@@ -138,11 +138,21 @@ const dayHeader = getMiniDayHeaderParts(date);
 
     return `
   <div class="lv2-mini-day">
-    ${dayLabel ? `
-      <div class="lv2-mini-day__header">
-        ${escapeHtml(dayLabel)}
-      </div>
-    ` : ""}
+${dayHeader ? `
+  <div class="lv2-mini-day__header">
+    <span class="lv2-mini-day__header-part lv2-mini-day__header-part--dow">
+      ${escapeHtml(dayHeader.dow)}
+    </span>
+
+    <span class="lv2-mini-day__header-part lv2-mini-day__header-part--day">
+      ${escapeHtml(dayHeader.day)}
+    </span>
+
+    <span class="lv2-mini-day__header-part lv2-mini-day__header-part--month">
+      ${escapeHtml(dayHeader.month)}
+    </span>
+  </div>
+` : ""}
 
     <div class="lv2-mini-day__body">
       <div class="lv2-mini-day__row">${escapeHtml(h1)}</div>
