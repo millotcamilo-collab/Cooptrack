@@ -439,8 +439,8 @@ function bindBombActions(play, deckId) {
         return;
       }
 
-      window.location.reload();
-      return;
+window.location.href = "/almanaque.html";
+return;
     }
 
     if (cancelBtn) {
