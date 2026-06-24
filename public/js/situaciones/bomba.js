@@ -423,23 +423,25 @@
         return;
       }
 
-      if (disableBtn) {
-        disableBtn.disabled = true;
+if (disableBtn) {
+  disableBtn.disabled = true;
 
-        const currentCode = String(parent?.play_code || play?.play_code || "");
-        const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
+  const currentCode = String(parent?.play_code || play?.play_code || "");
+  const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
 
-        const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
+  const ok = await patchBomb(playId, {
+    play_status: "APPROVED",
+    play_code: nextCode
+  });
 
-        if (!ok) {
-          disableBtn.disabled = false;
-          return;
-        }
+  if (!ok) {
+    disableBtn.disabled = false;
+    return;
+  }
 
-        window.location.href = "/almanaque.html";
-        return;
-      }
-
+  window.location.href = "/almanaque.html";
+  return;
+}
       if (cancelBtn) {
         cancelBtn.disabled = true;
 
