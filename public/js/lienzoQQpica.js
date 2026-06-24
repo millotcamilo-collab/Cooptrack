@@ -1508,27 +1508,27 @@
   `;
   }
 
-function renderSourceActions(play) {
-  const status = String(play?.play_status || "").trim().toUpperCase();
-  const rank = normalizeRank(play?.card_rank || play?.rank);
-  const suit = normalizeSuit(play?.card_suit || play?.suit);
+  function renderSourceActions(play) {
+    const status = String(play?.play_status || "").trim().toUpperCase();
+    const rank = normalizeRank(play?.card_rank || play?.rank);
+    const suit = normalizeSuit(play?.card_suit || play?.suit);
 
-  const sendIcon = "/assets/icons/buzon60.gif";
-  const deleteIcon = "/assets/icons/papelera80.gif";
-  const awardIcon = "/assets/icons/award60oro.gif";
-  const complainIcon = "/assets/icons/ticket80g.gif";
+    const sendIcon = "/assets/icons/buzon60.gif";
+    const deleteIcon = "/assets/icons/papelera80.gif";
+    const awardIcon = "/assets/icons/award60oro.gif";
+    const complainIcon = "/assets/icons/ticket80g.gif";
 
-  const showSend =
-    rank === "Q" &&
-    suit === "SPADE" &&
-    status !== "SENT" &&
-    status !== "APPROVED" &&
-    status !== "REJECTED" &&
-    status !== "CANCELLED";
+    const showSend =
+      rank === "Q" &&
+      suit === "SPADE" &&
+      status !== "SENT" &&
+      status !== "APPROVED" &&
+      status !== "REJECTED" &&
+      status !== "CANCELLED";
 
-  const showSettlementActions = canShowSettlementActions(play, "COLOMBES");
+    const showSettlementActions = canShowSettlementActions(play, "COLOMBES");
 
-  return `
+    return `
     <div class="nuevo-mazo-target-actions nuevo-mazo-target-actions--top">
 
       ${showSend
@@ -1559,7 +1559,7 @@ function renderSourceActions(play) {
 
     </div>
   `;
-}
+  }
 
   function canCancelTargetPlay(play) {
     const status = String(play?.play_status || "").trim().toUpperCase();
@@ -2362,6 +2362,33 @@ ${showBombActions
 
   }
 
+  function renderPlayCardActions(play) {
+    const isSource = isCurrentUserSource(play);
+    const status = String(play?.play_status || "").trim().toUpperCase();
+
+    const sendIcon = "/assets/icons/buzon60.gif";
+    const deleteIcon = "/assets/icons/papelera80.gif";
+
+    if (
+      isSource &&
+      status !== "SENT" &&
+      status !== "APPROVED" &&
+      status !== "REJECTED" &&
+      status !== "CANCELLED"
+    ) {
+      return `
+      <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
+        <img src="${sendIcon}" alt="Enviar" />
+      </button>
+
+      <button id="lienzo-delete-btn" class="icon-btn" title="Borrar invitación">
+        <img src="${deleteIcon}" alt="Borrar invitación" />
+      </button>
+    `;
+    }
+
+    return "";
+  }
 
   function renderPlayCardBox(play, options = {}) {
     const parentPlay = getPlayById(play?.parent_play_id);
@@ -2413,7 +2440,8 @@ ${showBombActions
             text: location
           }
           : null
-      ].filter(Boolean)
+      ].filter(Boolean),
+      actionsHtml: renderPlayCardActions(play)
     });
   }
 
@@ -2424,7 +2452,6 @@ ${showBombActions
       user?.nickname || user?.full_name || user?.name || "Anfitrión";
 
     const scene = buildSourceCardsScene(play);
-    const showActionsHere = isCurrentUserSource(play);
 
     const qqState = getQQPicaState(play);
     const settlementTopbarIconHtml = renderSettlementTopbarIcon(play, "COLOMBES");
@@ -2439,13 +2466,9 @@ ${showBombActions
       `
         : "";
 
-    const actionsHtml =
-      (showActionsHere ? renderSourceActions(play) : "") +
-      settlementTopbarIconHtml;
-
     return `
     <section class="lienzo-tribune lienzo-tribune--source">
-${actionsHtml}
+
   <div class="lienzo-tribune__stage">
 ${parentJSpadeText
         ? `
