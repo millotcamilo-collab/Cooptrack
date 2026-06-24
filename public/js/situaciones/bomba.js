@@ -294,7 +294,7 @@
       actionsHtml: buildStampHtml(play)
     });
 
-content.innerHTML = `
+    content.innerHTML = `
   <section class="lienzo-tribune lienzo-tribune--target tribuna-single tribuna-single--amsterdam">
     <div class="lienzo-tribune__corporates"></div>
 
@@ -304,7 +304,7 @@ content.innerHTML = `
   </section>
 `;
 
-animateBombFigure(cardPlay.rank || cardPlay.card_rank);
+    animateBombFigure(cardPlay.rank || cardPlay.card_rank);
 
     if (actions) {
       actions.innerHTML = "";
@@ -400,69 +400,66 @@ animateBombFigure(cardPlay.rank || cardPlay.card_rank);
     return true;
   }
 
-function bindBombActions(play, deckId) {
-  const content = document.getElementById("tribuna-content") ||
-    document.getElementById("bomba-content");
+  function bindBombActions(play, deckId) {
+    const content = document.getElementById("tribuna-content") ||
+      document.getElementById("bomba-content");
 
-  if (!content) return;
+    if (!content) return;
 
-  content.onclick = async (event) => {
-    const disableBtn = event.target.closest("#bomba-disable-btn");
-    const cancelBtn = event.target.closest("#bomba-cancel-btn");
+    content.onclick = async (event) => {
+      const disableBtn = event.target.closest("#bomba-disable-btn");
+      const cancelBtn = event.target.closest("#bomba-cancel-btn");
 
-    if (!disableBtn && !cancelBtn) return;
+      if (!disableBtn && !cancelBtn) return;
 
-    event.preventDefault();
-    event.stopPropagation();
+      event.preventDefault();
+      event.stopPropagation();
 
-    const parent = getParentPlay(play) || play;
-    const playId = Number(parent?.id || play?.id || 0);
+      const parent = getParentPlay(play) || play;
+      const playId = Number(parent?.id || play?.id || 0);
 
-    if (!playId) {
-      alert("No se encontró la jugada de la bomba.");
-      return;
-    }
-
-    if (disableBtn) {
-      disableBtn.disabled = true;
-
-      const currentCode = String(parent?.play_code || play?.play_code || "");
-      const nextCode = appendFlowFlag(currentCode, "bomb:DONE");
-
-      const ok = await patchBomb(playId, {
-        play_status: "APPROVED",
-        play_code: nextCode
-      });
-
-      if (!ok) {
-        disableBtn.disabled = false;
+      if (!playId) {
+        alert("No se encontró la jugada de la bomba.");
         return;
       }
 
-window.location.href = "/almanaque.html";
-return;
-    }
+      if (disableBtn) {
+        disableBtn.disabled = true;
 
-    if (cancelBtn) {
-      cancelBtn.disabled = true;
+        const currentCode = String(parent?.play_code || play?.play_code || "");
+        const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
 
-      const currentCode = String(parent?.play_code || play?.play_code || "");
-      const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
+        const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
 
-      const ok = await patchBomb(playId, {
-        play_status: "CANCELLED",
-        play_code: nextCode
-      });
+        if (!ok) {
+          disableBtn.disabled = false;
+          return;
+        }
 
-      if (!ok) {
-        cancelBtn.disabled = false;
+        window.location.href = "/almanaque.html";
         return;
       }
 
-      window.location.reload();
-    }
-  };
-}
+      if (cancelBtn) {
+        cancelBtn.disabled = true;
+
+        const currentCode = String(parent?.play_code || play?.play_code || "");
+        const nextCode = appendFlowFlag(currentCode, "bomb:DISABLED");
+
+        const ok = await patchBomb(playId, {
+          play_status: "CANCELLED",
+          play_code: nextCode
+        });
+
+        if (!ok) {
+          cancelBtn.disabled = false;
+          return;
+        }
+
+        window.location.reload();
+      }
+    };
+  }
 
   async function initBomba() {
     const params = getParams();
