@@ -412,27 +412,14 @@
 
     // 🔥 Si el invitado está mirando una Q♠ recibida,
     // en Colombes solo debe ver la autoridad: A♣.
-    if (
-      currentUserIsTarget &&
-      rank === "Q" &&
-      suit === "SPADE" &&
-      ["SENT", "APPROVED", "REJECTED", "CANCELLED"].includes(status)
-    ) {
-      const aceClubTribune = resolveAuthorityTribuneForTarget(play);
-
-      const validatorOnlyHtml = aceClubTribune
-        ? renderUserTribune(
-          aceClubTribune,
-          getValidatorRoleCards(aceClubTribune)
-        )
-        : "";
-
-      return `
-    <div class="lienzo-tribunes lienzo-tribunes--colombes">
-      ${validatorOnlyHtml}
-    </div>
-  `;
-    }
+  if (
+  currentUserIsTarget &&
+  rank === "Q" &&
+  suit === "SPADE" &&
+  ["SENT", "APPROVED", "REJECTED", "CANCELLED"].includes(status)
+) {
+  return "";
+}
 
     const sourceTribune = renderSourcePlayerPanel(play);
 
