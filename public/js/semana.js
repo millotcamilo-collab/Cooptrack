@@ -67,7 +67,7 @@ function getSpadeIconSrc(item) {
   const mode = String(item?.spade_mode || "").trim().toUpperCase();
 
   if (mode === "APPOINTMENT") {
-    return "/assets/icons/Reloj60.gif";
+    return "/assets/icons/reloj60.gif";
   }
 
   if (mode === "DEADLINE") {
