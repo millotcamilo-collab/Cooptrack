@@ -183,11 +183,11 @@
 
         if (!deckId || !playId) return null;
 
-        if (suit === "SPADE") {
-            return hasQHeart
-                ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}`
-                : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}`;
-        }
+if (suit === "SPADE") {
+  return hasQHeart
+    ? `/amsterdam.html?situacion=QQPICA_ENTRA&deckId=${deckId}&playId=${playId}`
+    : `/amsterdam.html?situacion=QPICA_ENTRA&deckId=${deckId}&playId=${playId}`;
+}
 
         if (suit === "DIAMOND") {
             return `/lienzo.html?deckId=${deckId}&playId=${playId}`;
