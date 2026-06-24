@@ -59,7 +59,7 @@
   }
 
   function getMinutesUntilAhora(play) {
-    if (isPayNowCandidate(play)) {
+    if (isDentroDeVentanaPayNow(play, 30)) {
       const payDate = getPayNowDate(play);
       if (!payDate) return null;
 
@@ -69,6 +69,10 @@
 
       if (remaining <= 0) return 0;
       return Math.ceil(remaining / 60000);
+    }
+
+    if (!isDentroDeVentanaBomb(play, 30)) {
+      return null;
     }
 
     const date = getAhoraDate(play);
@@ -139,23 +143,29 @@
     return Number.isNaN(date.getTime()) ? null : date;
   }
 
-  function isDentroDeVentanaAhora(play, minutes = 30) {
-    if (isPayNowCandidate(play)) {
-      const payDate = getPayNowDate(play);
-      if (!payDate) return false;
+  function isDentroDeVentanaPayNow(play, minutes = 30) {
+    if (!isPayNowCandidate(play)) return false;
 
-      const now = Date.now();
-      const start = payDate.getTime();
-      const end = start + minutes * 60 * 1000;
+    const payDate = getPayNowDate(play);
+    if (!payDate) return false;
 
-      return now >= start && now <= end;
-    }
+    const now = Date.now();
+    const start = payDate.getTime();
+    const end = start + minutes * 60 * 1000;
 
+    return now >= start && now <= end;
+  }
+
+  function isDentroDeVentanaBomb(play, minutes = 30) {
     const date = getAhoraDate(play);
     if (!date) return false;
 
     const diff = date.getTime() - Date.now();
     return diff >= 0 && diff <= minutes * 60 * 1000;
+  }
+
+  function isDentroDeVentanaAhora(play, minutes = 30) {
+    return isDentroDeVentanaPayNow(play, minutes) || isDentroDeVentanaBomb(play, minutes);
   }
 
   function findAlgoAhora(items = []) {
@@ -210,7 +220,7 @@
 
     if (!deckId || !playId) return null;
 
-    if (rank === "Q" && suit === "SPADE" && isPayNowCandidate(play)) {
+    if (rank === "Q" && suit === "SPADE" && isDentroDeVentanaPayNow(play, 30)) {
       return `/payNow.html?deckId=${deckId}&playId=${playId}`;
     }
 
