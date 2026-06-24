@@ -2445,7 +2445,7 @@ ${showBombActions
 
     return `
     <section class="lienzo-tribune lienzo-tribune--source">
-
+${actionsHtml}
   <div class="lienzo-tribune__stage">
 ${parentJSpadeText
         ? `
