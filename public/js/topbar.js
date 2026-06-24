@@ -59,6 +59,18 @@
   }
 
   function getMinutesUntilAhora(play) {
+    if (isPayNowCandidate(play)) {
+      const payDate = getPayNowDate(play);
+      if (!payDate) return null;
+
+      const windowMs = 30 * 60 * 1000;
+      const endsAt = payDate.getTime() + windowMs;
+      const remaining = endsAt - Date.now();
+
+      if (remaining <= 0) return 0;
+      return Math.ceil(remaining / 60000);
+    }
+
     const date = getAhoraDate(play);
     if (!date) return null;
 
@@ -86,7 +98,33 @@
   }
 
   function isAlgoAhoraCandidate(play) {
-    return isPicaConActividad(play) || isQDiamanteConFecha(play);
+    return isPicaConActividad(play) || isQDiamanteConFecha(play) || isPayNowCandidate(play);
+  }
+
+  function getPayNowDate(play) {
+    const parsed = parsePlayCode(play?.play_code || "");
+    const meta = parseFlowMetadata(parsed.flow);
+    const payment = meta?.payment || null;
+
+    if (!payment) return null;
+
+    const value = String(payment.payAt || payment.payDate || "").trim();
+    if (!value) return null;
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  function isPayNowCandidate(play) {
+    const rank = String(play.card_rank || play.rank || "").toUpperCase();
+    const suit = String(play.card_suit || play.suit || "").toUpperCase();
+    const status = String(play.play_status || play.status || "").toUpperCase();
+
+    if (rank !== "Q" || suit !== "SPADE") return false;
+    if (status !== "APPROVED") return false;
+    if (playHasSettlement(play)) return false;
+
+    return !!getPayNowDate(play);
   }
 
   function getAhoraDate(play) {
@@ -102,6 +140,17 @@
   }
 
   function isDentroDeVentanaAhora(play, minutes = 30) {
+    if (isPayNowCandidate(play)) {
+      const payDate = getPayNowDate(play);
+      if (!payDate) return false;
+
+      const now = Date.now();
+      const start = payDate.getTime();
+      const end = start + minutes * 60 * 1000;
+
+      return now >= start && now <= end;
+    }
+
     const date = getAhoraDate(play);
     if (!date) return false;
 
@@ -160,6 +209,10 @@
     const spadeMode = String(play.spade_mode || play.parent_spade_mode || "").toUpperCase();
 
     if (!deckId || !playId) return null;
+
+    if (rank === "Q" && suit === "SPADE" && isPayNowCandidate(play)) {
+      return `/payNow.html?deckId=${deckId}&playId=${playId}`;
+    }
 
     if (
       suit === "SPADE" &&
