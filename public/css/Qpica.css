@@ -227,10 +227,17 @@
 .lienzo-jpica-invitations-list .tablero-row--qpike {
   background: #fffdf8 !important;
   color: #111 !important;
+  font-family: var(--font-text);
 }
 
 .lienzo-jpica-invitations-list .tablero-row--qpike * {
   color: inherit;
+}
+
+.lienzo-jpica-invitations-list .tablero-row--qpike .qpike-row__rank,
+.lienzo-jpica-invitations-list .tablero-row--qpike .qpike-row__suit,
+.lienzo-jpica-invitations-list .tablero-row--qpike .qpike-row__extra-card {
+  font-family: var(--font-card);
 }
 
 .lienzo-jpica-invitations-list .tablero-row--qpike .qpike-row__suit--spade {
