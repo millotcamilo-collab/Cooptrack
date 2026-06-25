@@ -782,6 +782,18 @@ function formatDateForInput(value) {
                 const minute = Number(localDateTimeMatch[5]);
                 return new Date(year, month, day, hour, minute, 0, 0);
             }
+
+            const pgDateTimeMatch = trimmed.match(
+                /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$/
+            );
+            if (pgDateTimeMatch) {
+                const year = Number(pgDateTimeMatch[1]);
+                const month = Number(pgDateTimeMatch[2]) - 1;
+                const day = Number(pgDateTimeMatch[3]);
+                const hour = Number(pgDateTimeMatch[4]);
+                const minute = Number(pgDateTimeMatch[5]);
+                return new Date(year, month, day, hour, minute, 0, 0);
+            }
         }
 
         const parsed = new Date(value);
