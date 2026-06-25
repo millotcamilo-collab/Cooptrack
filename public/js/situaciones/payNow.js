@@ -486,7 +486,7 @@
     });
   }
 
-  function renderQHeartEconomicCard(play) {
+  function renderQDiamondEconomicCard(play) {
     const payment = parseQQHeartPayment(play);
     const dueAt = payment?.payAt || payment?.payDate || "";
 
@@ -516,7 +516,7 @@
       card_rank: "Q",
       suit: "DIAMOND",
       card_suit: "DIAMOND",
-      title: "Q\u2665 econ\u00f3mica",
+      title: "Q\u2666 econ\u00f3mica",
       metas,
       play_text: "",
       showOwner: false,
@@ -563,14 +563,16 @@
         <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
           <div class="amsterdam-card-stack">
             <div class="amsterdam-card-stack__primary">
-              ${renderMotherCard(play)}
+              <div class="paynow-layer paynow-layer--j">
+                ${renderMotherCard(play)}
+              </div>
 
-              <div class="qpica-q-wrapper qpica-q-wrapper--open">
+              <div class="qpica-q-wrapper qpica-q-wrapper--open paynow-layer paynow-layer--q">
                 ${renderQSpadeCard(play)}
               </div>
 
-              <div class="qpica-q-wrapper qpica-q-wrapper--open qqpica-qheart-wrapper">
-                ${renderQHeartEconomicCard(play)}
+              <div class="qpica-q-wrapper qpica-q-wrapper--open qqpica-qheart-wrapper paynow-layer paynow-layer--economic">
+                ${renderQDiamondEconomicCard(play)}
               </div>
             </div>
           </div>

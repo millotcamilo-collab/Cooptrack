@@ -223,6 +223,41 @@ top: 20px;
   z-index: 3;
 }
 
+.tribuna-page--paynow .amsterdam-card-stack {
+  position: relative;
+  width: var(--lv2-card-w);
+  min-height: calc(var(--lv2-card-h) * 2.65);
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+
+.tribuna-page--paynow .lienzo-tribune {
+  min-height: calc(var(--lv2-card-h) * 2.75);
+}
+
+.tribuna-page--paynow .amsterdam-card-stack__primary {
+  position: absolute;
+  left: 0;
+  top: 20px;
+  z-index: 2;
+}
+
+.tribuna-page--paynow .paynow-layer {
+  position: relative;
+}
+
+.tribuna-page--paynow .paynow-layer--j {
+  z-index: 1;
+}
+
+.tribuna-page--paynow .paynow-layer--q {
+  z-index: 2;
+}
+
+.tribuna-page--paynow .paynow-layer--economic {
+  z-index: 3;
+}
+
 .qpica-animation {
   position: absolute;
   pointer-events: none;
