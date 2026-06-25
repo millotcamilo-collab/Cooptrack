@@ -45,9 +45,13 @@ function isBombCancelled(item) {
   return status === "CANCELLED";
 }
 
-function isBombApproved(item) {
+function isBombDone(item) {
+  const code = String(item?.play_code || "").toUpperCase();
+
+  if (code.includes("BOMB:DONE")) return true;
+
   const status = String(item?.play_status || "").trim().toUpperCase();
-  return status === "APPROVED";
+  return status === "DONE";
 }
 
 function isBombExploded(item) {
@@ -75,7 +79,7 @@ function getSpadeIconSrc(item) {
       return "/assets/icons/stop60.gif";
     }
 
-    if (isBombApproved(item) || isBombDisabled(item)) {
+    if (isBombDone(item) || isBombDisabled(item)) {
       return "/assets/icons/META60.gif";
     }
 
