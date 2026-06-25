@@ -206,7 +206,7 @@
 
 .bitacorabar__filter-btn--heart,
 .bitacorabar__filter-btn--diamond {
-  color: #c62828;
+  color: var(--ct-red);
 }
 
 .bitacorabar__filter-btn--spade,

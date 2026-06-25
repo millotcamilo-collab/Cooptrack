@@ -66,7 +66,7 @@
   line-height: 1;
   white-space: nowrap;
 
-  color: #c0392b; /* rojo diamante */
+  color: var(--ct-red); /* rojo diamante */
 }
 
 .tablero-row--jtrebol .tablero-row__mode-read,

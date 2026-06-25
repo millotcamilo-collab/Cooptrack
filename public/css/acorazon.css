@@ -14,7 +14,7 @@
 
 .ace-owner-card__corner {
   position: absolute;
-  color: #c00000;
+  color: var(--ct-red);
   font-weight: 700;
   line-height: 1;
   text-align: center;
@@ -136,7 +136,7 @@
 }
 
 .ace-owner-card__suit {
-  color: #c00000;
+  color: var(--ct-red);
   font-weight: 700;
   text-align: center;
 }

@@ -113,7 +113,7 @@
 
 .tribuna-error {
   padding: 16px;
-  color: #7d0000;
+  color: var(--ct-red-dark);
   text-align: center;
 }
 

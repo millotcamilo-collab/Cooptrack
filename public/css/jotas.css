@@ -39,13 +39,13 @@
 .tablero-row--jtrebol .tablero-row__amount-card {
   font-family: var(--font-card);
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1;
   white-space: nowrap;
 }
 
 .tablero-row--jcorazon .tablero-row__card {
-  color: #c62828;
+  color: var(--ct-red);
 }
 
 .tablero-row--bitacora .tablero-row__center,
@@ -103,7 +103,7 @@
 }
 
 .tablero-row__card-secondary--economic {
-  color: #c62828;
+  color: var(--ct-red);
 }
 
 .tablero-row__stamp {
@@ -133,7 +133,7 @@
 
 .tablero-row--jcorazon .tablero-row__card,
 .tablero-row--jdiamante .tablero-row__card {
-  color: #c62828;
+  color: var(--ct-red);
 }
 
 .tablero-row--bitacora .tablero-row__amount-card,
@@ -156,12 +156,12 @@
 .tablero-row--bitacora .tablero-row__amount-view {
   font-family: var(--font-card);
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1;
 }
 
 .tablero-row__economic--debit {
-  color: #c0392b;
+  color: var(--ct-red);
 }
 
 .tablero-row__economic--credit {
@@ -170,7 +170,7 @@
 
 .tablero-row__side-label {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }

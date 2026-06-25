@@ -221,7 +221,7 @@
 }
 
 .tablero-row--qpike .qpike-row__suit--red {
-  color: #c62828;
+  color: var(--ct-red);
 }
 
 .lienzo-jpica-invitations-list .tablero-row--qpike {
@@ -245,5 +245,5 @@
 }
 
 .lienzo-jpica-invitations-list .tablero-row--qpike .qpike-row__suit--red {
-  color: #c62828 !important;
+  color: var(--ct-red) !important;
 }

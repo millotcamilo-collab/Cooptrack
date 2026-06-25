@@ -86,7 +86,7 @@
   font-size: 2rem;
   font-weight: 700;
   line-height: 1;
-  color: #7d0000;
+  color: var(--ct-red-dark);
 }
 
 .placard__maincard-suit {
@@ -145,7 +145,7 @@
 }
 
 .placard__currency-suit--red {
-  color: #c00000;
+  color: var(--ct-red);
 }
 
 .placard__currency-suit--black {

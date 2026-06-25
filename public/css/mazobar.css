@@ -132,7 +132,7 @@
   font-size: 2rem;
   font-weight: 700;
   line-height: 1;
-  color: #7d0000;
+  color: var(--ct-red-dark);
 }
 
 .mazobar__title-suit,
@@ -145,7 +145,7 @@
   width: auto;
   height: auto;
   margin: 0 4px;
-  color: #c00000;
+  color: var(--ct-red);
 }
 
 .mazobar__title-name {
@@ -161,7 +161,7 @@
 
 .mazobar__balance-value {
   font-size: 1rem;
-  color: #7d0000;
+  color: var(--ct-red-dark);
   font-weight: 500;
 }
 
@@ -234,7 +234,7 @@
 [data-command-suit="DIAMOND"],
 [data-admin-suit="HEART"],
 [data-admin-suit="DIAMOND"] {
-  color: #c00000;
+  color: var(--ct-red);
 }
 
 [data-command-suit="SPADE"],

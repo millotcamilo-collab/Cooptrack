@@ -135,7 +135,7 @@
 .tablero-row--ak .admin-row__rank--diamond,
 .tablero-row--ak .admin-row__suit--heart,
 .tablero-row--ak .admin-row__suit--diamond {
-  color: #c0392b;
+  color: var(--ct-red);
 }
 
 .tablero-row--ak .tablero-row__center {

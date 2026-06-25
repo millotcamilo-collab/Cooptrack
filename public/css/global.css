@@ -3,6 +3,8 @@
   /* fuente para texto general y para las cartas, respectivamente */
   --font-text: Times New Roman, "Arial", serif;
   --font-card:  Times New Roman, "Arial", serif;
+  --ct-red: #c00000;
+  --ct-red-dark: #7d0000;
   --page-padding-x: 12px;
   --page-padding-top: 10px;
 }
