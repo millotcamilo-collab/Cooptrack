@@ -208,6 +208,22 @@
   white-space: nowrap;
 }
 
+.tablero-row--qpike .qpike-row__rank,
+.tablero-row--qpike .qpike-row__suit {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  font-family: inherit;
+}
+
+.tablero-row--qpike .qpike-row__suit--spade {
+  color: #111;
+}
+
+.tablero-row--qpike .qpike-row__suit--red {
+  color: #c62828;
+}
+
 .lienzo-jpica-invitations-list .tablero-row--qpike {
   background: #fffdf8 !important;
   color: #111 !important;
@@ -215,4 +231,12 @@
 
 .lienzo-jpica-invitations-list .tablero-row--qpike * {
   color: inherit;
+}
+
+.lienzo-jpica-invitations-list .tablero-row--qpike .qpike-row__suit--spade {
+  color: #111 !important;
+}
+
+.lienzo-jpica-invitations-list .tablero-row--qpike .qpike-row__suit--red {
+  color: #c62828 !important;
 }

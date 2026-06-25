@@ -104,16 +104,18 @@
     const meta = parseFlowMetadata(parsed.flow);
     const payment = meta.payment;
 
-    let qExtraText = "";
+    let qSuitsHtml = `<span class="qpike-row__suit qpike-row__suit--spade">♠</span>`;
     let proposalHtml = "";
 
-    if (payment) {
-      const qSuit =
-        status === "APPROVED"
-          ? "♦"
-          : "♥";
+    function getEconomicSuit(statusValue) {
+      const normalized = String(statusValue || "").toUpperCase();
+      const acceptedStatuses = ["APPROVED", "DONE", "QUIT"];
+      return acceptedStatuses.includes(normalized) ? "♦" : "♥";
+    }
 
-      qExtraText = `<span class="qpike-row__extra-card qpike-row__extra-card--red">Q${qSuit}</span>`;
+    if (payment) {
+      const economicSuit = getEconomicSuit(status);
+      qSuitsHtml += `<span class="qpike-row__suit qpike-row__suit--red">${economicSuit}</span>`;
 
       const currency = String(payment.currency || "").trim();
       const amount = String(payment.amount || "").trim();
@@ -139,8 +141,8 @@
     >
       <div class="tablero-row__left">
         <div class="tablero-row__card-wrap">
-          <span class="tablero-row__card">Q♠</span>
-          ${qExtraText}
+          <span class="tablero-row__card qpike-row__rank">Q</span>
+          ${qSuitsHtml}
         </div>
       </div>
 
