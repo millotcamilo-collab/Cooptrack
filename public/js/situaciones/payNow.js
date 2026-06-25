@@ -551,7 +551,7 @@
       >
         <img
           class="placard__talud-trigger-icon"
-          src="/assets/icons/sellopostal60.gif"
+          src="/assets/icons/sellopostal120.gif"
           alt="Talud"
         />
       </button>

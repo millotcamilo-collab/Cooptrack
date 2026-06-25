@@ -706,38 +706,76 @@ async function stampPlayIfNeeded(client, play, options = {}) {
 
 const playMessagesSchemaCache = {
   loaded: false,
+  tableSchema: null,
+  attachmentsTableSchema: null,
   columns: new Set(),
   hasAttachmentsTable: false,
 };
 
+function quoteSqlIdent(value) {
+  return `"${String(value || '').replace(/"/g, '""')}"`;
+}
+
+function getQualifiedTableName(schemaName, tableName) {
+  if (!schemaName) return quoteSqlIdent(tableName);
+  return `${quoteSqlIdent(schemaName)}.${quoteSqlIdent(tableName)}`;
+}
+
 async function loadPlayMessagesSchema(client) {
   if (playMessagesSchemaCache.loaded) return playMessagesSchemaCache;
+
+  const playMessagesTableResult = await client.query(
+    `
+    SELECT table_schema
+    FROM information_schema.tables
+    WHERE table_name = 'play_messages'
+    ORDER BY CASE WHEN table_schema = 'public' THEN 0 ELSE 1 END, table_schema ASC
+    LIMIT 1
+    `
+  );
+
+  const playMessagesSchema = playMessagesTableResult.rows[0]?.table_schema || null;
+
+  if (!playMessagesSchema) {
+    playMessagesSchemaCache.loaded = true;
+    playMessagesSchemaCache.tableSchema = null;
+    playMessagesSchemaCache.attachmentsTableSchema = null;
+    playMessagesSchemaCache.columns = new Set();
+    playMessagesSchemaCache.hasAttachmentsTable = false;
+    return playMessagesSchemaCache;
+  }
 
   const columnsResult = await client.query(
     `
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = 'public'
+    WHERE table_schema = $1
       AND table_name = 'play_messages'
-    `
+    `,
+    [playMessagesSchema]
   );
 
-  const tableResult = await client.query(
+  const attachmentsTableResult = await client.query(
     `
-    SELECT EXISTS (
-      SELECT 1
-      FROM information_schema.tables
-      WHERE table_schema = 'public'
-        AND table_name = 'play_message_attachments'
-    ) AS exists
+    SELECT table_schema
+    FROM information_schema.tables
+    WHERE table_name = 'play_message_attachments'
+    ORDER BY CASE WHEN table_schema = $1 THEN 0 WHEN table_schema = 'public' THEN 1 ELSE 2 END, table_schema ASC
+    LIMIT 1
     `
+    ,
+    [playMessagesSchema]
   );
+
+  const attachmentsSchema = attachmentsTableResult.rows[0]?.table_schema || null;
 
   playMessagesSchemaCache.loaded = true;
+  playMessagesSchemaCache.tableSchema = playMessagesSchema;
+  playMessagesSchemaCache.attachmentsTableSchema = attachmentsSchema;
   playMessagesSchemaCache.columns = new Set(
     (columnsResult.rows || []).map((row) => String(row.column_name || '').trim())
   );
-  playMessagesSchemaCache.hasAttachmentsTable = Boolean(tableResult.rows[0]?.exists);
+  playMessagesSchemaCache.hasAttachmentsTable = Boolean(attachmentsSchema);
 
   return playMessagesSchemaCache;
 }
@@ -2450,17 +2488,63 @@ app.get('/plays/:id/messages', requireAuth, async (req, res) => {
         });
       }
 
+      const playRefColumn = pickExistingPlayMessagesColumn(schema.columns, [
+        'play_id',
+        'source_play_id',
+        'parent_play_id',
+        'playid',
+      ]);
+      const authorColumn = pickExistingPlayMessagesColumn(schema.columns, [
+        'author_user_id',
+        'created_by_user_id',
+        'sender_user_id',
+        'user_id',
+      ]);
+      const createdAtColumn = pickExistingPlayMessagesColumn(schema.columns, [
+        'created_at',
+        'createdat',
+        'inserted_at',
+      ]) || 'created_at';
+      const idColumn = pickExistingPlayMessagesColumn(schema.columns, [
+        'id',
+        'message_id',
+      ]) || 'id';
+
+      if (!playRefColumn || !authorColumn) {
+        return res.json({
+          ok: true,
+          play: {
+            id: Number(play.id),
+            deck_id: Number(play.deck_id || 0),
+            play_text: play.play_text || '',
+            card_rank: play.card_rank || '',
+            card_suit: play.card_suit || '',
+            play_status: play.play_status || '',
+          },
+          isPublic,
+          participants: [],
+          messages: [],
+          warning: 'Schema de talud incompleto (play/author reference)'
+        });
+      }
+
+      const playMessagesTableName = getQualifiedTableName(schema.tableSchema, 'play_messages');
+
       messagesResult = await client.query(
         `
         SELECT
           pm.*,
+          pm.${quoteSqlIdent(idColumn)} AS message_primary_id,
+          pm.${quoteSqlIdent(playRefColumn)} AS message_play_ref,
+          pm.${quoteSqlIdent(createdAtColumn)} AS message_created_at,
+          pm.${quoteSqlIdent(authorColumn)} AS message_author_user_id,
           author.nickname AS author_nickname,
           author.profile_photo_url AS author_profile_photo_url
-        FROM play_messages pm
+        FROM ${playMessagesTableName} pm
         LEFT JOIN users author
-          ON author.id = pm.author_user_id
-        WHERE pm.play_id = $1
-        ORDER BY pm.created_at ASC, pm.id ASC
+          ON author.id = pm.${quoteSqlIdent(authorColumn)}
+        WHERE pm.${quoteSqlIdent(playRefColumn)} = $1
+        ORDER BY pm.${quoteSqlIdent(createdAtColumn)} ASC, pm.${quoteSqlIdent(idColumn)} ASC
         `,
         [playId]
       );
@@ -2505,10 +2589,15 @@ app.get('/plays/:id/messages', requireAuth, async (req, res) => {
     if (schema.hasAttachmentsTable && messagesResult.rows.length) {
       try {
         const messageIds = messagesResult.rows
-          .map((row) => Number(row.id || 0))
+          .map((row) => Number(row.message_primary_id || row.id || 0))
           .filter((id) => id > 0);
 
         if (messageIds.length) {
+          const attachmentsTableName = getQualifiedTableName(
+            schema.attachmentsTableSchema,
+            'play_message_attachments'
+          );
+
           const attachmentsResult = await client.query(
             `
             SELECT
@@ -2519,7 +2608,7 @@ app.get('/plays/:id/messages', requireAuth, async (req, res) => {
               mime_type,
               file_size,
               created_at
-            FROM play_message_attachments
+            FROM ${attachmentsTableName}
             WHERE message_id = ANY($1::bigint[])
             ORDER BY id ASC
             `,
@@ -2552,19 +2641,19 @@ app.get('/plays/:id/messages', requireAuth, async (req, res) => {
     const usersMap = await fetchUsersMapByIds(client, participants);
 
     const messages = messagesResult.rows.map((row) => {
-      const authorId = Number(row.author_user_id || 0);
+      const authorId = Number(row.message_author_user_id || row.author_user_id || 0);
       const userFromMap = usersMap[authorId] || null;
       const resolvedText = textColumn
         ? String(row[textColumn] || '')
         : String(row.message_text || row.message || row.text || row.body || row.content || '');
 
       return {
-        id: Number(row.id || 0),
-        play_id: Number(row.play_id || playId),
+        id: Number(row.message_primary_id || row.id || 0),
+        play_id: Number(row.message_play_ref || row.play_id || playId),
         author_user_id: authorId,
         text: resolvedText,
         is_system: Boolean(row.is_system),
-        created_at: row.created_at,
+        created_at: row.message_created_at || row.created_at,
         author_nickname:
           row.author_nickname ||
           userFromMap?.nickname ||
@@ -2573,7 +2662,7 @@ app.get('/plays/:id/messages', requireAuth, async (req, res) => {
           row.author_profile_photo_url ||
           userFromMap?.profile_photo_url ||
           '/assets/icons/singeta120.gif',
-        attachments: attachmentsByMessageId[Number(row.id || 0)] || [],
+        attachments: attachmentsByMessageId[Number(row.message_primary_id || row.id || 0)] || [],
       };
     });
 
@@ -2654,6 +2743,12 @@ app.post('/plays/:id/messages', requireAuth, async (req, res) => {
       return res.status(503).json({ ok: false, error: 'Talud no disponible aun' });
     }
 
+    const playRefColumn = pickExistingPlayMessagesColumn(schema.columns, [
+      'play_id',
+      'source_play_id',
+      'parent_play_id',
+      'playid',
+    ]);
     const authorColumn = pickExistingPlayMessagesColumn(schema.columns, [
       'author_user_id',
       'created_by_user_id',
@@ -2668,11 +2763,11 @@ app.post('/plays/:id/messages', requireAuth, async (req, res) => {
       'content',
     ]);
 
-    if (!authorColumn || !textColumn) {
+    if (!playRefColumn || !authorColumn || !textColumn) {
       return res.status(503).json({ ok: false, error: 'Schema de talud incompleto' });
     }
 
-    const insertColumns = ['play_id', authorColumn, textColumn];
+    const insertColumns = [playRefColumn, authorColumn, textColumn];
     const values = [playId, userId, messageText];
 
     if (schema.columns.has('is_system')) {
@@ -2682,8 +2777,10 @@ app.post('/plays/:id/messages', requireAuth, async (req, res) => {
 
     const placeholders = values.map((_, index) => `$${index + 1}`);
 
+    const playMessagesTableName = getQualifiedTableName(schema.tableSchema, 'play_messages');
+
     const insertSql = `
-      INSERT INTO play_messages (${insertColumns.join(', ')})
+      INSERT INTO ${playMessagesTableName} (${insertColumns.map((name) => quoteSqlIdent(name)).join(', ')})
       VALUES (${placeholders.join(', ')})
       RETURNING *
     `;
@@ -2702,9 +2799,14 @@ app.post('/plays/:id/messages', requireAuth, async (req, res) => {
         if (!fileUrl) continue;
 
         try {
+          const attachmentsTableName = getQualifiedTableName(
+            schema.attachmentsTableSchema,
+            'play_message_attachments'
+          );
+
           const attachmentResult = await client.query(
             `
-            INSERT INTO play_message_attachments (
+            INSERT INTO ${attachmentsTableName} (
               message_id,
               file_url,
               file_name,
@@ -2759,7 +2861,7 @@ app.post('/plays/:id/messages', requireAuth, async (req, res) => {
       ok: true,
       message: {
         id: insertedMessageId,
-        play_id: Number(insertedMessage?.play_id || playId),
+        play_id: Number(insertedMessage?.[playRefColumn] || insertedMessage?.play_id || playId),
         author_user_id: Number(insertedMessage?.[authorColumn] || userId),
         text: resolvedText,
         is_system: Boolean(insertedMessage?.is_system),
