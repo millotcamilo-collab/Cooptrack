@@ -1163,7 +1163,9 @@
   function getQQPicaDisplayedSuit(play) {
     const status = String(play?.play_status || "").trim().toUpperCase();
 
-    if (status === "APPROVED") {
+    const acceptedStatuses = ["APPROVED", "DONE", "QUIT"];
+
+    if (acceptedStatuses.includes(status)) {
       return "DIAMOND";
     }
 
