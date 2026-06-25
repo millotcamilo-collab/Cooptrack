@@ -772,7 +772,7 @@ function formatDateForInput(value) {
             }
 
             const localDateTimeMatch = trimmed.match(
-                /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/
+                /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
             );
             if (localDateTimeMatch) {
                 const year = Number(localDateTimeMatch[1]);
@@ -783,15 +783,28 @@ function formatDateForInput(value) {
                 return new Date(year, month, day, hour, minute, 0, 0);
             }
 
-            const pgDateTimeMatch = trimmed.match(
-                /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$/
+            const hasExplicitTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(trimmed);
+
+            if (hasExplicitTimezone) {
+                const normalized = trimmed.includes(" ")
+                    ? trimmed.replace(" ", "T")
+                    : trimmed;
+
+                const parsedWithTimezone = new Date(normalized);
+                if (!Number.isNaN(parsedWithTimezone.getTime())) {
+                    return parsedWithTimezone;
+                }
+            }
+
+            const pgLocalDateTimeMatch = trimmed.match(
+                /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})(?::\d{2})?(?:\.\d+)?$/
             );
-            if (pgDateTimeMatch) {
-                const year = Number(pgDateTimeMatch[1]);
-                const month = Number(pgDateTimeMatch[2]) - 1;
-                const day = Number(pgDateTimeMatch[3]);
-                const hour = Number(pgDateTimeMatch[4]);
-                const minute = Number(pgDateTimeMatch[5]);
+            if (pgLocalDateTimeMatch) {
+                const year = Number(pgLocalDateTimeMatch[1]);
+                const month = Number(pgLocalDateTimeMatch[2]) - 1;
+                const day = Number(pgLocalDateTimeMatch[3]);
+                const hour = Number(pgLocalDateTimeMatch[4]);
+                const minute = Number(pgLocalDateTimeMatch[5]);
                 return new Date(year, month, day, hour, minute, 0, 0);
             }
         }
