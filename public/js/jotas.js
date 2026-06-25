@@ -30,11 +30,24 @@
     const raw = String(value ?? "").trim();
     if (!raw) return null;
 
-    const normalized = raw.replace(/,/g, ".").replace(/[^0-9+\-.]/g, "");
+    const normalizedMinus = raw
+      .replace(/−/g, "-")
+      .replace(/—/g, "-")
+      .replace(/–/g, "-")
+      .trim();
+
+    const isBracketNegative = /^\(.*\)$/.test(normalizedMinus);
+
+    const base = isBracketNegative
+      ? normalizedMinus.replace(/^\(/, "").replace(/\)$/, "")
+      : normalizedMinus;
+
+    const normalized = base.replace(/,/g, ".").replace(/[^0-9+\-.]/g, "");
     const parsed = Number(normalized);
 
     if (Number.isNaN(parsed)) return null;
-    return parsed;
+
+    return isBracketNegative ? -Math.abs(parsed) : parsed;
   }
 
   function parsePaymentFromPlayCode(playCode) {
@@ -111,6 +124,46 @@
     return ["HEART", "SPADE", "CLUB"];
   }
 
+  function getContabilidadEntryKey(play) {
+    if (play.__entryType === "QQPICA") {
+      const payment = play.__payment || {};
+      const deckId = Number(play.deck_id || 0);
+      const parentId = Number(play.parent_play_id || 0);
+      const createdBy = Number(play.created_by_user_id || 0);
+      const target = Number(play.target_user_id || 0);
+      const concept = String(payment.concept || "").trim();
+      const amount = String(payment.amount || "").trim();
+      const payDate = String(payment.payDate || payment.payAt || "").trim();
+
+      return [
+        "QQPICA",
+        deckId,
+        parentId,
+        createdBy,
+        target,
+        concept,
+        amount,
+        payDate
+      ].join("|");
+    }
+
+    return `PLAY:${Number(play.id || 0)}`;
+  }
+
+  function dedupeContabilidadEntries(entries) {
+    const seen = new Set();
+    const output = [];
+
+    entries.forEach((entry) => {
+      const key = getContabilidadEntryKey(entry);
+      if (seen.has(key)) return;
+      seen.add(key);
+      output.push(entry);
+    });
+
+    return output;
+  }
+
   async function fetchJotas() {
     try {
       const token = localStorage.getItem("cooptrackToken");
@@ -134,7 +187,7 @@
       const plays = Array.isArray(data?.plays) ? data.plays : [];
       const allowedSuits = getAllowedJotaSuits();
 
-      return plays.filter((play) => {
+      const filtered = plays.filter((play) => {
         const rank = normalizeRank(play.card_rank || play.rank);
         const suit = normalizeSuit(play.card_suit || play.suit);
         const creatorId = Number(play.created_by_user_id || 0);
@@ -166,6 +219,10 @@
           creatorId === currentUserId
         );
       });
+
+      return isContabilidadMode
+        ? dedupeContabilidadEntries(filtered)
+        : filtered;
     } catch (error) {
       console.error("Error cargando jotas:", error);
       return [];
@@ -224,14 +281,14 @@
     return `/mazo.html?id=${deckId}`;
   }
 
-  function getQQPicaSideLabel(play) {
+  function getQQPicaEconomicTone(play) {
     const payment = play.__payment || {};
     const numericAmount = normalizeAmount(payment.amount);
 
-    if (numericAmount === null) return "";
-    if (numericAmount < 0) return "Paga";
-    if (numericAmount > 0) return "Cobra";
-    return "";
+    if (numericAmount === null) return "credit";
+    if (numericAmount < 0) return "debit";
+    if (numericAmount > 0) return "credit";
+    return "credit";
   }
 
   function buildJotaRowHTML(play) {
@@ -248,12 +305,12 @@
       paymentCurrency || play.currency_symbol || play.deck_currency_symbol || play.currencySymbol || ""
     ).trim();
     const amountValue = String(payment?.amount ?? play.amount ?? "").trim();
-    const qqSideLabel = getQQPicaSideLabel(play);
     const isClub = normalizeSuit(play.card_suit || play.suit) === "CLUB";
     const isQQPica = play.__entryType === "QQPICA";
+    const qqEconomicTone = getQQPicaEconomicTone(play);
     const economicToneClass = isClub
       ? "tablero-row__economic--debit"
-      : isQQPica && qqSideLabel === "Paga"
+      : isQQPica && qqEconomicTone === "debit"
         ? "tablero-row__economic--debit"
         : "tablero-row__economic--credit";
 
@@ -296,12 +353,6 @@
                 <span class="tablero-row__amount-view ${economicToneClass}">
                   ${escapeHtml(amountValue || "—")}
                 </span>
-                ${qqSideLabel
-                  ? `
-                      <span class="tablero-row__side-label ${economicToneClass}">${escapeHtml(qqSideLabel)}</span>
-                    `
-                  : ""
-                }
               `
             : ""}
         </div>
