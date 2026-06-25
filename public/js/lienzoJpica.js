@@ -12,6 +12,32 @@
     return new URLSearchParams(window.location.search);
   }
 
+  const AUTO_EDIT_JHEART_KEY = "cooptrack.jpica.autoEditJHeartId";
+
+  function setAutoEditJHeartId(playId) {
+    const id = Number(playId || 0);
+    if (!id) return;
+
+    try {
+      sessionStorage.setItem(AUTO_EDIT_JHEART_KEY, String(id));
+    } catch (error) {
+      console.warn("No se pudo guardar auto-edit de J♥", error);
+    }
+  }
+
+  function consumeAutoEditJHeartId() {
+    try {
+      const raw = sessionStorage.getItem(AUTO_EDIT_JHEART_KEY);
+      sessionStorage.removeItem(AUTO_EDIT_JHEART_KEY);
+
+      const parsed = Number(raw || 0);
+      return parsed > 0 ? parsed : 0;
+    } catch (error) {
+      console.warn("No se pudo leer auto-edit de J♥", error);
+      return 0;
+    }
+  }
+
   function isFutureDate(value) {
     if (!value) return false;
     const date = new Date(value);
@@ -628,6 +654,12 @@ function renderColombes(play) {
       return;
     }
 
+    const newPlayId = Number(data?.play?.id || 0);
+
+    if (newPlayId) {
+      setAutoEditJHeartId(newPlayId);
+    }
+
     window.location.reload();
   }
 
@@ -731,7 +763,8 @@ function renderColombes(play) {
     });
   }
 
-  function renderAmsterdam(play) {
+  function renderAmsterdam(play, options = {}) {
+    const autoEditJHeartId = Number(options.autoEditJHeartId || 0);
 
     const isApproved =
       String(play?.play_status || "").toUpperCase() === "APPROVED";
@@ -870,9 +903,14 @@ ${showCancel ? `
               suit === "HEART" &&
               typeof window.renderJcorazon === "function"
             ) {
+              const shouldAutoEdit =
+                autoEditJHeartId > 0 &&
+                Number(child?.id || 0) === autoEditJHeartId;
+
               return window.renderJcorazon(child, {
                 deck: getCurrentDeck(),
                 state: getCurrentState(),
+                forceEdit: shouldAutoEdit,
                 helpers: {
                   escapeHtml,
                   formatDate: formatTime,
@@ -1091,6 +1129,8 @@ ${showCancel ? `
 
     if (!container) return;
 
+    const autoEditJHeartId = consumeAutoEditJHeartId();
+
     container.innerHTML = `
     <div class="lienzo-v2-page">
       ${renderDeckHeader(deck)}
@@ -1104,7 +1144,7 @@ ${showCancel ? `
             </div>
 
             <div id="amsterdam">
-              ${renderAmsterdam(play)}
+              ${renderAmsterdam(play, { autoEditJHeartId })}
             </div>
           </div>
 

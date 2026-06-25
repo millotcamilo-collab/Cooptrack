@@ -15,6 +15,7 @@
 
 
     const state = context.state || {};
+    const forceEdit = Boolean(context.forceEdit);
     const allPlays = Array.isArray(state.plays) ? state.plays : [];
     const currentUserId = Number(state.userId || 0);
 
@@ -131,7 +132,14 @@
       if (!row || row.dataset.bound === "true") return;
 
       row.dataset.bound = "true";
-      row.dataset.mode = "read";
+      const canStartInEdit =
+        forceEdit &&
+        userCanEdit &&
+        !isApproved &&
+        statusRaw !== "SENT" &&
+        !isArchived;
+
+      row.dataset.mode = canStartInEdit ? "edit" : "read";
 
       const textView = row.querySelector('[data-role="text-view"]');
       const textInput = row.querySelector('[data-role="text-input"]');
