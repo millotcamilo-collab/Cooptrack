@@ -300,8 +300,8 @@
               </div>
 
               <div class="profile-badge-box">
-                <img src="/assets/icons/ticket60.gif" class="profile-badge-icon" />
-                <div id="view-complaints-count" class="profile-badge-box__value">0</div>
+                <img src="/assets/icons/sombrero80.gif" class="profile-badge-icon" />
+                <div id="view-hats-count" class="profile-badge-box__value">0</div>
               </div>
 
               <div class="profile-badge-box">
@@ -543,16 +543,16 @@
 
     function renderProfileBadges(user) {
       const awardsEl = getEl("view-awards-count");
-      const complaintsEl = getEl("view-complaints-count");
       const moustachesEl = getEl("view-moustaches-count");
+      const hatsEl = getEl("view-hats-count");
 
-      const awardsCount = getSafeArray(user?.awards).length;
-      const complaintsCount = getSafeArray(user?.complaints).length;
-      const moustachesCount = getSafeArray(user?.moustaches).length;
+      const awardsCount = Number(user?.awards_count || 0);
+      const moustachesCount = Number(user?.moustaches_count || 0);
+      const hatsCount = Number(user?.hats_count || 0);
 
       if (awardsEl) awardsEl.textContent = String(awardsCount);
-      if (complaintsEl) complaintsEl.textContent = String(complaintsCount);
       if (moustachesEl) moustachesEl.textContent = String(moustachesCount);
+      if (hatsEl) hatsEl.textContent = String(hatsCount);
     }
 
     function getCountryLabel(code) {

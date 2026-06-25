@@ -499,52 +499,73 @@ function getSettlementInfoFromPlayCode(playCode) {
   return settlement;
 }
 
-async function appendProfileEntryOnce(client, {
-  userId,
-  fieldName,
-  entry,
-  sourcePlayId
+async function upsertUserAccreditation(client, {
+  subjectUserId,
+  issuerUserId,
+  accreditationType,
+  status,
+  sourcePlayId,
+  note,
 }) {
-  const allowedFields = {
-    awards: true,
-    complaints: true,
-    moustaches: true,
-  };
-
-  if (!allowedFields[fieldName]) {
-    throw new Error('Campo de perfil inválido');
-  }
-
-  const selectResult = await client.query(
-    `SELECT ${fieldName} FROM users WHERE id = $1 LIMIT 1`,
-    [userId]
-  );
-
-  if (!selectResult.rows.length) {
-    throw new Error('Usuario no encontrado para actualizar perfil');
-  }
-
-  const currentValue = Array.isArray(selectResult.rows[0][fieldName])
-    ? selectResult.rows[0][fieldName]
-    : [];
-
-  const alreadyExists = currentValue.some((item) => {
-    return Number(item?.source_play_id || 0) === Number(sourcePlayId || 0);
-  });
-
-  if (alreadyExists) {
+  if (!subjectUserId || !issuerUserId || subjectUserId === issuerUserId) {
     return false;
   }
 
+  const currentResult = await client.query(
+    `
+    SELECT status
+    FROM user_accreditations
+    WHERE subject_user_id = $1
+      AND issuer_user_id = $2
+      AND accreditation_type = $3
+    LIMIT 1
+    `,
+    [subjectUserId, issuerUserId, accreditationType]
+  );
+
+  const oldStatus = currentResult.rows[0]?.status || null;
+
   await client.query(
     `
-    UPDATE users
-    SET ${fieldName} = COALESCE(${fieldName}, '[]'::jsonb) || $2::jsonb,
-        updated_at = NOW()
-    WHERE id = $1
+    INSERT INTO user_accreditations (
+      subject_user_id,
+      issuer_user_id,
+      accreditation_type,
+      status,
+      source_play_id,
+      note
+    )
+    VALUES ($1, $2, $3, $4, $5, $6)
+    ON CONFLICT (subject_user_id, issuer_user_id, accreditation_type)
+    DO UPDATE
+    SET
+      status = EXCLUDED.status,
+      source_play_id = EXCLUDED.source_play_id,
+      note = EXCLUDED.note,
+      updated_at = NOW()
     `,
-    [userId, JSON.stringify([entry])]
+    [subjectUserId, issuerUserId, accreditationType, status, sourcePlayId || null, note || null]
   );
+
+  const statusChanged = String(oldStatus || '') !== String(status || '');
+
+  if (oldStatus === null || statusChanged) {
+    await client.query(
+      `
+      INSERT INTO user_accreditation_events (
+        subject_user_id,
+        issuer_user_id,
+        accreditation_type,
+        old_status,
+        new_status,
+        source_play_id,
+        note
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `,
+      [subjectUserId, issuerUserId, accreditationType, oldStatus, status, sourcePlayId || null, note || null]
+    );
+  }
 
   return true;
 }
@@ -552,42 +573,37 @@ async function appendProfileEntryOnce(client, {
 async function applySettlementToUserProfile(client, play, settlementInfo) {
   const targetUserId = Number(play?.target_user_id || 0);
   const sourcePlayId = Number(play?.id || 0);
+  const issuerUserId = Number(play?.created_by_user_id || 0);
 
-  if (!targetUserId || !sourcePlayId || !settlementInfo?.status) {
+  if (!targetUserId || !sourcePlayId || !issuerUserId || !settlementInfo?.status) {
     return false;
   }
 
   const normalizedStatus = String(settlementInfo.status || '').trim().toUpperCase();
 
-  let fieldName = null;
-  let entryType = null;
+  let accreditationType = null;
+  let status = null;
+  let note = null;
 
   if (normalizedStatus === 'PAID') {
-    fieldName = 'awards';
-    entryType = 'GOOD_PAYER';
+    accreditationType = 'GOOD_PAYER_AWARD';
+    status = 'POSITIVE';
+    note = 'SETTLEMENT_PAID';
   } else if (normalizedStatus === 'COMPLAINED') {
-    fieldName = 'complaints';
-    entryType = 'COMPLAINT';
-  } else if (normalizedStatus === 'MOUSTACHE') {
-    fieldName = 'moustaches';
-    entryType = 'MOUSTACHE';
+    accreditationType = 'GOOD_PAYER_AWARD';
+    status = 'NEUTRAL';
+    note = 'SETTLEMENT_COMPLAINED';
   } else {
     return false;
   }
 
-  const entry = {
-    source_play_id: sourcePlayId,
-    deck_id: Number(play.deck_id || 0),
-    granted_by_user_id: Number(play.created_by_user_id || 0),
-    type: entryType,
-    created_at: new Date().toISOString(),
-  };
-
-  return appendProfileEntryOnce(client, {
-    userId: targetUserId,
-    fieldName,
-    entry,
+  return upsertUserAccreditation(client, {
+    subjectUserId: targetUserId,
+    issuerUserId,
+    accreditationType,
+    status,
     sourcePlayId,
+    note,
   });
 }
 
@@ -922,20 +938,23 @@ app.get('/me', requireAuth, async (req, res) => {
 
     const result = await pool.query(
       `SELECT
-        id,
-        nickname,
-        email,
-        phone,
-        profile_photo_url,
-        birth_date,
-        user_type,
-        country,
-        is_admin,
-        awards,
-        complaints,
-        moustaches
+        u.id,
+        u.nickname,
+        u.email,
+        u.phone,
+        u.profile_photo_url,
+        u.birth_date,
+        u.user_type,
+        u.country,
+        u.is_admin,
+        COALESCE(s.awards_count, 0) AS awards_count,
+        COALESCE(s.moustaches_count, 0) AS moustaches_count,
+        COALESCE(s.hats_count, 0) AS hats_count
        FROM users
-       WHERE id = $1`,
+       u
+       LEFT JOIN user_accreditation_summary s
+         ON s.user_id = u.id
+       WHERE u.id = $1`,
       [userId]
     );
 
