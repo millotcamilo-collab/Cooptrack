@@ -251,6 +251,11 @@
     const qqSideLabel = getQQPicaSideLabel(play);
     const isClub = normalizeSuit(play.card_suit || play.suit) === "CLUB";
     const isQQPica = play.__entryType === "QQPICA";
+    const economicToneClass = isClub
+      ? "tablero-row__economic--debit"
+      : isQQPica && qqSideLabel === "Paga"
+        ? "tablero-row__economic--debit"
+        : "tablero-row__economic--credit";
 
     return `
       <button
@@ -280,20 +285,20 @@
         <div class="tablero-row__right">
           ${(isClub || isQQPica)
             ? `
-                <span class="tablero-row__amount-card">${isQQPica ? "Q♦" : "J♦"}</span>
+                <span class="tablero-row__amount-card ${economicToneClass}">${isQQPica ? "Q♦" : "J♦"}</span>
                 ${currencySymbol
                   ? `
-                      <span class="tablero-row__currency-symbol">
+                      <span class="tablero-row__currency-symbol ${economicToneClass}">
                         ${escapeHtml(currencySymbol)}
                       </span>
                     `
                   : ""}
-                <span class="tablero-row__amount-view">
+                <span class="tablero-row__amount-view ${economicToneClass}">
                   ${escapeHtml(amountValue || "—")}
                 </span>
                 ${qqSideLabel
                   ? `
-                      <span class="tablero-row__meta">${escapeHtml(qqSideLabel)}</span>
+                      <span class="tablero-row__side-label ${economicToneClass}">${escapeHtml(qqSideLabel)}</span>
                     `
                   : ""
                 }

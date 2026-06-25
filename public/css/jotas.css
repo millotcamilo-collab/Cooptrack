@@ -34,6 +34,7 @@
 .tablero-row--bitacora .tablero-row__card,
 .tablero-row--jcorazon .tablero-row__card,
 .tablero-row--jpike .tablero-row__card,
+.tablero-row--bitacora .tablero-row__amount-card,
 .tablero-row--jtrebol .tablero-row__card,
 .tablero-row--jtrebol .tablero-row__amount-card {
   font-family: var(--font-card);
@@ -135,6 +136,7 @@
   color: #c62828;
 }
 
+.tablero-row--bitacora .tablero-row__amount-card,
 .tablero-row--jtrebol .tablero-row__amount-card {
   display: inline-flex;
   align-items: center;
@@ -148,7 +150,29 @@
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
+}
+
+.tablero-row--bitacora .tablero-row__currency-symbol,
+.tablero-row--bitacora .tablero-row__amount-view {
+  font-family: var(--font-card);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tablero-row__economic--debit {
   color: #c0392b;
+}
+
+.tablero-row__economic--credit {
+  color: #111;
+}
+
+.tablero-row__side-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .tablero-row__deck {
