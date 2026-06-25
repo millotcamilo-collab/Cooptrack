@@ -40,7 +40,9 @@
     const data = await response.json();
 
     if (!response.ok || !data.ok) {
-      throw new Error(data?.error || "No se pudo cargar el talud");
+      const err = new Error(data?.error || "No se pudo cargar el talud");
+      err.statusCode = response.status;
+      throw err;
     }
 
     return data;
@@ -62,7 +64,9 @@
     const data = await response.json();
 
     if (!response.ok || !data.ok) {
-      throw new Error(data?.error || "No se pudo enviar el mensaje");
+      const err = new Error(data?.error || "No se pudo enviar el mensaje");
+      err.statusCode = response.status;
+      throw err;
     }
 
     return data.message;
@@ -174,6 +178,10 @@
     style.id = "talud-inline-styles";
     style.textContent = `
       .talud { border: 1px solid rgba(0,0,0,.12); border-radius: 12px; background: #fff; }
+      .talud--unavailable { display: flex; align-items: center; justify-content: center; min-height: 160px; }
+      .talud__unavailable-content { text-align: center; padding: 20px; }
+      .talud__unavailable-message { margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #333; }
+      .talud__unavailable-hint { margin: 0; font-size: 13px; color: #777; }
       .talud__header { padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,.08); }
       .talud__title { margin: 0 0 8px; font-size: 15px; font-weight: 600; }
       .talud__participants { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
@@ -200,6 +208,21 @@
     document.head.appendChild(style);
   }
 
+  function renderUnavailable(host) {
+    host.innerHTML = `
+      <section class="talud talud--unavailable">
+        <div class="talud__unavailable-content">
+          <p class="talud__unavailable-message">
+            Talud no está disponible aún en esta instalación
+          </p>
+          <p class="talud__unavailable-hint">
+            Los comentarios de jugadas se implementarán en futuras versiones
+          </p>
+        </div>
+      </section>
+    `;
+  }
+
   async function mount(host, options = {}) {
     const target = typeof host === "string" ? document.querySelector(host) : host;
     if (!target) throw new Error("No se encontro el contenedor de talud");
@@ -209,53 +232,68 @@
 
     injectStylesOnce();
 
-    const state = await fetchMessages(playId);
-    renderShell(target, state);
-    scrollToBottom(target);
+    try {
+      const state = await fetchMessages(playId);
+      renderShell(target, state);
+      scrollToBottom(target);
 
-    const form = target.querySelector("#talud-composer");
-    const textArea = target.querySelector("#talud-text");
-    const sendBtn = target.querySelector("#talud-send");
-    const timeline = target.querySelector("#talud-timeline");
+      const form = target.querySelector("#talud-composer");
+      const textArea = target.querySelector("#talud-text");
+      const sendBtn = target.querySelector("#talud-send");
+      const timeline = target.querySelector("#talud-timeline");
 
-    if (!form || !textArea || !sendBtn || !timeline) {
-      return {
-        refresh: async function refreshOnly() {
+      if (!form || !textArea || !sendBtn || !timeline) {
+        return {
+          refresh: async function refreshOnly() {
+            const nextState = await fetchMessages(playId);
+            renderShell(target, nextState);
+          }
+        };
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const text = String(textArea.value || "").trim();
+        if (!text) return;
+
+        sendBtn.disabled = true;
+
+        try {
+          await postMessage(playId, text);
+          textArea.value = "";
+
           const nextState = await fetchMessages(playId);
-          renderShell(target, nextState);
+          timeline.innerHTML = renderMessages(nextState?.messages || [], getCurrentUserId());
+          scrollToBottom(target);
+        } catch (error) {
+          console.error("Error enviando mensaje de talud", error);
+          alert(error?.message || "No se pudo enviar el mensaje");
+        } finally {
+          sendBtn.disabled = false;
+        }
+      });
+
+      return {
+        refresh: async function refreshTalud() {
+          const nextState = await fetchMessages(playId);
+          timeline.innerHTML = renderMessages(nextState?.messages || [], getCurrentUserId());
         }
       };
+    } catch (error) {
+      console.error("Error montando talud", error);
+
+      if (error?.statusCode === 503) {
+        renderUnavailable(target);
+        return {
+          refresh: async function refreshNoop() {
+            // no-op para unavailable
+          }
+        };
+      }
+
+      throw error;
     }
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const text = String(textArea.value || "").trim();
-      if (!text) return;
-
-      sendBtn.disabled = true;
-
-      try {
-        await postMessage(playId, text);
-        textArea.value = "";
-
-        const nextState = await fetchMessages(playId);
-        timeline.innerHTML = renderMessages(nextState?.messages || [], getCurrentUserId());
-        scrollToBottom(target);
-      } catch (error) {
-        console.error("Error enviando mensaje de talud", error);
-        alert(error?.message || "No se pudo enviar el mensaje");
-      } finally {
-        sendBtn.disabled = false;
-      }
-    });
-
-    return {
-      refresh: async function refreshTalud() {
-        const nextState = await fetchMessages(playId);
-        timeline.innerHTML = renderMessages(nextState?.messages || [], getCurrentUserId());
-      }
-    };
   }
 
   window.Talud = {
