@@ -1,5 +1,9 @@
 (function () {
   const API_BASE_URL = "https://cooptrack-backend.onrender.com";
+  const pageConfig = window.transversalBarConfig || {};
+  const filterEventName = pageConfig.filterEventName || "bitacora:filterSuit";
+  const searchEventName = pageConfig.searchEventName || "bitacora:search";
+  const isContabilidadMode = String(pageConfig.filterPrefix || "").toLowerCase() === "contabilidad";
 
   let allJotas = [];
   let activeSuitFilter = "";
@@ -20,6 +24,69 @@
 
   function normalizeSuit(value) {
     return String(value || "").trim().toUpperCase();
+  }
+
+  function normalizeAmount(value) {
+    const raw = String(value ?? "").trim();
+    if (!raw) return null;
+
+    const normalized = raw.replace(/,/g, ".").replace(/[^0-9+\-.]/g, "");
+    const parsed = Number(normalized);
+
+    if (Number.isNaN(parsed)) return null;
+    return parsed;
+  }
+
+  function parsePaymentFromPlayCode(playCode) {
+    const parts = String(playCode || "").split("§");
+    const flow = String(parts[7] || "");
+
+    const chunks = flow
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    for (const chunk of chunks) {
+      if (!chunk.toLowerCase().startsWith("pay:qheart")) continue;
+
+      const payment = {};
+      chunk.split("|").forEach((part, index) => {
+        if (index === 0) return;
+
+        const separatorIndex = part.indexOf(":");
+        if (separatorIndex === -1) return;
+
+        const key = part.slice(0, separatorIndex).trim();
+        const value = part.slice(separatorIndex + 1).trim();
+        if (key) payment[key] = value;
+      });
+
+      return payment;
+    }
+
+    return null;
+  }
+
+  function parseRecipients(playCode) {
+    const recipientsRaw = String(playCode || "").split("§")[8] || "";
+
+    return recipientsRaw
+      .split(/[;,|\s]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  function isCurrentUserMentionedInQQPica(play, currentUserId) {
+    const id = Number(currentUserId || 0);
+    if (!id) return false;
+
+    const creatorId = Number(play.created_by_user_id || 0);
+    const targetId = Number(play.target_user_id || 0);
+
+    if (creatorId === id || targetId === id) return true;
+
+    const recipients = parseRecipients(play.play_code || "");
+    return recipients.includes(String(id)) || recipients.includes(`U:${id}`);
   }
 
   function getCurrentUserIdFromToken() {
@@ -72,6 +139,27 @@
         const suit = normalizeSuit(play.card_suit || play.suit);
         const creatorId = Number(play.created_by_user_id || 0);
 
+        if (isContabilidadMode) {
+          const isOwnedJClub = rank === "J" && suit === "CLUB" && creatorId === currentUserId;
+
+          const payment = parsePaymentFromPlayCode(play.play_code || "");
+          const isQQPica = rank === "Q" && suit === "SPADE" && Boolean(payment);
+          const isMentioned = isCurrentUserMentionedInQQPica(play, currentUserId);
+
+          if (isQQPica && isMentioned) {
+            play.__entryType = "QQPICA";
+            play.__payment = payment;
+            return true;
+          }
+
+          if (isOwnedJClub) {
+            play.__entryType = "JCLUB";
+            return true;
+          }
+
+          return false;
+        }
+
         return (
           rank === "J" &&
           allowedSuits.includes(suit) &&
@@ -85,6 +173,8 @@
   }
 
   function getCardLabel(play) {
+    if (play.__entryType === "QQPICA") return "Q♠";
+
     const suit = normalizeSuit(play.card_suit || play.suit);
 
     if (suit === "HEART") return "J♥";
@@ -96,6 +186,12 @@
   }
 
   function getDescription(play) {
+    if (play.__entryType === "QQPICA") {
+      const payment = play.__payment || {};
+      const concept = String(payment.concept || "").trim();
+      if (concept) return concept;
+    }
+
     return String(play.play_text || play.text || "").trim() || "Sin descripción";
   }
 
@@ -104,12 +200,37 @@
   }
 
   function getJotaCssClass(play) {
+    if (play.__entryType === "QQPICA") return "tablero-row--jpike";
+
     const suit = normalizeSuit(play.card_suit || play.suit);
 
     if (suit === "HEART") return "tablero-row--jcorazon";
     if (suit === "SPADE") return "tablero-row--jpike";
     if (suit === "CLUB") return "tablero-row--jtrebol";
 
+    return "";
+  }
+
+  function getPlayHref(play) {
+    const deckId = Number(play.deck_id || 0);
+    const playId = Number(play.id || 0);
+
+    if (!deckId || !playId) return "";
+
+    if (play.__entryType === "QQPICA") {
+      return `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}`;
+    }
+
+    return `/mazo.html?id=${deckId}`;
+  }
+
+  function getQQPicaSideLabel(play) {
+    const payment = play.__payment || {};
+    const numericAmount = normalizeAmount(payment.amount);
+
+    if (numericAmount === null) return "";
+    if (numericAmount < 0) return "Paga";
+    if (numericAmount > 0) return "Cobra";
     return "";
   }
 
@@ -121,11 +242,15 @@
     const deckName = String(
       play.deck_name || play.deckName || ""
     ).trim();
+    const payment = play.__payment || null;
+    const paymentCurrency = String(payment?.currency || "").trim();
     const currencySymbol = String(
-      play.currency_symbol || play.deck_currency_symbol || play.currencySymbol || ""
+      paymentCurrency || play.currency_symbol || play.deck_currency_symbol || play.currencySymbol || ""
     ).trim();
-    const amountValue = String(play.amount ?? "").trim();
+    const amountValue = String(payment?.amount ?? play.amount ?? "").trim();
+    const qqSideLabel = getQQPicaSideLabel(play);
     const isClub = normalizeSuit(play.card_suit || play.suit) === "CLUB";
+    const isQQPica = play.__entryType === "QQPICA";
 
     return `
       <button
@@ -153,9 +278,9 @@
         </div>
 
         <div class="tablero-row__right">
-          ${isClub
+          ${(isClub || isQQPica)
             ? `
-                <span class="tablero-row__amount-card">J♦</span>
+                <span class="tablero-row__amount-card">${isQQPica ? "Q♦" : "J♦"}</span>
                 ${currencySymbol
                   ? `
                       <span class="tablero-row__currency-symbol">
@@ -166,6 +291,12 @@
                 <span class="tablero-row__amount-view">
                   ${escapeHtml(amountValue || "—")}
                 </span>
+                ${qqSideLabel
+                  ? `
+                      <span class="tablero-row__meta">${escapeHtml(qqSideLabel)}</span>
+                    `
+                  : ""
+                }
               `
             : ""}
         </div>
@@ -192,10 +323,14 @@
   function bindRowEvents() {
     document.querySelectorAll(".tablero-row--bitacora").forEach((row) => {
       row.addEventListener("click", () => {
-        const deckId = row.dataset.deckId;
-        if (!deckId) return;
+        const playId = Number(row.dataset.playId || 0);
+        const play = allJotas.find((item) => Number(item.id || 0) === playId);
+        if (!play) return;
 
-        window.location.href = `/mazo.html?id=${deckId}`;
+        const href = getPlayHref(play);
+        if (!href) return;
+
+        window.location.href = href;
       });
     });
   }
@@ -209,7 +344,7 @@
     if (!visibleJotas.length) {
       container.innerHTML = `
         <div class="tablero-empty-state">
-          No hay jugadas J para mostrar.
+          No hay jugadas para mostrar.
         </div>
       `;
       return;
@@ -227,12 +362,12 @@
     renderJotas();
   }
 
-  document.addEventListener("bitacora:filterSuit", (event) => {
+  document.addEventListener(filterEventName, (event) => {
     activeSuitFilter = String(event.detail?.suit || "").toUpperCase();
     renderJotas();
   });
 
-  document.addEventListener("bitacora:search", (event) => {
+  document.addEventListener(searchEventName, (event) => {
     activeSearchQuery = String(event.detail?.query || "").trim();
     renderJotas();
   });
