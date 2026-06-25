@@ -23,7 +23,7 @@
 .hoy-row {
   min-height: var(--hoy-row-height);
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 68px 1fr;
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
@@ -52,6 +52,7 @@
   font-weight: 700;
   color: #222;
   white-space: nowrap;
+  text-align: left;
 }
 
 .hoy-entry {

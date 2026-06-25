@@ -66,6 +66,17 @@
     return String(value || "").trim().toUpperCase();
   }
 
+  function getCurrentUserId() {
+    try {
+      const raw = localStorage.getItem("cooptrackUser");
+      const user = raw ? JSON.parse(raw) : null;
+      const id = Number(user?.id || 0);
+      return id || 0;
+    } catch {
+      return 0;
+    }
+  }
+
   function getSuitSymbol(suit) {
     switch (normalizeText(suit)) {
       case "HEART":
@@ -108,6 +119,28 @@
     }
 
     return null;
+  }
+
+  function getFinalTargetUserIdFromPlayCode(playCode) {
+    const flow = String(playCode || "").split("§")[7] || "";
+    const match = flow.match(/finalTarget:U:(\d+)/i);
+    return match ? Number(match[1]) : 0;
+  }
+
+  function getOwnerUserIdFromPlay(play) {
+    const playCode = String(play?.play_code || "");
+    const parts = playCode.split("§");
+
+    const finalTargetUserId = getFinalTargetUserIdFromPlayCode(playCode);
+    if (finalTargetUserId) return finalTargetUserId;
+
+    const ownerFromPlayCode = Number(parts[1] || 0);
+    if (ownerFromPlayCode) return ownerFromPlayCode;
+
+    const targetUserId = Number(play?.target_user_id || 0);
+    if (targetUserId) return targetUserId;
+
+    return 0;
   }
 
   function getPlayCalendarDate(play) {
@@ -306,13 +339,34 @@
 
       rows.push(`
         <div class="hoy-row ${hour === nowHour ? "hoy-row--current" : ""}" data-hour="${hour}">
-          <div class="hoy-row__items">${itemsHtml}</div>
           <div class="hoy-row__hour">${rowHourLabel(hour)}</div>
+          <div class="hoy-row__items">${itemsHtml}</div>
         </div>
       `);
     }
 
     return rows.join("");
+  }
+
+  function isOwnedByCurrentUser(play, currentUserId) {
+    if (!currentUserId) return false;
+
+    return getOwnerUserIdFromPlay(play) === currentUserId;
+  }
+
+  function isVisibleTodayPlay(play, currentUserId) {
+    const entryType = normalizeText(play?.calendar_entry_type);
+    const rank = normalizeText(play?.card_rank || play?.rank);
+    const text = String(play?.play_text || play?.text || "").trim();
+
+    if (entryType === "PAYMENT") {
+      return isOwnedByCurrentUser(play, currentUserId);
+    }
+
+    if (!["J", "Q"].includes(rank)) return false;
+    if (!text) return false;
+
+    return isOwnedByCurrentUser(play, currentUserId);
   }
 
   async function fetchTodayPlays(date) {
@@ -335,10 +389,12 @@
     return Array.isArray(data?.plays) ? data.plays : [];
   }
 
-  function buildItemsByHour(plays) {
+  function buildItemsByHour(plays, currentUserId) {
     const byHour = {};
 
     plays.forEach((play) => {
+      if (!isVisibleTodayPlay(play, currentUserId)) return;
+
       const calendarDate = getPlayCalendarDate(play);
       if (!calendarDate) return;
 
@@ -361,9 +417,10 @@
   async function renderHoy() {
     const now = new Date();
     const nowHour = now.getHours();
+    const currentUserId = getCurrentUserId();
 
     const plays = await fetchTodayPlays(now);
-    const itemsByHour = buildItemsByHour(plays);
+    const itemsByHour = buildItemsByHour(plays, currentUserId);
 
     container.innerHTML = `
       <section class="hoy">
