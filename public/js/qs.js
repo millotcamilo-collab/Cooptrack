@@ -184,6 +184,7 @@
         const description = getDescription(play);
         const deckId = getDeckId(play);
         const deckName = String(play.deck_name || play.deckName || "").trim();
+        const status = String(play.play_status || play.status || "").trim().toUpperCase();
 
         return `
       <button
@@ -194,6 +195,7 @@
         data-rank="${escapeHtml(normalizeRank(play.card_rank || play.rank))}"
         data-suit="${escapeHtml(normalizeSuit(play.card_suit || play.suit))}"
         data-has-qheart="${playHasQHeartAttachment(play) ? "1" : "0"}"
+                data-status="${escapeHtml(status)}"
       >
         <div class="tablero-row__left">
                     <div class="tablero-row__card">
@@ -266,13 +268,21 @@ function applyFilters(plays) {
         const playId = row.dataset.playId;
         const suit = String(row.dataset.suit || "").toUpperCase();
         const hasQHeart = row.dataset.hasQheart === "1" || row.dataset.hasQHeart === "1";
+                const status = String(row.dataset.status || "").toUpperCase();
 
         if (!deckId || !playId) return null;
 
 if (suit === "SPADE") {
-  return hasQHeart
-    ? `/amsterdam.html?situacion=QQPICA_ENTRA&deckId=${deckId}&playId=${playId}`
-    : `/amsterdam.html?situacion=QPICA_ENTRA&deckId=${deckId}&playId=${playId}`;
+    if (!hasQHeart) {
+        return `/amsterdam.html?situacion=QPICA_ENTRA&deckId=${deckId}&playId=${playId}`;
+    }
+
+    const unansweredStatuses = ["SENT", "PENDING", "ACTIVE"];
+    const isUnanswered = unansweredStatuses.includes(status);
+
+    return isUnanswered
+        ? `/amsterdam.html?situacion=QQPICA_ENTRA&deckId=${deckId}&playId=${playId}`
+        : `/payNow.html?deckId=${deckId}&playId=${playId}`;
 }
 
         if (suit === "DIAMOND") {

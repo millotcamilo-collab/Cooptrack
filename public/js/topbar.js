@@ -1,5 +1,6 @@
 (() => {
   const API_BASE_URL = "https://cooptrack-backend.onrender.com";
+  const PAYNOW_WINDOW_MINUTES = 180;
 
   // es ahora
   function isPicaConActividad(play) {
@@ -59,11 +60,11 @@
   }
 
   function getMinutesUntilAhora(play) {
-    if (isDentroDeVentanaPayNow(play, 30)) {
+    if (isDentroDeVentanaPayNow(play, PAYNOW_WINDOW_MINUTES)) {
       const payDate = getPayNowDate(play);
       if (!payDate) return null;
 
-      const windowMs = 30 * 60 * 1000;
+      const windowMs = PAYNOW_WINDOW_MINUTES * 60 * 1000;
       const endsAt = payDate.getTime() + windowMs;
       const remaining = endsAt - Date.now();
 
@@ -143,7 +144,7 @@
     return Number.isNaN(date.getTime()) ? null : date;
   }
 
-  function isDentroDeVentanaPayNow(play, minutes = 30) {
+  function isDentroDeVentanaPayNow(play, minutes = PAYNOW_WINDOW_MINUTES) {
     if (!isPayNowCandidate(play)) return false;
 
     const payDate = getPayNowDate(play);
@@ -165,7 +166,7 @@
   }
 
   function isDentroDeVentanaAhora(play, minutes = 30) {
-    return isDentroDeVentanaPayNow(play, minutes) || isDentroDeVentanaBomb(play, minutes);
+    return isDentroDeVentanaPayNow(play, PAYNOW_WINDOW_MINUTES) || isDentroDeVentanaBomb(play, minutes);
   }
 
   function findAlgoAhora(items = []) {
@@ -220,7 +221,7 @@
 
     if (!deckId || !playId) return null;
 
-    if (rank === "Q" && suit === "SPADE" && isDentroDeVentanaPayNow(play, 30)) {
+    if (rank === "Q" && suit === "SPADE" && isDentroDeVentanaPayNow(play, PAYNOW_WINDOW_MINUTES)) {
       return `/payNow.html?deckId=${deckId}&playId=${playId}`;
     }
 
