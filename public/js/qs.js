@@ -149,6 +149,22 @@
             });
         }
 
+        if (flow.includes("SETTLEMENT:PAID")) {
+            stamps.push({
+                src: "/assets/icons/award60oro.gif",
+                alt: "Pago confirmado",
+                title: "Pago confirmado"
+            });
+        }
+
+        if (flow.includes("SETTLEMENT:COMPLAINED")) {
+            stamps.push({
+                src: "/assets/icons/ticket80g.gif",
+                alt: "Queja registrada",
+                title: "Queja registrada"
+            });
+        }
+
         if (flow.includes("BOMB:EXPLODED")) {
             stamps.push({
                 src: actions.boom || "/assets/icons/Boom80.gif",
