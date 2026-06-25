@@ -1534,7 +1534,7 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
         target_user_id
       FROM qheart_candidates
       WHERE payment_at IS NOT NULL
-        AND payment_at::timestamp BETWEEN NOW() AND NOW() + INTERVAL '30 minutes'
+        AND payment_at::timestamp BETWEEN NOW() - INTERVAL '30 minutes' AND NOW() + INTERVAL '30 minutes'
       ORDER BY payment_at::timestamp ASC, id DESC
       `,
       [userId]
