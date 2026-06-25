@@ -1739,7 +1739,7 @@ return `
 
         const parentPlay = getPlayById(play?.parent_play_id);
         const defaultPayDate = formatDateForInput(
-            parentPlay?.spade_mode === "DEADLINE"
+            String(parentPlay?.spade_mode || "").trim().toUpperCase() === "DEADLINE"
                 ? parentPlay?.end_date
                 : parentPlay?.start_date || parentPlay?.date || parentPlay?.created_at
         );
