@@ -466,7 +466,16 @@
 
   function renderQSpadeCard(play) {
     const parent = play?.parent_play || play?.parent || null;
-    const ownerUser = getPlayOwnerUser(play, play?.created_by_user_id);
+    const targetUserId = Number(play?.target_user_id || 0);
+    const ownerUser = targetUserId
+      ? {
+          id: targetUserId,
+          nickname: play?.target_user_nickname || `Usuario ${targetUserId}`,
+          profile_photo_url:
+            play?.target_user_profile_photo_url ||
+            "/assets/icons/singeta120.gif"
+        }
+      : getPlayOwnerUser(play, play?.created_by_user_id);
 
     return window.CartaTipo.renderPlayCardBox({
       ...play,
