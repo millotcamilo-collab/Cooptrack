@@ -35,76 +35,8 @@
     }
   }
 
-  function isBombDisabled(item) {
-  const code = String(item?.play_code || "").toUpperCase();
-  return code.includes("BOMB:DISABLED");
-}
-
-function isBombCancelled(item) {
-  const status = String(item?.play_status || "").trim().toUpperCase();
-  return status === "CANCELLED";
-}
-
-function isBombDone(item) {
-  const code = String(item?.play_code || "").toUpperCase();
-
-  if (code.includes("BOMB:DONE")) return true;
-
-  const status = String(item?.play_status || "").trim().toUpperCase();
-  return status === "DONE";
-}
-
-function isBombExploded(item) {
-  const status = String(item?.play_status || "").trim().toUpperCase();
-  if (status === "EXPLODED") return true;
-
-  const endValue = item?.end_date;
-  if (!endValue) return false;
-
-  const date = new Date(endValue);
-  if (Number.isNaN(date.getTime())) return false;
-
-  return Date.now() >= date.getTime() && !isBombDisabled(item);
-}
-
-function getSpadeIconSrc(item) {
-  const mode = String(item?.spade_mode || "").trim().toUpperCase();
-
-  if (mode === "APPOINTMENT") {
-    return "/assets/icons/reloj60.gif";
-  }
-
-  if (mode === "DEADLINE") {
-    if (isBombCancelled(item)) {
-      return "/assets/icons/stop60.gif";
-    }
-
-    if (isBombDone(item) || isBombDisabled(item)) {
-      return "/assets/icons/META60.gif";
-    }
-
-    if (isBombExploded(item)) {
-      return "/assets/icons/Boom80.gif";
-    }
-
-    return "/assets/icons/bombaRedonda60.gif";
-  }
-
-  return null;
-}
-
 function getPlayLeadingVisual(item) {
   const suit = String(item?.card_suit || "").toUpperCase();
-
-  if (suit === "SPADE") {
-    const iconSrc = getSpadeIconSrc(item);
-    if (iconSrc) {
-      return {
-        type: "icon",
-        value: iconSrc
-      };
-    }
-  }
 
   return {
     type: "text",
