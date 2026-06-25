@@ -704,6 +704,150 @@ async function stampPlayIfNeeded(client, play, options = {}) {
   }
 }
 
+const playMessagesSchemaCache = {
+  loaded: false,
+  columns: new Set(),
+  hasAttachmentsTable: false,
+};
+
+async function loadPlayMessagesSchema(client) {
+  if (playMessagesSchemaCache.loaded) return playMessagesSchemaCache;
+
+  const columnsResult = await client.query(
+    `
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'play_messages'
+    `
+  );
+
+  const tableResult = await client.query(
+    `
+    SELECT EXISTS (
+      SELECT 1
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name = 'play_message_attachments'
+    ) AS exists
+    `
+  );
+
+  playMessagesSchemaCache.loaded = true;
+  playMessagesSchemaCache.columns = new Set(
+    (columnsResult.rows || []).map((row) => String(row.column_name || '').trim())
+  );
+  playMessagesSchemaCache.hasAttachmentsTable = Boolean(tableResult.rows[0]?.exists);
+
+  return playMessagesSchemaCache;
+}
+
+function pickExistingPlayMessagesColumn(columnsSet, candidates = []) {
+  for (const candidate of candidates) {
+    if (columnsSet.has(candidate)) return candidate;
+  }
+
+  return null;
+}
+
+function parseReaderUserIds(readerUserIds) {
+  if (!Array.isArray(readerUserIds)) return [];
+
+  return readerUserIds
+    .map((entry) => String(entry || '').trim())
+    .filter(Boolean)
+    .map((entry) => {
+      if (entry === 'TODOS') return 'TODOS';
+
+      if (/^U:\d+$/.test(entry)) {
+        return Number(entry.slice(2));
+      }
+
+      const numeric = Number(entry);
+      return Number.isInteger(numeric) && numeric > 0 ? numeric : null;
+    })
+    .filter((entry) => entry === 'TODOS' || Number.isInteger(entry));
+}
+
+function playReadersArePublic(readerUserIds) {
+  if (readerUserIds === null) return true;
+  if (!Array.isArray(readerUserIds)) return true;
+  if (!readerUserIds.length) return true;
+
+  const normalized = parseReaderUserIds(readerUserIds);
+  return normalized.includes('TODOS');
+}
+
+function getPlayParticipantUserIds(play) {
+  const set = new Set();
+
+  const parsedReaders = parseReaderUserIds(play?.reader_user_ids);
+  parsedReaders.forEach((entry) => {
+    if (Number.isInteger(entry) && entry > 0) {
+      set.add(entry);
+    }
+  });
+
+  const authorId = Number(play?.created_by_user_id || 0);
+  const targetId = Number(play?.target_user_id || 0);
+
+  if (authorId) set.add(authorId);
+  if (targetId) set.add(targetId);
+
+  return [...set];
+}
+
+async function fetchPlayForChat(client, playId) {
+  const result = await client.query(
+    `
+    SELECT
+      p.id,
+      p.deck_id,
+      p.created_by_user_id,
+      p.target_user_id,
+      p.reader_user_ids,
+      p.play_text,
+      p.card_rank,
+      p.card_suit,
+      p.play_status
+    FROM plays p
+    WHERE p.id = $1
+    LIMIT 1
+    `,
+    [playId]
+  );
+
+  return result.rows[0] || null;
+}
+
+async function fetchUsersMapByIds(client, userIds = []) {
+  const normalizedIds = [...new Set(
+    userIds
+      .map((id) => Number(id))
+      .filter((id) => Number.isInteger(id) && id > 0)
+  )];
+
+  if (!normalizedIds.length) return {};
+
+  const result = await client.query(
+    `
+    SELECT id, nickname, profile_photo_url
+    FROM users
+    WHERE id = ANY($1::int[])
+    `,
+    [normalizedIds]
+  );
+
+  return result.rows.reduce((acc, row) => {
+    acc[Number(row.id)] = {
+      id: Number(row.id),
+      nickname: row.nickname || `Usuario ${row.id}`,
+      profile_photo_url: row.profile_photo_url || '/assets/icons/singeta120.gif',
+    };
+    return acc;
+  }, {});
+}
+
 // =====================================================
 // HEALTH
 // =====================================================
@@ -2252,6 +2396,329 @@ async function getMazoStateHandler(req, res) {
 
 app.get('/mazos/:mazoId/state', requireAuth, getMazoStateHandler);
 app.get('/mazo/:deckId/state', requireAuth, getMazoStateHandler);
+
+app.get('/plays/:id/messages', requireAuth, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const playId = Number(req.params.id || 0);
+    const userId = Number(req.auth.userId || 0);
+
+    if (!playId) {
+      return res.status(400).json({ ok: false, error: 'playId invalido' });
+    }
+
+    const play = await fetchPlayForChat(client, playId);
+
+    if (!play) {
+      return res.status(404).json({ ok: false, error: 'Jugada no encontrada' });
+    }
+
+    const mazo = await getMazoByIdForUser(client, Number(play.deck_id || 0), userId);
+    if (!mazo) {
+      return res.status(403).json({ ok: false, error: 'Sin acceso al mazo' });
+    }
+
+    const isPublic = playReadersArePublic(play.reader_user_ids);
+    const participants = getPlayParticipantUserIds(play);
+
+    if (!isPublic && !participants.includes(userId)) {
+      return res.status(403).json({ ok: false, error: 'Sin acceso al talud de esta jugada' });
+    }
+
+    const messagesResult = await client.query(
+      `
+      SELECT
+        pm.*,
+        author.nickname AS author_nickname,
+        author.profile_photo_url AS author_profile_photo_url
+      FROM play_messages pm
+      LEFT JOIN users author
+        ON author.id = pm.author_user_id
+      WHERE pm.play_id = $1
+      ORDER BY pm.created_at ASC, pm.id ASC
+      `,
+      [playId]
+    );
+
+    const schema = await loadPlayMessagesSchema(client);
+    const textColumn = pickExistingPlayMessagesColumn(schema.columns, [
+      'message_text',
+      'message',
+      'text',
+      'body',
+      'content',
+    ]);
+
+    let attachmentsByMessageId = {};
+
+    if (schema.hasAttachmentsTable && messagesResult.rows.length) {
+      const messageIds = messagesResult.rows
+        .map((row) => Number(row.id || 0))
+        .filter((id) => id > 0);
+
+      if (messageIds.length) {
+        const attachmentsResult = await client.query(
+          `
+          SELECT
+            id,
+            message_id,
+            file_url,
+            file_name,
+            mime_type,
+            file_size,
+            created_at
+          FROM play_message_attachments
+          WHERE message_id = ANY($1::bigint[])
+          ORDER BY id ASC
+          `,
+          [messageIds]
+        );
+
+        attachmentsByMessageId = attachmentsResult.rows.reduce((acc, row) => {
+          const messageId = Number(row.message_id || 0);
+          if (!messageId) return acc;
+
+          if (!acc[messageId]) acc[messageId] = [];
+
+          acc[messageId].push({
+            id: Number(row.id || 0),
+            file_url: row.file_url || '',
+            file_name: row.file_name || '',
+            mime_type: row.mime_type || '',
+            file_size: Number(row.file_size || 0) || 0,
+            created_at: row.created_at,
+          });
+
+          return acc;
+        }, {});
+      }
+    }
+
+    const usersMap = await fetchUsersMapByIds(client, participants);
+
+    const messages = messagesResult.rows.map((row) => {
+      const authorId = Number(row.author_user_id || 0);
+      const userFromMap = usersMap[authorId] || null;
+      const resolvedText = textColumn
+        ? String(row[textColumn] || '')
+        : String(row.message_text || row.message || row.text || row.body || row.content || '');
+
+      return {
+        id: Number(row.id || 0),
+        play_id: Number(row.play_id || playId),
+        author_user_id: authorId,
+        text: resolvedText,
+        is_system: Boolean(row.is_system),
+        created_at: row.created_at,
+        author_nickname:
+          row.author_nickname ||
+          userFromMap?.nickname ||
+          (authorId ? `Usuario ${authorId}` : 'Sistema'),
+        author_profile_photo_url:
+          row.author_profile_photo_url ||
+          userFromMap?.profile_photo_url ||
+          '/assets/icons/singeta120.gif',
+        attachments: attachmentsByMessageId[Number(row.id || 0)] || [],
+      };
+    });
+
+    return res.json({
+      ok: true,
+      play: {
+        id: Number(play.id),
+        deck_id: Number(play.deck_id || 0),
+        play_text: play.play_text || '',
+        card_rank: play.card_rank || '',
+        card_suit: play.card_suit || '',
+        play_status: play.play_status || '',
+      },
+      isPublic,
+      participants: participants.map((id) => {
+        const user = usersMap[id];
+        return {
+          id,
+          nickname: user?.nickname || `Usuario ${id}`,
+          profile_photo_url: user?.profile_photo_url || '/assets/icons/singeta120.gif',
+        };
+      }),
+      messages,
+    });
+  } catch (error) {
+    console.error('Error en GET /plays/:id/messages', error);
+    return res.status(500).json({ ok: false, error: 'No se pudo cargar el talud' });
+  } finally {
+    client.release();
+  }
+});
+
+app.post('/plays/:id/messages', requireAuth, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const playId = Number(req.params.id || 0);
+    const userId = Number(req.auth.userId || 0);
+    const messageText = String(req.body?.text || '').trim();
+    const attachments = Array.isArray(req.body?.attachments) ? req.body.attachments : [];
+
+    if (!playId) {
+      return res.status(400).json({ ok: false, error: 'playId invalido' });
+    }
+
+    if (!messageText) {
+      return res.status(400).json({ ok: false, error: 'El mensaje no puede estar vacio' });
+    }
+
+    const play = await fetchPlayForChat(client, playId);
+
+    if (!play) {
+      return res.status(404).json({ ok: false, error: 'Jugada no encontrada' });
+    }
+
+    const mazo = await getMazoByIdForUser(client, Number(play.deck_id || 0), userId);
+    if (!mazo) {
+      return res.status(403).json({ ok: false, error: 'Sin acceso al mazo' });
+    }
+
+    const isPublic = playReadersArePublic(play.reader_user_ids);
+    const participants = getPlayParticipantUserIds(play);
+
+    if (!isPublic && !participants.includes(userId)) {
+      return res.status(403).json({ ok: false, error: 'No sos participante del talud' });
+    }
+
+    const schema = await loadPlayMessagesSchema(client);
+    const authorColumn = pickExistingPlayMessagesColumn(schema.columns, [
+      'author_user_id',
+      'created_by_user_id',
+      'sender_user_id',
+      'user_id',
+    ]);
+    const textColumn = pickExistingPlayMessagesColumn(schema.columns, [
+      'message_text',
+      'message',
+      'text',
+      'body',
+      'content',
+    ]);
+
+    if (!authorColumn || !textColumn) {
+      return res.status(500).json({ ok: false, error: 'Schema de play_messages incompleto' });
+    }
+
+    const insertColumns = ['play_id', authorColumn, textColumn];
+    const values = [playId, userId, messageText];
+
+    if (schema.columns.has('is_system')) {
+      insertColumns.push('is_system');
+      values.push(false);
+    }
+
+    const placeholders = values.map((_, index) => `$${index + 1}`);
+
+    const insertSql = `
+      INSERT INTO play_messages (${insertColumns.join(', ')})
+      VALUES (${placeholders.join(', ')})
+      RETURNING *
+    `;
+
+    await client.query('BEGIN');
+
+    const insertedResult = await client.query(insertSql, values);
+    const insertedMessage = insertedResult.rows[0];
+    const insertedMessageId = Number(insertedMessage?.id || 0);
+
+    let insertedAttachments = [];
+
+    if (schema.hasAttachmentsTable && insertedMessageId && attachments.length) {
+      for (const rawAttachment of attachments) {
+        const fileUrl = String(rawAttachment?.file_url || '').trim();
+        if (!fileUrl) continue;
+
+        const attachmentResult = await client.query(
+          `
+          INSERT INTO play_message_attachments (
+            message_id,
+            file_url,
+            file_name,
+            mime_type,
+            file_size
+          )
+          VALUES ($1, $2, $3, $4, $5)
+          RETURNING id, message_id, file_url, file_name, mime_type, file_size, created_at
+          `,
+          [
+            insertedMessageId,
+            fileUrl,
+            String(rawAttachment?.file_name || '').trim() || null,
+            String(rawAttachment?.mime_type || '').trim() || null,
+            Number(rawAttachment?.file_size || 0) || null,
+          ]
+        );
+
+        if (attachmentResult.rows[0]) {
+          insertedAttachments.push(attachmentResult.rows[0]);
+        }
+      }
+    }
+
+    await client.query('COMMIT');
+
+    const authorResult = await client.query(
+      `
+      SELECT id, nickname, profile_photo_url
+      FROM users
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [userId]
+    );
+
+    const author = authorResult.rows[0] || null;
+    const resolvedText = String(
+      insertedMessage?.[textColumn] ||
+      insertedMessage?.message_text ||
+      insertedMessage?.message ||
+      insertedMessage?.text ||
+      insertedMessage?.body ||
+      insertedMessage?.content ||
+      messageText
+    );
+
+    return res.status(201).json({
+      ok: true,
+      message: {
+        id: insertedMessageId,
+        play_id: Number(insertedMessage?.play_id || playId),
+        author_user_id: Number(insertedMessage?.[authorColumn] || userId),
+        text: resolvedText,
+        is_system: Boolean(insertedMessage?.is_system),
+        created_at: insertedMessage?.created_at,
+        author_nickname: author?.nickname || `Usuario ${userId}`,
+        author_profile_photo_url: author?.profile_photo_url || '/assets/icons/singeta120.gif',
+        attachments: insertedAttachments.map((item) => ({
+          id: Number(item.id || 0),
+          file_url: item.file_url || '',
+          file_name: item.file_name || '',
+          mime_type: item.mime_type || '',
+          file_size: Number(item.file_size || 0) || 0,
+          created_at: item.created_at,
+        })),
+      },
+    });
+  } catch (error) {
+    try {
+      await client.query('ROLLBACK');
+    } catch (_) {
+      // noop
+    }
+
+    console.error('Error en POST /plays/:id/messages', error);
+    return res.status(500).json({ ok: false, error: 'No se pudo guardar el mensaje' });
+  } finally {
+    client.release();
+  }
+});
 
 // =====================================================
 // JUGADAS

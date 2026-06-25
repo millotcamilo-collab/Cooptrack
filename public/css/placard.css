@@ -510,6 +510,25 @@
   bottom: 12px;
 }
 
+.placard__talud-trigger {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.placard__talud-trigger-icon {
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+  display: block;
+}
+
 @media (max-width: 900px) {
   .placard__maincard {
     display: none;

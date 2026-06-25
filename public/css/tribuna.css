@@ -258,6 +258,21 @@ top: 20px;
   z-index: 3;
 }
 
+.tribuna-page--paynow .paynow-talud-host {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.tribuna-page--paynow .paynow-talud-loading,
+.tribuna-page--paynow .paynow-talud-error {
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  color: #222;
+}
+
 .qpica-animation {
   position: absolute;
   pointer-events: none;

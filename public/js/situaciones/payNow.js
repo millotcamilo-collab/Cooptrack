@@ -1,5 +1,11 @@
 ﻿(function () {
   const API_BASE_URL = "";
+  const TALUD_TOGGLE_BUTTON_ID = "paynow-talud-toggle-btn";
+  const TALUD_HOST_ID = "paynow-talud-host";
+
+  let taludController = null;
+  let taludMountedPlayId = 0;
+  let taludOpen = false;
 
   function getParams() {
     return new URLSearchParams(window.location.search);
@@ -534,6 +540,77 @@
     });
   }
 
+  function buildTaludPlacardButtonHtml() {
+    return `
+      <button
+        type="button"
+        id="${TALUD_TOGGLE_BUTTON_ID}"
+        class="placard__talud-trigger"
+        title="Abrir talud"
+        aria-label="Abrir talud"
+      >
+        <img
+          class="placard__talud-trigger-icon"
+          src="/assets/icons/sellopostal60.gif"
+          alt="Talud"
+        />
+      </button>
+    `;
+  }
+
+  function ensureTaludHost() {
+    const zone = document.getElementById("tribuna-actions");
+    if (!zone) return null;
+
+    zone.classList.add("tribuna__talud-zone");
+
+    let host = document.getElementById(TALUD_HOST_ID);
+
+    if (!host) {
+      host = document.createElement("div");
+      host.id = TALUD_HOST_ID;
+      host.className = "paynow-talud-host";
+      zone.innerHTML = "";
+      zone.appendChild(host);
+    }
+
+    host.style.display = taludOpen ? "block" : "none";
+    return host;
+  }
+
+  async function toggleTalud(play) {
+    const host = ensureTaludHost();
+    if (!host) return;
+
+    taludOpen = !taludOpen;
+    host.style.display = taludOpen ? "block" : "none";
+
+    if (!taludOpen) return;
+
+    if (!window.Talud || typeof window.Talud.mount !== "function") {
+      alert("Talud no disponible");
+      return;
+    }
+
+    const playId = Number(play?.id || 0);
+    if (!playId) return;
+
+    host.innerHTML = "<div class=\"paynow-talud-loading\">Cargando talud...</div>";
+
+    try {
+      if (taludController && taludMountedPlayId === playId && typeof taludController.refresh === "function") {
+        await taludController.refresh();
+        return;
+      }
+
+      taludController = await window.Talud.mount(host, { playId });
+      taludMountedPlayId = playId;
+    } catch (error) {
+      console.error("Error montando talud en payNow", error);
+      host.innerHTML = `<div class=\"paynow-talud-error\">${escapeHtml(error?.message || "No se pudo abrir el talud")}</div>`;
+    }
+  }
+
   function renderPlacard(play) {
     const placardHost = document.getElementById("tribuna-placard");
     if (!placardHost) return;
@@ -552,9 +629,16 @@
       rank: "A",
       suit: "HEART",
       showCurrency: false,
-      leftCards: [],
+      leftCardsHtml: buildTaludPlacardButtonHtml(),
       plays: window.__currentState?.plays || []
     });
+
+    const taludBtn = document.getElementById(TALUD_TOGGLE_BUTTON_ID);
+    if (taludBtn) {
+      taludBtn.onclick = () => {
+        toggleTalud(play);
+      };
+    }
   }
 
   function renderPayNow(play) {
@@ -590,9 +674,7 @@
       </section>
     `;
 
-    const actions = document.getElementById("tribuna-actions");
-    if (actions) actions.innerHTML = "";
-
+    ensureTaludHost();
     bindActions(play);
   }
 
