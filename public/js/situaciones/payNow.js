@@ -520,8 +520,8 @@
       metas,
       play_text: "",
       showOwner: false,
-      showActions: false,
-      actionsHtml: ""
+      showActions: true,
+      actionsHtml: buildActionButtons(play)
     });
   }
 
@@ -550,7 +550,6 @@
 
   function renderPayNow(play) {
     const content = document.getElementById("tribuna-content");
-    const actions = document.getElementById("tribuna-actions");
 
     if (!content) return;
 
@@ -582,18 +581,17 @@
       </section>
     `;
 
-    if (actions) {
-      actions.innerHTML = buildActionButtons(play);
-    }
+    const actions = document.getElementById("tribuna-actions");
+    if (actions) actions.innerHTML = "";
 
     bindActions(play);
   }
 
   function bindActions(play) {
-    const actions = document.getElementById("tribuna-actions");
-    if (!actions) return;
+    const content = document.getElementById("tribuna-content");
+    if (!content) return;
 
-    actions.onclick = async (event) => {
+    content.onclick = async (event) => {
       const claimedBtn = event.target.closest("#paynow-claimed-btn");
       const confirmBtn = event.target.closest("#paynow-confirm-btn");
       const complainBtn = event.target.closest("#paynow-complain-btn");
