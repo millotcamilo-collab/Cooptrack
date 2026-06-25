@@ -1510,7 +1510,7 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
           COALESCE(
             NULLIF((regexp_match(COALESCE(split_part(p.play_code, '§', 8), ''), 'payAt:([^;|§]+)'))[1], ''),
             NULLIF((regexp_match(COALESCE(split_part(p.play_code, '§', 8), ''), 'payDate:([^;|§]+)'))[1], '')
-          ) AS payment_at
+          ) AS payment_at_raw
         FROM plays p
         LEFT JOIN decks d
           ON d.id = p.deck_id
@@ -1521,6 +1521,26 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
           AND COALESCE(p.play_code, '') NOT ILIKE '%settlement:PAID%'
           AND COALESCE(p.play_code, '') NOT ILIKE '%settlement:COMPLAINED%'
           AND (p.created_by_user_id = $1 OR p.target_user_id = $1)
+      ),
+      qheart_with_time AS (
+        SELECT
+          deck_id,
+          id,
+          card_rank,
+          card_suit,
+          play_status,
+          play_code,
+          deck_name,
+          created_by_user_id,
+          target_user_id,
+          payment_at_raw,
+          CASE
+            WHEN payment_at_raw IS NULL THEN NULL
+            WHEN payment_at_raw ~ '(Z|[+-][0-9]{2}(:?[0-9]{2})?)$'
+              THEN payment_at_raw::timestamptz
+            ELSE (payment_at_raw::timestamp AT TIME ZONE 'America/Montevideo')
+          END AS payment_at_ts
+        FROM qheart_candidates
       )
       SELECT
         deck_id,
@@ -1532,10 +1552,10 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
         deck_name,
         created_by_user_id,
         target_user_id
-      FROM qheart_candidates
-      WHERE payment_at IS NOT NULL
-        AND payment_at::timestamp BETWEEN NOW() - INTERVAL '30 minutes' AND NOW() + INTERVAL '30 minutes'
-      ORDER BY payment_at::timestamp ASC, id DESC
+      FROM qheart_with_time
+      WHERE payment_at_ts IS NOT NULL
+        AND payment_at_ts BETWEEN NOW() - INTERVAL '30 minutes' AND NOW() + INTERVAL '30 minutes'
+      ORDER BY payment_at_ts ASC, id DESC
       `,
       [userId]
     );
