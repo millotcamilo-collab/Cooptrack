@@ -168,8 +168,17 @@
             function renderEconomicCard(play) {
                 const rank = normalizeText(play?.card_rank || play?.rank);
                 const suit = normalizeText(play?.card_suit || play?.suit);
+                const status = normalizeText(play?.play_status || play?.status);
 
                 if (!(rank === "Q" && suit === "SPADE")) return "";
+
+                const negativeStatuses = ["REJECTED", "CANCELLED", "FIRED"];
+                if (negativeStatuses.includes(status)) return "";
+
+                const acceptedStatuses = ["APPROVED", "DONE", "QUIT"];
+                const economicSuit = acceptedStatuses.includes(status)
+                    ? "DIAMOND"
+                    : "HEART";
 
                 const parsed = parsePlayCode(play?.play_code);
                 const payment = parseFlowPayment(parsed.flow);
@@ -186,7 +195,7 @@
 
                 return window.CartaTipo.renderPlayCardBox({
                     rank: "Q",
-                    suit: "HEART",
+                    suit: economicSuit,
 
                     title: "",
 
