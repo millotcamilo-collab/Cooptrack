@@ -148,13 +148,22 @@
 
     function applyFilters(plays) {
         return plays.filter((play) => {
-            const suit = String(play.card_suit || "").toUpperCase();
+            const rank = String(play.card_rank || "").toUpperCase();
+            const baseSuit = String(play.card_suit || "").toUpperCase();
+            const overrideSuit = String(play.calendar_suit_override || "").toUpperCase();
+            const suit = overrideSuit || baseSuit;
             const text = String(play.play_text || play.text || "").toLowerCase();
             const deckName = String(play.deck_name || "").toLowerCase();
 
             const suitOk =
                 !activeSuitFilters.length ||
-                activeSuitFilters.includes(suit);
+                activeSuitFilters.some((filterSuit) => {
+                    if (filterSuit === "DIAMOND") {
+                        return rank === "Q" && suit === "DIAMOND";
+                    }
+
+                    return suit === filterSuit;
+                });
 
             const searchOk =
                 !activeSearchQuery ||

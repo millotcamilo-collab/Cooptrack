@@ -167,6 +167,33 @@ function renderJotasBody(items = []) {
   const compactMode = items.length > 4;
 
   return items.map((item) => {
+    const entryType = String(item?.calendar_entry_type || "").toUpperCase();
+    const isPaymentEntry = entryType === "PAYMENT";
+
+    if (isPaymentEntry) {
+      const concept = String(item?.payment_concept || "").trim();
+      const amount = String(item?.payment_amount || "").trim();
+      const text = String(item?.text || item?.play_text || "").trim();
+
+      const tooltipParts = [concept, amount].filter(Boolean);
+      const fallbackTooltip = text || "Pago";
+      const tooltipLabel = tooltipParts.length
+        ? tooltipParts.join(" - ")
+        : fallbackTooltip;
+
+      const href = getPlayHref(item);
+
+      return `
+      <a
+        class="dia__item-link dia__item-link--compact"
+        href="${href}"
+        title="${escapeHtml(tooltipLabel)}"
+      >
+        <span class="dia__item-symbol">♦</span>
+      </a>
+    `;
+    }
+
     const leadingVisual = getPlayLeadingVisual(item);
     const text =
       item.text ||

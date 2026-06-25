@@ -1292,6 +1292,8 @@ app.get('/plays/noticias', requireAuth, async (req, res) => {
 app.get('/plays/almanaque', requireAuth, async (req, res) => {
   try {
     const userId = req.auth.userId;
+    const userIdText = String(userId);
+    const userToken = `U:${userId}`;
     const { from, to } = req.query;
 
     if (!from || !to) {
@@ -1308,64 +1310,102 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
 
     const result = await pool.query(
       `
-      SELECT
-        p.*,
-        creator.nickname AS created_by_nickname,
-        target.nickname AS target_user_nickname,
-        d.name AS deck_name,
+      WITH visible_plays AS (
+        SELECT
+          p.*,
+          creator.nickname AS created_by_nickname,
+          target.nickname AS target_user_nickname,
+          d.name AS deck_name,
+          split_part(COALESCE(p.play_code, ''), '§', 8) AS flow_chunk,
+          split_part(COALESCE(p.play_code, ''), '§', 9) AS recipients_chunk
+        FROM plays p
+        LEFT JOIN users creator
+          ON creator.id = p.created_by_user_id
+        LEFT JOIN users target
+          ON target.id = p.target_user_id
+        LEFT JOIN decks d
+          ON d.id = p.deck_id
+        WHERE
+          ${visibilityWhere}
+      ),
 
-        CASE
-          WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
-               AND UPPER(COALESCE(p.spade_mode, '')) = 'APPOINTMENT'
-            THEN p.start_date
-
-          WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
-               AND UPPER(COALESCE(p.spade_mode, '')) = 'DEADLINE'
-            THEN p.end_date
-
-          ELSE p.created_at
-        END AS calendar_date
-
-      FROM plays p
-      LEFT JOIN users creator
-        ON creator.id = p.created_by_user_id
-      LEFT JOIN users target
-        ON target.id = p.target_user_id
-      LEFT JOIN decks d
-        ON d.id = p.deck_id
-
-      WHERE
-        ${visibilityWhere}
-
-        AND (
+      base_rows AS (
+        SELECT
+          vp.*,
           CASE
-            WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
-                 AND UPPER(COALESCE(p.spade_mode, '')) = 'APPOINTMENT'
-              THEN p.start_date::date
+            WHEN UPPER(COALESCE(vp.card_suit, '')) = 'SPADE'
+                 AND UPPER(COALESCE(vp.spade_mode, '')) = 'APPOINTMENT'
+              THEN vp.start_date
 
-            WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
-                 AND UPPER(COALESCE(p.spade_mode, '')) = 'DEADLINE'
-              THEN p.end_date::date
+            WHEN UPPER(COALESCE(vp.card_suit, '')) = 'SPADE'
+                 AND UPPER(COALESCE(vp.spade_mode, '')) = 'DEADLINE'
+              THEN vp.end_date
 
-            ELSE p.created_at::date
+            ELSE vp.created_at
+          END AS calendar_date,
+          'BASE'::text AS calendar_entry_type,
+          NULL::text AS calendar_suit_override,
+          NULL::text AS payment_concept,
+          NULL::text AS payment_amount
+        FROM visible_plays vp
+        WHERE (
+          CASE
+            WHEN UPPER(COALESCE(vp.card_suit, '')) = 'SPADE'
+                 AND UPPER(COALESCE(vp.spade_mode, '')) = 'APPOINTMENT'
+              THEN vp.start_date::date
+
+            WHEN UPPER(COALESCE(vp.card_suit, '')) = 'SPADE'
+                 AND UPPER(COALESCE(vp.spade_mode, '')) = 'DEADLINE'
+              THEN vp.end_date::date
+
+            ELSE vp.created_at::date
           END
-        ) BETWEEN $3 AND $4
+        ) BETWEEN $3::date AND $4::date
+      ),
 
+      payment_rows AS (
+        SELECT
+          vp.*,
+          to_timestamp(
+            (regexp_match(vp.flow_chunk, 'pay:QHEART[^;]*\\|payDate:([0-9]{4}-[0-9]{2}-[0-9]{2})'))[1],
+            'YYYY-MM-DD'
+          ) AS calendar_date,
+          'PAYMENT'::text AS calendar_entry_type,
+          'DIAMOND'::text AS calendar_suit_override,
+          NULLIF((regexp_match(vp.flow_chunk, 'pay:QHEART[^;]*\\|concept:([^|;]*)'))[1], '') AS payment_concept,
+          NULLIF((regexp_match(vp.flow_chunk, 'pay:QHEART[^;]*\\|amount:([^|;]*)'))[1], '') AS payment_amount
+        FROM visible_plays vp
+        WHERE
+          UPPER(COALESCE(vp.card_rank, '')) = 'Q'
+          AND UPPER(COALESCE(vp.card_suit, '')) = 'SPADE'
+          AND vp.flow_chunk ~ 'pay:QHEART[^;]*\\|payDate:[0-9]{4}-[0-9]{2}-[0-9]{2}'
+          AND (
+            COALESCE(vp.target_user_id, 0) = $5::int
+            OR COALESCE(vp.created_by_user_id, 0) = $5::int
+            OR EXISTS (
+              SELECT 1
+              FROM regexp_split_to_table(COALESCE(vp.recipients_chunk, ''), '[,;| ]+') AS token
+              WHERE token = $6 OR token = $7
+            )
+          )
+          AND to_date(
+            (regexp_match(vp.flow_chunk, 'pay:QHEART[^;]*\\|payDate:([0-9]{4}-[0-9]{2}-[0-9]{2})'))[1],
+            'YYYY-MM-DD'
+          ) BETWEEN $3::date AND $4::date
+      )
+
+      SELECT *
+      FROM (
+        SELECT * FROM base_rows
+        UNION ALL
+        SELECT * FROM payment_rows
+      ) rows
       ORDER BY
-        CASE
-          WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
-               AND UPPER(COALESCE(p.spade_mode, '')) = 'APPOINTMENT'
-            THEN p.start_date
-
-          WHEN UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
-               AND UPPER(COALESCE(p.spade_mode, '')) = 'DEADLINE'
-            THEN p.end_date
-
-          ELSE p.created_at
-        END ASC,
-        p.id ASC
+        calendar_date ASC,
+        id ASC,
+        CASE WHEN calendar_entry_type = 'PAYMENT' THEN 1 ELSE 0 END
       `,
-      [String(userId), `U:${userId}`, from, to]
+      [userIdText, userToken, from, to, userId, userIdText, userToken]
     );
 
     return res.json({
