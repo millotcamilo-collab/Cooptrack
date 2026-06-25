@@ -1406,12 +1406,7 @@
 
     const status = String(play?.play_status || "").trim().toUpperCase();
 
-    const showSend =
-      isCurrentUserSource(play) &&
-      status !== "SENT" &&
-      status !== "APPROVED" &&
-      status !== "REJECTED" &&
-      status !== "CANCELLED";
+    const showSend = canShowSendDelete(play);
 
     const showTargetActions =
       isCurrentUserTarget(play) &&
@@ -1501,10 +1496,7 @@
     const showSend =
       rank === "Q" &&
       suit === "SPADE" &&
-      status !== "SENT" &&
-      status !== "APPROVED" &&
-      status !== "REJECTED" &&
-      status !== "CANCELLED";
+      canShowSendDelete(play);
 
     const showSettlementActions = canShowSettlementActions(play, "COLOMBES");
 
@@ -1555,6 +1547,24 @@
   function shouldShowTargetDecisionButtons(play) {
     const status = String(play?.play_status || "").trim().toUpperCase();
     return status === "SENT" || status === "PENDING";
+  }
+
+  function canShowSendDelete(play) {
+    if (!isCurrentUserSource(play)) return false;
+
+    const status = String(play?.play_status || "ACTIVE").trim().toUpperCase();
+
+    return ![
+      "SENT",
+      "PENDING",
+      "APPROVED",
+      "REJECTED",
+      "CANCELLED",
+      "DONE",
+      "QUIT",
+      "FIRED",
+      "BLOCKED"
+    ].includes(status);
   }
 
   function isDeadlineFromParent(play) {
@@ -2345,17 +2355,13 @@ ${showBombActions
 
   function renderPlayCardActions(play) {
     const isSource = isCurrentUserSource(play);
-    const status = String(play?.play_status || "").trim().toUpperCase();
 
     const sendIcon = "/assets/icons/buzon60.gif";
     const deleteIcon = "/assets/icons/papelera80.gif";
 
     if (
       isSource &&
-      status !== "SENT" &&
-      status !== "APPROVED" &&
-      status !== "REJECTED" &&
-      status !== "CANCELLED"
+      canShowSendDelete(play)
     ) {
       return `
       <button id="lienzo-send-btn" class="icon-btn" title="Enviar">
