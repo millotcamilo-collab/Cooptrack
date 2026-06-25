@@ -2,6 +2,12 @@
     const container = document.getElementById("almanaque-container");
     if (!container) return;
 
+    const calendarPlays = window.CalendarPlays;
+    if (!calendarPlays) {
+        console.error("CalendarPlays helper no disponible");
+        return;
+    }
+
     const MONTHS = [
         "Enero",
         "Febrero",
@@ -48,84 +54,15 @@
         return data.plays || [];
     }
 
-    function parseLocalDate(value) {
-        if (!value) return null;
-
-        if (typeof value === "string") {
-            const trimmed = value.trim();
-
-            // YYYY-MM-DD => parse local
-            const onlyDateMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-            if (onlyDateMatch) {
-                const year = Number(onlyDateMatch[1]);
-                const month = Number(onlyDateMatch[2]) - 1;
-                const day = Number(onlyDateMatch[3]);
-                const localDate = new Date(year, month, day);
-                localDate.setHours(0, 0, 0, 0);
-                return localDate;
-            }
-
-            // YYYY-MM-DDTHH:mm => parse local
-            const localDateTimeMatch = trimmed.match(
-                /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
-            );
-            if (localDateTimeMatch) {
-                const year = Number(localDateTimeMatch[1]);
-                const month = Number(localDateTimeMatch[2]) - 1;
-                const day = Number(localDateTimeMatch[3]);
-                const hours = Number(localDateTimeMatch[4]);
-                const minutes = Number(localDateTimeMatch[5]);
-                return new Date(year, month, day, hours, minutes, 0, 0);
-            }
-        }
-
-        const parsed = new Date(value);
-        if (Number.isNaN(parsed.getTime())) return null;
-
-        return parsed;
-    }
-
-    function getPlayCalendarDate(play) {
-        const suit = String(play?.card_suit || play?.suit || "").toUpperCase();
-        const spadeMode = String(play?.spade_mode || "").toUpperCase();
-
-        let selectedValue = null;
-
-        if (suit === "SPADE") {
-            if (spadeMode === "APPOINTMENT") {
-                selectedValue = play?.start_date;
-            } else if (spadeMode === "DEADLINE") {
-                selectedValue = play?.end_date;
-            } else {
-                selectedValue =
-                    play?.start_date ||
-                    play?.end_date;
-            }
-        } else {
-            selectedValue = play?.created_at;
-        }
-
-        return parseLocalDate(selectedValue);
-    }
+    const parseLocalDate = calendarPlays.parseLocalDate;
+    const getPlayCalendarDate = calendarPlays.getPlayCalendarDate;
 
     function getPlayCalendarTime(play) {
         const date = getPlayCalendarDate(play);
         return date ? date.getTime() : Number.POSITIVE_INFINITY;
     }
 
-    function isVisibleCalendarPlay(play) {
-        const rank = String(play.card_rank || "").toUpperCase();
-        const suit = String(play.card_suit || "").toUpperCase();
-        const text = String(play.play_text || "").trim();
-
-        // Solo queremos J y Q reales
-        if (!["J", "Q"].includes(rank)) return false;
-
-        // Evitar basura sin contenido
-        if (!text) return false;
-
-        return true;
-    }
+    const isVisibleCalendarPlay = calendarPlays.isVisibleCalendarPlay;
 
     function groupByYmd(plays) {
         const map = {};

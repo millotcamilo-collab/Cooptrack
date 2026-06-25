@@ -2,6 +2,12 @@
   const container = document.getElementById("hoy-container");
   if (!container) return;
 
+  const calendarPlays = window.CalendarPlays;
+  if (!calendarPlays) {
+    console.error("CalendarPlays helper no disponible");
+    return;
+  }
+
   function escapeHtml(value) {
     return String(value ?? "")
       .replace(/&/g, "&amp;")
@@ -22,60 +28,12 @@
     return `${year}-${month}-${day}`;
   }
 
-  function parseLocalDate(value) {
-    if (!value) return null;
-
-    if (typeof value === "string") {
-      const trimmed = value.trim();
-
-      const onlyDateMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (onlyDateMatch) {
-        return new Date(
-          Number(onlyDateMatch[1]),
-          Number(onlyDateMatch[2]) - 1,
-          Number(onlyDateMatch[3]),
-          0,
-          0,
-          0,
-          0
-        );
-      }
-
-      const localDateTimeMatch = trimmed.match(
-        /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/
-      );
-      if (localDateTimeMatch) {
-        return new Date(
-          Number(localDateTimeMatch[1]),
-          Number(localDateTimeMatch[2]) - 1,
-          Number(localDateTimeMatch[3]),
-          Number(localDateTimeMatch[4]),
-          Number(localDateTimeMatch[5]),
-          0,
-          0
-        );
-      }
-    }
-
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return null;
-    return parsed;
-  }
-
   function normalizeText(value) {
     return String(value || "").trim().toUpperCase();
   }
 
-  function getCurrentUserId() {
-    try {
-      const raw = localStorage.getItem("cooptrackUser");
-      const user = raw ? JSON.parse(raw) : null;
-      const id = Number(user?.id || 0);
-      return id || 0;
-    } catch {
-      return 0;
-    }
-  }
+  const getPlayCalendarDate = calendarPlays.getPlayCalendarDate;
+  const isVisibleTodayPlay = calendarPlays.isVisibleCalendarPlay;
 
   function getSuitSymbol(suit) {
     switch (normalizeText(suit)) {
@@ -119,52 +77,6 @@
     }
 
     return null;
-  }
-
-  function getFinalTargetUserIdFromPlayCode(playCode) {
-    const flow = String(playCode || "").split("§")[7] || "";
-    const match = flow.match(/finalTarget:U:(\d+)/i);
-    return match ? Number(match[1]) : 0;
-  }
-
-  function getOwnerUserIdFromPlay(play) {
-    const playCode = String(play?.play_code || "");
-    const parts = playCode.split("§");
-
-    const finalTargetUserId = getFinalTargetUserIdFromPlayCode(playCode);
-    if (finalTargetUserId) return finalTargetUserId;
-
-    const ownerFromPlayCode = Number(parts[1] || 0);
-    if (ownerFromPlayCode) return ownerFromPlayCode;
-
-    const targetUserId = Number(play?.target_user_id || 0);
-    if (targetUserId) return targetUserId;
-
-    return 0;
-  }
-
-  function getPlayCalendarDate(play) {
-    const fromCalendar = parseLocalDate(play?.calendar_date);
-    if (fromCalendar) return fromCalendar;
-
-    const suit = normalizeText(play?.card_suit || play?.suit);
-    const spadeMode = normalizeText(play?.spade_mode);
-
-    let selectedValue = null;
-
-    if (suit === "SPADE") {
-      if (spadeMode === "APPOINTMENT") {
-        selectedValue = play?.start_date;
-      } else if (spadeMode === "DEADLINE") {
-        selectedValue = play?.end_date;
-      } else {
-        selectedValue = play?.start_date || play?.end_date;
-      }
-    } else {
-      selectedValue = play?.created_at;
-    }
-
-    return parseLocalDate(selectedValue);
   }
 
   function isBombDisabled(item) {
@@ -348,27 +260,6 @@
     return rows.join("");
   }
 
-  function isOwnedByCurrentUser(play, currentUserId) {
-    if (!currentUserId) return false;
-
-    return getOwnerUserIdFromPlay(play) === currentUserId;
-  }
-
-  function isVisibleTodayPlay(play, currentUserId) {
-    const entryType = normalizeText(play?.calendar_entry_type);
-    const rank = normalizeText(play?.card_rank || play?.rank);
-    const text = String(play?.play_text || play?.text || "").trim();
-
-    if (entryType === "PAYMENT") {
-      return isOwnedByCurrentUser(play, currentUserId);
-    }
-
-    if (!["J", "Q"].includes(rank)) return false;
-    if (!text) return false;
-
-    return isOwnedByCurrentUser(play, currentUserId);
-  }
-
   async function fetchTodayPlays(date) {
     const token = localStorage.getItem("cooptrackToken");
     if (!token) return [];
@@ -389,11 +280,11 @@
     return Array.isArray(data?.plays) ? data.plays : [];
   }
 
-  function buildItemsByHour(plays, currentUserId) {
+  function buildItemsByHour(plays) {
     const byHour = {};
 
     plays.forEach((play) => {
-      if (!isVisibleTodayPlay(play, currentUserId)) return;
+      if (!isVisibleTodayPlay(play)) return;
 
       const calendarDate = getPlayCalendarDate(play);
       if (!calendarDate) return;
@@ -417,10 +308,9 @@
   async function renderHoy() {
     const now = new Date();
     const nowHour = now.getHours();
-    const currentUserId = getCurrentUserId();
 
     const plays = await fetchTodayPlays(now);
-    const itemsByHour = buildItemsByHour(plays, currentUserId);
+    const itemsByHour = buildItemsByHour(plays);
 
     container.innerHTML = `
       <section class="hoy">
