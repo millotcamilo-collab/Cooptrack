@@ -470,6 +470,85 @@ function parseFlowChunks(flowValue) {
     .filter(Boolean);
 }
 
+function playCodeHasFlowFlag(playCode, flag) {
+  const wanted = String(flag || '').trim().toUpperCase();
+  if (!wanted) return false;
+
+  const parsed = parsePlayCodeRaw(playCode);
+  const chunks = parseFlowChunks(parsed.flow);
+
+  return chunks.some((chunk) => String(chunk || '').trim().toUpperCase() === wanted);
+}
+
+function appendFlowFlagToPlayCode(playCode, flag) {
+  const wanted = String(flag || '').trim();
+  if (!wanted) return String(playCode || '');
+
+  const parts = String(playCode || '').split('§');
+
+  while (parts.length < 9) {
+    parts.push('');
+  }
+
+  const flowIndex = 7;
+  const currentFlow = String(parts[flowIndex] || '');
+  const chunks = parseFlowChunks(currentFlow);
+
+  const exists = chunks.some((chunk) => {
+    return String(chunk || '').trim().toUpperCase() === wanted.toUpperCase();
+  });
+
+  if (!exists) {
+    chunks.push(wanted);
+  }
+
+  parts[flowIndex] = chunks.join(';');
+  return parts.slice(0, 9).join('§');
+}
+
+async function propagateBombFlagToFamily(client, rootPlayId, flag) {
+  const rootId = Number(rootPlayId || 0);
+  const normalizedFlag = String(flag || '').trim().toUpperCase();
+
+  if (!rootId || !normalizedFlag) return 0;
+
+  const familyResult = await client.query(
+    `
+    SELECT id, play_code
+    FROM plays
+    WHERE (id = $1 OR parent_play_id = $1)
+      AND card_rank IN ('J', 'Q')
+      AND card_suit = 'SPADE'
+    `,
+    [rootId]
+  );
+
+  let updatedCount = 0;
+
+  for (const row of familyResult.rows) {
+    const currentCode = String(row.play_code || '');
+    const nextCode = appendFlowFlagToPlayCode(currentCode, normalizedFlag);
+
+    if (nextCode === currentCode) {
+      continue;
+    }
+
+    await client.query(
+      `
+      UPDATE plays
+      SET play_code = $1,
+          updated_at = NOW()
+      WHERE id = $2
+      `,
+      [nextCode, row.id]
+    );
+
+    updatedCount += 1;
+  }
+
+  return updatedCount;
+}
+
 function getSettlementInfoFromPlayCode(playCode) {
   const parsed = parsePlayCodeRaw(playCode);
   const chunks = parseFlowChunks(parsed.flow);
@@ -1368,6 +1447,7 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
         AND p.end_date IS NOT NULL
         AND p.end_date BETWEEN NOW() AND NOW() + INTERVAL '30 minutes'
         AND COALESCE(p.play_code, '') NOT ILIKE '%bomb:DISABLED%'
+        AND COALESCE(p.play_code, '') NOT ILIKE '%bomb:DONE%'
       ORDER BY p.end_date ASC, p.created_at DESC
       `,
       [userId]
@@ -1444,6 +1524,7 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
         AND parent.end_date IS NOT NULL
         AND parent.end_date BETWEEN NOW() AND NOW() + INTERVAL '30 minutes'
         AND COALESCE(parent.play_code, '') NOT ILIKE '%bomb:DISABLED%'
+        AND COALESCE(parent.play_code, '') NOT ILIKE '%bomb:DONE%'
       ORDER BY parent.end_date ASC, q.created_at DESC
       `,
       [userId]
@@ -3032,6 +3113,49 @@ RETURNING *
     );
 
     const updatedPlay = updateResult.rows[0];
+
+    let deadlineBombRootPlayId = 0;
+    const currentSpadeMode = String(current?.spade_mode || '').trim().toUpperCase();
+
+    if (currentRank === 'J' && currentSuit === 'SPADE' && currentSpadeMode === 'DEADLINE') {
+      deadlineBombRootPlayId = Number(current.id || 0);
+    }
+
+    if (currentRank === 'Q' && currentSuit === 'SPADE') {
+      const parentPlayId = Number(current.parent_play_id || 0);
+
+      if (parentPlayId) {
+        const parentModeResult = await client.query(
+          `
+          SELECT spade_mode
+          FROM plays
+          WHERE id = $1
+          LIMIT 1
+          `,
+          [parentPlayId]
+        );
+
+        const parentMode = String(parentModeResult.rows[0]?.spade_mode || '').trim().toUpperCase();
+
+        if (parentMode === 'DEADLINE') {
+          deadlineBombRootPlayId = parentPlayId;
+        }
+      }
+    }
+
+    const hadBombDoneBefore = playCodeHasFlowFlag(current.play_code, 'BOMB:DONE');
+    const hasBombDoneNow = playCodeHasFlowFlag(updatedPlay.play_code, 'BOMB:DONE');
+
+    const hadBombDisabledBefore = playCodeHasFlowFlag(current.play_code, 'BOMB:DISABLED');
+    const hasBombDisabledNow = playCodeHasFlowFlag(updatedPlay.play_code, 'BOMB:DISABLED');
+
+    if (deadlineBombRootPlayId && !hadBombDoneBefore && hasBombDoneNow) {
+      await propagateBombFlagToFamily(client, deadlineBombRootPlayId, 'BOMB:DONE');
+    }
+
+    if (deadlineBombRootPlayId && !hadBombDisabledBefore && hasBombDisabledNow) {
+      await propagateBombFlagToFamily(client, deadlineBombRootPlayId, 'BOMB:DISABLED');
+    }
 
     if (
       currentRank === 'Q' &&
