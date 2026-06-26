@@ -864,6 +864,7 @@ async function fetchPlayForChat(client, playId) {
       p.target_user_id,
       p.reader_user_ids,
       p.play_text,
+      p.play_code,
       p.card_rank,
       p.card_suit,
       p.play_status
@@ -2950,65 +2951,78 @@ app.get('/plays/messages/unread-first', requireAuth, async (req, res) => {
     }
 
     const playMessagesTableName = getQualifiedTableName(schema.tableSchema, 'play_messages');
-
     const unreadCandidatesResult = await client.query(
       `
       SELECT
-        p.id AS play_id,
-        p.deck_id,
-        p.play_text,
-        p.created_by_user_id,
-        p.target_user_id,
-        p.reader_user_ids,
         pm.${quoteSqlIdent(idColumn)} AS message_id,
+        pm.${quoteSqlIdent(playRefColumn)} AS message_play_id,
         pm.${quoteSqlIdent(createdAtColumn)} AS message_created_at,
-        pm.${quoteSqlIdent(authorColumn)} AS message_author_user_id,
-        pr.read_at AS talud_read_at
-      FROM plays p
-      INNER JOIN ${playMessagesTableName} pm
-        ON pm.${quoteSqlIdent(playRefColumn)} = p.id
-      LEFT JOIN play_reads pr
-        ON pr.play_id = p.id
-       AND pr.user_id = $1
-       AND pr.reason = $2
-      WHERE
-        AND UPPER(COALESCE(p.card_rank, '')) = 'Q'
-        AND UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
-        AND COALESCE(p.play_code, '') ILIKE '%pay:QHEART%'
-        AND pm.${quoteSqlIdent(authorColumn)} IS NOT NULL
+        pm.${quoteSqlIdent(authorColumn)} AS message_author_user_id
+      FROM ${playMessagesTableName} pm
+      WHERE pm.${quoteSqlIdent(authorColumn)} IS NOT NULL
       ORDER BY pm.${quoteSqlIdent(createdAtColumn)} ASC, pm.${quoteSqlIdent(idColumn)} ASC
-      LIMIT 200
+      LIMIT 400
       `,
-      [userId, TALUD_READ_REASON]
+      []
     );
 
     console.log('TALUD unread-first candidates', {
       userId,
       count: unreadCandidatesResult.rows.length,
       sample: unreadCandidatesResult.rows.slice(0, 5).map((row) => ({
-        play_id: row.play_id,
-        deck_id: row.deck_id,
+        play_id: row.message_play_id,
         message_id: row.message_id,
         message_author_user_id: row.message_author_user_id,
         message_created_at: row.message_created_at,
-        talud_read_at: row.talud_read_at,
       })),
     });
+
+    const candidatePlayIds = [...new Set(
+      unreadCandidatesResult.rows
+        .map((row) => Number(row.message_play_id || 0))
+        .filter((id) => Number.isInteger(id) && id > 0)
+    )];
+
+    const playReadsResult = candidatePlayIds.length
+      ? await client.query(
+          `
+          SELECT play_id, read_at
+          FROM play_reads
+          WHERE user_id = $1
+            AND reason = $2
+            AND play_id = ANY($3::int[])
+          `,
+          [userId, TALUD_READ_REASON, candidatePlayIds]
+        )
+      : { rows: [] };
+
+    const playReadMap = playReadsResult.rows.reduce((acc, row) => {
+      acc[Number(row.play_id || 0)] = row.read_at || null;
+      return acc;
+    }, {});
+
+    const playsMap = {};
+
+    for (const playId of candidatePlayIds) {
+      const play = await fetchPlayForChat(client, playId);
+      if (play) {
+        playsMap[playId] = play;
+      }
+    }
 
     let unread = null;
 
     for (const row of unreadCandidatesResult.rows) {
+      const playId = Number(row.message_play_id || 0);
       const authorUserId = Number(row.message_author_user_id || 0);
-      if (!authorUserId || authorUserId === userId) continue;
+      if (!playId || !authorUserId || authorUserId === userId) continue;
 
-      const play = {
-        id: Number(row.play_id || 0),
-        deck_id: Number(row.deck_id || 0),
-        play_text: row.play_text || '',
-        created_by_user_id: Number(row.created_by_user_id || 0),
-        target_user_id: Number(row.target_user_id || 0),
-        reader_user_ids: row.reader_user_ids,
-      };
+      const play = playsMap[playId] || null;
+      if (!play) continue;
+
+      if (String(play.card_rank || '').toUpperCase() !== 'Q') continue;
+      if (String(play.card_suit || '').toUpperCase() !== 'SPADE') continue;
+      if (!String(play.play_code || '').includes('pay:QHEART')) continue;
 
       const isPublic = playReadersArePublic(play.reader_user_ids);
       const participants = getPlayParticipantUserIds(play);
@@ -3018,7 +3032,7 @@ app.get('/plays/messages/unread-first', requireAuth, async (req, res) => {
       }
 
       const createdAtMs = Date.parse(row.message_created_at || '');
-      const readAtMs = row.talud_read_at ? Date.parse(row.talud_read_at) : NaN;
+      const readAtMs = playReadMap[playId] ? Date.parse(playReadMap[playId]) : NaN;
 
       if (Number.isFinite(createdAtMs) && Number.isFinite(readAtMs) && createdAtMs <= readAtMs) {
         continue;
@@ -3049,16 +3063,20 @@ app.get('/plays/messages/unread-first', requireAuth, async (req, res) => {
       ok: true,
       hasUnread: true,
       unread: {
-        play_id: Number(unread.play_id || 0),
-        deck_id: Number(unread.deck_id || 0),
-        play_text: String(unread.play_text || ''),
+        play_id: Number(unread.message_play_id || 0),
+        deck_id: Number(playsMap[Number(unread.message_play_id || 0)]?.deck_id || 0),
+        play_text: String(playsMap[Number(unread.message_play_id || 0)]?.play_text || ''),
         message_id: Number(unread.message_id || 0),
         message_created_at: unread.message_created_at,
       }
     });
   } catch (error) {
     console.error('Error en GET /plays/messages/unread-first', error);
-    return res.status(500).json({ ok: false, error: 'No se pudo obtener el talud no leido' });
+    return res.status(500).json({
+      ok: false,
+      error: 'No se pudo obtener el talud no leido',
+      detail: error?.message || 'UNKNOWN_ERROR'
+    });
   } finally {
     client.release();
   }
