@@ -273,23 +273,15 @@ ${dayHeader ? `
     const safeStatus = String(status || "").trim().toUpperCase();
 
     if (safeStatus === "APPROVED") {
-      return `
-      <img
-        class="lv2-play-card__decision-icon"
-        src="/assets/icons/Sello80.gif"
-        alt="Aprobada"
-      />
-    `;
+      return '<span class="lv2-play-card__decision-stamp lv2-play-card__decision-stamp--approved" aria-label="Aprobado">APROBADO</span>';
     }
 
     if (safeStatus === "REJECTED") {
-      return `
-      <img
-        class="lv2-play-card__decision-icon"
-        src="/assets/icons/stepback80.gif"
-        alt="Rechazada"
-      />
-    `;
+      return '<span class="lv2-play-card__decision-stamp lv2-play-card__decision-stamp--rejected" aria-label="Rechazado">RECHAZADO</span>';
+    }
+
+    if (safeStatus === "CANCELLED") {
+      return '<span class="lv2-play-card__decision-stamp lv2-play-card__decision-stamp--cancelled" aria-label="Cancelado">CANCELADO</span>';
     }
 
     return "";

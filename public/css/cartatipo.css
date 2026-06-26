@@ -173,6 +173,39 @@
   flex: 0 0 auto;
 }
 
+.lv2-play-card__decision-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  height: 32px;
+  padding: 0 10px;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
+  line-height: 1;
+  text-transform: uppercase;
+  transform: rotate(-12deg);
+  opacity: 0.88;
+  background: rgba(255, 255, 255, 0.36);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset;
+  flex: 0 0 auto;
+}
+
+.lv2-play-card__decision-stamp--approved {
+  color: #197140;
+}
+
+.lv2-play-card__decision-stamp--rejected {
+  color: #9a1f1f;
+}
+
+.lv2-play-card__decision-stamp--cancelled {
+  color: #4e4e4e;
+}
+
 /* Q♥ económica */
 
 .lienzo-qheart-box__amount-row {
