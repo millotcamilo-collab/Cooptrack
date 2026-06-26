@@ -2283,17 +2283,21 @@ ${showBombActions
       });
     }
 
-    if (acceptBtn) {
-      acceptBtn.addEventListener("click", () => {
+    document.querySelectorAll('#lienzo-accept-btn').forEach((btn) => {
+      btn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
         handleAcceptPlay(play);
       });
-    }
+    });
 
-    if (rejectBtn) {
-      rejectBtn.addEventListener("click", () => {
+    document.querySelectorAll('#lienzo-reject-btn').forEach((btn) => {
+      btn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
         handleRejectPlay(play);
       });
-    }
+    });
 
     if (cancelBtn) {
       cancelBtn.addEventListener("click", () => {

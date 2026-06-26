@@ -353,6 +353,15 @@
 
                 const deckQuery = deckId ? `?id=${deckId}` : "";
 
+                // Rechazo de invitaciones Q♠ debe ir a QS en todos los casos.
+                if (
+                    rank === "Q" &&
+                    suit === "SPADE" &&
+                    ["REJECTED", "CANCELLED", "QUIT", "FIRED"].includes(normalizedStatus)
+                ) {
+                    return "/qs.html";
+                }
+
 if (!isMobileViewport()) {
   const ymd = getPlayCalendarYmd(play);
   return ymd
