@@ -411,7 +411,7 @@
         <img src="/assets/icons/award60oro.gif" alt="Confirmar pago" />
       </button>
       <button type="button" id="paynow-complain-btn" class="icon-btn" title="Registrar queja">
-        <img src="/assets/icons/ticket80g.gif" alt="Registrar queja" />
+        <img src="/assets/icons/ticket60.gif" alt="Registrar queja" />
       </button>
     `;
     }
