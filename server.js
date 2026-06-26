@@ -1509,6 +1509,8 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
           ON d.id = p.deck_id
         WHERE
           ${visibilityWhere}
+          AND UPPER(COALESCE(p.card_rank, '')) IN ('J', 'Q')
+          AND COALESCE(p.target_user_id, p.created_by_user_id, 0) = $5::int
       ),
 
       base_rows AS (
@@ -1561,15 +1563,7 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
           UPPER(COALESCE(vp.card_rank, '')) = 'Q'
           AND UPPER(COALESCE(vp.card_suit, '')) = 'SPADE'
           AND vp.flow_chunk ~ 'pay:QHEART[^;]*\\|payDate:[0-9]{4}-[0-9]{2}-[0-9]{2}'
-          AND (
-            COALESCE(vp.target_user_id, 0) = $5::int
-            OR COALESCE(vp.created_by_user_id, 0) = $5::int
-            OR EXISTS (
-              SELECT 1
-              FROM regexp_split_to_table(COALESCE(vp.recipients_chunk, ''), '[,;| ]+') AS token
-              WHERE token = $6 OR token = $7
-            )
-          )
+          AND COALESCE(vp.target_user_id, vp.created_by_user_id, 0) = $5::int
           AND to_date(
             (regexp_match(vp.flow_chunk, 'pay:QHEART[^;]*\\|payDate:([0-9]{4}-[0-9]{2}-[0-9]{2})'))[1],
             'YYYY-MM-DD'
@@ -1587,7 +1581,7 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
         id ASC,
         CASE WHEN calendar_entry_type = 'PAYMENT' THEN 1 ELSE 0 END
       `,
-      [userIdText, userToken, from, to, userId, userIdText, userToken]
+      [userIdText, userToken, from, to, userId]
     );
 
     return res.json({
