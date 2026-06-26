@@ -1510,6 +1510,10 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
         WHERE
           ${visibilityWhere}
           AND UPPER(COALESCE(p.card_rank, '')) IN ('J', 'Q')
+          AND (
+            UPPER(COALESCE(p.card_rank, '')) <> 'Q'
+            OR UPPER(COALESCE(p.play_status, '')) = 'APPROVED'
+          )
           AND COALESCE(p.target_user_id, p.created_by_user_id, 0) = $5::int
       ),
 
@@ -1755,7 +1759,7 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
       WHERE q.target_user_id = $1
         AND q.card_rank = 'Q'
         AND q.card_suit = 'SPADE'
-        AND UPPER(COALESCE(q.play_status, '')) IN ('ACTIVE', 'SENT', 'PENDING', 'APPROVED')
+        AND UPPER(COALESCE(q.play_status, '')) = 'APPROVED'
         AND UPPER(COALESCE(parent.spade_mode, '')) = 'DEADLINE'
         AND parent.end_date IS NOT NULL
         AND parent.end_date BETWEEN NOW() AND NOW() + INTERVAL '30 minutes'
@@ -1782,22 +1786,7 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
         ON d.id = p.deck_id
       WHERE p.target_user_id = $1
         AND UPPER(COALESCE(p.play_status, '')) IN ('SENT', 'PENDING')
-        AND (
-          p.card_rank IN ('K', 'A')
-          OR (
-            p.card_rank = 'Q'
-            AND p.card_suit = 'SPADE'
-            AND NOT EXISTS (
-              SELECT 1
-              FROM plays parent
-              WHERE parent.id = p.parent_play_id
-                AND (
-                  (parent.start_date IS NOT NULL AND parent.start_date <= NOW())
-                  OR (parent.end_date IS NOT NULL AND parent.end_date <= NOW())
-                )
-            )
-          )
-        )
+        AND p.card_rank IN ('K', 'A')
       ORDER BY p.created_at DESC
       LIMIT 50
       `,
