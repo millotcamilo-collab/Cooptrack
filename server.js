@@ -2707,116 +2707,6 @@ app.post('/plays/:id/messages', requireAuth, async (req, res) => {
   const client = await pool.connect();
 
   try {
-
-app.get('/plays/messages/unread-first', requireAuth, async (req, res) => {
-  const client = await pool.connect();
-
-  try {
-    const userId = Number(req.auth.userId || 0);
-    const userIdText = String(userId);
-    const userToken = `U:${userId}`;
-
-    if (!userId) {
-      return res.status(401).json({ ok: false, error: 'Usuario no autenticado' });
-    }
-
-    let schema = { columns: new Set(), hasAttachmentsTable: false };
-
-    try {
-      schema = await loadPlayMessagesSchema(client);
-    } catch (schemaError) {
-      console.warn('Could not load play_messages schema for unread-first', schemaError?.message);
-      return res.json({ ok: true, hasUnread: false, unread: null });
-    }
-
-    if (!schema.columns.size) {
-      return res.json({ ok: true, hasUnread: false, unread: null });
-    }
-
-    const playRefColumn = pickExistingPlayMessagesColumn(schema.columns, [
-      'play_id',
-      'source_play_id',
-      'parent_play_id',
-      'playid',
-    ]);
-    const authorColumn = pickExistingPlayMessagesColumn(schema.columns, [
-      'author_user_id',
-      'created_by_user_id',
-      'sender_user_id',
-      'user_id',
-    ]);
-    const createdAtColumn = pickExistingPlayMessagesColumn(schema.columns, [
-      'created_at',
-      'createdat',
-      'inserted_at',
-    ]) || 'created_at';
-    const idColumn = pickExistingPlayMessagesColumn(schema.columns, [
-      'id',
-      'message_id',
-    ]) || 'id';
-
-    if (!playRefColumn || !authorColumn) {
-      return res.json({ ok: true, hasUnread: false, unread: null });
-    }
-
-    const playMessagesTableName = getQualifiedTableName(schema.tableSchema, 'play_messages');
-    const visibilityWhere = buildReadersVisibilityWhereClause({
-      readersColumn: 'p.reader_user_ids',
-      userIdParamIndex: 1,
-    });
-
-    const unreadResult = await client.query(
-      `
-      SELECT
-        p.id AS play_id,
-        p.deck_id,
-        p.play_text,
-        pm.${quoteSqlIdent(idColumn)} AS message_id,
-        pm.${quoteSqlIdent(createdAtColumn)} AS message_created_at
-      FROM plays p
-      INNER JOIN ${playMessagesTableName} pm
-        ON pm.${quoteSqlIdent(playRefColumn)} = p.id
-      LEFT JOIN play_reads pr
-        ON pr.play_id = p.id
-       AND pr.user_id = $4
-       AND pr.reason = $5
-      WHERE
-        ${visibilityWhere}
-        AND UPPER(COALESCE(p.card_rank, '')) = 'Q'
-        AND UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
-        AND COALESCE(p.play_code, '') ILIKE '%pay:QHEART%'
-        AND COALESCE(pm.${quoteSqlIdent(authorColumn)}, 0) <> $4
-        AND pm.${quoteSqlIdent(createdAtColumn)} > COALESCE(pr.read_at, TIMESTAMP '1970-01-01')
-      ORDER BY pm.${quoteSqlIdent(createdAtColumn)} ASC, pm.${quoteSqlIdent(idColumn)} ASC
-      LIMIT 1
-      `,
-      [userIdText, userToken, userId, userId, TALUD_READ_REASON]
-    );
-
-    const unread = unreadResult.rows[0] || null;
-
-    if (!unread) {
-      return res.json({ ok: true, hasUnread: false, unread: null });
-    }
-
-    return res.json({
-      ok: true,
-      hasUnread: true,
-      unread: {
-        play_id: Number(unread.play_id || 0),
-        deck_id: Number(unread.deck_id || 0),
-        play_text: String(unread.play_text || ''),
-        message_id: Number(unread.message_id || 0),
-        message_created_at: unread.message_created_at,
-      }
-    });
-  } catch (error) {
-    console.error('Error en GET /plays/messages/unread-first', error);
-    return res.status(500).json({ ok: false, error: 'No se pudo obtener el talud no leido' });
-  } finally {
-    client.release();
-  }
-});
     const playId = Number(req.params.id || 0);
     const userId = Number(req.auth.userId || 0);
     const messageText = String(req.body?.text || '').trim();
@@ -3005,6 +2895,116 @@ app.get('/plays/messages/unread-first', requireAuth, async (req, res) => {
 
     console.error('Error en POST /plays/:id/messages', error);
     return res.status(500).json({ ok: false, error: error?.message || 'No se pudo guardar el mensaje' });
+  } finally {
+    client.release();
+  }
+});
+
+app.get('/plays/messages/unread-first', requireAuth, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const userId = Number(req.auth.userId || 0);
+    const userIdText = String(userId);
+    const userToken = `U:${userId}`;
+
+    if (!userId) {
+      return res.status(401).json({ ok: false, error: 'Usuario no autenticado' });
+    }
+
+    let schema = { columns: new Set(), hasAttachmentsTable: false };
+
+    try {
+      schema = await loadPlayMessagesSchema(client);
+    } catch (schemaError) {
+      console.warn('Could not load play_messages schema for unread-first', schemaError?.message);
+      return res.json({ ok: true, hasUnread: false, unread: null });
+    }
+
+    if (!schema.columns.size) {
+      return res.json({ ok: true, hasUnread: false, unread: null });
+    }
+
+    const playRefColumn = pickExistingPlayMessagesColumn(schema.columns, [
+      'play_id',
+      'source_play_id',
+      'parent_play_id',
+      'playid',
+    ]);
+    const authorColumn = pickExistingPlayMessagesColumn(schema.columns, [
+      'author_user_id',
+      'created_by_user_id',
+      'sender_user_id',
+      'user_id',
+    ]);
+    const createdAtColumn = pickExistingPlayMessagesColumn(schema.columns, [
+      'created_at',
+      'createdat',
+      'inserted_at',
+    ]) || 'created_at';
+    const idColumn = pickExistingPlayMessagesColumn(schema.columns, [
+      'id',
+      'message_id',
+    ]) || 'id';
+
+    if (!playRefColumn || !authorColumn) {
+      return res.json({ ok: true, hasUnread: false, unread: null });
+    }
+
+    const playMessagesTableName = getQualifiedTableName(schema.tableSchema, 'play_messages');
+    const visibilityWhere = buildReadersVisibilityWhereClause({
+      readersColumn: 'p.reader_user_ids',
+      userIdParamIndex: 1,
+    });
+
+    const unreadResult = await client.query(
+      `
+      SELECT
+        p.id AS play_id,
+        p.deck_id,
+        p.play_text,
+        pm.${quoteSqlIdent(idColumn)} AS message_id,
+        pm.${quoteSqlIdent(createdAtColumn)} AS message_created_at
+      FROM plays p
+      INNER JOIN ${playMessagesTableName} pm
+        ON pm.${quoteSqlIdent(playRefColumn)} = p.id
+      LEFT JOIN play_reads pr
+        ON pr.play_id = p.id
+       AND pr.user_id = $4
+       AND pr.reason = $5
+      WHERE
+        ${visibilityWhere}
+        AND UPPER(COALESCE(p.card_rank, '')) = 'Q'
+        AND UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
+        AND COALESCE(p.play_code, '') ILIKE '%pay:QHEART%'
+        AND COALESCE(pm.${quoteSqlIdent(authorColumn)}, 0) <> $4
+        AND pm.${quoteSqlIdent(createdAtColumn)} > COALESCE(pr.read_at, TIMESTAMP '1970-01-01')
+      ORDER BY pm.${quoteSqlIdent(createdAtColumn)} ASC, pm.${quoteSqlIdent(idColumn)} ASC
+      LIMIT 1
+      `,
+      [userIdText, userToken, userId, userId, TALUD_READ_REASON]
+    );
+
+    const unread = unreadResult.rows[0] || null;
+
+    if (!unread) {
+      return res.json({ ok: true, hasUnread: false, unread: null });
+    }
+
+    return res.json({
+      ok: true,
+      hasUnread: true,
+      unread: {
+        play_id: Number(unread.play_id || 0),
+        deck_id: Number(unread.deck_id || 0),
+        play_text: String(unread.play_text || ''),
+        message_id: Number(unread.message_id || 0),
+        message_created_at: unread.message_created_at,
+      }
+    });
+  } catch (error) {
+    console.error('Error en GET /plays/messages/unread-first', error);
+    return res.status(500).json({ ok: false, error: 'No se pudo obtener el talud no leido' });
   } finally {
     client.release();
   }

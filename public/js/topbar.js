@@ -1091,7 +1091,7 @@ ${hasAuthorDecks
               ${taludUnread
           ? `
                 <button
-                  class="topbar__icon-btn topbar__desktop-only"
+                  class="topbar__icon-btn"
                   id="taludUnreadBtn"
                   title="Comentario no leido"
                   aria-label="Comentario no leido"
