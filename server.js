@@ -2905,8 +2905,6 @@ app.get('/plays/messages/unread-first', requireAuth, async (req, res) => {
 
   try {
     const userId = Number(req.auth.userId || 0);
-    const userIdText = String(userId);
-    const userToken = `U:${userId}`;
 
     if (!userId) {
       return res.status(401).json({ ok: false, error: 'Usuario no autenticado' });
@@ -2952,40 +2950,70 @@ app.get('/plays/messages/unread-first', requireAuth, async (req, res) => {
     }
 
     const playMessagesTableName = getQualifiedTableName(schema.tableSchema, 'play_messages');
-    const visibilityWhere = buildReadersVisibilityWhereClause({
-      readersColumn: 'p.reader_user_ids',
-      userIdParamIndex: 1,
-    });
 
-    const unreadResult = await client.query(
+    const unreadCandidatesResult = await client.query(
       `
       SELECT
         p.id AS play_id,
         p.deck_id,
         p.play_text,
+        p.created_by_user_id,
+        p.target_user_id,
+        p.reader_user_ids,
         pm.${quoteSqlIdent(idColumn)} AS message_id,
-        pm.${quoteSqlIdent(createdAtColumn)} AS message_created_at
+        pm.${quoteSqlIdent(createdAtColumn)} AS message_created_at,
+        pm.${quoteSqlIdent(authorColumn)} AS message_author_user_id,
+        pr.read_at AS talud_read_at
       FROM plays p
       INNER JOIN ${playMessagesTableName} pm
         ON pm.${quoteSqlIdent(playRefColumn)} = p.id
       LEFT JOIN play_reads pr
         ON pr.play_id = p.id
-       AND pr.user_id = $4
-       AND pr.reason = $5
+       AND pr.user_id = $1
+       AND pr.reason = $2
       WHERE
-        ${visibilityWhere}
         AND UPPER(COALESCE(p.card_rank, '')) = 'Q'
         AND UPPER(COALESCE(p.card_suit, '')) = 'SPADE'
         AND COALESCE(p.play_code, '') ILIKE '%pay:QHEART%'
-        AND COALESCE(pm.${quoteSqlIdent(authorColumn)}, 0) <> $4
-        AND pm.${quoteSqlIdent(createdAtColumn)} > COALESCE(pr.read_at, TIMESTAMP '1970-01-01')
+        AND pm.${quoteSqlIdent(authorColumn)} IS NOT NULL
       ORDER BY pm.${quoteSqlIdent(createdAtColumn)} ASC, pm.${quoteSqlIdent(idColumn)} ASC
-      LIMIT 1
+      LIMIT 200
       `,
-      [userIdText, userToken, userId, userId, TALUD_READ_REASON]
+      [userId, TALUD_READ_REASON]
     );
 
-    const unread = unreadResult.rows[0] || null;
+    let unread = null;
+
+    for (const row of unreadCandidatesResult.rows) {
+      const authorUserId = Number(row.message_author_user_id || 0);
+      if (!authorUserId || authorUserId === userId) continue;
+
+      const play = {
+        id: Number(row.play_id || 0),
+        deck_id: Number(row.deck_id || 0),
+        play_text: row.play_text || '',
+        created_by_user_id: Number(row.created_by_user_id || 0),
+        target_user_id: Number(row.target_user_id || 0),
+        reader_user_ids: row.reader_user_ids,
+      };
+
+      const isPublic = playReadersArePublic(play.reader_user_ids);
+      const participants = getPlayParticipantUserIds(play);
+
+      if (!isPublic && !participants.includes(userId)) {
+        continue;
+      }
+
+      const createdAtMs = Date.parse(row.message_created_at || '');
+      const readAtMs = row.talud_read_at ? Date.parse(row.talud_read_at) : NaN;
+
+      if (Number.isFinite(createdAtMs) && Number.isFinite(readAtMs) && createdAtMs <= readAtMs) {
+        continue;
+      }
+
+      unread = row;
+      break;
+    }
 
     if (!unread) {
       return res.json({ ok: true, hasUnread: false, unread: null });
