@@ -2213,16 +2213,7 @@ const nextStatus = userIsAceClub ? "SENT" : "PENDING";
             }
 
             alert("Invitación aceptada");
-
-            const deckId =
-                Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
-
-            if (deckId) {
-                window.location.href = `/mazo.html?id=${deckId}`;
-                return;
-            }
-
-            window.history.back();
+            window.location.href = "/almanaque.html";
         } catch (error) {
             console.error("Error en handleAcceptPlay", error);
             alert("No se pudo aprobar la jugada");
@@ -2279,7 +2270,7 @@ const nextStatus = userIsAceClub ? "SENT" : "PENDING";
                 window.location.href = `/mazo.html?id=${deckId}`;
             } else {
                 // 👉 rechazo del invitado
-                window.location.href = "/archivo.html";
+                window.location.href = "/qs.html";
             }
 
         } catch (error) {

@@ -1924,16 +1924,7 @@ ${showBombActions
       }
 
       alert("Invitación aceptada");
-
-      const deckId =
-        Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
-
-      if (deckId) {
-        window.location.href = `/mazo.html?id=${deckId}`;
-        return;
-      }
-
-      window.history.back();
+      window.location.href = "/almanaque.html";
     } catch (error) {
       console.error("Error en handleAcceptPlay", error);
       alert("No se pudo aprobar la jugada");
@@ -1978,7 +1969,7 @@ ${showBombActions
       }
 
       alert("Invitación rechazada");
-      window.location.href = "/archivo.html";
+      window.location.href = "/qs.html";
     } catch (error) {
       console.error("Error en handleRejectPlay", error);
       alert("No se pudo rechazar la invitación");
