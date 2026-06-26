@@ -96,13 +96,14 @@
 
   function renderMessage(message, currentUserId) {
     const mine = Number(message?.author_user_id || 0) === Number(currentUserId || 0);
+    const messageId = Number(message?.id || 0);
     const text = String(message?.text || "").trim();
     const nickname = message?.author_nickname || "Usuario";
     const avatar = message?.author_profile_photo_url || DEFAULT_AVATAR;
     const at = formatDate(message?.created_at);
 
     return `
-      <article class="talud__message ${mine ? "talud__message--mine" : ""}">
+      <article class="talud__message ${mine ? "talud__message--mine" : ""}" data-message-id="${messageId}">
         <img class="talud__message-avatar" src="${escapeHtml(avatar)}" alt="${escapeHtml(nickname)}" />
 
         <div class="talud__bubble-wrap">
@@ -171,6 +172,27 @@
     timeline.scrollTop = timeline.scrollHeight;
   }
 
+  function scrollToMessage(host, messageId) {
+    const targetId = Number(messageId || 0);
+    if (!targetId) {
+      scrollToBottom(host);
+      return;
+    }
+
+    const target = host.querySelector(`[data-message-id="${targetId}"]`);
+    if (!target) {
+      scrollToBottom(host);
+      return;
+    }
+
+    target.scrollIntoView({ block: "center", behavior: "smooth" });
+    target.classList.add("talud__message--focus");
+
+    window.setTimeout(() => {
+      target.classList.remove("talud__message--focus");
+    }, 1800);
+  }
+
   function injectStylesOnce() {
     if (document.getElementById("talud-inline-styles")) return;
 
@@ -192,6 +214,7 @@
       .talud__empty { font-size: 13px; color: #555; }
       .talud__message { display: flex; gap: 8px; margin-bottom: 10px; }
       .talud__message--mine { flex-direction: row-reverse; }
+      .talud__message--focus { outline: 2px solid #d28a00; border-radius: 10px; }
       .talud__message-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
       .talud__bubble-wrap { max-width: min(82%, 560px); }
       .talud__bubble-head { display: flex; gap: 8px; align-items: baseline; margin-bottom: 2px; }
@@ -228,6 +251,7 @@
     if (!target) throw new Error("No se encontro el contenedor de talud");
 
     const playId = Number(options.playId || 0);
+    const focusMessageId = Number(options.focusMessageId || 0);
     if (!playId) throw new Error("playId es obligatorio para talud");
 
     injectStylesOnce();
@@ -235,7 +259,7 @@
     try {
       const state = await fetchMessages(playId);
       renderShell(target, state);
-      scrollToBottom(target);
+      scrollToMessage(target, focusMessageId);
 
       const form = target.querySelector("#talud-composer");
       const textArea = target.querySelector("#talud-text");

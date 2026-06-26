@@ -513,6 +513,34 @@
     }
   }
 
+  async function getTopbarTaludUnread() {
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) return null;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/plays/messages/unread-first`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json"
+        }
+      });
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+
+      if (!data?.ok || !data?.hasUnread || !data?.unread) {
+        return null;
+      }
+
+      return data.unread;
+    } catch (error) {
+      console.warn("No se pudo obtener talud no leido:", error);
+      return null;
+    }
+  }
+
   function parsePlayCode(code) {
     const parts = String(code || "").split("§");
 
@@ -923,17 +951,16 @@
     const notifications = user
       ? await getTopbarNotifications(user.id)
       : { latestActionRequired: null, latestReadOnly: null };
+    const taludUnread = user ? await getTopbarTaludUnread() : null;
 
-    const latestActionRequired = notifications.latestActionRequired;
-    const latestReadOnly = notifications.latestReadOnly;
+    const latestActionRequired = notifications.latestActionRequired || null;
+    const latestReadOnly = notifications.latestReadOnly || null;
 
     const latestAhoraPlay = user ? await checkAlgoAhora() : null;
     const esAhoraSnoozed = isEsAhoraSnoozed();
 
     const userHasPendingApprovals = !!latestActionRequired;
     const userHasReadNotifications = !!latestReadOnly;
-
-
 
     let topbarHTML = "";
 
@@ -1061,6 +1088,20 @@ ${hasAuthorDecks
           : ""
         }
 
+              ${taludUnread
+          ? `
+                <button
+                  class="topbar__icon-btn topbar__desktop-only"
+                  id="taludUnreadBtn"
+                  title="Comentario no leido"
+                  aria-label="Comentario no leido"
+                >
+                  <img src="/assets/icons/sellopostal60.gif" class="topbar__icon-img" alt="Comentario no leido" />
+                </button>
+              `
+          : ""
+        }
+
               <a
                 href="/almanaque.html"
                 class="topbar__icon-btn topbar__desktop-only"
@@ -1087,14 +1128,14 @@ ${hasAuthorDecks
 
               ${user.is_admin
           ? `
-                    <a
-                      href="/protected-pages/administradores.html"
-                      class="topbar__icon-btn topbar__desktop-only"
-                      title="Administración de usuarios"
-                    >
-                      <img src="/assets/icons/Tools120.gif" class="topbar__icon-img" />
-                    </a>
-                  `
+                  <a
+                    href="/protected-pages/administradores.html"
+                    class="topbar__icon-btn topbar__desktop-only"
+                    title="Administración de usuarios"
+                  >
+                    <img src="/assets/icons/Tools120.gif" class="topbar__icon-img" />
+                  </a>
+                `
           : ""
         }
 
@@ -1203,6 +1244,21 @@ ${hasAuthorDecks
       });
     }
 
+    const taludUnreadBtn = document.getElementById("taludUnreadBtn");
+    if (taludUnreadBtn && taludUnread) {
+      taludUnreadBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        const deckId = Number(taludUnread.deck_id || 0);
+        const playId = Number(taludUnread.play_id || 0);
+        const messageId = Number(taludUnread.message_id || 0);
+
+        if (!deckId || !playId) return;
+
+        const messageQuery = messageId ? `&messageId=${messageId}` : "";
+        window.location.href = `/payNow.html?deckId=${deckId}&playId=${playId}&openTalud=1${messageQuery}`;
+      });
+    }
+
     const pendingBtn = document.getElementById("pendingBtn");
     if (pendingBtn && latestActionRequired) {
       pendingBtn.addEventListener("click", async () => {
@@ -1231,7 +1287,6 @@ ${hasAuthorDecks
         window.location.href = href;
       }
     }
-
   }
 
   document.addEventListener("DOMContentLoaded", renderTopbar);

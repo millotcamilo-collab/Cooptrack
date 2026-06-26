@@ -578,9 +578,11 @@
     return host;
   }
 
-  async function toggleTalud(play) {
+  async function toggleTalud(play, options = {}) {
     const host = ensureTaludHost();
     if (!host) return;
+
+    const focusMessageId = Number(options?.focusMessageId || 0);
 
     taludOpen = !taludOpen;
     host.style.display = taludOpen ? "block" : "none";
@@ -603,7 +605,10 @@
         return;
       }
 
-      taludController = await window.Talud.mount(host, { playId });
+      taludController = await window.Talud.mount(host, {
+        playId,
+        focusMessageId
+      });
       taludMountedPlayId = playId;
     } catch (error) {
       console.error("Error montando talud en payNow", error);
@@ -757,6 +762,8 @@
     const params = getParams();
     const deckId = Number(params.get("deckId") || 0);
     const playId = Number(params.get("playId") || 0);
+    const shouldOpenTalud = params.get("openTalud") === "1";
+    const focusMessageId = Number(params.get("messageId") || 0);
 
     const content = document.getElementById("tribuna-content");
 
@@ -791,6 +798,10 @@
 
       renderPlacard(play);
       renderPayNow(play);
+
+      if (shouldOpenTalud) {
+        await toggleTalud(play, { focusMessageId });
+      }
     } catch (error) {
       console.error("Error cargando payNow", error);
       if (content) {
