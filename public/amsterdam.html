@@ -587,9 +587,7 @@ function getPlayCalendarYmd(play) {
                     console.log("VOY A EJECUTAR START");
                     situacion.start(play);
                 }
-                if (typeof window.enableAmsterdamPeek === "function") {
-                    window.enableAmsterdamPeek();
-                }
+
                 renderTribunaPlacard(play, deckState);
                 bindTargetActions(play);
             }
