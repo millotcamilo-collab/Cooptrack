@@ -165,7 +165,7 @@
 .tribuna-page--amsterdam .qqpica-card-stack__top {
   position: relative;
   z-index: 1;
-  touch-action: none;
+  touch-action: pan-y;
   cursor: grab;
   user-select: none;
 }
@@ -211,7 +211,7 @@
   left: 0;
 top: 20px;
   z-index: 2;
-  touch-action: none;
+  touch-action: pan-y;
   cursor: grab;
   user-select: none;
 }
