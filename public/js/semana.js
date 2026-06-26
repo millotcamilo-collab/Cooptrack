@@ -35,8 +35,109 @@
     }
   }
 
+  function normalizeText(value) {
+    return String(value || "").trim().toUpperCase();
+  }
+
+  function getActionIconPath(actionName) {
+    const icons = window.ICONS?.actions || {};
+
+    const fallback = {
+      start: "/assets/icons/reloj60.gif",
+      bomb: "/assets/icons/bombaRedonda60.gif",
+      boom: "/assets/icons/Boom80.gif",
+      deadline: "/assets/icons/META60.gif",
+      stop: "/assets/icons/stop60.gif"
+    };
+
+    return icons[actionName] || fallback[actionName] || "";
+  }
+
+  function playCodeContains(play, token) {
+    const code = String(play?.play_code || "").toUpperCase();
+    return code.includes(String(token || "").toUpperCase());
+  }
+
+  function isCancelledActivity(play) {
+    const status = normalizeText(play?.play_status);
+
+    if (["CANCELED", "CANCELLED", "REJECTED", "VOID", "ABORTED", "DISABLED"].includes(status)) {
+      return true;
+    }
+
+    return playCodeContains(play, "bomb:DISABLED");
+  }
+
+  function isConcludedActivity(play) {
+    const status = normalizeText(play?.play_status);
+
+    if (["DONE", "COMPLETED", "CLOSED", "PAID", "SETTLED", "FINISHED"].includes(status)) {
+      return true;
+    }
+
+    return playCodeContains(play, "bomb:DONE");
+  }
+
+  function isDetonatedActivity(play) {
+    if (
+      playCodeContains(play, "bomb:EXPLODED") ||
+      playCodeContains(play, "bomb:DETONATED") ||
+      playCodeContains(play, "bomb:BOOM")
+    ) {
+      return true;
+    }
+
+    const status = normalizeText(play?.play_status);
+    if (["DONE", "COMPLETED", "CLOSED", "PAID", "SETTLED", "FINISHED", "CANCELED", "CANCELLED", "REJECTED", "VOID", "ABORTED", "DISABLED"].includes(status)) {
+      return false;
+    }
+
+    const deadlineDate = play?.end_date ? new Date(play.end_date) : null;
+    if (!deadlineDate || Number.isNaN(deadlineDate.getTime())) {
+      return false;
+    }
+
+    return Date.now() > deadlineDate.getTime();
+  }
+
 function getPlayLeadingVisual(item) {
-  const suit = String(item?.card_suit || "").toUpperCase();
+  const suit = normalizeText(item?.card_suit);
+  const spadeMode = normalizeText(item?.spade_mode);
+
+  if (suit === "SPADE") {
+    if (isCancelledActivity(item)) {
+      return {
+        type: "icon",
+        value: getActionIconPath("stop")
+      };
+    }
+
+    if (isConcludedActivity(item)) {
+      return {
+        type: "icon",
+        value: getActionIconPath("deadline")
+      };
+    }
+
+    if (spadeMode === "DEADLINE") {
+      if (isDetonatedActivity(item)) {
+        return {
+          type: "icon",
+          value: getActionIconPath("boom")
+        };
+      }
+
+      return {
+        type: "icon",
+        value: getActionIconPath("bomb")
+      };
+    }
+
+    return {
+      type: "icon",
+      value: getActionIconPath("start")
+    };
+  }
 
   return {
     type: "text",
