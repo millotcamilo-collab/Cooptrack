@@ -526,9 +526,16 @@
         }
       });
 
-      if (!response.ok) return null;
+      console.log("TOPBAR talud unread status", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "");
+        console.log("TOPBAR talud unread error body", errorText);
+        return null;
+      }
 
       const data = await response.json();
+      console.log("TOPBAR talud unread response", data);
 
       if (!data?.ok || !data?.hasUnread || !data?.unread) {
         return null;
@@ -961,6 +968,14 @@
 
     const userHasPendingApprovals = !!latestActionRequired;
     const userHasReadNotifications = !!latestReadOnly;
+
+    console.log("TOPBAR talud render state", {
+      userId: user?.id || null,
+      taludUnread,
+      userHasPendingApprovals,
+      userHasReadNotifications,
+      pathname: window.location.pathname,
+    });
 
     let topbarHTML = "";
 

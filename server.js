@@ -2982,6 +2982,19 @@ app.get('/plays/messages/unread-first', requireAuth, async (req, res) => {
       [userId, TALUD_READ_REASON]
     );
 
+    console.log('TALUD unread-first candidates', {
+      userId,
+      count: unreadCandidatesResult.rows.length,
+      sample: unreadCandidatesResult.rows.slice(0, 5).map((row) => ({
+        play_id: row.play_id,
+        deck_id: row.deck_id,
+        message_id: row.message_id,
+        message_author_user_id: row.message_author_user_id,
+        message_created_at: row.message_created_at,
+        talud_read_at: row.talud_read_at,
+      })),
+    });
+
     let unread = null;
 
     for (const row of unreadCandidatesResult.rows) {
@@ -3014,6 +3027,19 @@ app.get('/plays/messages/unread-first', requireAuth, async (req, res) => {
       unread = row;
       break;
     }
+
+    console.log('TALUD unread-first selected', {
+      userId,
+      unread: unread
+        ? {
+            play_id: unread.play_id,
+            deck_id: unread.deck_id,
+            message_id: unread.message_id,
+            message_author_user_id: unread.message_author_user_id,
+            message_created_at: unread.message_created_at,
+          }
+        : null,
+    });
 
     if (!unread) {
       return res.json({ ok: true, hasUnread: false, unread: null });
