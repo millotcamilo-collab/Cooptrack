@@ -15,7 +15,7 @@
   --lv2-muted: rgba(245, 245, 245, 0.72);
 
   --lv2-radius: 14px;
-  --lv2-gap: 6px;
+  --lv2-gap: 0;
 
   --lv2-card-w: 340px;
   --lv2-card-h: 475px;
@@ -37,6 +37,10 @@ body {
       var(--lv2-bg-1) 0%,
       var(--lv2-bg-2) 60%,
       var(--lv2-bg-0) 100%);
+}
+
+.lienzo-page .ct-page {
+  padding: 0;
 }
 
 .lienzo-v2-page {
@@ -74,7 +78,7 @@ body {
 .lienzo-v2-grid {
   display: grid;
   grid-template-columns: repeat(var(--lv2-cols, 2), minmax(0, 1fr));
-    gap: var(--lv2-gap);
+  gap: 0;
   width: 100%;
 min-height: var(--lv2-tribune-h);
 }
@@ -509,8 +513,8 @@ min-height: var(--lv2-tribune-h);
 }
 .lienzo-v2-grid--single .lienzo-grid__right {
   width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
 }
 
 .lienzo-face-flyer {
@@ -530,7 +534,7 @@ min-height: var(--lv2-tribune-h);
 
 /* Transferencia de As: solo Colombes + Amsterdam, usando todo el ancho */
 .lienzo-v2-grid--ace-transfer {
-  grid-template-columns: minmax(620px, 1.4fr) minmax(320px, 0.8fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   width: 100%;
 }
 
@@ -593,7 +597,7 @@ min-height: var(--lv2-tribune-h);
 }
 
 .lienzo-v2-grid--jpica {
-  grid-template-columns: minmax(300px, 0.8fr) minmax(520px, 1.2fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .lienzo-v2-grid--jpica #amsterdam .users-picker {
