@@ -341,6 +341,10 @@ top: 20px;
   margin-top: -120px;
 }
 
+.tribuna-page--amsterdam .qpica-q-wrapper--invitee-open {
+  margin-top: -220px;
+}
+
 .qpica-q-back {
   cursor: pointer;
   transition: transform .7s ease, opacity .7s ease;

@@ -304,7 +304,7 @@ ${parent ? helpers.renderPlayCardBox({
       showActions: false
     }) : ""}
 
-    <div class="qpica-q-wrapper qpica-q-wrapper--open">
+    <div class="qpica-q-wrapper qpica-q-wrapper--open qpica-q-wrapper--invitee-open">
 ${helpers.renderPlayCardBox({
       ...play,
       play_text: parent?.play_text || play.play_text,
