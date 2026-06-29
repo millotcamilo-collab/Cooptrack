@@ -797,11 +797,12 @@ function renderColombes(play) {
   function renderAmsterdam(play, options = {}) {
     const autoEditJHeartId = Number(options.autoEditJHeartId || 0);
 
-    const isApproved =
-      String(play?.play_status || "").toUpperCase() === "APPROVED";
+    const status = String(play?.play_status || "").toUpperCase();
+    const isApproved = status === "APPROVED";
+    const isFinalStatus = ["APPROVED", "REJECTED", "CANCELLED", "DONE", "QUIT", "FIRED"].includes(status);
 
     const showApprove =
-      !isApproved && userIsSpadeAceHolder();
+      !isFinalStatus && userIsSpadeAceHolder();
 
     const showCancel =
       canCancelApprovedJpica(play);
@@ -815,8 +816,6 @@ function renderColombes(play) {
           new Date(a.created_at || 0) -
           new Date(b.created_at || 0)
       );
-
-    const status = String(play?.play_status || "").toUpperCase();
 
     const showQpica =
       status === "APPROVED" &&
