@@ -284,6 +284,18 @@ ${dayHeader ? `
       return '<span class="lv2-play-card__decision-stamp lv2-play-card__decision-stamp--cancelled" aria-label="Cancelado">CANCELADO</span>';
     }
 
+    if (safeStatus === "DONE") {
+      return '<span class="lv2-play-card__decision-stamp lv2-play-card__decision-stamp--done" aria-label="Hecho">HECHO</span>';
+    }
+
+    if (safeStatus === "QUIT") {
+      return '<span class="lv2-play-card__decision-stamp lv2-play-card__decision-stamp--quit" aria-label="Renunciado">RENUNCIADO</span>';
+    }
+
+    if (safeStatus === "FIRED") {
+      return '<span class="lv2-play-card__decision-stamp lv2-play-card__decision-stamp--fired" aria-label="Despedido">DESPEDIDO</span>';
+    }
+
     return "";
   }
 

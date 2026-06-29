@@ -206,6 +206,18 @@
   color: #4e4e4e;
 }
 
+.lv2-play-card__decision-stamp--done {
+  color: #1a5e9a;
+}
+
+.lv2-play-card__decision-stamp--quit {
+  color: #7a4f1a;
+}
+
+.lv2-play-card__decision-stamp--fired {
+  color: #8b0000;
+}
+
 /* Q♥ económica */
 
 .lienzo-qheart-box__amount-row {

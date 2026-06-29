@@ -342,6 +342,7 @@ function renderColombes(play) {
             title: play.play_text || "Sin texto",
             play_text: play.play_text,
             spade_mode: play.spade_mode,
+            status: play.play_status || play.status || "",
             start_date: play.start_date,
             end_date: play.end_date,
             location: play.location,
