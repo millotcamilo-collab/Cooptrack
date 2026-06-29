@@ -74,11 +74,6 @@
   outline: none;
 }
 
-.topbar__icon-btn--disabled {
-  opacity: 0.35;
-  pointer-events: none;
-}
-
 .topbar__icon-img {
   height: 30px;
   width: auto;

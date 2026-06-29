@@ -1007,23 +1007,23 @@
                 <img src="/assets/icons/Acorazon.png" class="topbar__icon-img" />
               </button>
 
-              <button
-                class="topbar__icon-btn ${userHasPendingApprovals ? "" : "topbar__icon-btn--disabled"}"
-                id="pendingBtn"
-                title="Pendientes"
-                ${userHasPendingApprovals ? "" : "aria-disabled=\"true\""}
-              >
-                <img src="/assets/icons/DorsoAzul.png" class="topbar__icon-img" />
-              </button>
+              ${userHasPendingApprovals
+          ? `
+                <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
+                  <img src="/assets/icons/DorsoAzul.png" class="topbar__icon-img" />
+                </button>
+                `
+          : ""
+        }
 
-              <button
-                class="topbar__icon-btn ${userHasReadNotifications ? "" : "topbar__icon-btn--disabled"}"
-                id="reedBtn"
-                title="Lecturas pendientes"
-                ${userHasReadNotifications ? "" : "aria-disabled=\"true\""}
-              >
-                <img src="/assets/icons/DorsoRojo.png" class="topbar__icon-img" />
-              </button>
+              ${userHasReadNotifications
+          ? `
+                <button class="topbar__icon-btn" id="reedBtn" title="Lecturas pendientes">
+                  <img src="/assets/icons/DorsoRojo.png" class="topbar__icon-img" />
+                </button>
+                `
+          : ""
+        }
 
 ${hasAuthorDecks
           ? `
