@@ -74,6 +74,11 @@
   outline: none;
 }
 
+.topbar__icon-btn--disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
 .topbar__icon-img {
   height: 30px;
   width: auto;
@@ -155,12 +160,120 @@
     display: none !important;
   }
 
+  .topbar {
+    height: auto;
+    min-height: 72px;
+  }
+
   .topbar__inner {
     justify-content: space-between;
+    align-items: center;
+    gap: 8px;
   }
 
   .topbar__right {
-    gap: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    width: auto;
+  }
+
+  .topbar__logo-img {
+    height: 19px;
+  }
+
+  .topbar__profile-mobile {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .topbar__profile-mobile .topbar__icon-img--profile {
+    width: 28px;
+    height: 28px;
+  }
+
+  .topbar__icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+  }
+
+  .topbar__icon-img {
+    height: 24px;
+  }
+
+  .topbar__mobile-toggle {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    margin: 0;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 4px;
+    background: transparent;
+    color: #fff;
+    font-size: 14px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .topbar__mobile-secondary-item {
+    display: none;
+  }
+
+  .topbar--mobile-expanded .topbar__mobile-secondary-item {
+    display: inline-flex;
+  }
+
+  .topbar--mobile-expanded .topbar__right {
+    row-gap: 6px;
+  }
+
+  .topbar__mobile-secondary-item {
+    order: 10;
+  }
+
+  .topbar__mobile-toggle {
+    order: 9;
+  }
+
+  .topbar__profile-mobile,
+  #pendingBtn,
+  #reedBtn,
+  .topbar__mobile-toggle {
+    order: 1;
+  }
+
+  #pendingBtn,
+  #reedBtn {
+    width: 34px;
+    height: 34px;
+  }
+
+  #pendingBtn .topbar__icon-img,
+  #reedBtn .topbar__icon-img {
+    height: 22px;
+  }
+}
+
+@media (min-width: 681px) {
+  .topbar__profile-mobile,
+  .topbar__mobile-toggle {
+    display: none !important;
+  }
+
+  .topbar__mobile-secondary-item {
+    display: inline-flex;
   }
 }
 

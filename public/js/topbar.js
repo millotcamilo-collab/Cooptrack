@@ -967,7 +967,7 @@
 
     if (user) {
       topbarHTML = `
-        <header class="topbar">
+        <header class="topbar" id="topbarRoot">
           <div class="page-container topbar__inner">
 
             <div class="topbar__left">
@@ -995,37 +995,41 @@
                 <img src="${getProfileImage(user)}" class="topbar__icon-img topbar__icon-img--profile" />
               </a>
 
+              <a href="/profile.html" class="topbar__profile-mobile" title="Perfil">
+                <img src="${getProfileImage(user)}" class="topbar__icon-img topbar__icon-img--profile" />
+              </a>
+
               <button
-                class="topbar__icon-btn topbar__desktop-only"
+                class="topbar__icon-btn topbar__mobile-secondary-item"
                 id="newDeckBtn"
                 title="El as de corazon constituye la primer jugada de un mazo. Comprende el nombre, la imagen y la moneda de referencia y solo se juega una vez"
               >
                 <img src="/assets/icons/Acorazon.png" class="topbar__icon-img" />
               </button>
 
-              ${userHasPendingApprovals
-          ? `
-                <button class="topbar__icon-btn" id="pendingBtn" title="Pendientes">
+              <button
+                class="topbar__icon-btn ${userHasPendingApprovals ? "" : "topbar__icon-btn--disabled"}"
+                id="pendingBtn"
+                title="Pendientes"
+                ${userHasPendingApprovals ? "" : "aria-disabled=\"true\""}
+              >
                 <img src="/assets/icons/DorsoAzul.png" class="topbar__icon-img" />
-                </button>
-                `
-          : ""
-        }
+              </button>
 
-        ${userHasReadNotifications
-          ? `
-          <button class="topbar__icon-btn" id="reedBtn" title="Lecturas pendientes">
-            <img src="/assets/icons/DorsoRojo.png" class="topbar__icon-img" />
-          </button>
-          `
-          : ""
-        }
+              <button
+                class="topbar__icon-btn ${userHasReadNotifications ? "" : "topbar__icon-btn--disabled"}"
+                id="reedBtn"
+                title="Lecturas pendientes"
+                ${userHasReadNotifications ? "" : "aria-disabled=\"true\""}
+              >
+                <img src="/assets/icons/DorsoRojo.png" class="topbar__icon-img" />
+              </button>
 
 ${hasAuthorDecks
           ? `
     <a
       href="${onMazosPage ? "/index.html" : "/mazos.html"}"
-      class="topbar__icon-btn topbar__desktop-only"
+      class="topbar__icon-btn topbar__mobile-secondary-item"
       title="Aquí están los mazos"
     >
       <img
@@ -1045,7 +1049,7 @@ ${hasAuthorDecks
               ${userHasArchivedDecks
           ? `
                     <button
-                      class="topbar__icon-btn topbar__desktop-only"
+                      class="topbar__icon-btn topbar__mobile-secondary-item"
                       id="archivoBtn"
                       title="archivo"
                     >
@@ -1058,7 +1062,7 @@ ${hasAuthorDecks
               ${userHasJPlays
           ? `
                     <button
-                      class="topbar__icon-btn topbar__desktop-only"
+                      class="topbar__icon-btn topbar__mobile-secondary-item"
                       id="bitacoraBtn"
                       title="Bitácora"
                     >
@@ -1066,7 +1070,7 @@ ${hasAuthorDecks
                     </button>
                     
                     <button
-                      class="topbar__icon-btn topbar__desktop-only"
+                      class="topbar__icon-btn topbar__mobile-secondary-item"
                       id="contabilidadBtn"
                       title="contabilidad"
                     >
@@ -1080,7 +1084,7 @@ ${hasAuthorDecks
           ? `
     <a
       href="/qs.html"
-      class="topbar__icon-btn topbar__desktop-only"
+      class="topbar__icon-btn topbar__mobile-secondary-item"
       title="Invitaciones"
     >
       <img src="/assets/icons/BUZONCASA120.gif" class="topbar__icon-img" />
@@ -1092,7 +1096,7 @@ ${hasAuthorDecks
               ${taludUnread
           ? `
                 <button
-                  class="topbar__icon-btn"
+                  class="topbar__icon-btn topbar__mobile-secondary-item"
                   id="taludUnreadBtn"
                   title="Comentario no leido"
                   aria-label="Comentario no leido"
@@ -1105,7 +1109,7 @@ ${hasAuthorDecks
 
               <a
                 href="/almanaque.html"
-                class="topbar__icon-btn topbar__desktop-only"
+                class="topbar__icon-btn topbar__mobile-secondary-item"
                 title="Almanaque"
               >
                 <img src="/assets/icons/Schedule80.gif" class="topbar__icon-img" />
@@ -1113,7 +1117,7 @@ ${hasAuthorDecks
 
               <a
                 href="/noticias.html"
-                class="topbar__icon-btn topbar__desktop-only"
+                class="topbar__icon-btn topbar__mobile-secondary-item"
                 title="Noticias"
               >
                 <img src="/assets/icons/Extra120.gif" class="topbar__icon-img" />
@@ -1121,7 +1125,7 @@ ${hasAuthorDecks
 
               <a
                 href="/help.html"
-                class="topbar__icon-btn topbar__desktop-only"
+                class="topbar__icon-btn topbar__mobile-secondary-item"
                 title="help"
               >
                 <img src="/assets/icons/bastonRecortado80.gif" class="topbar__icon-img" />
@@ -1131,7 +1135,7 @@ ${hasAuthorDecks
           ? `
                   <a
                     href="/protected-pages/administradores.html"
-                    class="topbar__icon-btn topbar__desktop-only"
+                    class="topbar__icon-btn topbar__mobile-secondary-item"
                     title="Administración de usuarios"
                   >
                     <img src="/assets/icons/Tools120.gif" class="topbar__icon-img" />
@@ -1140,8 +1144,19 @@ ${hasAuthorDecks
           : ""
         }
 
-              <button class="topbar__icon-btn topbar__desktop-only" id="logoutBtn">
+              <button class="topbar__icon-btn topbar__mobile-secondary-item" id="logoutBtn">
                 <img src="/assets/icons/exit80.gif" class="topbar__icon-img topbar__icon-img--exit" />
+              </button>
+
+              <button
+                class="topbar__mobile-toggle"
+                id="topbarMobileToggle"
+                aria-label="Mostrar menu"
+                aria-expanded="false"
+                title="Más"
+                type="button"
+              >
+                +
               </button>
 
             </nav>
@@ -1275,6 +1290,17 @@ ${hasAuthorDecks
         await acknowledgePlay(play?.id);
         await renderTopbar();
         goToPlayNotification(play);
+      });
+    }
+
+    const topbarMobileToggle = document.getElementById("topbarMobileToggle");
+    const topbarRoot = document.getElementById("topbarRoot");
+    if (topbarMobileToggle && topbarRoot) {
+      topbarMobileToggle.addEventListener("click", () => {
+        const expanded = topbarRoot.classList.toggle("topbar--mobile-expanded");
+        topbarMobileToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+        topbarMobileToggle.setAttribute("aria-label", expanded ? "Ocultar menu" : "Mostrar menu");
+        topbarMobileToggle.textContent = expanded ? "−" : "+";
       });
     }
 
