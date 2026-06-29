@@ -376,11 +376,11 @@
 
 .lv2-play-card__inner-suit--tl {
   top: calc(var(--lv2-card-h) * 0.082);
-  left: calc(var(--lv2-card-w) * 0.13);
+  left: calc(var(--lv2-card-w) * 0.14);
 }
 
 .lv2-play-card__inner-suit--br {
-  right: calc(var(--lv2-card-w) * 0.13);
+  right: calc(var(--lv2-card-w) * 0.14);
   bottom: calc(var(--lv2-card-h) * 0.11);
   transform: rotate(180deg);
 }
