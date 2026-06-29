@@ -72,28 +72,6 @@
     return data.message;
   }
 
-  function renderParticipants(participants) {
-    const safeList = Array.isArray(participants) ? participants : [];
-
-    if (!safeList.length) {
-      return '<div class="talud__participants-empty">Sin participantes definidos</div>';
-    }
-
-    return safeList
-      .map((user) => {
-        const nickname = user?.nickname || `Usuario ${user?.id || ""}`;
-        const avatar = user?.profile_photo_url || DEFAULT_AVATAR;
-
-        return `
-          <div class="talud__participant" title="${escapeHtml(nickname)}">
-            <img class="talud__participant-avatar" src="${escapeHtml(avatar)}" alt="${escapeHtml(nickname)}" />
-            <span class="talud__participant-name">${escapeHtml(nickname)}</span>
-          </div>
-        `;
-      })
-      .join("");
-  }
-
   function renderMessage(message, currentUserId) {
     const mine = Number(message?.author_user_id || 0) === Number(currentUserId || 0);
     const messageId = Number(message?.id || 0);
@@ -137,9 +115,87 @@
     );
   }
 
+  function normalizeRank(value) {
+    return String(value || "").trim().toUpperCase();
+  }
+
+  function normalizeSuit(value) {
+    return String(value || "").trim().toUpperCase();
+  }
+
+  function getSuitSymbol(suit) {
+    const safeSuit = normalizeSuit(suit);
+
+    if (safeSuit === "SPADE") return "&spades;";
+    if (safeSuit === "HEART") return "&hearts;";
+    if (safeSuit === "DIAMOND") return "&diams;";
+    if (safeSuit === "CLUB") return "&clubs;";
+
+    return escapeHtml(safeSuit.slice(0, 1) || "?");
+  }
+
+  function isRedSuit(suit) {
+    const safeSuit = normalizeSuit(suit);
+    return safeSuit === "HEART" || safeSuit === "DIAMOND";
+  }
+
+  function renderParticipantCards(cards) {
+    const safeCards = Array.isArray(cards) ? cards : [];
+
+    if (!safeCards.length) return "";
+
+    const cardsHtml = safeCards
+      .map((card) => {
+        const rank = normalizeRank(card?.rank);
+        const suit = normalizeSuit(card?.suit);
+        const redClass = isRedSuit(suit) ? " talud__participant-card--red" : "";
+
+        return `
+          <span class="talud__participant-card${redClass}" title="${escapeHtml(rank)} ${escapeHtml(suit)}">
+            <span class="talud__participant-card-rank">${escapeHtml(rank || "?")}</span>
+            <span class="talud__participant-card-suit">${getSuitSymbol(suit)}</span>
+          </span>
+        `;
+      })
+      .join("");
+
+    return `<span class="talud__participant-cards">${cardsHtml}</span>`;
+  }
+
+  function renderParticipants(participants, participantCardsByUserId) {
+    const safeList = Array.isArray(participants) ? participants : [];
+    const cardsByUser = participantCardsByUserId && typeof participantCardsByUserId === "object"
+      ? participantCardsByUserId
+      : {};
+
+    if (!safeList.length) {
+      return '<div class="talud__participants-empty">Sin participantes definidos</div>';
+    }
+
+    return safeList
+      .map((user) => {
+        const nickname = user?.nickname || `Usuario ${user?.id || ""}`;
+        const avatar = user?.profile_photo_url || DEFAULT_AVATAR;
+        const userId = Number(user?.id || 0);
+        const participantCards = renderParticipantCards(cardsByUser[userId] || []);
+
+        return `
+          <div class="talud__participant" title="${escapeHtml(nickname)}">
+            <img class="talud__participant-avatar" src="${escapeHtml(avatar)}" alt="${escapeHtml(nickname)}" />
+            ${participantCards}
+            <span class="talud__participant-name">${escapeHtml(nickname)}</span>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
   function renderShell(host, state) {
     const title = state?.play?.play_text || "Talud";
-    const participantsHtml = renderParticipants(state?.participants || []);
+    const participantsHtml = renderParticipants(
+      state?.participants || [],
+      state?.participantCardsByUserId || {}
+    );
     const messagesHtml = renderMessages(state?.messages || [], getCurrentUserId());
 
     host.innerHTML = `
@@ -209,6 +265,11 @@
       .talud__participants { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
       .talud__participant { display: inline-flex; align-items: center; gap: 5px; }
       .talud__participant-avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+      .talud__participant-cards { display: inline-flex; align-items: center; gap: 4px; }
+      .talud__participant-card { display: inline-flex; align-items: center; gap: 2px; padding: 1px 4px; border: 1px solid rgba(0,0,0,.25); border-radius: 6px; background: #fff; color: #111; font-size: 11px; line-height: 1; }
+      .talud__participant-card--red { color: #b10000; border-color: rgba(177,0,0,.45); }
+      .talud__participant-card-rank { font-weight: 700; }
+      .talud__participant-card-suit { font-weight: 700; }
       .talud__participant-name { font-size: 12px; white-space: nowrap; }
       .talud__timeline { max-height: 320px; overflow-y: auto; padding: 10px 12px; background: #fffef9; }
       .talud__empty { font-size: 13px; color: #555; }
@@ -257,8 +318,16 @@
     injectStylesOnce();
 
     try {
+      const participantCardsByUserId =
+        options?.participantCardsByUserId && typeof options.participantCardsByUserId === "object"
+          ? options.participantCardsByUserId
+          : {};
+
       const state = await fetchMessages(playId);
-      renderShell(target, state);
+      renderShell(target, {
+        ...state,
+        participantCardsByUserId
+      });
       scrollToMessage(target, focusMessageId);
 
       const form = target.querySelector("#talud-composer");
@@ -270,7 +339,10 @@
         return {
           refresh: async function refreshOnly() {
             const nextState = await fetchMessages(playId);
-            renderShell(target, nextState);
+            renderShell(target, {
+              ...nextState,
+              participantCardsByUserId
+            });
           }
         };
       }

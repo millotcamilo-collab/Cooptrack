@@ -578,6 +578,57 @@
     return host;
   }
 
+  function pushParticipantCard(map, userId, rank, suit) {
+    const safeUserId = Number(userId || 0);
+    if (!safeUserId) return;
+
+    if (!map[safeUserId]) {
+      map[safeUserId] = [];
+    }
+
+    const safeRank = normalizeRank(rank);
+    const safeSuit = normalizeSuit(suit);
+    const key = `${safeRank}_${safeSuit}`;
+
+    const exists = map[safeUserId].some((item) => item.key === key);
+    if (exists) return;
+
+    map[safeUserId].push({
+      key,
+      rank: safeRank,
+      suit: safeSuit
+    });
+  }
+
+  function buildTaludParticipantCardsMap(play) {
+    const sourceUserId = Number(play?.created_by_user_id || 0);
+    const targetUserId = Number(play?.target_user_id || 0);
+    const payerSide = getPayerSide(play);
+
+    const map = {};
+
+    // Carta madre de la jugada.
+    pushParticipantCard(map, sourceUserId, "J", "SPADE");
+    // Q de pica receptora.
+    pushParticipantCard(map, targetUserId, "Q", "SPADE");
+
+    // Q diamante economica: la asociamos al pagador segun side.
+    if (payerSide === "AMSTERDAM") {
+      pushParticipantCard(map, targetUserId, "Q", "DIAMOND");
+    } else if (payerSide === "COLOMBES") {
+      pushParticipantCard(map, sourceUserId, "Q", "DIAMOND");
+    }
+
+    return map;
+  }
+
+  function applyPayNowViewMode() {
+    const page = document.querySelector(".tribuna-page--paynow");
+    if (!page) return;
+
+    page.classList.toggle("paynow-talud-only", !!taludOpen);
+  }
+
   async function toggleTalud(play, options = {}) {
     const host = ensureTaludHost();
     if (!host) return;
@@ -586,16 +637,27 @@
 
     taludOpen = !taludOpen;
     host.style.display = taludOpen ? "block" : "none";
+    applyPayNowViewMode();
 
     if (!taludOpen) return;
 
     if (!window.Talud || typeof window.Talud.mount !== "function") {
+      taludOpen = false;
+      host.style.display = "none";
+      applyPayNowViewMode();
       alert("Talud no disponible");
       return;
     }
 
     const playId = Number(play?.id || 0);
-    if (!playId) return;
+    if (!playId) {
+      taludOpen = false;
+      host.style.display = "none";
+      applyPayNowViewMode();
+      return;
+    }
+
+    const participantCardsByUserId = buildTaludParticipantCardsMap(play);
 
     host.innerHTML = "<div class=\"paynow-talud-loading\">Cargando talud...</div>";
 
@@ -607,7 +669,8 @@
 
       taludController = await window.Talud.mount(host, {
         playId,
-        focusMessageId
+        focusMessageId,
+        participantCardsByUserId
       });
       taludMountedPlayId = playId;
     } catch (error) {
@@ -680,6 +743,7 @@
     `;
 
     ensureTaludHost();
+    applyPayNowViewMode();
     bindActions(play);
   }
 

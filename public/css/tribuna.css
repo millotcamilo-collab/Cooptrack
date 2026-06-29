@@ -273,6 +273,10 @@ top: 20px;
   color: #222;
 }
 
+.tribuna-page--paynow.paynow-talud-only .tribuna__content-zone {
+  display: none;
+}
+
 .qpica-animation {
   position: absolute;
   pointer-events: none;
