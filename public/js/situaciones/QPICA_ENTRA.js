@@ -4,6 +4,38 @@ window.QPICA_ENTRA = {
     return String(parent?.spade_mode || play?.spade_mode || "").toUpperCase();
   },
 
+  getQpicaOwnerUser(play) {
+    const targetUserId = Number(play?.target_user_id || 0);
+
+    if (targetUserId) {
+      return {
+        id: targetUserId,
+        nickname:
+          play?.target_user_nickname ||
+          play?.target_nickname ||
+          play?.created_by_nickname ||
+          `Usuario ${targetUserId}`,
+        profile_photo_url:
+          play?.target_user_profile_photo_url ||
+          play?.target_user_photo_url ||
+          play?.created_by_profile_photo_url ||
+          "/assets/icons/singeta120.gif"
+      };
+    }
+
+    const sourceUserId = Number(play?.created_by_user_id || 0);
+
+    return {
+      id: sourceUserId || null,
+      nickname:
+        play?.created_by_nickname ||
+        (sourceUserId ? `Usuario ${sourceUserId}` : "Usuario"),
+      profile_photo_url:
+        play?.created_by_profile_photo_url ||
+        "/assets/icons/singeta120.gif"
+    };
+  },
+
   buildFrame(prefix, index) {
 
     const number =
@@ -166,6 +198,7 @@ window.QPICA_ENTRA = {
   renderClosed(ctx) {
     const { play, helpers, parentOwner } = ctx;
     const parent = play?.parent_play || play?.parent || null;
+    const qOwnerUser = this.getQpicaOwnerUser(play);
 
     const mode = this.getParentSpadeMode(play);
     const jPrefix = mode === "DEADLINE" ? "JpicaDeadline" : "JpicaCita";
@@ -209,7 +242,9 @@ ${parent ? helpers.renderPlayCardBox({
       end_date: parent?.end_date || play.end_date,
       location: parent?.location || play.location,
       spade_mode: parent?.spade_mode || play.spade_mode,
-      figureOverrideSrc: this.buildFrame("QPMira", 0)
+      figureOverrideSrc: this.buildFrame("QPMira", 0),
+      ownerUser: qOwnerUser,
+      showOwner: true
     })}
 
 <img
@@ -249,6 +284,7 @@ ${parent ? helpers.renderPlayCardBox({
   renderOpen(ctx) {
     const { play, helpers } = ctx;
     const parent = play?.parent_play || play?.parent || null;
+    const qOwnerUser = this.getQpicaOwnerUser(play);
 
     return `
   ${parent ? helpers.renderPlayCardBox({
@@ -276,7 +312,9 @@ ${helpers.renderPlayCardBox({
       end_date: parent?.end_date || play.end_date,
       location: parent?.location || play.location,
       spade_mode: parent?.spade_mode || play.spade_mode,
-      figureOverrideSrc: this.buildFrame("QPMira", 0)
+  figureOverrideSrc: this.buildFrame("QPMira", 0),
+  ownerUser: qOwnerUser,
+  showOwner: true
     })}
     </div>
 

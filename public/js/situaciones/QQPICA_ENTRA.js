@@ -95,7 +95,9 @@ renderFinal(ctx) {
             end_date: parent?.end_date || play.end_date,
             location: parent?.location || play.location,
             spade_mode: parent?.spade_mode || play.spade_mode,
-            figureOverrideSrc: this.buildFrame("QPMira", 0)
+            figureOverrideSrc: this.buildFrame("QPMira", 0),
+            ownerUser: this.getQpicaOwnerUser(play),
+            showOwner: true
         })}
       </div>
 
