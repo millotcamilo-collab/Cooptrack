@@ -332,50 +332,31 @@
 
     const status = normalizeText(play?.play_status || play?.status);
     const rank = normalizeText(play?.card_rank || play?.rank);
+    const suit = normalizeText(play?.card_suit || play?.suit);
 
     const validatorUserId = Number(play?.validator_user_id || 0);
     const isValidator = validatorUserId === Number(currentUserId);
 
-    if (isValidator && status === "PENDING") {
-      return "ACTION_REQUIRED";
-    }
-
     const sourceUserId = Number(play?.created_by_user_id || 0);
     const targetUserId = Number(play?.target_user_id || 0);
 
-    const isSource = sourceUserId === Number(currentUserId);
     const isTarget = targetUserId === Number(currentUserId);
+    const isReceiver = isTarget || isValidator;
 
-    // sigue igual desde acá...
+    if (!isReceiver) return null;
 
-    // 1) Pendiente real de acción del invitado/destinatario
-    if (isTarget && (status === "SENT" || status === "PENDING")) {
+    // Dorso azul: hay respuesta pendiente del receptor.
+    if (
+      (isTarget && (status === "SENT" || status === "PENDING")) ||
+      (isValidator && status === "PENDING")
+    ) {
       return "ACTION_REQUIRED";
     }
 
-    const FINAL_STATES_Q = ["APPROVED", "REJECTED", "CANCELLED"];
-    const FINAL_STATES_K_SOURCE = ["APPROVED", "REJECTED", "QUIT"];
-    const FINAL_STATES_A_SOURCE = ["APPROVED", "REJECTED", "QUIT", "FIRED"];
-    const FINAL_STATES_J_HEART_SOURCE = ["APPROVED", "REJECTED"];
-
     // =========================
-    // K — target (invitado)
+    // K — receptor (invitado)
     // =========================
-    // Solo debe recibir notificación cuando es despedido
     if (rank === "K" && isTarget && status === "FIRED") {
-      return "READ_ONLY";
-    }
-
-    // =========================
-    // J♥ — source / K creador
-    // =========================
-    // Se entera de aprobación o rechazo del A♥
-    if (
-      rank === "J" &&
-      normalizeText(play?.card_suit || play?.suit) === "HEART" &&
-      isSource &&
-      FINAL_STATES_J_HEART_SOURCE.includes(status)
-    ) {
       return "READ_ONLY";
     }
 
@@ -389,37 +370,31 @@
     // =========================
     // Q — target cancelada
     // =========================
+    // Q♠ simple cancelada: avisar por dorso rojo.
+    // QQ♠ (con Q♥ adjunta) cancelada sin respuesta: solo quitar pendiente azul.
     if (rank === "Q" && isTarget && status === "CANCELLED") {
+      return playHasQHeartAttachment(play) ? null : "READ_ONLY";
+    }
+
+    // =========================
+    // Q — receptor con resultado final
+    // =========================
+    if (rank === "Q" && ["APPROVED", "REJECTED"].includes(status)) {
       return "READ_ONLY";
     }
 
     // =========================
-    // Q — source (anfitrión)
+    // A/K — receptor con resultado final
     // =========================
-    if (rank === "Q" && isSource && FINAL_STATES_Q.includes(status)) {
+    if (
+      (rank === "A" || rank === "K") &&
+      ["APPROVED", "REJECTED", "CANCELLED", "QUIT", "FIRED"].includes(status)
+    ) {
       return "READ_ONLY";
     }
 
-    // =========================
-    // K — source (anfitrión)
-    // =========================
-    // Se entera de aceptación, rechazo o renuncia
-    if (rank === "K" && isSource && FINAL_STATES_K_SOURCE.includes(status)) {
-      return "READ_ONLY";
-    }
-
-    if (rank === "A" && isSource && FINAL_STATES_A_SOURCE.includes(status)) {
-      return "READ_ONLY";
-    }
-
-    // =========================
-    // Enviada (sin acción)
-    // =========================
-    if (isSource && status === "SENT") {
-      return null;
-    }
-
-    if (rank === "A" && isSource && FINAL_STATES_A_SOURCE.includes(status)) {
+    // J♥ — receptor solo lectura en resultado final.
+    if (rank === "J" && suit === "HEART" && ["APPROVED", "REJECTED", "CANCELLED"].includes(status)) {
       return "READ_ONLY";
     }
 
@@ -888,7 +863,7 @@
       const isSource =
         Number(playForRouting?.created_by_user_id || 0) === Number(currentUserId);
 
-      const finalStates = ["APPROVED", "REJECTED", "CANCELLED"];
+      const finalStates = ["APPROVED", "REJECTED"];
 
       if (
         rank === "Q" &&

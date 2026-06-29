@@ -355,17 +355,28 @@
   function getJHeartSubtitleHtml(config) {
     const page = String(config?.page || "").trim().toLowerCase();
 
-    if (page !== "lienzo-jpica") return "";
+    if (page !== "lienzo-jpica" && page !== "tribuna-amsterdam") return "";
 
     const currentPlay = config?.play || null;
     const currentPlayId = Number(currentPlay?.id || 0);
+    const parentJpicaId = Number(
+      currentPlay?.parent_play_id || currentPlay?.parent_play?.id || 0
+    );
+
+    const childHeartsParentId =
+      page === "tribuna-amsterdam"
+        ? parentJpicaId
+        : currentPlayId;
+
     const plays = Array.isArray(config?.plays) ? config.plays : [];
 
     const stampedRootTexts = getStampedTexts(currentPlay?.stamps || config?.stamps || [], "APPROVED_J_HEART");
     const stampedChildTexts = getStampedTexts(currentPlay?.stamps || config?.stamps || [], "APPROVED_CHILD_J_HEART");
 
     const liveRootTexts = getLiveJHeartTexts(plays, null);
-    const liveChildTexts = currentPlayId ? getLiveJHeartTexts(plays, currentPlayId) : [];
+    const liveChildTexts = childHeartsParentId
+      ? getLiveJHeartTexts(plays, childHeartsParentId)
+      : [];
 
     const rootTexts = stampedRootTexts.length ? stampedRootTexts : liveRootTexts;
     const childTexts = stampedChildTexts.length ? stampedChildTexts : liveChildTexts;
