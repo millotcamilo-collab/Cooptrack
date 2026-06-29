@@ -387,6 +387,13 @@
     }
 
     // =========================
+    // Q — target cancelada
+    // =========================
+    if (rank === "Q" && isTarget && status === "CANCELLED") {
+      return "READ_ONLY";
+    }
+
+    // =========================
     // Q — source (anfitrión)
     // =========================
     if (rank === "Q" && isSource && FINAL_STATES_Q.includes(status)) {
@@ -689,6 +696,10 @@
     }
 
     if (isTarget && (status === "SENT" || status === "PENDING")) {
+      return "/amsterdam.html";
+    }
+
+    if (rank === "Q" && suit === "SPADE" && isTarget && status === "CANCELLED") {
       return "/amsterdam.html";
     }
 

@@ -129,6 +129,8 @@ function getBombStampIcon(play) {
     const status = String(play?.play_status || "").trim().toUpperCase();
     if (status !== "APPROVED") return false;
 
+    if (!isCurrentUserPlayOwner(play)) return false;
+
     return isFutureDate(play?.end_date || play?.start_date);
   }
 
@@ -694,6 +696,29 @@ function renderColombes(play) {
       if (ok) {
         window.location.reload();
       }
+    });
+
+    document.getElementById("jpica-cancel-btn")?.addEventListener("click", async () => {
+      const confirmed = window.confirm("¿Cancelar esta J♠ y todas sus Q/QQ hijas?");
+      if (!confirmed) return;
+
+      const isDeadline = isDeadlineJpica(parentPlay);
+      const nextPlayCode = isDeadline
+        ? `${parentPlay.play_code || ""}§BOMB:DISABLED`
+        : (parentPlay.play_code || "");
+
+      const ok = await patchJpica(parentPlay.id, {
+        play_status: "CANCELLED",
+        ...(isDeadline ? { play_code: nextPlayCode } : {})
+      });
+
+      if (!ok) return;
+
+      await patchChildQspades(parentPlay.id, {
+        play_status: "CANCELLED"
+      });
+
+      window.location.reload();
     });
 
     document.getElementById("jpica-cancel-bomb-btn")?.addEventListener("click", async () => {
