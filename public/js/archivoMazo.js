@@ -48,6 +48,7 @@
 
 function renderArchivedRow(play, deck, state) {
   const rank = normalizeRank(play?.card_rank || play?.rank);
+  const suit = normalizeSuit(play?.card_suit || play?.suit);
 
   const context = {
     deck,
@@ -56,6 +57,10 @@ function renderArchivedRow(play, deck, state) {
       escapeHtml
     }
   };
+
+  if (rank === "J" && suit === "SPADE") {
+    return renderArchivedJSpadeRow(play);
+  }
 
   if (rank === "Q" && typeof renderQpike === "function") {
     return renderQpike(play, context);
@@ -70,6 +75,62 @@ function renderArchivedRow(play, deck, state) {
   }
 
   return renderArchivoMazoRow(play);
+}
+
+function renderArchivedJSpadeRow(play) {
+  const playId = Number(play?.id || 0);
+  const deckId = Number(play?.deck_id || 0);
+  const text = escapeHtml(play?.play_text || "Sin texto");
+  const status = normalizeStatus(play?.play_status || play?.status || "CANCELLED");
+
+  return `
+    <button
+      type="button"
+      class="tablero-row tablero-row--jpike tablero-row--link"
+      id="tablero-row-${playId || "archived-jspade"}"
+      data-open-lienzo="true"
+      data-play-id="${playId}"
+      data-deck-id="${deckId}"
+      title="Abrir lienzo J♠"
+    >
+      <div class="tablero-row__left">
+        <div class="tablero-row__card-wrap">
+          <span class="tablero-row__card">J</span>
+          <span class="tablero-row__suit">♠</span>
+        </div>
+      </div>
+
+      <div class="tablero-row__center">
+        <div class="tablero-row__title">${text}</div>
+        <div class="tablero-row__meta">Estado: ${escapeHtml(status)}</div>
+      </div>
+
+      <div class="tablero-row__right"></div>
+    </button>
+  `;
+}
+
+function renderArchivoMazoRow(play) {
+  const rank = normalizeRank(play?.card_rank || play?.rank);
+  const suit = normalizeSuit(play?.card_suit || play?.suit);
+  const symbol = suitToSymbol(suit);
+  const text = escapeHtml(play?.play_text || "Sin texto");
+  const status = normalizeStatus(play?.play_status || play?.status || "");
+
+  return `
+    <article class="tablero-row tablero-row--fallback">
+      <div class="tablero-row__left">
+        <div class="tablero-row__card">${escapeHtml(rank)}${escapeHtml(symbol)}</div>
+      </div>
+
+      <div class="tablero-row__center">
+        <div class="tablero-row__title">${text}</div>
+        <div class="tablero-row__meta">Estado: ${escapeHtml(status)}</div>
+      </div>
+
+      <div class="tablero-row__right"></div>
+    </article>
+  `;
 }
 
   function suitToSymbol(suit) {
