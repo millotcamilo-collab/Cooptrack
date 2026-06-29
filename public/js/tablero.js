@@ -659,6 +659,13 @@ function isHiddenChildPlay(play) {
           if (!matchesTableroFilter(play, activeTableroFilter)) return false;
 
           const status = normalizeStatus(play?.play_status || play?.status);
+          const rank = normalizeRank(play?.rank || play?.card_rank);
+          const suit = normalizeSuit(play?.suit || play?.card_suit);
+
+          if (rank === "J" && suit === "SPADE" && status === "CANCELLED") {
+            return false;
+          }
+
           if (!activeTableroStatusFilter && isArchivedJHeartStatus(play)) return false;
 
           if (!matchesStatusFilter(play, activeTableroStatusFilter)) return false;
