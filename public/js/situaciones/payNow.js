@@ -1,6 +1,6 @@
 ﻿(function () {
   const API_BASE_URL = "";
-  const TALUD_TOGGLE_BUTTON_ID = "paynow-talud-toggle-btn";
+  const TALUD_OPEN_BUTTON_ID = "paynow-open-talud-btn";
   const TALUD_HOST_ID = "paynow-talud-host";
 
   let taludController = null;
@@ -394,29 +394,44 @@
 
   function buildActionButtons(play) {
     const settlement = getSettlementState(play);
+    const actions = [];
 
-    if (settlement) return "";
+    if (!taludOpen) {
+      actions.push(`
+        <button type="button" id="${TALUD_OPEN_BUTTON_ID}" class="icon-btn" title="Abrir talud">
+          <img src="/assets/icons/sellopostal220.gif" alt="Abrir talud" />
+        </button>
+      `);
+    }
+
+    if (settlement) {
+      return actions.join("");
+    }
 
     if (isCurrentUserPayer(play)) {
-      return `
+      actions.push(`
       <button type="button" id="paynow-claimed-btn" class="icon-btn" title="Ya pague">
         <img src="/assets/icons/META60.gif" alt="Ya pague" />
       </button>
-    `;
+    `);
+
+      return actions.join("");
     }
 
     if (isCurrentUserCollector(play)) {
-      return `
+      actions.push(`
       <button type="button" id="paynow-confirm-btn" class="icon-btn" title="Confirmar pago">
         <img src="/assets/icons/award60oro.gif" alt="Confirmar pago" />
       </button>
       <button type="button" id="paynow-complain-btn" class="icon-btn" title="Registrar queja">
         <img src="/assets/icons/ticket60.gif" alt="Registrar queja" />
       </button>
-    `;
+    `);
+
+      return actions.join("");
     }
 
-    return "";
+    return actions.join("");
   }
 
   function getStatusMessage(play) {
@@ -540,24 +555,6 @@
     });
   }
 
-  function buildTaludPlacardButtonHtml() {
-    return `
-      <button
-        type="button"
-        id="${TALUD_TOGGLE_BUTTON_ID}"
-        class="placard__talud-trigger"
-        title="Abrir talud"
-        aria-label="Abrir talud"
-      >
-        <img
-          class="placard__talud-trigger-icon"
-          src="/assets/icons/sellopostal220.gif"
-          alt="Talud"
-        />
-      </button>
-    `;
-  }
-
   function ensureTaludHost() {
     const zone = document.getElementById("tribuna-actions");
     if (!zone) return null;
@@ -670,11 +667,20 @@
       taludController = await window.Talud.mount(host, {
         playId,
         focusMessageId,
-        participantCardsByUserId
+        participantCardsByUserId,
+        onClose: () => {
+          if (!taludOpen) return;
+          taludOpen = false;
+          host.style.display = "none";
+          applyPayNowViewMode();
+        }
       });
       taludMountedPlayId = playId;
     } catch (error) {
       console.error("Error montando talud en payNow", error);
+      taludOpen = false;
+      host.style.display = "none";
+      applyPayNowViewMode();
       host.innerHTML = `<div class=\"paynow-talud-error\">${escapeHtml(error?.message || "No se pudo abrir el talud")}</div>`;
     }
   }
@@ -685,28 +691,18 @@
     if (typeof window.renderPlacard !== "function") return;
 
     const deck = window.__currentDeck || {};
-    const parent = play?.parent_play || play?.parent || play;
-
     placardHost.innerHTML = "";
 
     window.renderPlacard(placardHost, {
-      page: "pay-now",
-      play: parent,
+      page: "tribuna-amsterdam",
+      play,
       photoUrl: deck.deck_image_url || "/assets/icons/sinPicture.gif",
       title: deck.name || "Mazo",
       rank: "A",
       suit: "HEART",
       showCurrency: false,
-      leftCardsHtml: buildTaludPlacardButtonHtml(),
       plays: window.__currentState?.plays || []
     });
-
-    const taludBtn = document.getElementById(TALUD_TOGGLE_BUTTON_ID);
-    if (taludBtn) {
-      taludBtn.onclick = () => {
-        toggleTalud(play);
-      };
-    }
   }
 
   function renderPayNow(play) {
@@ -755,11 +751,17 @@
       const claimedBtn = event.target.closest("#paynow-claimed-btn");
       const confirmBtn = event.target.closest("#paynow-confirm-btn");
       const complainBtn = event.target.closest("#paynow-complain-btn");
+      const openTaludBtn = event.target.closest(`#${TALUD_OPEN_BUTTON_ID}`);
 
-      if (!claimedBtn && !confirmBtn && !complainBtn) return;
+      if (!claimedBtn && !confirmBtn && !complainBtn && !openTaludBtn) return;
 
       event.preventDefault();
       event.stopPropagation();
+
+      if (openTaludBtn) {
+        await toggleTalud(play);
+        return;
+      }
 
       const settlement = getSettlementState(play);
       if (settlement) return;

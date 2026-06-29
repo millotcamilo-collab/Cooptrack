@@ -217,6 +217,7 @@
           ></textarea>
 
           <button type="submit" id="talud-send" class="talud__send">Enviar</button>
+          <button type="button" id="talud-close" class="talud__close">Close Talud</button>
         </form>
       </section>
     `;
@@ -287,6 +288,7 @@
       .talud__textarea { flex: 1; resize: vertical; min-height: 38px; max-height: 130px; border: 1px solid rgba(0,0,0,.2); border-radius: 8px; padding: 8px; font: inherit; }
       .talud__send { border: 0; border-radius: 8px; padding: 0 12px; min-width: 78px; background: #202020; color: #fff; font-weight: 600; cursor: pointer; }
       .talud__send:disabled { opacity: .55; cursor: default; }
+      .talud__close { border: 0; border-radius: 8px; padding: 0 12px; min-width: 96px; background: #666; color: #fff; font-weight: 600; cursor: pointer; }
     `;
 
     document.head.appendChild(style);
@@ -313,6 +315,7 @@
 
     const playId = Number(options.playId || 0);
     const focusMessageId = Number(options.focusMessageId || 0);
+    const onClose = typeof options.onClose === "function" ? options.onClose : null;
     if (!playId) throw new Error("playId es obligatorio para talud");
 
     injectStylesOnce();
@@ -333,6 +336,7 @@
       const form = target.querySelector("#talud-composer");
       const textArea = target.querySelector("#talud-text");
       const sendBtn = target.querySelector("#talud-send");
+      const closeBtn = target.querySelector("#talud-close");
       const timeline = target.querySelector("#talud-timeline");
 
       if (!form || !textArea || !sendBtn || !timeline) {
@@ -345,6 +349,13 @@
             });
           }
         };
+      }
+
+      if (closeBtn && onClose) {
+        closeBtn.addEventListener("click", (event) => {
+          event.preventDefault();
+          onClose();
+        });
       }
 
       form.addEventListener("submit", async (event) => {
