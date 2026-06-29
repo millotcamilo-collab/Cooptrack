@@ -15,7 +15,7 @@
 
 .lv2-card-corner {
   position: absolute;
-  width: 22px;
+  width: calc(var(--lv2-card-w) * 0.075);
   text-align: center;
   line-height: 1;
   font-family: var(--font-card);
@@ -25,26 +25,26 @@
 }
 
 .lv2-card-corner--tl {
-  top: 9px;
-  left: 7px;
+  top: calc(var(--lv2-card-h) * 0.022);
+  left: calc(var(--lv2-card-w) * 0.022);
 }
 
 .lv2-card-corner--br {
-  right: 7px;
-  bottom: 9px;
+  right: calc(var(--lv2-card-w) * 0.022);
+  bottom: calc(var(--lv2-card-h) * 0.022);
   transform: rotate(180deg);
 }
 
 .lv2-card-corner__rank {
   display: block;
-  font-size: 18px;
+  font-size: calc(var(--lv2-card-w) * 0.064);
   transform: scaleX(0.72);
   transform-origin: center;
 }
 
 .lv2-card-corner__suit {
   display: block;
-  font-size: 23px;
+  font-size: calc(var(--lv2-card-w) * 0.078);
 }
 
 .lv2-card-corner--red {
@@ -367,7 +367,7 @@
 .lv2-play-card__inner-suit {
   position: absolute;
   font-family: var(--font-card);
-font-size: 1.5em;
+  font-size: calc(var(--lv2-card-w) * 0.105);
   line-height: 1;
   opacity: 1;
   z-index: 3;
@@ -375,13 +375,13 @@ font-size: 1.5em;
 }
 
 .lv2-play-card__inner-suit--tl {
-  top: 28px;
-  left: 42px;
+  top: calc(var(--lv2-card-h) * 0.082);
+  left: calc(var(--lv2-card-w) * 0.125);
 }
 
 .lv2-play-card__inner-suit--br {
-  right: 42px;
-  bottom: 32px;
+  right: calc(var(--lv2-card-w) * 0.125);
+  bottom: calc(var(--lv2-card-h) * 0.11);
   transform: rotate(180deg);
 }
 
