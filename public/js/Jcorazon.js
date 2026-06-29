@@ -356,7 +356,16 @@
     return `
       <article class="tablero-row tablero-row--jcorazon" id="${rowId}">
         <div class="tablero-row__left">
-          <div class="tablero-row__card">J♥</div>
+          <button
+            type="button"
+            class="tablero-row__card tablero-row__card--open-lienzo"
+            data-open-lienzo="true"
+            data-play-id="${play.id}"
+            data-deck-id="${context?.deck?.id || context?.state?.deck?.id || ""}"
+            title="Abrir lienzo J♥"
+          >
+            <span>J♥</span>
+          </button>
         </div>
 
         <div class="tablero-row__center">

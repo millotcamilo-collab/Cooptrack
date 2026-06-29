@@ -248,6 +248,10 @@
     const rank = String(play?.card_rank || play?.rank || "").trim().toUpperCase();
     const suit = String(play?.card_suit || play?.suit || "").trim().toUpperCase();
 
+    if (rank === "J" && suit === "HEART") {
+      return "/lienzoJcorazon.html";
+    }
+
     if (rank === "J" && suit === "SPADE") {
       return "/lienzoJpica.html";
     }
@@ -265,6 +269,10 @@
       }
 
       return "/lienzoQpica.html";
+    }
+
+    if (rank === "Q" && suit === "CLUB") {
+      return "/lienzoQtrebol.html";
     }
 
     if (rank === "K") {
