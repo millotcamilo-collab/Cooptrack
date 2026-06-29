@@ -367,7 +367,7 @@
 .lv2-play-card__inner-suit {
   position: absolute;
   font-family: var(--font-card);
-  font-size: calc(var(--lv2-card-w) * 0.105);
+  font-size: calc(var(--lv2-card-w) * 0.15);
   line-height: 1;
   opacity: 1;
   z-index: 3;
