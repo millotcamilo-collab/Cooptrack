@@ -453,6 +453,22 @@
     `;
   }
 
+  function stripTableroHelpButtons(container) {
+    if (!container) return;
+
+    const selectors = [
+      '[data-action="show-help"]',
+      '[data-action="help-play"]',
+      '[data-action="open-help"]'
+    ];
+
+    selectors.forEach((selector) => {
+      container.querySelectorAll(selector).forEach((button) => {
+        button.remove();
+      });
+    });
+  }
+
   function renderEmptyState() {
     return `
       <section class="tablero-empty">
@@ -681,6 +697,9 @@ function isHiddenChildPlay(play) {
           ${rowsHtml}
         </section>
       `;
+
+      stripTableroHelpButtons(container);
+
       const focusPlayId = getFocusPlayIdFromUrl();
 
       if (focusPlayId) {

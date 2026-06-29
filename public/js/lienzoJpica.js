@@ -678,6 +678,11 @@ function renderColombes(play) {
     });
 
     document.getElementById("jpica-help-btn")?.addEventListener("click", () => {
+      if (typeof window.openPlayHelp === "function") {
+        window.openPlayHelp("J_SPADE");
+        return;
+      }
+
       window.location.href = `/help.html?rank=J&suit=SPADE&playId=${parentPlay.id}`;
     });
 
