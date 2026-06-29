@@ -367,7 +367,7 @@
 .lv2-play-card__inner-suit {
   position: absolute;
   font-family: var(--font-card);
-  font-size: calc(var(--lv2-card-w) * 0.15);
+  font-size: calc(var(--lv2-card-w) * 0.16);
   line-height: 1;
   opacity: 1;
   z-index: 3;
@@ -376,11 +376,11 @@
 
 .lv2-play-card__inner-suit--tl {
   top: calc(var(--lv2-card-h) * 0.082);
-  left: calc(var(--lv2-card-w) * 0.125);
+  left: calc(var(--lv2-card-w) * 0.127);
 }
 
 .lv2-play-card__inner-suit--br {
-  right: calc(var(--lv2-card-w) * 0.125);
+  right: calc(var(--lv2-card-w) * 0.127);
   bottom: calc(var(--lv2-card-h) * 0.11);
   transform: rotate(180deg);
 }
