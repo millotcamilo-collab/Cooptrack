@@ -103,6 +103,10 @@
     const parsed = parsePlayCode(play?.play_code || "");
     const meta = parseFlowMetadata(parsed.flow);
     const payment = meta.payment;
+    const playCodeUpper = String(play?.play_code || "").toUpperCase();
+    const showMetaDisabledIcon =
+      playCodeUpper.includes("BOMB:DONE") ||
+      playCodeUpper.includes("BOMB:DISABLED");
 
     let qSuitsHtml = `<span class="qpike-row__suit qpike-row__suit--spade">♠</span>`;
     let proposalHtml = "";
@@ -128,6 +132,17 @@
       `;
       }
     }
+
+    const statusIconHtml = showMetaDisabledIcon
+      ? `
+        <img
+          class="qpike-row__status-icon"
+          src="/assets/icons/META60.gif"
+          alt="Bomba desactivada"
+          title="Bomba desactivada"
+        />
+      `
+      : "";
 
     return `
     <button
@@ -159,7 +174,7 @@
         </div>
       </div>
 
-      <div class="tablero-row__right qpike-row__right"></div>
+      <div class="tablero-row__right qpike-row__right">${statusIconHtml}</div>
     </button>
   `;
   }

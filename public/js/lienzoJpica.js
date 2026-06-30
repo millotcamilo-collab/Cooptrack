@@ -98,7 +98,7 @@
     );
   }
 
-function getBombStampIcon(play) {
+function getBombMinidayIcon(play) {
   const code = String(play?.play_code || "").toUpperCase();
   const actions = window.ICONS?.actions || {};
 
@@ -122,7 +122,7 @@ function getBombStampIcon(play) {
     return actions.boom || "/assets/icons/Boom80.gif";
   }
 
-  return "";
+  return actions.bomb || "/assets/icons/bombaRedonda60.gif";
 }
 
   function canCancelApprovedJpica(play) {
@@ -326,11 +326,10 @@ function renderColombes(play) {
     : play.start_date;
 
   const mainIcon = isDeadline
-    ? "/assets/icons/bombaRedonda60.gif"
+    ? getBombMinidayIcon(play)
     : "/assets/icons/reloj60.gif";
 
   const showBombActions = canResolveBomb(play);
-  const bombStampIcon = isDeadline ? getBombStampIcon(play) : "";
 
   return `
     <section class="lienzo-tribune lienzo-tribune--source">
@@ -364,13 +363,7 @@ function renderColombes(play) {
                   }
                 : null
             ].filter(Boolean),
-            actionsHtml: bombStampIcon ? `
-              <img
-                class="lv2-play-card__decision-icon"
-                src="${bombStampIcon}"
-                alt="Estado de bomba"
-              />
-            ` : showBombActions ? `
+            actionsHtml: showBombActions ? `
               <button
                 type="button"
                 id="jpica-done-btn"
