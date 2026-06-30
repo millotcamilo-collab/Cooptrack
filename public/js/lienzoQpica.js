@@ -871,6 +871,36 @@ function formatDateForInput(value) {
         return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
     }
 
+    function isFutureDate(value) {
+        const date = parseLocalDateTime(value);
+        if (!date) return false;
+        return date.getTime() > Date.now();
+    }
+
+    function getDeadlineStatusIcon(play, deadlineValue) {
+        const code = String(play?.play_code || "").toUpperCase();
+        const status = String(play?.play_status || play?.status || "").toUpperCase();
+        const actions = window.ICONS?.actions || {};
+
+        if (status === "CANCELLED" || code.includes("BOMB:DISABLED")) {
+            return actions.stop || actions.cancel || "/assets/icons/stop60.gif";
+        }
+
+        if (status === "DONE" || code.includes("BOMB:DONE")) {
+            return actions.deadline || "/assets/icons/META60.gif";
+        }
+
+        if (status === "QUIT" || status === "REJECTED" || code.includes("BOMB:EXPLODED")) {
+            return actions.boom || "/assets/icons/Boom80.gif";
+        }
+
+        if (deadlineValue && !isFutureDate(deadlineValue)) {
+            return actions.boom || "/assets/icons/Boom80.gif";
+        }
+
+        return "/assets/icons/bombaRedonda80.gif";
+    }
+
     function getParentJSpadeText(play) {
         if (!play) return "";
 
@@ -898,7 +928,7 @@ function formatDateForInput(value) {
 
         const clockIcon = "/assets/icons/reloj60.gif";
         const bellIcon = "/assets/icons/Campana80.gif";
-        const bombIcon = "/assets/icons/bombaRedonda60.gif";
+        const bombIcon = getDeadlineStatusIcon(play, sessionPlay?.end_date);
 
         if (spadeMode === "DEADLINE") {
             const endLabel = formatTimeLabel(sessionPlay?.end_date);
@@ -1118,6 +1148,10 @@ if (isTarget && status === "APPROVED" && isDeadlineFromParent(play)) {
             ? getCorporateCardsForCurrentUser(getAllPlays(), Number(ownerUser.id))
             : [];
 
+        const miniDayIcon = isDeadline
+            ? getDeadlineStatusIcon(play, parentPlay?.end_date)
+            : "/assets/icons/reloj60.gif";
+
         return window.CartaTipo.renderPlayCardBox({
             rank,
             suit,
@@ -1131,10 +1165,11 @@ if (isTarget && status === "APPROVED" && isDeadlineFromParent(play)) {
             status: play?.play_status,
             ownerUser,
             ownerCards,
+            miniDayActivityIcon: miniDayIcon,
             metas: [
                 timeLabel
                     ? {
-                        icon: `/assets/icons/${isDeadline ? "bombaRedonda60.gif" : "reloj60.gif"}`,
+                        icon: miniDayIcon,
                         text: timeLabel
                     }
                     : null,
@@ -1166,7 +1201,7 @@ if (isTarget && status === "APPROVED" && isDeadlineFromParent(play)) {
 
         const clockIcon = "/assets/icons/reloj60.gif";
         const bellIcon = "/assets/icons/Campana80.gif";
-        const bombIcon = "/assets/icons/bombaRedonda60.gif";
+        const bombIcon = getDeadlineStatusIcon(play, sessionPlay?.end_date);
 
         let bodyHtml = "";
 

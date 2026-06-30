@@ -355,7 +355,15 @@
   function getJHeartSubtitleHtml(config) {
     const page = String(config?.page || "").trim().toLowerCase();
 
-    if (page !== "lienzo-jpica" && page !== "tribuna-amsterdam" && page !== "bomba") return "";
+    const supportsJHeartSubtitles = [
+      "lienzo-jpica",
+      "tribuna-amsterdam",
+      "bomba",
+      "lienzo-qpica",
+      "lienzo-qqpica"
+    ].includes(page);
+
+    if (!supportsJHeartSubtitles) return "";
 
     const currentPlay = config?.play || null;
     const currentPlayId = Number(currentPlay?.id || 0);
@@ -364,7 +372,9 @@
     );
 
     const childHeartsParentId =
-      page === "tribuna-amsterdam"
+      page === "tribuna-amsterdam" ||
+      page === "lienzo-qpica" ||
+      page === "lienzo-qqpica"
         ? parentJpicaId
         : currentPlayId;
 
