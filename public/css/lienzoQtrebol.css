@@ -16,11 +16,13 @@
 
 .page-qtrebol .lienzo-qtrebol-second-layer {
   width: 100%;
-  margin-top: 12px;
+  margin-top: -230px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 0;
+  position: relative;
+  z-index: 3;
 }
 
 .page-qtrebol .lienzo-qtrebol-qheart-wrap {
@@ -29,26 +31,18 @@
   justify-content: center;
 }
 
-.page-qtrebol .lienzo-qtrebol-qheart-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
 
-.page-qtrebol .lienzo-qtrebol-qheart-actions .icon-btn {
-  border: 0;
-  background: transparent;
-  padding: 0;
-}
-
-.page-qtrebol .lienzo-qtrebol-qheart-actions .icon-btn img {
-  height: 34px;
-  width: auto;
-  display: block;
+@media (max-width: 1024px) {
+  .page-qtrebol .lienzo-qtrebol-second-layer {
+    margin-top: -205px;
+  }
 }
 
 @media (max-width: 768px) {
+  .page-qtrebol .lienzo-qtrebol-second-layer {
+    margin-top: -180px;
+  }
+
   .page-qtrebol .lienzo-qtrebol-main-primary,
   .page-qtrebol .lienzo-qtrebol-qheart-wrap {
     width: min(100%, calc(var(--lv2-card-w) - 32px));

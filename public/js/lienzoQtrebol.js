@@ -102,6 +102,22 @@
     };
   }
 
+  function hasPersistedQHeartOffer(play) {
+    const payment = parseQHeartPaymentFromPlay(play);
+    if (!payment) return false;
+
+    return Boolean(
+      String(payment.concept || "").trim() &&
+      String(payment.amount || "").trim() &&
+      String(payment.payDate || "").trim()
+    );
+  }
+
+  function canOperateSource(play) {
+    const status = String(play?.play_status || play?.status || "").trim().toUpperCase();
+    return !["SENT", "APPROVED", "REJECTED", "CANCELLED", "DONE", "QUIT"].includes(status);
+  }
+
   function formatTime(value) {
     if (!value) return "";
 
@@ -210,9 +226,34 @@
     const deck = getCurrentDeck();
     const defaults = getQHeartDefaults(play);
     const canEdit = isCurrentUserSource(play);
+    const canOperate = canOperateSource(play);
+    const hasSavedOffer = hasPersistedQHeartOffer(play);
     const figureSrc = window.CartaTipo?.getFigureImageSrc
       ? window.CartaTipo.getFigureImageSrc("Q", "HEART")
       : "/assets/icons/QC.png";
+
+    const actionsHtml = canEdit && canOperate
+      ? `
+        <div class="lienzo-qheart-box__title">Oferta económica</div>
+
+        ${hasSavedOffer
+          ? `
+            <button id="qtrebol-qheart-send-btn" class="icon-btn" title="Enviar oferta">
+              <img src="/assets/icons/buzon60.gif" alt="Enviar" />
+            </button>
+          `
+          : `
+            <button id="qtrebol-qheart-save-btn" class="icon-btn" title="Salvar oferta Q♥">
+              <img src="/assets/icons/salvar40.gif" alt="Salvar" />
+            </button>
+          `
+        }
+
+        <button id="qtrebol-delete-btn" class="icon-btn" title="Borrar invitación">
+          <img src="/assets/icons/papelera80.gif" alt="Borrar" />
+        </button>
+      `
+      : "";
 
     return `
       <div class="lv2-play-card lv2-play-card--qheart">
@@ -256,22 +297,10 @@
             />
           </div>
         </div>
-      </div>
-    `;
-  }
 
-  function renderQHeartActions(play) {
-    if (!isCurrentUserSource(play)) return "";
-
-    return `
-      <div class="lienzo-qtrebol-qheart-actions">
-        <button id="qtrebol-qheart-save-btn" class="icon-btn" title="Salvar oferta Q♥">
-          <img src="/assets/icons/salvar40.gif" alt="Salvar" />
-        </button>
-
-        <button id="qtrebol-delete-btn" class="icon-btn" title="Borrar invitación">
-          <img src="/assets/icons/papelera80.gif" alt="Borrar" />
-        </button>
+        <div class="lv2-play-card__actions">
+          ${actionsHtml}
+        </div>
       </div>
     `;
   }
@@ -349,8 +378,6 @@
             <div class="lienzo-qtrebol-qheart-wrap">
               ${renderQHeartBudgetCard(play)}
             </div>
-
-            ${renderQHeartActions(play)}
           </div>
         </div>
       </section>
@@ -439,6 +466,7 @@
 
   function bindActions(play) {
     const saveBtn = document.getElementById("qtrebol-qheart-save-btn");
+    const sendBtn = document.getElementById("qtrebol-qheart-send-btn");
     const deleteBtn = document.getElementById("qtrebol-delete-btn");
 
     saveBtn?.addEventListener("click", async () => {
@@ -452,6 +480,29 @@
       if (!ok) return;
 
       alert("Oferta Q♥ guardada.");
+      window.location.reload();
+    });
+
+    sendBtn?.addEventListener("click", async () => {
+      if (!hasPersistedQHeartOffer(play)) {
+        alert("Primero guardá la oferta Q♥.");
+        return;
+      }
+
+      const ok = await patchPlay(play.id, {
+        play_status: "SENT"
+      });
+
+      if (!ok) return;
+
+      const deckId = Number(play?.deck_id || getCurrentDeck()?.id || 0);
+      const parentId = Number(play?.parent_play_id || 0);
+
+      if (deckId && parentId) {
+        window.location.href = `/lienzoJtrebol.html?deckId=${deckId}&playId=${parentId}`;
+        return;
+      }
+
       window.location.reload();
     });
 
