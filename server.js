@@ -1715,7 +1715,7 @@ app.get('/plays/ahora', requireAuth, async (req, res) => {
         LEFT JOIN decks d
           ON d.id = p.deck_id
         WHERE p.card_rank = 'Q'
-          AND p.card_suit = 'SPADE'
+          AND p.card_suit IN ('SPADE', 'CLUB')
           AND UPPER(COALESCE(p.play_status, '')) = 'APPROVED'
           AND COALESCE(p.play_code, '') ILIKE '%pay:QHEART%'
           AND COALESCE(p.play_code, '') NOT ILIKE '%settlement:PAID%'

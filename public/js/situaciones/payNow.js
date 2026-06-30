@@ -242,9 +242,19 @@
     return settlement;
   }
 
+  function isQClub(play) {
+    return (
+      normalizeRank(play?.card_rank || play?.rank) === "Q" &&
+      normalizeSuit(play?.card_suit || play?.suit) === "CLUB"
+    );
+  }
+
   function getPayerSide(play) {
     const payment = parseQQHeartPayment(play);
     const side = String(payment?.side || "").trim().toUpperCase();
+
+    // Q♣: el target siempre es quien paga (comprador), sin campo side en el payload.
+    if (isQClub(play) && side !== "COLOMBES") return "AMSTERDAM";
 
     if (side !== "AMSTERDAM" && side !== "COLOMBES") return null;
 
@@ -466,13 +476,14 @@
     if (!parent) return "";
 
     const ownerUser = getPlayOwnerUser(parent, parent?.created_by_user_id);
+    const parentSuit = normalizeSuit(parent?.card_suit || play?.card_suit || "SPADE");
 
     return window.CartaTipo.renderPlayCardBox({
       ...parent,
       rank: "J",
       card_rank: "J",
-      suit: "SPADE",
-      card_suit: "SPADE",
+      suit: parentSuit,
+      card_suit: parentSuit,
       play_text: parent.play_text,
       start_date: parent.start_date,
       end_date: parent.end_date,
@@ -498,12 +509,14 @@
         }
       : getPlayOwnerUser(play, play?.created_by_user_id);
 
+    const playSuit = normalizeSuit(play?.card_suit || play?.suit || "SPADE");
+
     return window.CartaTipo.renderPlayCardBox({
       ...play,
       rank: "Q",
       card_rank: "Q",
-      suit: "SPADE",
-      card_suit: "SPADE",
+      suit: playSuit,
+      card_suit: playSuit,
       play_text: parent?.play_text || play.play_text,
       start_date: parent?.start_date || play.start_date,
       end_date: parent?.end_date || play.end_date,
@@ -604,10 +617,15 @@
 
     const map = {};
 
+    const parentSuit = normalizeSuit(
+      play?.parent_play?.card_suit || play?.parent?.card_suit || play?.card_suit || "SPADE"
+    );
+    const playSuit = normalizeSuit(play?.card_suit || play?.suit || "SPADE");
+
     // Carta madre de la jugada.
-    pushParticipantCard(map, sourceUserId, "J", "SPADE");
-    // Q de pica receptora.
-    pushParticipantCard(map, targetUserId, "Q", "SPADE");
+    pushParticipantCard(map, sourceUserId, "J", parentSuit);
+    // Q receptora.
+    pushParticipantCard(map, targetUserId, "Q", playSuit);
 
     // Q diamante economica: la asociamos al pagador segun side.
     if (payerSide === "AMSTERDAM") {

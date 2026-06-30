@@ -125,7 +125,7 @@
     const suit = String(play.card_suit || play.suit || "").toUpperCase();
     const status = String(play.play_status || play.status || "").toUpperCase();
 
-    if (rank !== "Q" || suit !== "SPADE") return false;
+    if (rank !== "Q" || (suit !== "SPADE" && suit !== "CLUB")) return false;
     if (status !== "APPROVED") return false;
     if (playHasSettlement(play)) return false;
 
