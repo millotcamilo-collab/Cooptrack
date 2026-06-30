@@ -247,6 +247,7 @@
 
     const rank = String(play?.card_rank || play?.rank || "").trim().toUpperCase();
     const suit = String(play?.card_suit || play?.suit || "").trim().toUpperCase();
+    const parentPlayId = Number(play?.parent_play_id || 0);
 
     if (rank === "J" && suit === "HEART") {
       return "/lienzoJcorazon.html";
@@ -254,6 +255,10 @@
 
     if (rank === "J" && suit === "SPADE") {
       return "/lienzoJpica.html";
+    }
+
+    if (rank === "J" && suit === "CLUB" && !parentPlayId) {
+      return "/lienzoJtrebol.html";
     }
 
     if (rank === "Q" && suit === "SPADE") {
@@ -477,6 +482,38 @@
     });
   }
 
+  function enhanceTableroJtrebolRowHtml(play, rowHtml, deck) {
+    if (typeof rowHtml !== "string" || !rowHtml) return rowHtml;
+
+    const rank = normalizeRank(play?.rank || play?.card_rank);
+    const suit = normalizeSuit(play?.suit || play?.card_suit);
+    const parentPlayId = Number(play?.parent_play_id || 0);
+
+    if (rank !== "J" || suit !== "CLUB" || parentPlayId) {
+      return rowHtml;
+    }
+
+    const playId = Number(play?.id || 0);
+    const deckId = Number(play?.deck_id || deck?.id || 0);
+    if (!playId) return rowHtml;
+
+    const rankSuitButton = `
+      <button
+        type="button"
+        class="tablero-row__card tablero-row__card--open-lienzo"
+        data-open-lienzo="true"
+        data-play-id="${playId}"
+        data-deck-id="${deckId || ""}"
+        title="Abrir lienzo J♣"
+      >J♣</button>
+    `;
+
+    return rowHtml.replace(
+      '<div class="tablero-row__card">J♣</div>',
+      rankSuitButton
+    );
+  }
+
   function renderEmptyState() {
     return `
       <section class="tablero-empty">
@@ -688,15 +725,16 @@ function isHiddenChildPlay(play) {
           if (renderer) {
             try {
               const html = renderer(play, context);
+              const tableroOnlyHtml = enhanceTableroJtrebolRowHtml(play, html, deck);
 
               if (play.__treeDepth && play.__treeDepth > 0) {
-                return html.replace(
+                return tableroOnlyHtml.replace(
                   'class="tablero-row ',
                   `class="tablero-row tablero-row--child tablero-row--child-depth-${play.__treeDepth} `
                 );
               }
 
-              return html;
+              return tableroOnlyHtml;
             } catch (error) {
               console.error(`Error renderizando ${componentName}`, error);
               return renderFallbackRow(play);
