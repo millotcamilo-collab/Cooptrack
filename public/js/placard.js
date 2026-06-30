@@ -357,6 +357,8 @@
 
     const supportsJHeartSubtitles = [
       "lienzo-jpica",
+      "lienzo-jtrebol",
+      "lienzo-qtrebol",
       "tribuna-amsterdam",
       "bomba",
       "lienzo-qpica",
@@ -367,16 +369,22 @@
 
     const currentPlay = config?.play || null;
     const currentPlayId = Number(currentPlay?.id || 0);
-    const parentJpicaId = Number(
+    const parentPlayId = Number(
       currentPlay?.parent_play_id || currentPlay?.parent_play?.id || 0
     );
 
     const childHeartsParentId =
       page === "tribuna-amsterdam" ||
       page === "lienzo-qpica" ||
-      page === "lienzo-qqpica"
-        ? parentJpicaId
+      page === "lienzo-qqpica" ||
+      page === "lienzo-qtrebol"
+        ? parentPlayId
         : currentPlayId;
+
+    const childSubtitleTitle =
+      page === "lienzo-jtrebol" || page === "lienzo-qtrebol"
+        ? "J corazones hijas de J trébol aprobadas"
+        : "J corazones hijas de J pica aprobadas";
 
     const plays = Array.isArray(config?.plays) ? config.plays : [];
 
@@ -403,7 +411,7 @@
         }
 
         ${childTexts.length
-          ? buildTickerHtml(childTexts, "J corazones hijas de J pica aprobadas", {
+          ? buildTickerHtml(childTexts, childSubtitleTitle, {
               extraClass: "placard__subtitle--jpica-child"
             })
           : ""
