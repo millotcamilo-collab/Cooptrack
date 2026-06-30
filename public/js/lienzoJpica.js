@@ -122,7 +122,7 @@ function getBombMinidayIcon(play) {
     return actions.boom || "/assets/icons/Boom80.gif";
   }
 
-  return actions.bomb || "/assets/icons/bombaRedonda60.gif";
+  return "/assets/icons/bombaRedonda80.gif";
 }
 
   function canCancelApprovedJpica(play) {
@@ -330,6 +330,7 @@ function renderColombes(play) {
     : "/assets/icons/reloj60.gif";
 
   const showBombActions = canResolveBomb(play);
+  const showCardActions = isDeadline ? showBombActions : true;
 
   return `
     <section class="lienzo-tribune lienzo-tribune--source">
@@ -349,6 +350,7 @@ function renderColombes(play) {
             location: play.location,
             ownerUser: getPlayOwnerUser(play),
             ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
+            showActions: showCardActions,
             metas: [
               mainDate
                 ? {
