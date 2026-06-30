@@ -36,6 +36,72 @@
     return getAllPlays().find((play) => Number(play?.id || 0) === id) || null;
   }
 
+  function getCurrentUserId() {
+    return Number(window.__currentUser?.id || getCurrentState()?.userId || 0);
+  }
+
+  function isCurrentUserSource(play) {
+    return Number(play?.created_by_user_id || 0) === getCurrentUserId();
+  }
+
+  function parsePlayCode(playCode) {
+    const parts = String(playCode || "").split("§");
+    while (parts.length < 9) parts.push("");
+    return parts;
+  }
+
+  function parseQHeartPaymentFromPlay(play) {
+    const parts = parsePlayCode(play?.play_code || "");
+    const flow = String(parts[7] || "");
+
+    const chunk = flow
+      .split(";")
+      .map((item) => item.trim())
+      .find((item) => item.toLowerCase().startsWith("pay:qheart"));
+
+    if (!chunk) return null;
+
+    const data = {};
+    chunk.split("|").forEach((part, index) => {
+      if (index === 0) return;
+      const separator = part.indexOf(":");
+      if (separator === -1) return;
+
+      const key = part.slice(0, separator).trim();
+      const value = part.slice(separator + 1).trim();
+      if (key) data[key] = value;
+    });
+
+    return data;
+  }
+
+  function formatDateForInput(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  function getQHeartDefaults(play) {
+    const payment = parseQHeartPaymentFromPlay(play) || {};
+    const parentPlay = getPlayById(play?.parent_play_id);
+
+    return {
+      concept: String(payment.concept || "").trim() || "Ticket",
+      amount: String(payment.amount || "").trim(),
+      payDate:
+        formatDateForInput(payment.payDate) ||
+        formatDateForInput(parentPlay?.start_date || play?.start_date)
+    };
+  }
+
   function formatTime(value) {
     if (!value) return "";
 
@@ -140,6 +206,76 @@
     `;
   }
 
+  function renderQHeartBudgetCard(play) {
+    const deck = getCurrentDeck();
+    const defaults = getQHeartDefaults(play);
+    const canEdit = isCurrentUserSource(play);
+    const figureSrc = window.CartaTipo?.getFigureImageSrc
+      ? window.CartaTipo.getFigureImageSrc("Q", "HEART")
+      : "/assets/icons/QC.png";
+
+    return `
+      <div class="lv2-play-card lv2-play-card--qheart">
+        ${window.CartaTipo.renderCardCorners("Q", "HEART")}
+
+        <div
+          class="lv2-play-card__figure"
+          style="--lv2-figure-url: url('${escapeHtml(figureSrc)}');"
+        ></div>
+
+        <div class="lv2-play-card__inner lv2-play-card__inner--figure">
+          <div class="lienzo-qheart-box__body">
+            <input
+              id="qtrebol-qheart-concept"
+              type="text"
+              class="lienzo-qheart-box__concept"
+              placeholder="Descripción"
+              value="${escapeHtml(defaults.concept)}"
+              ${canEdit ? "" : "disabled"}
+            />
+
+            <div class="lienzo-qheart-box__amount-row">
+              <span class="lienzo-qheart-box__currency">${escapeHtml(String(deck?.currency_symbol || "").trim().toUpperCase())}</span>
+              <input
+                id="qtrebol-qheart-amount"
+                type="text"
+                class="lienzo-qheart-box__amount"
+                placeholder="0"
+                inputmode="decimal"
+                value="${escapeHtml(defaults.amount)}"
+                ${canEdit ? "" : "disabled"}
+              />
+            </div>
+
+            <input
+              id="qtrebol-qheart-paydate"
+              type="datetime-local"
+              class="lienzo-qheart-box__paydate"
+              value="${escapeHtml(defaults.payDate)}"
+              ${canEdit ? "" : "disabled"}
+            />
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderQHeartActions(play) {
+    if (!isCurrentUserSource(play)) return "";
+
+    return `
+      <div class="lienzo-qtrebol-qheart-actions">
+        <button id="qtrebol-qheart-save-btn" class="icon-btn" title="Salvar oferta Q♥">
+          <img src="/assets/icons/salvar40.gif" alt="Salvar" />
+        </button>
+
+        <button id="qtrebol-delete-btn" class="icon-btn" title="Borrar invitación">
+          <img src="/assets/icons/papelera80.gif" alt="Borrar" />
+        </button>
+      </div>
+    `;
+  }
+
   function mountPlacard(play) {
     const host = document.getElementById("lienzo-placard");
     if (!host || typeof window.renderPlacard !== "function") return;
@@ -209,12 +345,138 @@
             </div>
           </div>
 
-          <div class="lienzo-jpica-panel" style="margin-top: 12px;">
-            <div class="tablero-empty">Versión inicial de Q♣. Próximo paso: reglas y acciones específicas.</div>
+          <div class="lienzo-qtrebol-second-layer">
+            <div class="lienzo-qtrebol-qheart-wrap">
+              ${renderQHeartBudgetCard(play)}
+            </div>
+
+            ${renderQHeartActions(play)}
           </div>
         </div>
       </section>
     `;
+  }
+
+  async function patchPlay(playId, payload) {
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) {
+      alert("No estás logueado");
+      return false;
+    }
+
+    const response = await fetch(`/plays/${playId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      alert(data?.error || "No se pudo guardar la oferta Q♥.");
+      return false;
+    }
+
+    return true;
+  }
+
+  async function deletePlay(playId) {
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) {
+      alert("No estás logueado");
+      return false;
+    }
+
+    const response = await fetch(`/plays/${playId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      alert(data?.error || "No se pudo borrar la Q♣.");
+      return false;
+    }
+
+    return true;
+  }
+
+  function buildQHeartPayload(play) {
+    const concept = String(document.getElementById("qtrebol-qheart-concept")?.value || "").trim();
+    const amount = String(document.getElementById("qtrebol-qheart-amount")?.value || "").trim();
+    const payDate = String(document.getElementById("qtrebol-qheart-paydate")?.value || "").trim();
+
+    if (!concept || !amount || !payDate) {
+      return { ok: false, error: "Completá concepto, importe y fecha." };
+    }
+
+    const parts = parsePlayCode(play?.play_code || "");
+    const flowChunks = String(parts[7] || "")
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .filter((chunk) => !chunk.toLowerCase().startsWith("pay:qheart"));
+
+    const qHeartChunk =
+      `pay:QHEART|concept:${concept}|amount:${amount}|currency:${String(getCurrentDeck()?.currency_symbol || "").trim().toUpperCase()}|payDate:${payDate}`;
+
+    flowChunks.push(qHeartChunk);
+    parts[7] = flowChunks.join(";");
+
+    return {
+      ok: true,
+      payload: {
+        play_code: parts.slice(0, 9).join("§")
+      }
+    };
+  }
+
+  function bindActions(play) {
+    const saveBtn = document.getElementById("qtrebol-qheart-save-btn");
+    const deleteBtn = document.getElementById("qtrebol-delete-btn");
+
+    saveBtn?.addEventListener("click", async () => {
+      const built = buildQHeartPayload(play);
+      if (!built.ok) {
+        alert(built.error || "Datos inválidos");
+        return;
+      }
+
+      const ok = await patchPlay(play.id, built.payload);
+      if (!ok) return;
+
+      alert("Oferta Q♥ guardada.");
+      window.location.reload();
+    });
+
+    deleteBtn?.addEventListener("click", async () => {
+      const confirmed = window.confirm("¿Querés borrar esta Q♣?");
+      if (!confirmed) return;
+
+      const ok = await deletePlay(play.id);
+      if (!ok) return;
+
+      const deckId = Number(play?.deck_id || getCurrentDeck()?.id || 0);
+      const parentId = Number(play?.parent_play_id || 0);
+
+      if (parentId && deckId) {
+        window.location.href = `/lienzoJtrebol.html?deckId=${deckId}&playId=${parentId}`;
+        return;
+      }
+
+      if (deckId) {
+        window.location.href = `/tablero.html?id=${deckId}`;
+        return;
+      }
+
+      window.history.back();
+    });
   }
 
   function openLienzoByPlayId(playId) {
@@ -234,6 +496,7 @@
     `;
 
     mountPlacard(play);
+    bindActions(play);
   }
 
   window.openLienzoByPlayId = openLienzoByPlayId;

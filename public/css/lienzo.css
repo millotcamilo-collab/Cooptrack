@@ -445,6 +445,40 @@ min-height: var(--lv2-tribune-h);
   transform: scale(1.01);
 }
 
+.lienzo-qtrebol-second-layer {
+  width: 100%;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.lienzo-qtrebol-qheart-wrap {
+  width: min(100%, var(--lv2-card-w));
+  display: flex;
+  justify-content: center;
+}
+
+.lienzo-qtrebol-qheart-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.lienzo-qtrebol-qheart-actions .icon-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.lienzo-qtrebol-qheart-actions .icon-btn img {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
 .jpica-users-picker.is-hidden {
   display: none;
 }
