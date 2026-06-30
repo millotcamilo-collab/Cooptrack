@@ -339,8 +339,8 @@
         <div class="lienzo-tribune__corporates"></div>
 
         <div class="lienzo-tribune__stage lienzo-tribune__stage--column">
-          <div class="amsterdam-card-stack">
-            <div class="amsterdam-card-stack__primary">
+          <div class="amsterdam-card-stack lienzo-qtrebol-main-stack">
+            <div class="amsterdam-card-stack__primary lienzo-qtrebol-main-primary">
               ${cardHtml}
             </div>
           </div>
