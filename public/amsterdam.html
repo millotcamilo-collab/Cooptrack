@@ -193,7 +193,7 @@
                 const targetUser = resolveTargetUser(play);
 
                 const payerLabel =
-                    String(payment.side || "").toUpperCase() === "AMSTERDAM"
+                    isQClub || String(payment.side || "").toUpperCase() === "AMSTERDAM"
                         ? targetUser.nickname
                         : play?.deck_name || "Mazo";
 

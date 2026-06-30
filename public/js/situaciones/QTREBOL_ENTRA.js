@@ -73,17 +73,19 @@ window.QTREBOL_ENTRA = {
         <div class="lienzo-tribune__corporates"></div>
 
         <div id="lienzo-target-dropzone" class="lienzo-target-dropzone">
-          <div class="amsterdam-card-stack amsterdam-card-stack--qtrebol-offer">
+          <div class="qtrebol-offer-stack">
             <div class="qtrebol-offer-stack__sender-row">
               ${this.renderOfferRow(ctx.play)}
             </div>
 
-            <div class="amsterdam-card-stack__primary qtrebol-offer-stack__primary">
-              ${this.renderQtrebolReadOnly(ctx)}
-            </div>
+            <div class="qtrebol-offer-card-stack">
+              <div class="qtrebol-offer-card-stack__qtrebol">
+                ${this.renderQtrebolReadOnly(ctx)}
+              </div>
 
-            <div class="amsterdam-card-stack__economic qtrebol-offer-stack__economic">
-              ${qheartHtml}
+              ${qheartHtml
+                ? `<div class="qtrebol-offer-card-stack__qheart">${qheartHtml}</div>`
+                : ""}
             </div>
           </div>
         </div>

@@ -442,18 +442,56 @@ top: 20px;
   margin-right: auto;
 }
 
-.tribuna-page--amsterdam .amsterdam-card-stack--qtrebol-offer {
-  min-height: calc(var(--lv2-card-h) * 2.95);
+.qtrebol-offer-stack {
+  width: var(--lv2-card-w);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
 }
 
 .qtrebol-offer-stack__sender-row {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: var(--lv2-card-w);
-  z-index: 4;
+  width: 100%;
   display: flex;
   justify-content: center;
+  margin-bottom: 14px;
+}
+
+.qtrebol-offer-card-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qtrebol-offer-card-stack__qtrebol {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.qtrebol-offer-card-stack__qheart {
+  margin-top: -230px;
+  position: relative;
+  z-index: 6;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 1024px) {
+  .qtrebol-offer-card-stack__qheart {
+    margin-top: -205px;
+  }
+}
+
+@media (max-width: 768px) {
+  .qtrebol-offer-card-stack__qheart {
+    margin-top: -180px;
+  }
 }
 
 .qtrebol-offer-row {
@@ -472,7 +510,7 @@ top: 20px;
 .qtrebol-offer-row__card {
   font-size: 28px;
   font-weight: 700;
-  color: #0b5f2a;
+  color: #111;
   letter-spacing: 0.02em;
 }
 
@@ -496,10 +534,3 @@ top: 20px;
   color: #1a1a1a;
 }
 
-.tribuna-page--amsterdam .qtrebol-offer-stack__primary {
-  top: 86px;
-}
-
-.tribuna-page--amsterdam .qtrebol-offer-stack__economic {
-  top: calc(var(--lv2-card-h) * 1.22);
-}
