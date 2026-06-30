@@ -62,6 +62,7 @@
     <!-- Situaciones Amsterdam -->
     <script src="/js/situaciones/QPICA_ENTRA.js"></script>
     <script src="/js/situaciones/QQPICA_ENTRA.js"></script>
+    <script src="/js/situaciones/QTREBOL_ENTRA.js"></script>
 
 
 
@@ -170,7 +171,10 @@
                 const suit = normalizeText(play?.card_suit || play?.suit);
                 const status = normalizeText(play?.play_status || play?.status);
 
-                if (!(rank === "Q" && suit === "SPADE")) return "";
+                const isQSpade = rank === "Q" && suit === "SPADE";
+                const isQClub = rank === "Q" && suit === "CLUB";
+
+                if (!isQSpade && !isQClub) return "";
 
                 const negativeStatuses = ["REJECTED", "CANCELLED", "FIRED"];
                 if (negativeStatuses.includes(status)) return "";
@@ -566,10 +570,18 @@ function getPlayCalendarYmd(play) {
                     console.log("DECK USERS", deckState?.users);
                 }
                 console.log("QPICA_ENTRA cargado:", window.QPICA_ENTRA);
-                const situacion =
+                const playRank = normalizeText(play?.card_rank || play?.rank);
+                const playSuit = normalizeText(play?.card_suit || play?.suit);
+                const hasEconomicQHeart = Boolean(
                     parseFlowPayment(parsePlayCode(play?.play_code).flow)
-                        ? window.QQPICA_ENTRA
-                        : window.QPICA_ENTRA;
+                );
+
+                const situacion =
+                    playRank === "Q" && playSuit === "CLUB"
+                        ? window.QTREBOL_ENTRA
+                        : hasEconomicQHeart
+                            ? window.QQPICA_ENTRA
+                            : window.QPICA_ENTRA;
 
                 const html = situacion.render({
                     play,

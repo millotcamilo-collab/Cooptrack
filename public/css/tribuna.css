@@ -441,3 +441,65 @@ top: 20px;
   margin-left: auto;
   margin-right: auto;
 }
+
+.tribuna-page--amsterdam .amsterdam-card-stack--qtrebol-offer {
+  min-height: calc(var(--lv2-card-h) * 2.95);
+}
+
+.qtrebol-offer-stack__sender-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--lv2-card-w);
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+}
+
+.qtrebol-offer-row {
+  width: calc(var(--lv2-card-w) - 24px);
+  min-height: 56px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+}
+
+.qtrebol-offer-row__card {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0b5f2a;
+  letter-spacing: 0.02em;
+}
+
+.qtrebol-offer-row__sender {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qtrebol-offer-row__avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+}
+
+.qtrebol-offer-row__nick {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.tribuna-page--amsterdam .qtrebol-offer-stack__primary {
+  top: 86px;
+}
+
+.tribuna-page--amsterdam .qtrebol-offer-stack__economic {
+  top: calc(var(--lv2-card-h) * 1.22);
+}

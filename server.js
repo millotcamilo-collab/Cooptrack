@@ -3632,14 +3632,15 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
 
     if (play_status === 'SENT') {
       const isQSpade = currentRank === 'Q' && currentSuit === 'SPADE';
+      const isQClub = currentRank === 'Q' && currentSuit === 'CLUB';
       const isKCard = currentRank === 'K';
       const isACard = currentRank === 'A';
       const isJHeart = currentRank === 'J' && currentSuit === 'HEART';
 
-      if (!isQSpade && !isKCard && !isACard && !isJHeart) {
+      if (!isQSpade && !isQClub && !isKCard && !isACard && !isJHeart) {
         return res.status(400).json({
           ok: false,
-          error: 'Solo una Q♠ o una K, A o una J♥ pueden enviarse'
+          error: 'Solo una Q♠/Q♣ o una K, A o una J♥ pueden enviarse'
         });
       }
 
@@ -3672,7 +3673,7 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
         });
       }
 
-      if ((isKCard || isACard || isQSpade) && !Number(current.target_user_id || 0)) {
+      if ((isKCard || isACard || isQSpade || isQClub) && !Number(current.target_user_id || 0)) {
         return res.status(400).json({
           ok: false,
           error: 'La invitación debe tener target_user_id'
@@ -5583,6 +5584,29 @@ LEFT JOIN play_validations pv
             (
               pv.validator_user_id IS NOT NULL
               AND pv.validation_status = 'PENDING'
+            )
+          )
+        )
+
+        OR
+
+        -- =========================
+        -- Q♣
+        -- =========================
+        (
+          p.card_rank = 'Q'
+          AND p.card_suit = 'CLUB'
+          AND (
+            (
+              p.target_user_id = $1
+              AND COALESCE(p.play_status, '') IN ('SENT', 'PENDING')
+            )
+
+            OR
+
+            (
+              p.created_by_user_id = $1
+              AND COALESCE(p.play_status, '') IN ('APPROVED', 'REJECTED', 'CANCELLED')
             )
           )
         )

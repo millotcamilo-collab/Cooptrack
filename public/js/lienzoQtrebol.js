@@ -94,11 +94,10 @@
     const parentPlay = getPlayById(play?.parent_play_id);
 
     return {
-      concept: String(payment.concept || "").trim() || "Ticket",
-      amount: String(payment.amount || "").trim(),
-      payDate:
-        formatDateForInput(payment.payDate) ||
-        formatDateForInput(parentPlay?.start_date || play?.start_date)
+      amount:
+        String(payment.amount || "").trim() ||
+        String(parentPlay?.amount || "").trim(),
+      payDate: String(payment.payDate || "").trim()
     };
   }
 
@@ -266,22 +265,13 @@
 
         <div class="lv2-play-card__inner lv2-play-card__inner--figure">
           <div class="lienzo-qheart-box__body">
-            <input
-              id="qtrebol-qheart-concept"
-              type="text"
-              class="lienzo-qheart-box__concept"
-              placeholder="Descripción"
-              value="${escapeHtml(defaults.concept)}"
-              ${canEdit ? "" : "disabled"}
-            />
-
             <div class="lienzo-qheart-box__amount-row">
               <span class="lienzo-qheart-box__currency">${escapeHtml(String(deck?.currency_symbol || "").trim().toUpperCase())}</span>
               <input
                 id="qtrebol-qheart-amount"
                 type="text"
                 class="lienzo-qheart-box__amount"
-                placeholder="0"
+                placeholder="Monto"
                 inputmode="decimal"
                 value="${escapeHtml(defaults.amount)}"
                 ${canEdit ? "" : "disabled"}
@@ -435,13 +425,15 @@
   }
 
   function buildQHeartPayload(play) {
-    const concept = String(document.getElementById("qtrebol-qheart-concept")?.value || "").trim();
     const amount = String(document.getElementById("qtrebol-qheart-amount")?.value || "").trim();
     const payDate = String(document.getElementById("qtrebol-qheart-paydate")?.value || "").trim();
 
-    if (!concept || !amount || !payDate) {
-      return { ok: false, error: "Completá concepto, importe y fecha." };
+    if (!amount || !payDate) {
+      return { ok: false, error: "Completá importe y fecha." };
     }
+
+    const parentPlay = getPlayById(play?.parent_play_id);
+    const concept = String(parentPlay?.play_text || play?.play_text || "").trim();
 
     const parts = parsePlayCode(play?.play_code || "");
     const flowChunks = String(parts[7] || "")
