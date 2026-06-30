@@ -355,7 +355,7 @@
   function getJHeartSubtitleHtml(config) {
     const page = String(config?.page || "").trim().toLowerCase();
 
-    if (page !== "lienzo-jpica" && page !== "tribuna-amsterdam") return "";
+    if (page !== "lienzo-jpica" && page !== "tribuna-amsterdam" && page !== "bomba") return "";
 
     const currentPlay = config?.play || null;
     const currentPlayId = Number(currentPlay?.id || 0);
