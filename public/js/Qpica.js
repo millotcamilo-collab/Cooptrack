@@ -26,6 +26,9 @@
   function renderQpike(play, context = {}) {
     const helpers = context.helpers || {};
     const escape = helpers.escapeHtml || escapeHtml;
+    const primarySuit = String(
+      context?.primarySuit || play?.card_suit || play?.suit || "SPADE"
+    ).trim().toUpperCase();
 
     const deckId =
       context?.deck?.id ||
@@ -108,7 +111,8 @@
       playCodeUpper.includes("BOMB:DONE") ||
       playCodeUpper.includes("BOMB:DISABLED");
 
-    let qSuitsHtml = `<span class="qpike-row__suit qpike-row__suit--spade">♠</span>`;
+    const mainSuitSymbol = primarySuit === "CLUB" ? "♣" : "♠";
+    let qSuitsHtml = `<span class="qpike-row__suit qpike-row__suit--spade">${mainSuitSymbol}</span>`;
     let proposalHtml = "";
 
     function getEconomicSuit(statusValue) {

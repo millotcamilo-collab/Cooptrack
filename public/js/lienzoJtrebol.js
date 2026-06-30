@@ -220,6 +220,23 @@
   }
 
   function renderQtrebolChildRow(play) {
+    if (typeof window.renderQpike === "function") {
+      return `
+        <div class="jpica-q-row" data-play-id="${Number(play?.id || 0)}">
+          ${window.renderQpike(play, {
+            deck: getCurrentDeck(),
+            state: getCurrentState(),
+            primarySuit: "CLUB",
+            helpers: {
+              escapeHtml,
+              formatDate: formatTime,
+              getCardLabel: () => "Q♣"
+            }
+          })}
+        </div>
+      `;
+    }
+
     const ownerUser = getPlayOwnerUser(play);
 
     return `
