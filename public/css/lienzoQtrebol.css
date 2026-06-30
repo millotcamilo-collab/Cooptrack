@@ -6,12 +6,21 @@
   width: 100%;
   display: flex;
   justify-content: center;
+  position: relative;
+  z-index: 1;
 }
 
 .page-qtrebol .lienzo-qtrebol-main-primary {
   width: min(100%, var(--lv2-card-w));
   display: flex;
   justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.page-qtrebol .lienzo-qtrebol-main-primary .lv2-play-card {
+  position: relative;
+  z-index: 1;
 }
 
 .page-qtrebol .lienzo-qtrebol-second-layer {
@@ -22,13 +31,20 @@
   align-items: center;
   gap: 0;
   position: relative;
-  z-index: 3;
+  z-index: 6;
 }
 
 .page-qtrebol .lienzo-qtrebol-qheart-wrap {
   width: min(100%, var(--lv2-card-w));
   display: flex;
   justify-content: center;
+  position: relative;
+  z-index: 6;
+}
+
+.page-qtrebol .lienzo-qtrebol-qheart-wrap .lv2-play-card {
+  position: relative;
+  z-index: 6;
 }
 
 
