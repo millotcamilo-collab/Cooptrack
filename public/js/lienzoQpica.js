@@ -898,7 +898,7 @@ function formatDateForInput(value) {
             return actions.boom || "/assets/icons/Boom80.gif";
         }
 
-        return "/assets/icons/bombaRedonda80.gif";
+        return actions.bomb || "/assets/icons/bombaRedonda60.gif";
     }
 
     function getParentJSpadeText(play) {
