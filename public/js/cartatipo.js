@@ -84,7 +84,8 @@ function getMiniDayHeaderParts(value) {
     end_date,
     location,
     spade_mode,
-    dayItems
+    dayItems,
+    activityIconOverride = ""
   }) {
     const playType = String(spade_mode || "")
       .trim()
@@ -132,9 +133,11 @@ const dayHeader = getMiniDayHeaderParts(date);
       : [];
 
 
-    const activityIcon = isDeadline
-      ? "/assets/icons/bombaRedonda60.gif"
-      : "/assets/icons/reloj60.gif";
+    const activityIcon = activityIconOverride || (
+      isDeadline
+        ? "/assets/icons/bombaRedonda60.gif"
+        : "/assets/icons/reloj60.gif"
+    );
 
     return `
   <div class="lv2-mini-day">
@@ -318,7 +321,8 @@ ${dayHeader ? `
     showOwner = true,
     showActions = true,
     figureOverrideSrc = "",
-    hideInnerSuit = false
+    hideInnerSuit = false,
+    miniDayActivityIcon = ""
   }) {
     try {
       console.log("[CartaTipo.renderPlayCardBox] incoming:", {
@@ -440,7 +444,8 @@ ${dayHeader ? `
         end_date,
         location,
         spade_mode,
-        dayItems
+        dayItems,
+        activityIconOverride: miniDayActivityIcon
       })
       : metas.map((meta) => `
       <div class="lv2-play-card__meta">

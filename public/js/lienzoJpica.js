@@ -100,18 +100,19 @@
 
 function getBombMinidayIcon(play) {
   const code = String(play?.play_code || "").toUpperCase();
+  const status = String(play?.play_status || play?.status || "").toUpperCase();
   const actions = window.ICONS?.actions || {};
 
-  if (code.includes("BOMB:DONE")) {
+  if (status === "CANCELLED" || code.includes("BOMB:DISABLED")) {
+    return actions.stop || actions.cancel || "/assets/icons/stop60.gif";
+  }
+
+  if (status === "DONE" || code.includes("BOMB:DONE")) {
     return actions.deadline || "/assets/icons/META60.gif";
   }
 
-  if (code.includes("BOMB:EXPLODED")) {
+  if (status === "REJECTED" || code.includes("BOMB:EXPLODED")) {
     return actions.boom || "/assets/icons/Boom80.gif";
-  }
-
-  if (code.includes("BOMB:DISABLED")) {
-    return actions.stop || actions.cancel || "/assets/icons/stop60.gif";
   }
 
   if (
@@ -330,7 +331,6 @@ function renderColombes(play) {
     : "/assets/icons/reloj60.gif";
 
   const showBombActions = canResolveBomb(play);
-  const showCardActions = isDeadline ? showBombActions : true;
 
   return `
     <section class="lienzo-tribune lienzo-tribune--source">
@@ -350,7 +350,8 @@ function renderColombes(play) {
             location: play.location,
             ownerUser: getPlayOwnerUser(play),
             ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
-            showActions: showCardActions,
+            showActions: true,
+            miniDayActivityIcon: mainIcon,
             metas: [
               mainDate
                 ? {
