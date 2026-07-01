@@ -332,6 +332,14 @@
   opacity: .8;
 }
 
+.users-picker__corp-suit {
+  color: inherit;
+}
+
+.users-picker__corp-suit--red {
+  color: var(--ct-red);
+}
+
 #usuarios-container {
   max-width: 1200px;
   margin: 0 auto;

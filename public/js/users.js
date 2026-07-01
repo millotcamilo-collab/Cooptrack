@@ -220,13 +220,20 @@ function getUserDeckSummary(userId, plays = []) {
   };
 }
 
+function renderCorporateSuit(symbol) {
+  const isRed = symbol === "♥" || symbol === "♦";
+  return `<span class="users-picker__corp-suit${isRed ? " users-picker__corp-suit--red" : ""}">${symbol}</span>`;
+}
+
 function renderUserDeckSummary(user, plays) {
   const s = getUserDeckSummary(user.id, plays);
+  const aces = s.aces.map(renderCorporateSuit).join(" ");
+  const kings = s.kings.map(renderCorporateSuit).join(" ");
 
   return `
     <div class="users-picker__row-summary">
-      ${s.aces.length ? `A ${s.aces.join(" ")}` : ""}
-      ${s.kings.length ? ` K ${s.kings.join(" ")}` : ""}
+      ${s.aces.length ? `A ${aces}` : ""}
+      ${s.kings.length ? ` K ${kings}` : ""}
       ${s.qspades ? ` Q♠ ${s.qspades}` : ""}
     </div>
   `;
