@@ -320,8 +320,6 @@ function getCorporateCardEntriesFromPlays(plays, ownerUserId) {
     }
 
     if (rank === 'K') {
-      if (playBookLine < CORPORATE_K_MIN_PLAYBOOK_LINE) return;
-      if (flow === 'acl') return;
       if (status !== CORPORATE_K_ACTIVE_STATUS) return;
     }
 
