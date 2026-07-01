@@ -103,6 +103,11 @@ function renderDeckRow(deck) {
       ? deck.current_user_cards
       : [];
 
+  const corporateCardsOnly = currentUserCards.filter((cardCode) => {
+    const value = String(cardCode || "").toUpperCase();
+    return value.startsWith("A_") || value.startsWith("K_");
+  });
+
   const jokerSrc = getJokerImageSrc(jokerType);
   const jokerAlt = getJokerAlt(jokerType);
   const isArchived = membershipStatus === "ARCHIVED";
@@ -119,7 +124,7 @@ function renderDeckRow(deck) {
         data-membership-status="${membershipStatus}"
       >
         <div class="deck-row__left">
-          ${renderCardsStack(currentUserCards)}
+          ${renderCardsStack(corporateCardsOnly)}
         </div>
 
         <div class="deck-row__photo">
