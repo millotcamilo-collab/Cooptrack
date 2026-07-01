@@ -2238,6 +2238,28 @@ async function listMazosHandler(req, res) {
             corporateEntries.map((entry) => entry.credential)
           );
 
+          const kCardsForUser = normalizeCredentialList(
+            plays
+              .filter((play) => {
+                const rank = String(play.card_rank || '').toUpperCase();
+                const suit = String(play.card_suit || '').toUpperCase();
+                const status = String(play.play_status || '').toUpperCase();
+                const ownerId = Number(play.target_user_id || play.created_by_user_id || 0);
+
+                if (rank !== 'K') return false;
+                if (!['HEART', 'SPADE', 'DIAMOND', 'CLUB'].includes(suit)) return false;
+                if (ownerId !== Number(userId)) return false;
+
+                return ['ACTIVE', 'SENT', 'PENDING', 'APPROVED'].includes(status);
+              })
+              .map((play) => credentialForCard('K', play.card_suit))
+          );
+
+          current_user_cards = normalizeCredentialList([
+            ...current_user_cards,
+            ...kCardsForUser
+          ]);
+
           const hasKAccess = plays.some((play) => {
             const rank = String(play.card_rank || '').toUpperCase();
             const status = String(play.play_status || '').toUpperCase();
