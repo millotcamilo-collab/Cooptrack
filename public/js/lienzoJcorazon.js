@@ -527,7 +527,7 @@
                         actionsHtml: renderSourceActions(play),
                         editableTitle: canEditInline,
                         draftText: uiState.draftText,
-                        showOwnerCards: false
+                        showOwnerCards: true
                 })}
                     </div>
         </div>
