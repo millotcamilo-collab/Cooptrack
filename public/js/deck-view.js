@@ -88,6 +88,10 @@ function userHasAorKDeckAccess(deck) {
     ? deck.current_user_cards
     : [];
 
+  if (Boolean(deck?.has_k_access)) {
+    return true;
+  }
+
   return cards.some((card) => {
     const value = String(card || "").toUpperCase();
     return value.startsWith("A_") || value.startsWith("K_");

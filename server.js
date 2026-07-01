@@ -2238,6 +2238,17 @@ async function listMazosHandler(req, res) {
             corporateEntries.map((entry) => entry.credential)
           );
 
+          const hasKAccess = plays.some((play) => {
+            const rank = String(play.card_rank || '').toUpperCase();
+            const status = String(play.play_status || '').toUpperCase();
+            const ownerId = Number(play.target_user_id || play.created_by_user_id || 0);
+
+            if (rank !== 'K') return false;
+            if (ownerId !== Number(userId)) return false;
+
+            return ['ACTIVE', 'SENT', 'PENDING', 'APPROVED'].includes(status);
+          });
+
           // Si no tiene A/K reales, mostrar Q♠ / Q♣ como carta visible de referencia
           if (!current_user_cards.length) {
             const fallbackStatuses = wantsArchived
@@ -2268,6 +2279,7 @@ async function listMazosHandler(req, res) {
             ...deck,
             joker_type,
             current_user_cards,
+            has_k_access: hasKAccess,
             membership_status: membership.status,
             is_active_member: Boolean(deck.is_active_member)
           };
