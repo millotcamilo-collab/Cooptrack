@@ -62,7 +62,7 @@ function renderArchivedRow(play, deck, state) {
   if (rank === "J") {
     let rendererName = null;
     if (suit === "HEART") rendererName = "Jcorazon";
-    else if (suit === "SPADE") rendererName = "Jpika";
+    else if (suit === "SPADE") rendererName = "Jpike";
     else if (suit === "CLUB") rendererName = "Jtrebol";
     else if (suit === "DIAMOND") rendererName = "Jdiamante";
 
