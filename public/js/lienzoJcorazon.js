@@ -102,6 +102,34 @@
         };
     }
 
+    function buildPlayCode(parsed) {
+        return [
+            parsed?.deckId || "",
+            parsed?.userId || "",
+            parsed?.date || "",
+            parsed?.rank || "",
+            parsed?.suit || "",
+            parsed?.action || "",
+            parsed?.authorized || "",
+            parsed?.flow || "",
+            parsed?.recipients || ""
+        ].join("§");
+    }
+
+    function upsertFlowTag(flowValue, tagPrefix, nextTag) {
+        const chunks = String(flowValue || "")
+            .split(";")
+            .map((item) => item.trim())
+            .filter(Boolean)
+            .filter((item) => !item.startsWith(tagPrefix));
+
+        if (nextTag) {
+            chunks.push(String(nextTag).trim());
+        }
+
+        return chunks.join(";");
+    }
+
     function normalizePlayCard(play) {
         const parsed = parsePlayCode(play?.play_code || "");
 
@@ -558,9 +586,12 @@
                 const canSendRequest = userIsCreator && !userIsHeartAceHolder && status === "ACTIVE";
                 const canApproveReject = userIsHeartAceHolder && status === "SENT";
 
+                const aceHolderNickname = aceHolder?.nickname || "A♥";
+                const sendButtonTitle = `Solicitar aprobación a ${aceHolderNickname}`;
+
                 const actionsHtml = canSendRequest
                         ? `
-                    <button id="jheart-send-btn" class="icon-btn" title="Enviar solicitud a A♥">
+                    <button id="jheart-send-btn" class="icon-btn" title="${sendButtonTitle}">
                         <img src="/assets/icons/buzon60.gif" alt="Enviar solicitud" />
                     </button>
                 `
@@ -612,8 +643,30 @@
 
     async function handleSendPlay(play) {
         try {
+            const aceHolder = resolveHeartAceHolder();
+            const aceHolderNickname = aceHolder?.nickname || "A♥";
+            const aceHolderId = Number(aceHolder?.id || 0);
+            if (!aceHolderId) {
+                alert("No se encontró propietario del A♥");
+                return;
+            }
+
+            const confirmMsg = `¿Solicitar aprobación a ${aceHolderNickname}?`;
+
+            const confirmed = window.confirm(confirmMsg);
+            if (!confirmed) return;
+
+            const parsed = parsePlayCode(play?.play_code || "");
+            const nextFlow = upsertFlowTag(parsed.flow, "validator:U:", `validator:U:${aceHolderId}`);
+            const nextPlayCode = buildPlayCode({
+                ...parsed,
+                flow: nextFlow
+            });
+
             const data = await patchPlay(play, {
                 play_status: "SENT",
+                target_user_id: aceHolderId,
+                play_code: nextPlayCode,
                 issued_with: getIssuedWithForHeartAction(play)
             });
 
@@ -621,7 +674,7 @@
                 return;
             }
 
-            alert("J♥ enviada a A♥");
+            alert(`J♥ enviada a ${aceHolderNickname}`);
 
             const deckId =
                 Number(play?.deck_id || 0) ||

@@ -43,6 +43,7 @@ function parseFlowMetadata(flowValue) {
     chunks,
     baseFlow: '',
     finalTargetUserId: null,
+    validatorUserId: null,
   };
 
   chunks.forEach((chunk) => {
@@ -51,6 +52,16 @@ function parseFlowMetadata(flowValue) {
 
       if (Number.isInteger(userId) && userId > 0) {
         meta.finalTargetUserId = userId;
+      }
+
+      return;
+    }
+
+    if (chunk.startsWith('validator:U:')) {
+      const userId = Number(chunk.replace('validator:U:', ''));
+
+      if (Number.isInteger(userId) && userId > 0) {
+        meta.validatorUserId = userId;
       }
 
       return;
@@ -117,6 +128,7 @@ function parsePlayCode(playCode) {
 
   parsed.flowMeta = parseFlowMetadata(parsed.flow);
   parsed.finalTargetUserId = parsed.flowMeta.finalTargetUserId;
+  parsed.validatorUserId = parsed.flowMeta.validatorUserId;
 
   parsed.family = getCardFamily(parsed.rank);
   parsed.cardKey = parsed.rank && parsed.suit ? `${parsed.rank}${parsed.suit}` : null;

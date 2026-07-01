@@ -334,16 +334,25 @@
     const rank = normalizeText(play?.card_rank || play?.rank);
     const suit = normalizeText(play?.card_suit || play?.suit);
 
-    const validatorUserId = Number(play?.validator_user_id || 0);
+    const flowValidatorUserId = Number(parseValidatorUserIdFromFlow(play?.play_code) || 0);
+    const validatorUserId = Number(play?.validator_user_id || flowValidatorUserId || 0);
     const isValidator = validatorUserId === Number(currentUserId);
 
     const sourceUserId = Number(play?.created_by_user_id || 0);
     const targetUserId = Number(play?.target_user_id || 0);
+    const isSource = sourceUserId === Number(currentUserId);
 
     const isTarget = targetUserId === Number(currentUserId);
     const isReceiver = isTarget || isValidator;
 
-    if (!isReceiver) return null;
+    const canReceiveReadOnlyAsSource =
+      rank === "J" &&
+      suit === "HEART" &&
+      isSource &&
+      targetUserId > 0 &&
+      targetUserId !== sourceUserId;
+
+    if (!isReceiver && !canReceiveReadOnlyAsSource) return null;
 
     // Dorso azul: hay respuesta pendiente del receptor.
     if (
@@ -394,7 +403,12 @@
     }
 
     // J♥ — receptor solo lectura en resultado final.
-    if (rank === "J" && suit === "HEART" && ["APPROVED", "REJECTED", "CANCELLED"].includes(status)) {
+    if (
+      rank === "J" &&
+      suit === "HEART" &&
+      ["APPROVED", "REJECTED", "CANCELLED"].includes(status) &&
+      isSource
+    ) {
       return "READ_ONLY";
     }
 
@@ -544,6 +558,25 @@
       flow: parts[7] || null,
       recipients: parts[8] || null
     };
+  }
+
+  function parseValidatorUserIdFromFlow(playCode) {
+    const parsed = parsePlayCode(playCode || "");
+    const flowRaw = String(parsed?.flow || "").trim();
+    if (!flowRaw) return null;
+
+    const chunks = flowRaw
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    for (const chunk of chunks) {
+      if (!chunk.startsWith("validator:U:")) continue;
+      const rawId = Number(chunk.replace("validator:U:", ""));
+      if (Number.isInteger(rawId) && rawId > 0) return rawId;
+    }
+
+    return null;
   }
 
   function parseFlowMetadata(flowValue) {
@@ -724,6 +757,10 @@
 
     if ((rank === "K" || rank === "A") && finalStates.includes(status)) {
       return "/america.html";
+    }
+
+    if (rank === "J" && suit === "HEART" && finalStates.includes(status)) {
+      return "/lienzoJcorazon.html";
     }
 
 
