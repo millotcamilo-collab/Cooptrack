@@ -507,6 +507,16 @@ min-height: var(--lv2-tribune-h);
   line-height: 1.2;
   letter-spacing: 1px;
 }
+
+.kentra-card-rank,
+.kentra-card-suit {
+  color: inherit;
+}
+
+.kentra-card-suit--red {
+  color: var(--ct-red);
+}
+
 .lienzo-v2-grid--single {
   --lv2-cols: 1;
   grid-template-columns: 1fr;

@@ -10,18 +10,54 @@ window.K_ENTRA = {
       ? play.issued_with
       : [];
 
-    const senderCards = issuedWith
+    const suitSymbol = {
+      HEART: "♥",
+      SPADE: "♠",
+      DIAMOND: "♦",
+      CLUB: "♣"
+    };
+
+    const parsedCards = issuedWith
       .map((card) => {
-        if (card === "A_HEART") return "A♥";
-        if (card === "A_SPADE") return "A♠";
-        if (card === "A_DIAMOND") return "A♦";
-        if (card === "A_CLUB") return "A♣";
-
-
-        return "";
+        const [rank = "", suit = ""] = String(card || "").toUpperCase().split("_");
+        const suitGlyph = suitSymbol[suit] || "";
+        if (!rank || !suitGlyph) return null;
+        return { rank, suit: suitGlyph, suitName: suit };
       })
-      .filter(Boolean)
-      .join(" ");
+      .filter(Boolean);
+
+    const senderCardHtmlTokens = [];
+
+    const renderRank = (rank) => (
+      `<span class="kentra-card-rank">${helpers.escapeHtml(rank)}</span>`
+    );
+
+    const renderSuit = (card) => {
+      const isRed = card.suitName === "HEART" || card.suitName === "DIAMOND";
+      return `<span class="kentra-card-suit${isRed ? " kentra-card-suit--red" : ""}">${card.suit}</span>`;
+    };
+
+    for (let i = 0; i < parsedCards.length; i += 1) {
+      const current = parsedCards[i];
+      const group = [current];
+
+      let j = i + 1;
+      while (j < parsedCards.length && parsedCards[j].rank === current.rank) {
+        group.push(parsedCards[j]);
+        j += 1;
+      }
+
+      if (group.length > 1) {
+        senderCardHtmlTokens.push(renderRank(current.rank));
+        senderCardHtmlTokens.push(...group.map((card) => renderSuit(card)));
+      } else {
+        senderCardHtmlTokens.push(`${renderRank(current.rank)}${renderSuit(current)}`);
+      }
+
+      i = j - 1;
+    }
+
+    const senderCardsHtml = senderCardHtmlTokens.join(" ");
 
     const senderPhoto =
       play?.created_by_profile_photo_url ||
@@ -48,7 +84,7 @@ window.K_ENTRA = {
     </div>
 
     <div class="kentra-remitente__cards">
-      ${helpers.escapeHtml(senderCards)}
+      ${senderCardsHtml}
     </div>
   </div>
 </div>
