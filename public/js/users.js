@@ -246,6 +246,17 @@ function renderUsersPicker(containerId, options = {}) {
     return null;
   }
 
+  const excludedUserIds = new Set(
+    (Array.isArray(options.excludeUserIds) ? options.excludeUserIds : [])
+      .map((id) => Number(id || 0))
+      .filter(Boolean)
+  );
+
+  const currentUserId = Number(options.currentUserId || 0);
+  if (currentUserId) excludedUserIds.add(currentUserId);
+
+  const isExcludedUser = (userId) => excludedUserIds.has(Number(userId || 0));
+
   const state = {
     deckId: options.deckId || null,
     allUsers: [],
@@ -253,7 +264,7 @@ function renderUsersPicker(containerId, options = {}) {
     deckUsers: getDeckUsersFromPlays(
       options.plays || [],
       options.currentUserId || 0
-    ),
+    ).filter((user) => !isExcludedUser(user?.id)),
     selectedUser: options.selectedUser || null,
     searchValue: "",
     loaded: false,
@@ -301,15 +312,15 @@ function renderUsersPicker(containerId, options = {}) {
 
     state.filteredUsers = state.allUsers.filter((user) => {
       const userId = Number(user?.id || 0);
-      const currentUserId = Number(options.currentUserId || 0);
-
-      if (currentUserId && userId === currentUserId) return false;
+      if (isExcludedUser(userId)) return false;
 
       return startsWithSearch(getUserDisplayName(user), trimmed);
     });
   }
 
   function handleSelect(userId) {
+    if (isExcludedUser(userId)) return;
+
     const selected =
       state.filteredUsers.find((u) => String(u.id) === String(userId)) ||
       state.deckUsers.find((u) => String(u.id) === String(userId)) ||

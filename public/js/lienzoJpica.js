@@ -123,7 +123,7 @@ function getBombMinidayIcon(play) {
     return actions.boom || "/assets/icons/Boom80.gif";
   }
 
-  return "/assets/icons/bombaRedonda80.gif";
+  return "/assets/icons/bombaRedonda60.gif";
 }
 
   function canCancelApprovedJpica(play) {
@@ -757,8 +757,11 @@ function renderColombes(play) {
       return;
     }
 
+    const parentOwnerId = Number(getPlayOwnerUser(parentPlay)?.id || 0);
+
     window.renderUsersPicker("jpica-users-picker", {
       currentUserId: Number(window.__currentUser?.id || 0),
+      excludeUserIds: parentOwnerId ? [parentOwnerId] : [],
       deckId: Number(getCurrentDeck()?.id || parentPlay?.deck_id || 0),
       parentPlayId: Number(parentPlay?.id || 0),
       childRank: "Q",
