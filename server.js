@@ -282,6 +282,67 @@ function credentialForCard(rank, suit) {
   return `${normalizedRank}_${normalizedSuit}`;
 }
 
+const CORPORATE_ACE_PLAYBOOK_LINES = new Set([10, 11, 12, 13]);
+const CORPORATE_K_MIN_PLAYBOOK_LINE = 14;
+const CORPORATE_ALLOWED_SUITS = ['HEART', 'SPADE', 'DIAMOND', 'CLUB'];
+const CORPORATE_EXCLUDED_STATUSES = ['REJECTED', 'CANCELLED', 'DELETED', 'QUIT', 'FIRED'];
+const CORPORATE_K_ACTIVE_STATUS = 'ACTIVE';
+
+function getCorporateCardEntriesFromPlays(plays, ownerUserId) {
+  const normalizedOwnerUserId = Number(ownerUserId || 0);
+  if (!normalizedOwnerUserId) return [];
+
+  const sortedPlays = [...(Array.isArray(plays) ? plays : [])]
+    .sort((a, b) => Number(a?.id || 0) - Number(b?.id || 0));
+
+  const entries = [];
+
+  sortedPlays.forEach((play, index) => {
+    const playBookLine = index + 1;
+
+    const parts = String(play?.play_code || '').split('§');
+    const rank = String(play?.card_rank || parts[3] || '').trim().toUpperCase();
+    const suit = String(play?.card_suit || parts[4] || '').trim().toUpperCase();
+    const status = String(play?.play_status || '').trim().toUpperCase();
+    const action = String(parts[5] || '').trim().toLowerCase();
+    const flow = String(parts[7] || '').trim().toLowerCase();
+
+    if (!['A', 'K'].includes(rank)) return;
+    if (!CORPORATE_ALLOWED_SUITS.includes(suit)) return;
+    if (CORPORATE_EXCLUDED_STATUSES.includes(status)) return;
+
+    const ownerId = Number(play?.target_user_id || play?.created_by_user_id || 0);
+    if (ownerId !== normalizedOwnerUserId) return;
+
+    if (rank === 'A') {
+      if (!CORPORATE_ACE_PLAYBOOK_LINES.has(playBookLine)) return;
+      if (flow !== 'foundation') return;
+    }
+
+    if (rank === 'K') {
+      if (playBookLine < CORPORATE_K_MIN_PLAYBOOK_LINE) return;
+      if (flow === 'acl') return;
+      if (action === 'puedejugar') return;
+      if (status !== CORPORATE_K_ACTIVE_STATUS) return;
+    }
+
+    const credential = credentialForCard(rank, suit);
+    if (!credential) return;
+
+    entries.push({
+      play_id: Number(play?.id || 0),
+      play_book_line: playBookLine,
+      owner_user_id: ownerId,
+      card_rank: rank,
+      card_suit: suit,
+      play_status: status,
+      credential,
+    });
+  });
+
+  return entries;
+}
+
 async function getIssuedWithForUser(client, deckId, userId) {
   const normalizedDeckId = Number(deckId || 0);
   const normalizedUserId = Number(userId || 0);
@@ -290,59 +351,26 @@ async function getIssuedWithForUser(client, deckId, userId) {
 
   const result = await client.query(
     `
-    WITH ordered_plays AS (
-      SELECT
-        p.id,
-        p.card_rank,
-        p.card_suit,
-        p.play_status,
-        p.play_code,
-        split_part(COALESCE(p.play_code, ''), '§', 6) AS action_chunk,
-        split_part(COALESCE(p.play_code, ''), '§', 8) AS flow_chunk,
-        COALESCE(p.target_user_id, p.created_by_user_id) AS owner_user_id,
-        ROW_NUMBER() OVER (PARTITION BY p.deck_id ORDER BY p.id ASC) AS play_book_line
-      FROM plays p
-      WHERE p.deck_id = $1
-        AND UPPER(COALESCE(p.card_rank, '')) IN ('A', 'K')
-        AND UPPER(COALESCE(p.card_suit, '')) IN ('HEART', 'SPADE', 'DIAMOND', 'CLUB')
-        AND UPPER(COALESCE(p.play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'DELETED', 'QUIT', 'FIRED')
-    )
     SELECT
       id,
+      created_by_user_id,
+      target_user_id,
       card_rank,
       card_suit,
       play_status,
-      play_code,
-      action_chunk,
-      flow_chunk,
-      owner_user_id,
-      play_book_line
-    FROM ordered_plays
-    WHERE play_book_line >= 10
+      play_code
+    FROM plays
+    WHERE deck_id = $1
+      AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K')
+      AND UPPER(COALESCE(card_suit, '')) IN ('HEART', 'SPADE', 'DIAMOND', 'CLUB')
+      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'DELETED', 'QUIT', 'FIRED')
     ORDER BY id ASC
     `,
     [normalizedDeckId]
   );
 
-  return normalizeCredentialList(
-    result.rows
-      .filter((row) => Number(row.owner_user_id || 0) === normalizedUserId)
-      .filter((row) => {
-        const rank = String(row.card_rank || '').trim().toUpperCase();
-        const status = String(row.play_status || '').trim().toUpperCase();
-        const flow = String(row.flow_chunk || '').trim().toLowerCase();
-        const action = String(row.action_chunk || '').trim().toLowerCase();
-
-        if (rank === 'A') return flow === 'foundation';
-        if (rank === 'K') {
-          if (flow === 'acl') return false;
-          if (action === 'puedejugar') return false;
-          return ['ACTIVE', 'APPROVED', 'SENT', 'PENDING'].includes(status);
-        }
-        return false;
-      })
-      .map((row) => credentialForCard(row.card_rank, row.card_suit))
-  );
+  const entries = getCorporateCardEntriesFromPlays(result.rows, normalizedUserId);
+  return normalizeCredentialList(entries.map((entry) => entry.credential));
 }
 
 function mergeIssuedWith(...values) {
@@ -2167,45 +2195,10 @@ async function listMazosHandler(req, res) {
             'FIRED'     // K/A
           ];
 
-          const corporateCards = plays
-            .filter((play) => {
-              const playCode = String(play.play_code || '');
-              const parts = playCode.split('§');
-
-              const rank = String(play.card_rank || parts[3] || '').toUpperCase();
-              const suit = String(play.card_suit || parts[4] || '').toUpperCase();
-              const flow = String(parts[7] || '').toLowerCase();
-              const status = String(play.play_status || '').toUpperCase();
-
-              if (!['A', 'K'].includes(rank)) return false;
-              if (!['HEART', 'SPADE', 'DIAMOND', 'CLUB'].includes(suit)) return false;
-
-              const ownerUserId = Number(
-                play.target_user_id || play.created_by_user_id || 0
-              );
-
-              if (ownerUserId !== Number(userId)) return false;
-
-              // A reales del libro: foundation, aunque estén BLOCKED
-              if (rank === 'A') {
-                return flow === 'foundation';
-              }
-
-              // K reales: no mostrar las ACL iniciales
-              if (rank === 'K') {
-                if (flow === 'acl') return false;
-                return activeStatuses.includes(status);
-              }
-
-              return false;
-            })
-            .map((play) => {
-              const rank = String(play.card_rank || '').toUpperCase();
-              const suit = String(play.card_suit || '').toUpperCase();
-              return `${rank}_${suit}`;
-            });
-
-          let current_user_cards = [...new Set(corporateCards)];
+          const corporateEntries = getCorporateCardEntriesFromPlays(plays, userId);
+          let current_user_cards = normalizeCredentialList(
+            corporateEntries.map((entry) => entry.credential)
+          );
 
           // Si no tiene A/K reales, mostrar Q♠ / Q♣ como carta visible de referencia
           if (!current_user_cards.length) {
@@ -2395,47 +2388,13 @@ async function getMazoStateHandler(req, res) {
 
     const plays = result.rows;
 
-    const corporateCards = plays
-      .filter((play) => {
-        const rank = String(play.card_rank || '').toUpperCase();
-        const suit = String(play.card_suit || '').toUpperCase();
-        const status = String(play.play_status || '').toUpperCase();
-        const parts = String(play.play_code || '').split('§');
-        const action = String(parts[5] || '').toLowerCase();
-        const flow = String(parts[7] || '').toLowerCase();
-
-        if (!['A', 'K'].includes(rank)) return false;
-        if (!['HEART', 'SPADE', 'DIAMOND', 'CLUB'].includes(suit)) return false;
-        if (['QUIT', 'FIRED', 'REJECTED', 'CANCELLED'].includes(status)) return false;
-        if (flow === 'acl') return false;
-        if (action === 'puedejugar') return false;
-
-        const ownerId = Number(
-          play.target_user_id ||
-          play.created_by_user_id ||
-          0
-        );
-
-        if (ownerId !== Number(userId)) return false;
-
-        if (rank === 'A') {
-          return flow === 'foundation';
-        }
-
-        if (rank === 'K') {
-          return ['ACTIVE', 'APPROVED', 'SENT', 'PENDING'].includes(status);
-        }
-
-        return false;
-      })
-      .map((play) => ({
-        play_id: play.id,
-        owner_user_id: Number(
-          play.target_user_id || play.created_by_user_id || 0
-        ),
-        card_rank: String(play.card_rank || '').toUpperCase(),
-        card_suit: String(play.card_suit || '').toUpperCase(),
-        play_status: play.play_status,
+    const corporateCards = getCorporateCardEntriesFromPlays(plays, userId)
+      .map((entry) => ({
+        play_id: entry.play_id,
+        owner_user_id: entry.owner_user_id,
+        card_rank: entry.card_rank,
+        card_suit: entry.card_suit,
+        play_status: entry.play_status,
       }));
 
     return res.json({
