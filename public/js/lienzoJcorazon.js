@@ -420,7 +420,7 @@
                 if (!isApproved && !isSent && !isEditMode && userCanEdit) {
                         buttons.push(`
                             <button id="jheart-edit-btn" class="icon-btn" title="Editar">
-                                <img src="${escapeHtml(getActionIconSrc("edit", "/assets/icons/lapiz40.gif"))}" alt="Editar" />
+                                <img src="${escapeHtml(getActionIconSrc("edit", "/assets/icons/desarrollo60.gif"))}" alt="Editar" />
                             </button>
                         `);
                 }
@@ -431,7 +431,7 @@
                                 <img src="${escapeHtml(getActionIconSrc("save", "/assets/icons/salvar40.gif"))}" alt="Salvar" />
                             </button>
                             <button id="jheart-exit-btn" class="icon-btn" title="Salir edición">
-                                <img src="${escapeHtml(getActionIconSrc("exit", "/assets/icons/salida40.gif"))}" alt="Salir edición" />
+                                <img src="${escapeHtml(getActionIconSrc("exit", "/assets/icons/salir60.gif"))}" alt="Salir edición" />
                             </button>
                         `);
                 }
@@ -455,7 +455,7 @@
                 if (!isApproved && !isSent && !isEditMode) {
                         buttons.push(`
                             <button id="jheart-delete-btn" class="icon-btn" title="Borrar">
-                                <img src="${escapeHtml(getActionIconSrc("delete", "/assets/icons/tacho40.gif"))}" alt="Borrar" />
+                                <img src="${escapeHtml(getActionIconSrc("delete", "/assets/icons/papelera80.gif"))}" alt="Borrar" />
                             </button>
                         `);
                 }
@@ -471,7 +471,7 @@
                 if (!isEditMode && showPrivedButton) {
                         buttons.push(`
                             <button id="jheart-private-btn" class="icon-btn" title="Lectura privada">
-                                <img src="/assets/icons/ojo2.gif" alt="Lectura privada" />
+                                <img src="/assets/icons/Privado80.gif" alt="Lectura privada" />
                             </button>
                         `);
                 }
@@ -479,7 +479,7 @@
                 if (!isEditMode && showReadersButton) {
                         buttons.push(`
                             <button id="jheart-readers-btn" class="icon-btn" title="Lectores">
-                                <img src="/assets/icons/ojitos40.gif" alt="Lectores" />
+                                <img src="/assets/icons/leer80.gif" alt="Lectores" />
                             </button>
                         `);
                 }
