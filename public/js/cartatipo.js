@@ -494,7 +494,7 @@ ${safeRank !== "A" && suitSymbol ? `
         ${ownerHtml}
 
 ${titleHtml && !useMiniDay ? `
-  <div class="lv2-play-card__title">
+  <div class="lv2-play-card__title lv2-play-card__title--editable">
     ${titleHtml}
   </div>
 ` : title && !useMiniDay ? `

@@ -342,7 +342,8 @@
     function renderJHeartPlayCard(play, {
         actionsHtml = "",
         editableTitle = false,
-        draftText = ""
+        draftText = "",
+        showOwnerCards = true
     } = {}) {
         const ownerUser = getPlayOwnerUser(play);
         const titleValue = editableTitle
@@ -350,7 +351,7 @@
             : String(play?.play_text || "").trim();
 
         const titleHtml = editableTitle
-            ? `<input id="jheart-title-input" class="lv2-play-card__title-input" type="text" value="${escapeHtml(titleValue)}" />`
+            ? `<textarea id="jheart-title-input" class="lv2-play-card__title-input">${escapeHtml(titleValue)}</textarea>`
             : "";
 
         return window.CartaTipo.renderPlayCardBox({
@@ -360,7 +361,7 @@
             titleHtml,
             status: play?.play_status || "",
             ownerUser,
-            ownerCards: getCardsOwnedByUser(ownerUser.id),
+            ownerCards: showOwnerCards ? getCardsOwnedByUser(ownerUser.id) : [],
             actionsHtml
         });
     }
@@ -510,8 +511,6 @@
     }
 
     function renderSourcePlayerPanel(play) {
-        const sourceUser = resolveSourceUser(play);
-        const sourceCards = getCardsOwnedByUser(sourceUser.id);
                 const uiState = getJHeartUiState(play);
                 const status = normalizeRank(play?.play_status || play?.status || "ACTIVE");
                 const canEditInline = uiState.mode === "edit" && status !== "SENT" && status !== "APPROVED";
@@ -519,15 +518,7 @@
         return `
       <section class="lienzo-tribune">
 
-        <div class="lienzo-tribune__corporates">
-          ${sourceCards.map((card, index) => `
-            <img
-              class="lienzo-tribune__corporate-card"
-              src="${escapeHtml(getCardImageSrc(card.rank, card.suit))}"
-              style="left:${index * 18}px;"
-            />
-          `).join("")}
-        </div>
+                <div class="lienzo-tribune__corporates"></div>
 
 
         <div class="lienzo-tribune__stage">
@@ -535,7 +526,8 @@
                         ${renderJHeartPlayCard(play, {
                         actionsHtml: renderSourceActions(play),
                         editableTitle: canEditInline,
-                        draftText: uiState.draftText
+                        draftText: uiState.draftText,
+                        showOwnerCards: false
                 })}
                     </div>
         </div>
