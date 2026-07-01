@@ -361,9 +361,6 @@ async function getIssuedWithForUser(client, deckId, userId) {
       play_code
     FROM plays
     WHERE deck_id = $1
-      AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K')
-      AND UPPER(COALESCE(card_suit, '')) IN ('HEART', 'SPADE', 'DIAMOND', 'CLUB')
-      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'DELETED', 'QUIT', 'FIRED')
     ORDER BY id ASC
     `,
     [normalizedDeckId]
@@ -371,6 +368,49 @@ async function getIssuedWithForUser(client, deckId, userId) {
 
   const entries = getCorporateCardEntriesFromPlays(result.rows, normalizedUserId);
   return normalizeCredentialList(entries.map((entry) => entry.credential));
+}
+
+async function buildCorporateIssuedWithByUserForDeck(client, deckId) {
+  const normalizedDeckId = Number(deckId || 0);
+  if (!normalizedDeckId) return new Map();
+
+  const result = await client.query(
+    `
+    SELECT
+      id,
+      created_by_user_id,
+      target_user_id,
+      card_rank,
+      card_suit,
+      play_status,
+      play_code
+    FROM plays
+    WHERE deck_id = $1
+    ORDER BY id ASC
+    `,
+    [normalizedDeckId]
+  );
+
+  const fullPlays = Array.isArray(result.rows) ? result.rows : [];
+  const ownerIds = new Set();
+
+  fullPlays.forEach((play) => {
+    const createdBy = Number(play?.created_by_user_id || 0);
+    const target = Number(play?.target_user_id || 0);
+    if (createdBy > 0) ownerIds.add(createdBy);
+    if (target > 0) ownerIds.add(target);
+  });
+
+  const issuedWithByUser = new Map();
+  ownerIds.forEach((ownerId) => {
+    const entries = getCorporateCardEntriesFromPlays(fullPlays, ownerId);
+    issuedWithByUser.set(
+      ownerId,
+      normalizeCredentialList(entries.map((entry) => entry.credential))
+    );
+  });
+
+  return issuedWithByUser;
 }
 
 function mergeIssuedWith(...values) {
@@ -5225,9 +5265,24 @@ app.get('/plays', requireAuth, async (req, res) => {
       [mazoId, String(userId), `U:${userId}`]
     );
 
+    const issuedWithByUser = await buildCorporateIssuedWithByUserForDeck(pool, mazoId);
+
+    const hydratedPlays = result.rows.map((play) => {
+      const rank = String(play.card_rank || '').trim().toUpperCase();
+      if (rank !== 'K') return play;
+
+      const senderUserId = Number(play.created_by_user_id || 0);
+      if (!senderUserId) return play;
+
+      return {
+        ...play,
+        issued_with: issuedWithByUser.get(senderUserId) || [],
+      };
+    });
+
     return res.json({
       ok: true,
-      plays: result.rows,
+      plays: hydratedPlays,
     });
   } catch (error) {
     console.error('Error en GET /plays', error);
@@ -5281,9 +5336,24 @@ app.get('/mazos/:mazoId/plays', requireAuth, async (req, res) => {
       [mazoId, userId, String(userId), `U:${userId}`]
     );
 
+    const issuedWithByUser = await buildCorporateIssuedWithByUserForDeck(pool, mazoId);
+
+    const hydratedPlays = result.rows.map((play) => {
+      const rank = String(play.card_rank || '').trim().toUpperCase();
+      if (rank !== 'K') return play;
+
+      const senderUserId = Number(play.created_by_user_id || 0);
+      if (!senderUserId) return play;
+
+      return {
+        ...play,
+        issued_with: issuedWithByUser.get(senderUserId) || [],
+      };
+    });
+
     return res.json({
       ok: true,
-      plays: result.rows,
+      plays: hydratedPlays,
     });
   } catch (error) {
     console.error('Error en GET /mazos/:mazoId/plays', error);
