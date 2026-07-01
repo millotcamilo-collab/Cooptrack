@@ -318,7 +318,7 @@
 
 .users-picker__row-name,
 .users-picker__row-summary {
-  grid-column: 3;
+  grid-column: 2;
 }
 
 .users-picker__row-name {
@@ -362,7 +362,7 @@
 }
 
 #usuarios-container .users-picker__row-main {
-  grid-template-columns: 56px 64px 1fr;
+  grid-template-columns: 64px 1fr;
   grid-template-rows: 32px 24px;
 }
 
