@@ -2426,7 +2426,20 @@ async function getMazoStateHandler(req, res) {
       [mazoId, userId, String(userId), `U:${userId}`]
     );
 
-    const plays = result.rows;
+    const issuedWithByUser = await buildCorporateIssuedWithByUserForDeck(pool, mazoId);
+
+    const plays = result.rows.map((play) => {
+      const rank = String(play.card_rank || '').trim().toUpperCase();
+      if (rank !== 'K') return play;
+
+      const senderUserId = Number(play.created_by_user_id || 0);
+      if (!senderUserId) return play;
+
+      return {
+        ...play,
+        issued_with: issuedWithByUser.get(senderUserId) || [],
+      };
+    });
 
     const corporateCards = getCorporateCardEntriesFromPlays(plays, userId)
       .map((entry) => ({

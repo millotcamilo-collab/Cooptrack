@@ -149,12 +149,54 @@ function getSuitSymbol(suit) {
   return "";
 }
 
+function parseCorporateCredential(value) {
+  const [rank = "", suit = ""] = String(value || "").toUpperCase().split("_");
+  if (!["A", "K"].includes(rank)) return null;
+  if (!["HEART", "SPADE", "DIAMOND", "CLUB"].includes(suit)) return null;
+  return { rank, suit };
+}
+
+function getLatestIssuedWithForUser(userId, plays = []) {
+  const uid = Number(userId || 0);
+  let latestPlayId = 0;
+  let credentials = [];
+
+  plays.forEach((play) => {
+    const createdByUserId = Number(play?.created_by_user_id || 0);
+    if (createdByUserId !== uid) return;
+
+    const issuedWith = Array.isArray(play?.issued_with) ? play.issued_with : [];
+    if (!issuedWith.length) return;
+
+    const playId = Number(play?.id || 0);
+    if (playId < latestPlayId) return;
+
+    latestPlayId = playId;
+    credentials = issuedWith;
+  });
+
+  return [...new Set(credentials.map((item) => String(item || "").toUpperCase()).filter(Boolean))];
+}
+
 function getUserDeckSummary(userId, plays = []) {
   const uid = Number(userId || 0);
 
   const aces = new Set();
   const kings = new Set();
   let qspades = 0;
+
+  const corporateCredentials = getLatestIssuedWithForUser(uid, plays);
+
+  corporateCredentials
+    .map(parseCorporateCredential)
+    .filter(Boolean)
+    .forEach((credential) => {
+      const suitSymbol = getSuitSymbol(credential.suit);
+      if (!suitSymbol) return;
+
+      if (credential.rank === "A") aces.add(suitSymbol);
+      if (credential.rank === "K") kings.add(suitSymbol);
+    });
 
   plays.forEach((play) => {
     const ownerId =
@@ -165,14 +207,6 @@ function getUserDeckSummary(userId, plays = []) {
 
     const rank = String(play?.card_rank || play?.rank || "").toUpperCase();
     const suit = String(play?.card_suit || play?.suit || "").toUpperCase();
-
-    if (rank === "A") {
-      aces.add(getSuitSymbol(suit));
-    }
-
-    if (rank === "K") {
-      kings.add(getSuitSymbol(suit));
-    }
 
     if (rank === "Q" && suit === "SPADE") {
       qspades += 1;

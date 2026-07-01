@@ -186,12 +186,21 @@
   }
 
   function formatTodayHeader(date) {
-    return new Intl.DateTimeFormat("es-AR", {
+    const formatter = new Intl.DateTimeFormat("es-AR", {
       weekday: "long",
       day: "2-digit",
       month: "long",
       year: "numeric"
-    }).format(date);
+    });
+
+    return formatter
+      .formatToParts(date)
+      .map((part) => {
+        if (part.type !== "weekday" && part.type !== "month") return part.value;
+        if (!part.value) return part.value;
+        return part.value.charAt(0).toUpperCase() + part.value.slice(1);
+      })
+      .join("");
   }
 
   function rowHourLabel(hour) {
