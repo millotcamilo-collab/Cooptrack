@@ -58,8 +58,24 @@ function renderArchivedRow(play, deck, state) {
     }
   };
 
-  if (rank === "J" && suit === "SPADE") {
-    return renderArchivedJSpadeRow(play);
+  // Use same J renderers as tablero.js
+  if (rank === "J") {
+    let rendererName = null;
+    if (suit === "HEART") rendererName = "Jcorazon";
+    else if (suit === "SPADE") rendererName = "Jpika";
+    else if (suit === "CLUB") rendererName = "Jtrebol";
+    else if (suit === "DIAMOND") rendererName = "Jdiamante";
+
+    if (rendererName) {
+      const renderer = window[`render${rendererName}`];
+      if (typeof renderer === "function") {
+        try {
+          return renderer(play, context);
+        } catch (error) {
+          console.error(`Error renderizando ${rendererName}:`, error);
+        }
+      }
+    }
   }
 
   if (rank === "Q" && typeof renderQpike === "function") {
@@ -75,39 +91,6 @@ function renderArchivedRow(play, deck, state) {
   }
 
   return renderArchivoMazoRow(play);
-}
-
-function renderArchivedJSpadeRow(play) {
-  const playId = Number(play?.id || 0);
-  const deckId = Number(play?.deck_id || 0);
-  const text = escapeHtml(play?.play_text || "Sin texto");
-  const status = normalizeStatus(play?.play_status || play?.status || "CANCELLED");
-
-  return `
-    <button
-      type="button"
-      class="tablero-row tablero-row--jpike tablero-row--link"
-      id="tablero-row-${playId || "archived-jspade"}"
-      data-open-lienzo="true"
-      data-play-id="${playId}"
-      data-deck-id="${deckId}"
-      title="Abrir lienzo J♠"
-    >
-      <div class="tablero-row__left">
-        <div class="tablero-row__card-wrap">
-          <span class="tablero-row__card">J</span>
-          <span class="tablero-row__suit">♠</span>
-        </div>
-      </div>
-
-      <div class="tablero-row__center">
-        <div class="tablero-row__title">${text}</div>
-        <div class="tablero-row__meta">Estado: ${escapeHtml(status)}</div>
-      </div>
-
-      <div class="tablero-row__right"></div>
-    </button>
-  `;
 }
 
 function renderArchivoMazoRow(play) {
