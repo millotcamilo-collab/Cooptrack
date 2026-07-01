@@ -82,6 +82,10 @@
         return `${normalizeRank(rank)}${getSuitSymbol(suit)}`;
     }
 
+    function getActionIconSrc(actionKey, fallback) {
+        return String(window?.ICONS?.actions?.[actionKey] || fallback || "");
+    }
+
     function parsePlayCode(code) {
         const parts = String(code || "").split("§");
 
@@ -254,6 +258,68 @@
         return Number(aceHolder?.id || 0) === getCurrentUserId();
     }
 
+    function normalizeReaders(value) {
+        if (!Array.isArray(value)) return [];
+        return value
+            .map((item) => String(item || "").trim())
+            .filter(Boolean);
+    }
+
+    function isPrivateForCurrentUser(readers, userId) {
+        if (!userId || readers.length !== 1) return false;
+        return readers[0] === `U:${userId}`;
+    }
+
+    function hasMultipleReaders(readers) {
+        return readers.length > 1 || readers.includes("TODOS");
+    }
+
+    function formatReadersLabel(readers) {
+        if (!Array.isArray(readers) || readers.length === 0) {
+            return "Sin lectores";
+        }
+
+        if (readers.includes("TODOS")) {
+            return "TODOS";
+        }
+
+        return readers.join(", ");
+    }
+
+    function getIssuedWithForHeartAction(play) {
+        const currentUserId = getCurrentUserId();
+        const creatorUserId = Number(play?.created_by_user_id || 0);
+        const userIsCreator = creatorUserId > 0 && creatorUserId === currentUserId;
+        const userIsHeartAceHolder = isCurrentUserHeartAceHolder();
+
+        const credentials = [];
+        if (userIsCreator) credentials.push("K_HEART");
+        if (userIsHeartAceHolder) credentials.push("A_HEART");
+        return [...new Set(credentials)];
+    }
+
+    function getJHeartUiState(play) {
+        const playId = Number(play?.id || 0);
+
+        if (!window.__jheartLienzoUiState) {
+            window.__jheartLienzoUiState = {};
+        }
+
+        if (!window.__jheartLienzoUiState[playId]) {
+            window.__jheartLienzoUiState[playId] = {
+                mode: "read",
+                draftText: String(play?.play_text || "").trim()
+            };
+        }
+
+        return window.__jheartLienzoUiState[playId];
+    }
+
+    function setJHeartUiState(play, patch = {}) {
+        const state = getJHeartUiState(play);
+        Object.assign(state, patch);
+    }
+
     function getPlayOwnerUser(play) {
         if (Number(play?.target_user_id || 0)) {
             return resolveUser(play.target_user_id, `Usuario ${play.target_user_id || ""}`);
@@ -262,13 +328,36 @@
         return resolveSourceUser(play);
     }
 
-    function renderJHeartPlayCard(play, actionsHtml = "") {
+    function isNonChildJHeart(play) {
+        const parentPlayId = Number(play?.parent_play_id || 0);
+        if (parentPlayId > 0) return false;
+
+        const parsed = parsePlayCode(play?.play_code || "");
+        const flow = String(parsed.flow || "").toLowerCase();
+        if (flow.includes("child_of:")) return false;
+
+        return true;
+    }
+
+    function renderJHeartPlayCard(play, {
+        actionsHtml = "",
+        editableTitle = false,
+        draftText = ""
+    } = {}) {
         const ownerUser = getPlayOwnerUser(play);
+        const titleValue = editableTitle
+            ? String(draftText || "")
+            : String(play?.play_text || "").trim();
+
+        const titleHtml = editableTitle
+            ? `<input id="jheart-title-input" class="lv2-play-card__title-input" type="text" value="${escapeHtml(titleValue)}" />`
+            : "";
 
         return window.CartaTipo.renderPlayCardBox({
             rank: "J",
             suit: "HEART",
-            title: String(play?.play_text || "").trim(),
+            title: editableTitle ? "" : titleValue,
+            titleHtml,
             status: play?.play_status || "",
             ownerUser,
             ownerCards: getCardsOwnedByUser(ownerUser.id),
@@ -294,6 +383,108 @@
       </div>
     `;
     }
+
+        function renderSourceActions(play) {
+                const status = normalizeRank(play?.play_status || play?.status || "ACTIVE");
+                const isApproved = status === "APPROVED";
+                const isSent = status === "SENT";
+                const isArchived = status === "CANCELLED" || status === "REJECTED";
+
+                const currentUserId = getCurrentUserId();
+                const creatorUserId = Number(play?.created_by_user_id || 0);
+                const userIsCreator = creatorUserId > 0 && creatorUserId === currentUserId;
+                const userIsHeartAceHolder = isCurrentUserHeartAceHolder();
+                const userCanEdit = userIsCreator || userIsHeartAceHolder;
+                const allowSourceValidationButtons = userIsHeartAceHolder && userIsCreator;
+
+                const readers = normalizeReaders(play?.reader_user_ids);
+                const showPrivedButton = isPrivateForCurrentUser(readers, currentUserId);
+                const showReadersButton = hasMultipleReaders(readers);
+
+                const uiState = getJHeartUiState(play);
+                const isEditMode = uiState.mode === "edit";
+
+                if (isArchived) {
+                        return "";
+                }
+
+                const buttons = [];
+
+                buttons.push(`
+                    <button id="jheart-help-btn" class="icon-btn" title="Ayuda">
+                        <img src="${escapeHtml(getActionIconSrc("help", "/assets/icons/help40.gif"))}" alt="Ayuda" />
+                    </button>
+                `);
+
+                if (!isApproved && !isSent && !isEditMode && userCanEdit) {
+                        buttons.push(`
+                            <button id="jheart-edit-btn" class="icon-btn" title="Editar">
+                                <img src="${escapeHtml(getActionIconSrc("edit", "/assets/icons/lapiz40.gif"))}" alt="Editar" />
+                            </button>
+                        `);
+                }
+
+                if (isEditMode) {
+                        buttons.push(`
+                            <button id="jheart-save-btn" class="icon-btn" title="Salvar">
+                                <img src="${escapeHtml(getActionIconSrc("save", "/assets/icons/salvar40.gif"))}" alt="Salvar" />
+                            </button>
+                            <button id="jheart-exit-btn" class="icon-btn" title="Salir edición">
+                                <img src="${escapeHtml(getActionIconSrc("exit", "/assets/icons/salida40.gif"))}" alt="Salir edición" />
+                            </button>
+                        `);
+                }
+
+                if (!isApproved && !isEditMode && allowSourceValidationButtons) {
+                        buttons.push(`
+                            <button id="jheart-approve-btn" class="icon-btn" title="Aprobar">
+                                <img src="${escapeHtml(getActionIconSrc("approve", "/assets/icons/Sello40.gif"))}" alt="Aprobar" />
+                            </button>
+                        `);
+                }
+
+                if (isSent && allowSourceValidationButtons && !isEditMode) {
+                        buttons.push(`
+                            <button id="jheart-reject-btn" class="icon-btn" title="Rechazar">
+                                <img src="${escapeHtml(getActionIconSrc("cancel", "/assets/icons/stepback40.gif"))}" alt="Rechazar" />
+                            </button>
+                        `);
+                }
+
+                if (!isApproved && !isSent && !isEditMode) {
+                        buttons.push(`
+                            <button id="jheart-delete-btn" class="icon-btn" title="Borrar">
+                                <img src="${escapeHtml(getActionIconSrc("delete", "/assets/icons/tacho40.gif"))}" alt="Borrar" />
+                            </button>
+                        `);
+                }
+
+                if (isApproved && userIsHeartAceHolder && !isEditMode) {
+                        buttons.push(`
+                            <button id="jheart-cancel-btn" class="icon-btn" title="Cancelar">
+                                <img src="${escapeHtml(getActionIconSrc("cancel", "/assets/icons/stepback40.gif"))}" alt="Cancelar" />
+                            </button>
+                        `);
+                }
+
+                if (!isEditMode && showPrivedButton) {
+                        buttons.push(`
+                            <button id="jheart-private-btn" class="icon-btn" title="Lectura privada">
+                                <img src="/assets/icons/ojo2.gif" alt="Lectura privada" />
+                            </button>
+                        `);
+                }
+
+                if (!isEditMode && showReadersButton) {
+                        buttons.push(`
+                            <button id="jheart-readers-btn" class="icon-btn" title="Lectores">
+                                <img src="/assets/icons/ojitos40.gif" alt="Lectores" />
+                            </button>
+                        `);
+                }
+
+                return buttons.join("");
+        }
 
     function resolveSourceUser(play) {
         const userId = Number(play?.created_by_user_id || 0);
@@ -321,6 +512,9 @@
     function renderSourcePlayerPanel(play) {
         const sourceUser = resolveSourceUser(play);
         const sourceCards = getCardsOwnedByUser(sourceUser.id);
+                const uiState = getJHeartUiState(play);
+                const status = normalizeRank(play?.play_status || play?.status || "ACTIVE");
+                const canEditInline = uiState.mode === "edit" && status !== "SENT" && status !== "APPROVED";
 
         return `
       <section class="lienzo-tribune">
@@ -337,16 +531,13 @@
 
 
         <div class="lienzo-tribune__stage">
-          <div
-  id="jheart-draggable-card"
-  draggable="true"
-  data-rank="J"
-  data-suit="HEART"
-  data-play-id="${Number(play?.id || 0)}"
-  title="Arrastrar J♥ hacia A♥"
->
-  ${renderJHeartPlayCard(play)}
-</div>
+                    <div>
+                        ${renderJHeartPlayCard(play, {
+                        actionsHtml: renderSourceActions(play),
+                        editableTitle: canEditInline,
+                        draftText: uiState.draftText
+                })}
+                    </div>
         </div>
 
       </section>
@@ -355,6 +546,35 @@
 
     function renderTargetPlayerPanel(play) {
         const aceHolder = resolveHeartAceHolder();
+                const status = normalizeRank(play?.play_status || play?.status);
+                const currentUserId = getCurrentUserId();
+                const creatorUserId = Number(play?.created_by_user_id || 0);
+
+                if (!aceHolder) {
+                        return `
+            <section class="lienzo-tribune">
+                <div class="lienzo-tribune__corporates"></div>
+                <div class="lienzo-tribune__stage">
+                    <div class="lienzo-drop-hint">No se encontró propietario de A♥ en este mazo.</div>
+                </div>
+            </section>
+        `;
+                }
+
+                const userIsHeartAceHolder = Number(aceHolder.id || 0) === currentUserId;
+                const userIsCreator = creatorUserId > 0 && creatorUserId === currentUserId;
+                const canSendRequest = userIsCreator && !userIsHeartAceHolder && status === "ACTIVE";
+                const canApproveReject = userIsHeartAceHolder && status === "SENT";
+
+                const actionsHtml = canSendRequest
+                        ? `
+                    <button id="jheart-send-btn" class="icon-btn" title="Enviar solicitud a A♥">
+                        <img src="/assets/icons/buzon60.gif" alt="Enviar solicitud" />
+                    </button>
+                `
+                        : canApproveReject
+                                ? renderApprovalActions(play)
+                                : "";
 
         return `
       <section class="lienzo-tribune">
@@ -363,23 +583,16 @@
 
 
         <div class="lienzo-tribune__stage">
-          <div
-            id="lienzo-jheart-target-dropzone"
-            class="lienzo-target-dropzone"
-          >
-            ${hasDroppedJHeart(play)
-? renderJHeartPlayCard(
-    play,
-    window.__jheartDropSelection && normalizeRank(play?.play_status || play?.status) !== "SENT"
-        ? `
-          <button id="jheart-send-btn" class="icon-btn" title="Enviar a A♥">
-            <img src="/assets/icons/buzon60.gif" alt="Enviar" />
-          </button>
-        `
-        : renderApprovalActions(play)
-  )
-                : '<div class="lienzo-drop-hint">Soltar J♥ aquí</div>'
-            }
+                    <div class="lienzo-target-dropzone">
+                        ${window.CartaTipo.renderPlayCardBox({
+                        rank: "J",
+                        suit: "HEART",
+                        title: String(play?.play_text || "").trim(),
+                        status: play?.play_status || "",
+                        ownerUser: aceHolder,
+                        ownerCards: getCardsOwnedByUser(aceHolder.id),
+                        actionsHtml
+                })}
           </div>
         </div>
 
@@ -405,64 +618,14 @@
         });
     }
 
-
-
-
-    function hasDroppedJHeart(play) {
-        const status = normalizeRank(play?.play_status || play?.status);
-
-        if (
-            status === "SENT" ||
-            status === "APPROVED" ||
-            status === "REJECTED" ||
-            status === "CANCELLED" ||
-            status === "ACKNOWLEDGED"
-        ) {
-            return true;
-        }
-
-        const selection = window.__jheartDropSelection || null;
-        return selection && selection.rank === "J" && selection.suit === "HEART";
-    }
-
-    function renderSourceActions(play) {
-        return "";
-    }
-
-
-
-
     async function handleSendPlay(play) {
         try {
-            const playId = Number(play?.id || 0);
-            const token = localStorage.getItem("cooptrackToken");
-
-            if (!playId) {
-                alert("playId inválido");
-                return;
-            }
-
-            if (!token) {
-                alert("No estás logueado");
-                return;
-            }
-
-            const response = await fetch(`/plays/${playId}`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    play_status: "SENT"
-                })
+            const data = await patchPlay(play, {
+                play_status: "SENT",
+                issued_with: getIssuedWithForHeartAction(play)
             });
 
-            const data = await response.json();
-
-            if (!response.ok || !data.ok) {
-                console.error("Error enviando J♥:", data);
-                alert(data?.error || "No se pudo enviar la J♥");
+            if (!data) {
                 return;
             }
 
@@ -484,37 +647,79 @@
         }
     }
 
+    async function patchPlay(play, payload) {
+        const playId = Number(play?.id || 0);
+        const token = localStorage.getItem("cooptrackToken");
+
+        if (!playId) {
+            alert("playId inválido");
+            return null;
+        }
+
+        if (!token) {
+            alert("No estás logueado");
+            return null;
+        }
+
+        const response = await fetch(`/plays/${playId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(payload || {})
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            console.error("Error actualizando J♥:", data);
+            alert(data?.error || "No se pudo actualizar la J♥");
+            return null;
+        }
+
+        return data;
+    }
+
+    async function deletePlay(play) {
+        const playId = Number(play?.id || 0);
+        const token = localStorage.getItem("cooptrackToken");
+
+        if (!playId) {
+            alert("playId inválido");
+            return false;
+        }
+
+        if (!token) {
+            alert("No estás logueado");
+            return false;
+        }
+
+        const response = await fetch(`/plays/${playId}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            console.error("Error borrando J♥:", data);
+            alert(data?.error || "No se pudo borrar la J♥");
+            return false;
+        }
+
+        return true;
+    }
+
     async function handleApproveRejectPlay(play, nextStatus) {
         try {
-            const playId = Number(play?.id || 0);
-            const token = localStorage.getItem("cooptrackToken");
-
-            if (!playId) {
-                alert("playId inválido");
-                return;
-            }
-
-            if (!token) {
-                alert("No estás logueado");
-                return;
-            }
-
-            const response = await fetch(`/plays/${playId}`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    play_status: nextStatus
-                })
+            const data = await patchPlay(play, {
+                play_status: nextStatus
             });
 
-            const data = await response.json();
-
-            if (!response.ok || !data.ok) {
-                console.error("Error resolviendo J♥:", data);
-                alert(data?.error || "No se pudo resolver la J♥");
+            if (!data) {
                 return;
             }
 
@@ -540,76 +745,110 @@
         }
     }
 
-    function bindSourceDrag(play) {
-        const card = document.getElementById("jheart-draggable-card");
-        if (!card) return;
-
-        card.addEventListener("dragstart", (event) => {
-            const payload = {
-                rank: "J",
-                suit: "HEART",
-                playId: Number(play?.id || 0)
-            };
-
-            event.dataTransfer.setData("application/json", JSON.stringify(payload));
-            event.dataTransfer.setData("text/plain", "J|HEART");
-            event.dataTransfer.effectAllowed = "copy";
-        });
-    }
-
-    function bindTargetDropzone(play) {
-        const dropzone = document.getElementById("lienzo-jheart-target-dropzone");
-        if (!dropzone) return;
-
-        dropzone.addEventListener("dragenter", (event) => {
-            event.preventDefault();
-        });
-
-        dropzone.addEventListener("dragover", (event) => {
-            event.preventDefault();
-            dropzone.classList.add("is-drag-valid");
-            event.dataTransfer.dropEffect = "copy";
-        });
-
-        dropzone.addEventListener("dragleave", () => {
-            dropzone.classList.remove("is-drag-valid");
-        });
-
-        dropzone.addEventListener("drop", (event) => {
-            event.preventDefault();
-            dropzone.classList.remove("is-drag-valid");
-
-            let payload = null;
-
-            try {
-                payload = JSON.parse(event.dataTransfer.getData("application/json") || "{}");
-            } catch (error) {
-                payload = null;
-            }
-
-            const rank = normalizeRank(payload?.rank);
-            const suit = normalizeSuit(payload?.suit);
-            const playId = Number(payload?.playId || 0);
-
-            if (rank !== "J" || suit !== "HEART" || playId !== Number(play?.id || 0)) {
-                alert("Solo podés soltar esta J♥.");
-                return;
-            }
-
-            window.__jheartDropSelection = {
-                rank: "J",
-                suit: "HEART",
-                playId
-            };
-
-            renderLienzo(play);
-        });
-    }
-
     function bindActions(play) {
+        const helpBtn = document.getElementById("jheart-help-btn");
+        const editBtn = document.getElementById("jheart-edit-btn");
+        const saveBtn = document.getElementById("jheart-save-btn");
+        const exitBtn = document.getElementById("jheart-exit-btn");
+        const deleteBtn = document.getElementById("jheart-delete-btn");
+        const cancelBtn = document.getElementById("jheart-cancel-btn");
+        const readersBtn = document.getElementById("jheart-readers-btn");
+        const privateBtn = document.getElementById("jheart-private-btn");
+
         const sendBtn = document.getElementById("jheart-send-btn");
         const approveBtn = document.getElementById("jheart-approve-btn");
         const rejectBtn = document.getElementById("jheart-reject-btn");
+
+        helpBtn?.addEventListener("click", (event) => {
+            event.stopPropagation();
+            if (typeof window.openPlayHelp === "function") {
+                window.openPlayHelp("J_HEART");
+                return;
+            }
+
+            const playId = Number(play?.id || 0);
+            window.location.href = `/help.html?rank=J&suit=HEART&playId=${playId}`;
+        });
+
+        editBtn?.addEventListener("click", (event) => {
+            event.stopPropagation();
+            setJHeartUiState(play, {
+                mode: "edit",
+                draftText: String(play?.play_text || "").trim()
+            });
+            renderLienzo(play);
+        });
+
+        exitBtn?.addEventListener("click", (event) => {
+            event.stopPropagation();
+            setJHeartUiState(play, {
+                mode: "read",
+                draftText: String(play?.play_text || "").trim()
+            });
+            renderLienzo(play);
+        });
+
+        saveBtn?.addEventListener("click", async (event) => {
+            event.stopPropagation();
+            const input = document.getElementById("jheart-title-input");
+            const nextText = String(input?.value || "").trim();
+
+            const data = await patchPlay(play, {
+                text: nextText,
+                play_status: "ACTIVE",
+                issued_with: getIssuedWithForHeartAction(play)
+            });
+
+            if (!data) return;
+
+            play.play_text = nextText;
+            play.play_status = "ACTIVE";
+            setJHeartUiState(play, {
+                mode: "read",
+                draftText: nextText
+            });
+            renderLienzo(play);
+        });
+
+        deleteBtn?.addEventListener("click", async (event) => {
+            event.stopPropagation();
+            const confirmed = window.confirm("¿Seguro que querés borrar esta jugada?");
+            if (!confirmed) return;
+
+            const ok = await deletePlay(play);
+            if (!ok) return;
+
+            const deckId = Number(play?.deck_id || 0) || Number(getCurrentDeck()?.id || 0);
+            if (deckId) {
+                window.location.href = `/mazo.html?id=${deckId}`;
+                return;
+            }
+
+            window.history.back();
+        });
+
+        cancelBtn?.addEventListener("click", async (event) => {
+            event.stopPropagation();
+            const data = await patchPlay(play, {
+                play_status: "CANCELLED"
+            });
+
+            if (!data) return;
+            play.play_status = "CANCELLED";
+            renderLienzo(play);
+        });
+
+        readersBtn?.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const readers = normalizeReaders(play?.reader_user_ids);
+            window.alert(`Pueden leer esta jugada:\n\n${formatReadersLabel(readers)}`);
+        });
+
+        privateBtn?.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const readers = normalizeReaders(play?.reader_user_ids);
+            window.alert(`Lectura privada:\n\n${formatReadersLabel(readers)}`);
+        });
 
         if (sendBtn) {
             sendBtn.addEventListener("click", (event) => {
@@ -619,16 +858,16 @@
         }
 
         if (approveBtn) {
-            approveBtn.addEventListener("click", (event) => {
+            approveBtn.addEventListener("click", async (event) => {
                 event.stopPropagation();
-                handleApproveRejectPlay(play, "APPROVED");
+                await handleApproveRejectPlay(play, "APPROVED");
             });
         }
 
         if (rejectBtn) {
-            rejectBtn.addEventListener("click", (event) => {
+            rejectBtn.addEventListener("click", async (event) => {
                 event.stopPropagation();
-                handleApproveRejectPlay(play, "REJECTED");
+                await handleApproveRejectPlay(play, "REJECTED");
             });
         }
     }
@@ -636,6 +875,12 @@
     function renderLienzo(play) {
         const container = getLienzoContainer();
         const deck = getCurrentDeck();
+                const aceHolder = resolveHeartAceHolder();
+                const creatorUserId = Number(play?.created_by_user_id || 0);
+                const showValidatorPanel =
+                        Number(aceHolder?.id || 0) > 0 &&
+                        creatorUserId > 0 &&
+                        Number(aceHolder.id) !== creatorUserId;
 
         if (!container || !play) return;
 
@@ -646,14 +891,19 @@
         <div class="lienzo-v2-shell">
           <div class="lienzo-v2-main">
 
-            <div class="lienzo-v2-grid lienzo-v2-grid--2">
+                        <div class="lienzo-v2-grid ${showValidatorPanel ? "lienzo-v2-grid--2" : "lienzo-v2-grid--single"}">
               <div id="colombes">
                 ${renderSourcePlayerPanel(play)}
               </div>
 
-              <div id="amsterdam">
-                ${renderTargetPlayerPanel(play)}
-              </div>
+                            ${showValidatorPanel
+                                ? `
+                            <div id="amsterdam">
+                                ${renderTargetPlayerPanel(play)}
+                            </div>
+                            `
+                                : ""
+                        }
             </div>
 
           </div>
@@ -662,8 +912,6 @@
     `;
 
         mountPlacardFromDataset(play);
-        bindSourceDrag(play);
-        bindTargetDropzone(play);
         bindActions(play);
     }
 
@@ -690,14 +938,25 @@
             if (container) {
                 container.innerHTML = `
           <div class="lienzo-error">
-            Esta página solo acepta J♥.
+                        Esta página solo acepta J♥.
+                    </div>
+                `;
+                        }
+                        return;
+                }
+
+                if (!isNonChildJHeart(play)) {
+                        const container = getLienzoContainer();
+                        if (container) {
+                                container.innerHTML = `
+                    <div class="lienzo-error">
+                        lienzoJcorazon.html solo aplica a jugadas J♥ que no son hijas.
           </div>
         `;
             }
             return;
         }
 
-        window.__jheartDropSelection = null;
         renderLienzo(play);
     }
 

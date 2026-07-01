@@ -195,7 +195,7 @@
             dispatch("tablero:save-play", {
               playId,
               text: nextText,
-              play_status: userIsHeartAceHolder ? "ACTIVE" : "SENT"
+              play_status: "ACTIVE"
             });
           });
 
@@ -293,7 +293,7 @@
         dispatch("tablero:save-play", {
           playId,
           text: nextText,
-          play_status: userIsHeartAceHolder ? "ACTIVE" : "SENT",
+          play_status: "ACTIVE",
           issued_with: getIssuedWithForHeartAction()
         });
       });

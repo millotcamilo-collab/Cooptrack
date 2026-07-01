@@ -306,6 +306,7 @@ ${dayHeader ? `
     rank,
     suit,
     title = "",
+    titleHtml = "",
     metas = [],
     status = "",
     spade_mode = "",
@@ -492,7 +493,11 @@ ${safeRank !== "A" && suitSymbol ? `
       <div class="lv2-play-card__inner lv2-play-card__inner--figure">
         ${ownerHtml}
 
-${title && !useMiniDay ? `
+${titleHtml && !useMiniDay ? `
+  <div class="lv2-play-card__title">
+    ${titleHtml}
+  </div>
+` : title && !useMiniDay ? `
   <div class="lv2-play-card__title">
     ${escapeHtml(title)}
   </div>
