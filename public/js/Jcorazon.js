@@ -24,6 +24,8 @@
     const safeText = escapeHtml(originalText);
     const statusRaw = String(play?.play_status || play?.status || "ACTIVE").toUpperCase();
     const creatorUserId = Number(play?.created_by_user_id || 0);
+    const parentPlayId = Number(play?.parent_play_id || 0);
+    const isChildJHeart = parentPlayId > 0;
 
     const rowId = `tablero-row-${playId}`;
     const inputId = `jcorazon-input-${playId}`;
@@ -250,7 +252,7 @@
           hideButton(btnDelete);
         }
 
-        if (isApproved && userIsHeartAceHolder) {
+        if (isApproved && userIsHeartAceHolder && isChildJHeart) {
           showButton(btnCancel);
         } else {
           hideButton(btnCancel);
