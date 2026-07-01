@@ -322,7 +322,6 @@ function getCorporateCardEntriesFromPlays(plays, ownerUserId) {
     if (rank === 'K') {
       if (playBookLine < CORPORATE_K_MIN_PLAYBOOK_LINE) return;
       if (flow === 'acl') return;
-      if (action === 'puedejugar') return;
       if (status !== CORPORATE_K_ACTIVE_STATUS) return;
     }
 
@@ -2062,7 +2061,7 @@ async function createMazoHandler(req, res) {
         suit: seed.suit,
         action: seed.action,
         authorized: `U:${userId}`,
-        flow: 'acl',
+        flow: seed.rank === 'K' ? 'foundation' : 'acl',
         recipients: '',
       });
 

@@ -755,11 +755,7 @@
             event.stopPropagation();
             if (typeof window.openPlayHelp === "function") {
                 window.openPlayHelp("J_HEART");
-                return;
             }
-
-            const playId = Number(play?.id || 0);
-            window.location.href = `/help.html?rank=J&suit=HEART&playId=${playId}`;
         });
 
         editBtn?.addEventListener("click", (event) => {
