@@ -290,17 +290,35 @@ async function getIssuedWithForUser(client, deckId, userId) {
 
   const result = await client.query(
     `
+    WITH ordered_plays AS (
+      SELECT
+        p.id,
+        p.card_rank,
+        p.card_suit,
+        p.play_status,
+        p.play_code,
+        split_part(COALESCE(p.play_code, ''), '§', 6) AS action_chunk,
+        split_part(COALESCE(p.play_code, ''), '§', 8) AS flow_chunk,
+        COALESCE(p.target_user_id, p.created_by_user_id) AS owner_user_id,
+        ROW_NUMBER() OVER (PARTITION BY p.deck_id ORDER BY p.id ASC) AS play_book_line
+      FROM plays p
+      WHERE p.deck_id = $1
+        AND UPPER(COALESCE(p.card_rank, '')) IN ('A', 'K')
+        AND UPPER(COALESCE(p.card_suit, '')) IN ('HEART', 'SPADE', 'DIAMOND', 'CLUB')
+        AND UPPER(COALESCE(p.play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'DELETED', 'QUIT', 'FIRED')
+    )
     SELECT
+      id,
       card_rank,
       card_suit,
       play_status,
       play_code,
-      COALESCE(target_user_id, created_by_user_id) AS owner_user_id
-    FROM plays
-    WHERE deck_id = $1
-      AND UPPER(COALESCE(card_rank, '')) IN ('A', 'K')
-      AND UPPER(COALESCE(card_suit, '')) IN ('HEART', 'SPADE', 'DIAMOND', 'CLUB')
-      AND UPPER(COALESCE(play_status, '')) NOT IN ('REJECTED', 'CANCELLED', 'DELETED', 'QUIT', 'FIRED')
+      action_chunk,
+      flow_chunk,
+      owner_user_id,
+      play_book_line
+    FROM ordered_plays
+    WHERE play_book_line >= 10
     ORDER BY id ASC
     `,
     [normalizedDeckId]
@@ -312,10 +330,15 @@ async function getIssuedWithForUser(client, deckId, userId) {
       .filter((row) => {
         const rank = String(row.card_rank || '').trim().toUpperCase();
         const status = String(row.play_status || '').trim().toUpperCase();
-        const flow = String(row.play_code || '').split('§')[7] || '';
+        const flow = String(row.flow_chunk || '').trim().toLowerCase();
+        const action = String(row.action_chunk || '').trim().toLowerCase();
 
         if (rank === 'A') return flow === 'foundation';
-        if (rank === 'K') return ['ACTIVE', 'APPROVED', 'SENT', 'PENDING'].includes(status);
+        if (rank === 'K') {
+          if (flow === 'acl') return false;
+          if (action === 'puedejugar') return false;
+          return ['ACTIVE', 'APPROVED', 'SENT', 'PENDING'].includes(status);
+        }
         return false;
       })
       .map((row) => credentialForCard(row.card_rank, row.card_suit))
