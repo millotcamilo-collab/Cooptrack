@@ -1607,6 +1607,9 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
           creator.nickname AS created_by_nickname,
           target.nickname AS target_user_nickname,
           d.name AS deck_name,
+          parent.start_date AS parent_start_date,
+          parent.end_date AS parent_end_date,
+          parent.spade_mode AS parent_spade_mode,
           split_part(COALESCE(p.play_code, ''), '§', 8) AS flow_chunk,
           split_part(COALESCE(p.play_code, ''), '§', 9) AS recipients_chunk
         FROM plays p
@@ -1616,6 +1619,8 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
           ON target.id = p.target_user_id
         LEFT JOIN decks d
           ON d.id = p.deck_id
+        LEFT JOIN plays parent
+          ON parent.id = p.parent_play_id
         WHERE
           ${visibilityWhere}
           AND UPPER(COALESCE(p.card_rank, '')) IN ('J', 'Q')
@@ -1631,12 +1636,12 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
           vp.*,
           CASE
             WHEN UPPER(COALESCE(vp.card_suit, '')) = 'SPADE'
-                 AND UPPER(COALESCE(vp.spade_mode, '')) = 'APPOINTMENT'
-              THEN vp.start_date
+                 AND UPPER(COALESCE(vp.spade_mode, vp.parent_spade_mode, '')) = 'APPOINTMENT'
+              THEN COALESCE(vp.start_date, vp.parent_start_date)
 
             WHEN UPPER(COALESCE(vp.card_suit, '')) = 'SPADE'
-                 AND UPPER(COALESCE(vp.spade_mode, '')) = 'DEADLINE'
-              THEN vp.end_date
+                 AND UPPER(COALESCE(vp.spade_mode, vp.parent_spade_mode, '')) = 'DEADLINE'
+              THEN COALESCE(vp.end_date, vp.parent_end_date)
 
             ELSE vp.created_at
           END AS calendar_date,
@@ -1648,12 +1653,12 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
         WHERE (
           CASE
             WHEN UPPER(COALESCE(vp.card_suit, '')) = 'SPADE'
-                 AND UPPER(COALESCE(vp.spade_mode, '')) = 'APPOINTMENT'
-              THEN vp.start_date::date
+                 AND UPPER(COALESCE(vp.spade_mode, vp.parent_spade_mode, '')) = 'APPOINTMENT'
+              THEN COALESCE(vp.start_date::date, vp.parent_start_date::date)
 
             WHEN UPPER(COALESCE(vp.card_suit, '')) = 'SPADE'
-                 AND UPPER(COALESCE(vp.spade_mode, '')) = 'DEADLINE'
-              THEN vp.end_date::date
+                 AND UPPER(COALESCE(vp.spade_mode, vp.parent_spade_mode, '')) = 'DEADLINE'
+              THEN COALESCE(vp.end_date::date, vp.parent_end_date::date)
 
             ELSE vp.created_at::date
           END
