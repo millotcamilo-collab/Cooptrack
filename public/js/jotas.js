@@ -160,7 +160,7 @@
       : [];
     const recurrenceLabel = hasRecurrence
       ? getRecurrenceSummary(recurrenceType, recurrenceWeekdays, recurrenceMonths)
-      : "Sin rutina";
+      : "";
 
     const ICONS = window.ICONS || {};
     const ACTIONS = ICONS.actions || {};
@@ -185,9 +185,9 @@
             </div>
           </div>
 
-          <div class="tablero-row__fields tablero-row__fields--recurrence" data-role="recurrence-read">
-            ${escapeHtml(recurrenceLabel)}
-          </div>
+          ${recurrenceLabel
+            ? `<div class="tablero-row__fields tablero-row__fields--recurrence" data-role="recurrence-read">${escapeHtml(recurrenceLabel)}</div>`
+            : ""}
         </div>
       `;
     }
@@ -210,9 +210,9 @@
           </div>
         </div>
 
-        <div class="tablero-row__fields tablero-row__fields--recurrence" data-role="recurrence-read">
-          ${escapeHtml(recurrenceLabel)}
-        </div>
+        ${recurrenceLabel
+          ? `<div class="tablero-row__fields tablero-row__fields--recurrence" data-role="recurrence-read">${escapeHtml(recurrenceLabel)}</div>`
+          : ""}
       </div>
     `;
   }

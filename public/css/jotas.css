@@ -132,7 +132,7 @@
 }
 
 .tablero-row--jpike .tablero-row__center {
-  flex-direction: column;
+  flex-direction: row;
   align-items: stretch;
   gap: 6px;
 }
@@ -144,15 +144,16 @@
 .tablero-row--jpike .tablero-row__mode-read {
   min-width: 0;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
 }
 
 .tablero-row--jpike .tablero-row__fields--jpike-read {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -165,6 +166,7 @@
 
 .tablero-row--jpike .tablero-row__field-inline--title {
   min-width: 0;
+  max-width: 100%;
 }
 
 .tablero-row--jpike .tablero-row__field-inline span {
@@ -190,6 +192,19 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+@media (max-width: 980px) {
+  .tablero-row--jpike .tablero-row__center {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tablero-row--jpike .tablero-row__mode-read,
+  .tablero-row--jpike .tablero-row__fields--jpike-read {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .tablero-row--jcorazon .tablero-row__card,
