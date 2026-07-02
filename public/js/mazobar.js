@@ -436,7 +436,7 @@
       const suit = String(card.suit || "").toUpperCase();
       const playId = Number(card.id || 0);
 
-      if (rank === "K") {
+      if (rank === "K" && draggable) {
         const figureSrc = getFigureImageSrc(rank, suit);
 
         return `
