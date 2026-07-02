@@ -747,7 +747,8 @@
 
         dispatch("tablero:save-play", {
           ...payload,
-          play_status: userIsSpadeAceHolder ? "ACTIVE" : "SENT",
+          // J♠ is editable as draft and later approved; sending as SENT is invalid for this card.
+          play_status: "ACTIVE",
           issued_with: getIssuedWithForSpadeAction(),
           recurrence: recurrencePayload.recurrence_type ? recurrencePayload : null
         });
