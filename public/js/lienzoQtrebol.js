@@ -342,7 +342,7 @@
               : null
           ].filter(Boolean),
           actionsHtml: "",
-          showActions: false
+          showActions: true
         })
       : `
         <article class="lv2-play-card">

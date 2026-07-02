@@ -219,6 +219,16 @@
       .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
   }
 
+  function hasApprovedQtrebolChild(parentPlayId) {
+    return getChildPlays(parentPlayId).some((play) => {
+      const rank = normalizeRank(play?.card_rank || play?.rank);
+      const suit = normalizeSuit(play?.card_suit || play?.suit);
+      const status = normalizeRank(play?.play_status || play?.status);
+
+      return rank === "Q" && suit === "CLUB" && status === "APPROVED";
+    });
+  }
+
   function renderQtrebolChildRow(play) {
     if (typeof window.renderQpike === "function") {
       return `
@@ -263,6 +273,7 @@
     const autoEditJHeartId = Number(options.autoEditJHeartId || 0);
 
     const childPlays = getChildPlays(play.id);
+    const jTrebolAlreadySold = hasApprovedQtrebolChild(play.id);
 
     return `
     <section class="lienzo-tribune lienzo-tribune--target">
@@ -272,8 +283,12 @@
         <div class="lienzo-jpica-panel">
           <div class="jpica-users-header">
             <div class="jpica-child-actions">
-              <button type="button" id="jtrebol-toggle-users-btn" class="jpica-child-btn">Q♣</button>
-              <button type="button" id="jtrebol-create-jheart-btn" class="jpica-child-btn jpica-child-btn--heart">J♥</button>
+              ${jTrebolAlreadySold
+                ? ""
+                : `
+                  <button type="button" id="jtrebol-toggle-users-btn" class="jpica-child-btn">Q♣</button>
+                  <button type="button" id="jtrebol-create-jheart-btn" class="jpica-child-btn jpica-child-btn--heart">J♥</button>
+                `}
 
               <button
                 type="button"
@@ -628,6 +643,7 @@
   function renderLienzoJtrebol(play) {
     const container = getLienzoContainer();
     const deck = getCurrentDeck();
+    const jTrebolAlreadySold = hasApprovedQtrebolChild(play?.id);
 
     if (!container) return;
 
@@ -655,7 +671,9 @@
 
     mountPlacard(play);
     bindChildQRows();
-    mountUsersPickerForQtrebol(play);
+    if (!jTrebolAlreadySold) {
+      mountUsersPickerForQtrebol(play);
+    }
     bindJtrebolChildHeader(play);
     bindChildEventsInLienzo();
   }
