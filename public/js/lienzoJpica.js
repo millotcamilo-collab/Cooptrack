@@ -462,6 +462,25 @@ function renderColombes(play) {
     return playCode.includes("pay:QHEART");
   }
 
+  function isUnansweredQSpade(play) {
+    const status = String(play?.play_status || play?.status || "").trim().toUpperCase();
+    return ["ACTIVE", "SENT", "PENDING"].includes(status);
+  }
+
+  function resolveQSpadeChildHref(play, deckId, playId) {
+    const hasQHeart = qspadeHasPayment(play);
+
+    if (!hasQHeart) {
+      return `/amsterdam.html?situacion=QPICA_ENTRA&deckId=${encodeURIComponent(deckId)}&playId=${encodeURIComponent(playId)}`;
+    }
+
+    if (isUnansweredQSpade(play)) {
+      return `/amsterdam.html?situacion=QQPICA_ENTRA&deckId=${encodeURIComponent(deckId)}&playId=${encodeURIComponent(playId)}`;
+    }
+
+    return `/payNow.html?deckId=${encodeURIComponent(deckId)}&playId=${encodeURIComponent(playId)}`;
+  }
+
   function bindInvitationRows() {
     document
       .querySelectorAll(".jpica-q-row")
@@ -476,11 +495,7 @@ function renderColombes(play) {
           const childPlay = getPlayById(playId);
           if (!childPlay) return;
 
-          const targetPage = qspadeHasPayment(childPlay)
-            ? "lienzoQQpica.html"
-            : "lienzoQpica.html";
-
-          window.location.href = `/${targetPage}?deckId=${deckId}&playId=${playId}`;
+          window.location.href = resolveQSpadeChildHref(childPlay, deckId, playId);
         });
       });
   }
