@@ -422,7 +422,8 @@
   }
 
   function buildTopCardsHTML(cards, options = {}) {
-    const draggable = options.draggable === true;
+    const draggable =
+      getCurrentPageType() === "administradores" && options.draggable === true;
     if (!cards.length) {
       return `<div class="mazobar__topcards-empty"></div>`;
     }
@@ -1162,31 +1163,33 @@ ${!isUsersPage ? `
       }
     });
 
-    document.querySelectorAll(
-      ".mazobar__topcard-image.is-draggable, .mazobar__topcard-fallback.is-draggable, .mazobar__topcard-button.is-draggable"
-    )
-      .forEach((cardEl) => {
-        cardEl.addEventListener("dragstart", (event) => {
-          const playId = Number(cardEl.dataset.playId || 0);
-          const rank = cardEl.dataset.rank || "";
-          const suit = cardEl.dataset.suit || "";
+    if (getCurrentPageType() === "administradores") {
+      document.querySelectorAll(
+        ".mazobar__topcard-image.is-draggable, .mazobar__topcard-fallback.is-draggable, .mazobar__topcard-button.is-draggable"
+      )
+        .forEach((cardEl) => {
+          cardEl.addEventListener("dragstart", (event) => {
+            const playId = Number(cardEl.dataset.playId || 0);
+            const rank = cardEl.dataset.rank || "";
+            const suit = cardEl.dataset.suit || "";
 
-          const payload = {
-            mode: "new",
-            sourcePlayId: playId,
-            childRank: rank,
-            childSuit: suit
-          };
+            const payload = {
+              mode: "new",
+              sourcePlayId: playId,
+              childRank: rank,
+              childSuit: suit
+            };
 
-          event.dataTransfer.setData(
-            "application/json",
-            JSON.stringify(payload)
-          );
+            event.dataTransfer.setData(
+              "application/json",
+              JSON.stringify(payload)
+            );
 
-          event.dataTransfer.setData("text/plain", `${playId}|${rank}|${suit}`);
-          event.dataTransfer.effectAllowed = "copy";
+            event.dataTransfer.setData("text/plain", `${playId}|${rank}|${suit}`);
+            event.dataTransfer.effectAllowed = "copy";
+          });
         });
-      });
+    }
 
     document.querySelectorAll("[data-command-suit]").forEach((button) => {
       button.addEventListener("click", () => {
