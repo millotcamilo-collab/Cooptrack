@@ -26,6 +26,110 @@
     return String(value || "").trim().toUpperCase();
   }
 
+  function formatShortDateTime(value) {
+    if (!value) return "—";
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value ?? "");
+
+    try {
+      const parts = new Intl.DateTimeFormat("es-UY", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).formatToParts(date);
+
+      const map = {};
+      parts.forEach((part) => {
+        map[part.type] = part.value;
+      });
+
+      const weekday = String(map.weekday || "").replace(".", "");
+      const day = map.day || "";
+      const month = String(map.month || "").replace(".", "");
+      const hour = map.hour || "";
+      const minute = map.minute || "";
+
+      const cap = (txt) =>
+        txt ? txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase() : "";
+
+      return `${cap(weekday)} ${day} ${cap(month)} ${hour}:${minute}`;
+    } catch (error) {
+      return String(value ?? "");
+    }
+  }
+
+  function getHoursBetween(startValue, endValue) {
+    if (!startValue || !endValue) return null;
+
+    const start = new Date(startValue);
+    const end = new Date(endValue);
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+
+    const diffMs = end.getTime() - start.getTime();
+    if (diffMs <= 0) return null;
+
+    const hours = diffMs / (1000 * 60 * 60);
+
+    if (hours < 1) {
+      const minutes = Math.round(diffMs / (1000 * 60));
+      return `${minutes} min`;
+    }
+
+    const rounded = Math.round(hours * 10) / 10;
+    return `${rounded} hr`;
+  }
+
+  function getHoursFromNow(targetValue) {
+    if (!targetValue) return null;
+
+    const now = new Date();
+    const target = new Date(targetValue);
+
+    if (Number.isNaN(target.getTime())) return null;
+
+    const diffMs = target.getTime() - now.getTime();
+    const absMs = Math.abs(diffMs);
+
+    if (absMs < 60 * 1000) {
+      return diffMs >= 0 ? "ahora" : "recién pasó";
+    }
+
+    if (absMs < 1000 * 60 * 60) {
+      const minutes = Math.round(absMs / (1000 * 60));
+      return diffMs >= 0 ? `faltan ${minutes} min` : `hace ${minutes} min`;
+    }
+
+    const hours = Math.round((absMs / (1000 * 60 * 60)) * 10) / 10;
+    return diffMs >= 0 ? `faltan ${hours} hr` : `hace ${hours} hr`;
+  }
+
+  function getJpicaReadSummary(play) {
+    const title = String(play?.play_text || play?.text || "").trim();
+    const spadeMode = normalizeRank(play?.spade_mode || "");
+    const startDate = play?.start_date;
+    const endDate = play?.end_date;
+    const location = String(play?.location || "").trim();
+
+    if (spadeMode === "DEADLINE") {
+      const endLabel = formatShortDateTime(endDate);
+      const distanceLabel = getHoursFromNow(endDate);
+      const deadlineLabel = distanceLabel ? `${endLabel} - ${distanceLabel}` : endLabel;
+      return [title, deadlineLabel].filter(Boolean).join(" · ");
+    }
+
+    const startLabel = formatShortDateTime(startDate);
+    const durationLabel = getHoursBetween(startDate, endDate);
+    const appointmentLabel = durationLabel
+      ? `${startLabel} - ${durationLabel}`
+      : startLabel;
+
+    return [title, appointmentLabel, location].filter(Boolean).join(" · ");
+  }
+
   function normalizeAmount(value) {
     const raw = String(value ?? "").trim();
     if (!raw) return null;
@@ -191,6 +295,7 @@
         const rank = normalizeRank(play.card_rank || play.rank);
         const suit = normalizeSuit(play.card_suit || play.suit);
         const creatorId = Number(play.created_by_user_id || 0);
+        const parentPlayId = Number(play.parent_play_id || 0);
 
         if (isContabilidadMode) {
           const isOwnedJClub = rank === "J" && suit === "CLUB" && creatorId === currentUserId;
@@ -210,6 +315,11 @@
             return true;
           }
 
+          return false;
+        }
+
+        // En bitácora no mostramos J♥ hijas (solo J♥ raíz y J♠).
+        if (rank === "J" && suit === "HEART" && parentPlayId > 0) {
           return false;
         }
 
@@ -317,7 +427,11 @@
     ).trim();
     const amountValue = String(payment?.amount ?? play.amount ?? "").trim();
     const isClub = normalizeSuit(play.card_suit || play.suit) === "CLUB";
+    const isJSpade =
+      normalizeRank(play.card_rank || play.rank) === "J" &&
+      normalizeSuit(play.card_suit || play.suit) === "SPADE";
     const isQQPica = play.__entryType === "QQPICA";
+    const spadeReadSummary = isJSpade ? getJpicaReadSummary(play) : "";
     const qqEconomicTone = getQQPicaEconomicTone(play);
     const economicToneClass = isClub
       ? "tablero-row__economic--debit"
@@ -346,7 +460,7 @@
           }
 
           <div class="tablero-row__title" style="font-weight: 400;">
-            ${escapeHtml(description)}
+            ${escapeHtml(isJSpade ? (spadeReadSummary || description) : description)}
           </div>
         </div>
 
