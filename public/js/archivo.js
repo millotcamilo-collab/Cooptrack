@@ -302,6 +302,9 @@
 
   function getArchiveHref(play) {
     const rank = normalize(play?.card_rank);
+    const suit = normalize(play?.card_suit);
+    const status = normalize(play?.play_status || play?.status);
+    const playCode = String(play?.play_code || "");
     const deckId = Number(play?.deck_id || 0);
     const playId = Number(play?.id || 0);
 
@@ -315,8 +318,20 @@
       return `/lienzo.html?deckId=${deckId}&playId=${playId}`;
     }
 
-    if (rank === "Q") {
+    if (rank === "Q" && suit === "SPADE") {
+      const hasPayment = playCode.includes("pay:QHEART");
+      const sentOrLaterStatuses = ["SENT", "PENDING", "APPROVED", "REJECTED", "CANCELLED", "DONE", "QUIT", "FIRED"];
+
+      if (sentOrLaterStatuses.includes(status)) {
+        const situacion = hasPayment ? "QQPICA_ENTRA" : "QPICA_ENTRA";
+        return `/amsterdam.html?situacion=${encodeURIComponent(situacion)}&deckId=${deckId}&playId=${playId}`;
+      }
+
       return `/lienzoQpica.html?deckId=${deckId}&playId=${playId}`;
+    }
+
+    if (rank === "Q" && suit === "CLUB") {
+      return `/lienzoQtrebol.html?deckId=${deckId}&playId=${playId}`;
     }
 
     return "#";

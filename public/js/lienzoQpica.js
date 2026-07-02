@@ -2906,6 +2906,24 @@ if (quitBtn) {
         return flow.includes("pay:qheart");
     }
 
+    function redirectQSpadeByStatus(play) {
+        if (!play) return false;
+
+        const status = String(play?.play_status || play?.status || "").trim().toUpperCase();
+        const sentOrLaterStatuses = ["SENT", "PENDING", "APPROVED", "REJECTED", "CANCELLED", "DONE", "QUIT", "FIRED"];
+        if (!sentOrLaterStatuses.includes(status)) return false;
+
+        const deckId =
+            Number(play?.deck_id || 0) ||
+            Number(getCurrentDeck()?.id || 0) ||
+            Number(new URLSearchParams(window.location.search).get("deckId") || 0);
+
+        const situacion = hasPersistedQHeartPayment(play) ? "QQPICA_ENTRA" : "QPICA_ENTRA";
+
+        window.location.href = `/amsterdam.html?situacion=${encodeURIComponent(situacion)}&deckId=${encodeURIComponent(deckId)}&playId=${encodeURIComponent(play.id)}`;
+        return true;
+    }
+
     function isMobileViewport() {
         return window.matchMedia("(max-width: 768px)").matches;
     }
@@ -2987,6 +3005,10 @@ if (quitBtn) {
           </div>
         `;
             }
+            return;
+        }
+
+        if (redirectQSpadeByStatus(play)) {
             return;
         }
 

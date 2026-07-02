@@ -182,6 +182,14 @@ function getPlayHref(item) {
 
   if (rank === "Q" && suit === "SPADE") {
     const hasPayment = code.includes("pay:QHEART");
+    const status = String(item.play_status || item.status || "").toUpperCase();
+    const sentOrLaterStatuses = ["SENT", "PENDING", "APPROVED", "REJECTED", "CANCELLED", "DONE", "QUIT", "FIRED"];
+
+    if (sentOrLaterStatuses.includes(status)) {
+      const situacion = hasPayment ? "QQPICA_ENTRA" : "QPICA_ENTRA";
+      return `/amsterdam.html?situacion=${encodeURIComponent(situacion)}&deckId=${encodeURIComponent(deckId)}&playId=${encodeURIComponent(playId)}`;
+    }
+
     const page = hasPayment ? "lienzoQQpica.html" : "lienzoQpica.html";
 
     return `/${page}?deckId=${encodeURIComponent(deckId)}&playId=${encodeURIComponent(playId)}`;

@@ -36,15 +36,22 @@
       const playId = Number(play.id || 0);
       const playCode = String(play.play_code || "");
       const hasPayment = playCode.includes("pay:QHEART");
+      const status = String(play.play_status || play.status || "").trim().toUpperCase();
+      const sentOrLaterStatuses = ["SENT", "PENDING", "APPROVED", "REJECTED", "CANCELLED", "DONE", "QUIT", "FIRED"];
 
       let href = `/lienzo.html?deckId=${deckId}&playId=${playId}&mobile=1`;
 
       if (rank === "J" && suit === "SPADE") {
         href = `/lienzoJpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
       } else if (rank === "Q" && suit === "SPADE") {
-        href = hasPayment
-          ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`
-          : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+        if (sentOrLaterStatuses.includes(status)) {
+          const situacion = hasPayment ? "QQPICA_ENTRA" : "QPICA_ENTRA";
+          href = `/amsterdam.html?situacion=${encodeURIComponent(situacion)}&deckId=${deckId}&playId=${playId}`;
+        } else {
+          href = hasPayment
+            ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`
+            : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+        }
       } else if (rank === "K") {
         href = `/lienzoK.html?deckId=${deckId}&playId=${playId}&mobile=1`;
       }
@@ -322,10 +329,17 @@ const label = `${getCardLabel(play)} · ${dateText} · ${play.play_text || play.
     if (rank === "Q" && suit === "SPADE") {
       const playCode = String(play.play_code || "");
       const hasPayment = playCode.includes("pay:QHEART");
+      const status = String(play.play_status || play.status || "").trim().toUpperCase();
+      const sentOrLaterStatuses = ["SENT", "PENDING", "APPROVED", "REJECTED", "CANCELLED", "DONE", "QUIT", "FIRED"];
 
-      targetHref = hasPayment
-        ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`
-        : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+      if (sentOrLaterStatuses.includes(status)) {
+        const situacion = hasPayment ? "QQPICA_ENTRA" : "QPICA_ENTRA";
+        targetHref = `/amsterdam.html?situacion=${encodeURIComponent(situacion)}&deckId=${deckId}&playId=${playId}`;
+      } else {
+        targetHref = hasPayment
+          ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`
+          : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
+      }
     } else if (rank === "J" && suit === "SPADE") {
       targetHref = `/lienzoJpica.html?deckId=${deckId}&playId=${playId}&mobile=1`;
     } else if (rank === "K") {

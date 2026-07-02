@@ -491,15 +491,33 @@
   function getPlayHref(play) {
     const deckId = Number(play.deck_id || 0);
     const playId = Number(play.id || 0);
+    const status = normalizeRank(play.play_status || play.status);
+    const sentOrLaterStatuses = ["SENT", "PENDING", "APPROVED", "REJECTED", "CANCELLED", "DONE", "QUIT", "FIRED"];
 
     if (!deckId || !playId) return "";
 
     if (play.__entryType === "QQPICA") {
+      if (sentOrLaterStatuses.includes(status)) {
+        return `/amsterdam.html?situacion=QQPICA_ENTRA&deckId=${deckId}&playId=${playId}`;
+      }
+
       return `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}`;
     }
 
     const rank = normalizeRank(play.card_rank || play.rank);
     const suit = normalizeSuit(play.card_suit || play.suit);
+
+    if (rank === "Q" && suit === "SPADE") {
+      const hasPayment = String(play.play_code || "").includes("pay:QHEART");
+      if (sentOrLaterStatuses.includes(status)) {
+        const situacion = hasPayment ? "QQPICA_ENTRA" : "QPICA_ENTRA";
+        return `/amsterdam.html?situacion=${situacion}&deckId=${deckId}&playId=${playId}`;
+      }
+
+      return hasPayment
+        ? `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}`
+        : `/lienzoQpica.html?deckId=${deckId}&playId=${playId}`;
+    }
 
     if (rank === "J" && suit === "HEART") {
       return `/lienzoJcorazon.html?deckId=${deckId}&playId=${playId}`;

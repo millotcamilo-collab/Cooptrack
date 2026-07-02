@@ -90,7 +90,7 @@
 
       const nextPage = resolveLienzoPageForPlay(play);
 
-      window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
+      window.location.href = buildPlayUrl(nextPage, deckId, playId);
     });
   }
 
@@ -242,11 +242,28 @@
     return { baseFlow, payment };
   }
 
+  function getQSpadeSituation(play) {
+    const parsed = parsePlayCode(play?.play_code || "");
+    const meta = parseFlowMetadata(parsed?.flow);
+
+    const amount = String(meta?.payment?.amount || "").trim();
+    const payDate = String(meta?.payment?.payDate || "").trim();
+    const concept = String(meta?.payment?.concept || "").trim();
+
+    return amount && payDate && concept ? "QQPICA_ENTRA" : "QPICA_ENTRA";
+  }
+
+  function buildPlayUrl(page, deckId, playId) {
+    const separator = String(page || "").includes("?") ? "&" : "?";
+    return `${page}${separator}deckId=${deckId}&playId=${playId}`;
+  }
+
   function resolveLienzoPageForPlay(play) {
     if (!play) return "/lienzo.html";
 
     const rank = String(play?.card_rank || play?.rank || "").trim().toUpperCase();
     const suit = String(play?.card_suit || play?.suit || "").trim().toUpperCase();
+    const status = String(play?.play_status || play?.status || "").trim().toUpperCase();
     const parentPlayId = Number(play?.parent_play_id || 0);
 
     if (rank === "J" && suit === "HEART") {
@@ -262,6 +279,10 @@
     }
 
     if (rank === "Q" && suit === "SPADE") {
+      if (["SENT", "PENDING", "APPROVED", "REJECTED", "CANCELLED", "DONE", "QUIT", "FIRED"].includes(status)) {
+        return `/amsterdam.html?situacion=${getQSpadeSituation(play)}`;
+      }
+
       const parsed = parsePlayCode(play?.play_code || "");
       const meta = parseFlowMetadata(parsed?.flow);
 
@@ -927,7 +948,7 @@ function isHiddenChildPlay(play) {
 
     const nextPage = resolveLienzoPageForPlay(play);
 
-    window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
+    window.location.href = buildPlayUrl(nextPage, deckId, playId);
   });
 
 

@@ -652,6 +652,15 @@
     return Boolean(amount && payDate && concept);
   }
 
+  function getQSpadeSituation(play) {
+    return playHasQHeartAttachment(play) ? "QQPICA_ENTRA" : "QPICA_ENTRA";
+  }
+
+  function buildPlayUrl(page, deckId, playId) {
+    const separator = String(page || "").includes("?") ? "&" : "?";
+    return `${page}${separator}deckId=${deckId}&playId=${playId}`;
+  }
+
   function resolveLienzoPageForPlay(play) {
     const rank = normalizeText(play?.card_rank || play?.rank);
     const suit = normalizeText(play?.card_suit || play?.suit);
@@ -662,6 +671,10 @@
     }
 
     if (rank === "Q" && suit === "SPADE") {
+      if (["SENT", "PENDING", "APPROVED", "REJECTED", "CANCELLED", "DONE", "QUIT", "FIRED"].includes(status)) {
+        return `/amsterdam.html?situacion=${getQSpadeSituation(play)}`;
+      }
+
       return playHasQHeartAttachment(play)
         ? "/lienzoQQpica.html"
         : "/lienzoQpica.html";
@@ -717,6 +730,10 @@
       return "/lienzoQtrebol.html";
     }
 
+    if (rank === "Q" && suit === "SPADE" && isTarget && ["SENT", "PENDING", "CANCELLED"].includes(status)) {
+      return `/amsterdam.html?situacion=${getQSpadeSituation(play)}`;
+    }
+
     if (
       (rank === "K" || rank === "A") &&
       isTarget &&
@@ -730,7 +747,7 @@
     }
 
     if (rank === "Q" && suit === "SPADE" && isTarget && status === "CANCELLED") {
-      return "/amsterdam.html";
+      return `/amsterdam.html?situacion=${getQSpadeSituation(play)}`;
     }
 
     // 2) VALIDATOR with A_DIAMOND: Si es validador con rol A_DIAMOND
@@ -774,7 +791,7 @@
     ];
 
     if (rank === "Q" && suit === "SPADE" && finalStates.includes(status)) {
-      return "/amsterdam.html";
+      return `/amsterdam.html?situacion=${getQSpadeSituation(play)}`;
     }
 
     if (rank === "Q" && suit === "CLUB" && finalStates.includes(status)) {
@@ -956,11 +973,11 @@
         nextPage = resolveLienzoPageForPlay(playForRouting);
       }
 
-      window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
+      window.location.href = buildPlayUrl(nextPage, deckId, playId);
     } catch (error) {
       console.error("Error resolviendo notificación:", error);
       const nextPage = resolveLienzoPageForPlay(play);
-      window.location.href = `${nextPage}?deckId=${deckId}&playId=${playId}`;
+      window.location.href = buildPlayUrl(nextPage, deckId, playId);
     }
   }
 
