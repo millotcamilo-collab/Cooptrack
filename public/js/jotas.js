@@ -130,6 +130,20 @@
     return [title, appointmentLabel, location].filter(Boolean).join(" · ");
   }
 
+  function getAppointmentReadLabel(startValue, endValue, recurrenceType, weekdays, months) {
+    const startLabel = formatShortDateTime(startValue);
+    const durationLabel = getHoursBetween(startValue, endValue);
+
+    const baseLabel = durationLabel
+      ? `${startLabel} - ${durationLabel}`
+      : startLabel;
+
+    const recurrenceLabel = getRecurrenceSummary(recurrenceType, weekdays, months);
+    return recurrenceLabel && recurrenceLabel !== "Sin rutina"
+      ? `${baseLabel} · ${recurrenceLabel}`
+      : baseLabel;
+  }
+
   function getJpicaReadModeIconography(play) {
     const title = String(play?.play_text || play?.text || "").trim();
     const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
