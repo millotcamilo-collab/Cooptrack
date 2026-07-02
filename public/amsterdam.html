@@ -366,6 +366,14 @@
                     return "/qs.html";
                 }
 
+                if (
+                    rank === "Q" &&
+                    suit === "CLUB" &&
+                    ["APPROVED", "REJECTED", "CANCELLED", "QUIT", "FIRED"].includes(normalizedStatus)
+                ) {
+                    return "/qs.html";
+                }
+
 if (!isMobileViewport()) {
   const ymd = getPlayCalendarYmd(play);
   return ymd

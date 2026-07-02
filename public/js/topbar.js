@@ -710,7 +710,7 @@
     }
 
     if (rank === "Q" && suit === "CLUB" && isTarget && (status === "SENT" || status === "PENDING")) {
-      return "/qs.html";
+      return "/amsterdam.html";
     }
 
     if (rank === "Q" && suit === "CLUB" && isSource && ["APPROVED", "REJECTED", "CANCELLED"].includes(status)) {
