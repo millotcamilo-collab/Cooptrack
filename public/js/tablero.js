@@ -673,7 +673,8 @@ function isHiddenChildPlay(play) {
   return (
     (rank === "Q" && suit === "SPADE") ||
     (rank === "Q" && suit === "CLUB") ||
-    (rank === "J" && suit === "CLUB")
+    (rank === "J" && suit === "CLUB") ||
+    (rank === "J" && suit === "HEART")
   );
 }
 
