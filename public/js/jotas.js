@@ -109,7 +109,7 @@
 
   function getJpicaReadSummary(play) {
     const title = String(play?.play_text || play?.text || "").trim();
-    const spadeMode = normalizeRank(play?.spade_mode || "");
+    const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
     const startDate = play?.start_date;
     const endDate = play?.end_date;
     const location = String(play?.location || "").trim();
@@ -128,6 +128,102 @@
       : startLabel;
 
     return [title, appointmentLabel, location].filter(Boolean).join(" · ");
+  }
+
+  function getJpicaReadModeIconography(play) {
+    const title = String(play?.play_text || play?.text || "").trim();
+    const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
+    const startDate = play?.start_date;
+    const endDate = play?.end_date;
+    const location = String(play?.location || "").trim();
+    const hasRecurrence = Boolean(play?.has_recurrence);
+    const recurrenceType = String(play?.recurrence_type || "").trim().toUpperCase();
+    const recurrenceWeekdays = Array.isArray(play?.recurrence_weekdays)
+      ? play.recurrence_weekdays
+      : [];
+    const recurrenceMonths = Array.isArray(play?.recurrence_months)
+      ? play.recurrence_months
+      : [];
+    const recurrenceLabel = hasRecurrence
+      ? getRecurrenceSummary(recurrenceType, recurrenceWeekdays, recurrenceMonths)
+      : "Sin rutina";
+
+    const ICONS = window.ICONS || {};
+    const ACTIONS = ICONS.actions || {};
+    const startIcon = ACTIONS.start || "/assets/icons/reloj60.gif";
+    const endIcon = ACTIONS.end || "/assets/icons/reloj60.gif";
+    const locationIcon = ACTIONS.location || "/assets/icons/LocGlobito80.gif";
+    const deadlineIcon = ACTIONS.deadline || ACTIONS.approve || ACTIONS.bomb || "/assets/icons/META60.gif";
+
+    if (spadeMode === "DEADLINE") {
+      const deadlineLabel = getDeadlineLabel(endDate);
+
+      return `
+        <div class="tablero-row__mode-read" data-role="mode-read">
+          <div class="tablero-row__fields tablero-row__fields--jpike-read tablero-row__fields--deadline" data-role="deadline-read">
+            <div class="tablero-row__field-inline tablero-row__field-inline--title">
+              <span>${escapeHtml(title || "Sin texto")}</span>
+            </div>
+
+            <div class="tablero-row__field-inline">
+              <img src="${escapeHtml(deadlineIcon)}" alt="Fin" class="tablero-row__field-icon" />
+              <span>${escapeHtml(deadlineLabel)}</span>
+            </div>
+          </div>
+
+          <div class="tablero-row__fields tablero-row__fields--recurrence" data-role="recurrence-read">
+            ${escapeHtml(recurrenceLabel)}
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="tablero-row__mode-read" data-role="mode-read">
+        <div class="tablero-row__fields tablero-row__fields--jpike-read tablero-row__fields--appointment" data-role="appointment-read">
+          <div class="tablero-row__field-inline tablero-row__field-inline--title">
+            <span>${escapeHtml(title || "Sin texto")}</span>
+          </div>
+
+          <div class="tablero-row__field-inline">
+            <img src="${escapeHtml(startIcon)}" alt="Inicio" class="tablero-row__field-icon" />
+            <span>${escapeHtml(getAppointmentReadLabel(startDate, endDate, recurrenceType, recurrenceWeekdays, recurrenceMonths))}</span>
+          </div>
+
+          <div class="tablero-row__field-inline">
+            <img src="${escapeHtml(locationIcon)}" alt="Locación" class="tablero-row__field-icon" />
+            <span>${escapeHtml(location || "—")}</span>
+          </div>
+        </div>
+
+        <div class="tablero-row__fields tablero-row__fields--recurrence" data-role="recurrence-read">
+          ${escapeHtml(recurrenceLabel)}
+        </div>
+      </div>
+    `;
+  }
+
+  function getDeadlineLabel(endDate) {
+    const endLabel = formatShortDateTime(endDate);
+    const distanceLabel = getHoursFromNow(endDate);
+
+    return distanceLabel ? `${endLabel} · ${distanceLabel}` : endLabel;
+  }
+
+  function getRecurrenceSummary(type, weekdays, months) {
+    const normalizedType = String(type || "").trim().toUpperCase();
+
+    if (!normalizedType) return "Sin rutina";
+
+    if (normalizedType === "WEEKLY") {
+      return `Rutina semanal: ${Array.isArray(weekdays) && weekdays.length ? weekdays.join(", ") : "—"}`;
+    }
+
+    if (normalizedType === "MONTHLY") {
+      return `Rutina mensual: ${Array.isArray(months) && months.length ? months.join(", ") : "—"}`;
+    }
+
+    return "Sin rutina";
   }
 
   function normalizeAmount(value) {
@@ -432,6 +528,7 @@
       normalizeSuit(play.card_suit || play.suit) === "SPADE";
     const isQQPica = play.__entryType === "QQPICA";
     const spadeReadSummary = isJSpade ? getJpicaReadSummary(play) : "";
+    const jpicaReadIconography = isJSpade ? getJpicaReadModeIconography(play) : "";
     const qqEconomicTone = getQQPicaEconomicTone(play);
     const economicToneClass = isClub
       ? "tablero-row__economic--debit"
@@ -459,9 +556,21 @@
               : ""
           }
 
-          <div class="tablero-row__title" style="font-weight: 400;">
-            ${escapeHtml(isJSpade ? (spadeReadSummary || description) : description)}
-          </div>
+          ${isJSpade
+            ? `
+              <div class="tablero-row__jpike-readwrap">
+                ${jpicaReadIconography || `
+                  <div class="tablero-row__title" style="font-weight: 400;">
+                    ${escapeHtml(spadeReadSummary || description)}
+                  </div>
+                `}
+              </div>
+            `
+            : `
+              <div class="tablero-row__title" style="font-weight: 400;">
+                ${escapeHtml(description)}
+              </div>
+            `}
         </div>
 
         <div class="tablero-row__right">
