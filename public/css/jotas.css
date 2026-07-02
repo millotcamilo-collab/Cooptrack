@@ -132,15 +132,14 @@
 }
 
 .tablero-row--jpike .tablero-row__center {
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
   align-items: stretch;
   gap: 6px;
 }
 
 .tablero-row--jpike .tablero-row__jpike-readwrap {
   min-width: 0;
-  align-self: flex-start;
+  align-self: auto;
 }
 
 .tablero-row--jpike .tablero-row__mode-read {
@@ -197,7 +196,9 @@
 }
 
 .tablero-row--jpike .tablero-row__deck {
-  align-self: flex-start;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
   margin-left: 0;
   line-height: 1.1;
 }
