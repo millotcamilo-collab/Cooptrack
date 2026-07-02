@@ -4212,6 +4212,12 @@ RETURNING *
       currentStatus !== 'SENT' &&
       nextStatus === 'SENT';
 
+    const isSendingQClubNow =
+      currentRank === 'Q' &&
+      currentSuit === 'CLUB' &&
+      currentStatus !== 'SENT' &&
+      nextStatus === 'SENT';
+
     const isSendingKNow =
       currentRank === 'K' &&
       currentStatus !== 'SENT' &&
@@ -4363,6 +4369,20 @@ RETURNING *
       await expandReadersForQSpadeSend(client, updatedPlay);
     }
 
+    if (isSendingQClubNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+
+      if (!invitedUserId) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'La Q♣ enviada debe tener target_user_id'
+        });
+      }
+
+      await addReadersToPlay(client, updatedPlay.id, [updatedPlay.created_by_user_id, invitedUserId]);
+    }
+
     if (isSendingJHeartNow) {
       const deckId = Number(updatedPlay.deck_id || 0);
 
@@ -4456,6 +4476,37 @@ RETURNING *
       );
     }
 
+    const isApprovingQClubNow =
+      currentRank === 'Q' &&
+      currentSuit === 'CLUB' &&
+      currentStatus !== 'APPROVED' &&
+      nextStatus === 'APPROVED';
+
+    if (isApprovingQClubNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+      const creatorUserId = Number(updatedPlay.created_by_user_id || 0);
+
+      if (!invitedUserId || Number(userId) !== invitedUserId) {
+        await client.query('ROLLBACK');
+        return res.status(403).json({
+          ok: false,
+          error: 'Solo el receptor puede aceptar esta Q♣'
+        });
+      }
+
+      if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'Solo una Q♣ enviada puede aprobarse'
+        });
+      }
+
+      if (creatorUserId) {
+        await addReadersToPlay(client, updatedPlay.id, [creatorUserId]);
+      }
+    }
+
     const isApprovingKNow =
       currentRank === 'K' &&
       currentStatus !== 'APPROVED' &&
@@ -4493,6 +4544,37 @@ RETURNING *
 
       await expandReadersForKSend(client, updatedPlay);
       await addUserToAclLines(client, deckId, invitedUserId);
+    }
+
+    const isRejectingQClubNow =
+      currentRank === 'Q' &&
+      currentSuit === 'CLUB' &&
+      currentStatus !== 'REJECTED' &&
+      nextStatus === 'REJECTED';
+
+    if (isRejectingQClubNow) {
+      const invitedUserId = Number(updatedPlay.target_user_id || 0);
+      const creatorUserId = Number(updatedPlay.created_by_user_id || 0);
+
+      if (!invitedUserId || Number(userId) !== invitedUserId) {
+        await client.query('ROLLBACK');
+        return res.status(403).json({
+          ok: false,
+          error: 'Solo el receptor puede rechazar esta Q♣'
+        });
+      }
+
+      if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'Solo una Q♣ enviada puede rechazarse'
+        });
+      }
+
+      if (creatorUserId) {
+        await addReadersToPlay(client, updatedPlay.id, [creatorUserId]);
+      }
     }
 
     const isApprovingANow =

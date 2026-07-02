@@ -352,7 +352,13 @@
       targetUserId > 0 &&
       targetUserId !== sourceUserId;
 
-    if (!isReceiver && !canReceiveReadOnlyAsSource) return null;
+    const canReceiveQClubReadOnlyAsSource =
+      rank === "Q" &&
+      suit === "CLUB" &&
+      isSource &&
+      ["APPROVED", "REJECTED", "CANCELLED"].includes(status);
+
+    if (!isReceiver && !canReceiveReadOnlyAsSource && !canReceiveQClubReadOnlyAsSource) return null;
 
     // Dorso azul: hay respuesta pendiente del receptor.
     if (
@@ -389,6 +395,10 @@
     // Q — receptor con resultado final
     // =========================
     if (rank === "Q" && ["APPROVED", "REJECTED"].includes(status)) {
+      return "READ_ONLY";
+    }
+
+    if (rank === "Q" && suit === "CLUB" && isSource && ["APPROVED", "REJECTED", "CANCELLED"].includes(status)) {
       return "READ_ONLY";
     }
 
@@ -639,7 +649,7 @@
     const payDate = String(meta.payment.payDate || "").trim();
     const concept = String(meta.payment.concept || "").trim();
 
-    return !!(amount && payDate && concept);
+    return Boolean(amount && payDate && concept);
   }
 
   function resolveLienzoPageForPlay(play) {
@@ -655,6 +665,10 @@
       return playHasQHeartAttachment(play)
         ? "/lienzoQQpica.html"
         : "/lienzoQpica.html";
+    }
+
+    if (rank === "Q" && suit === "CLUB") {
+      return "/lienzoQtrebol.html";
     }
 
     if (rank === "K") {
@@ -693,6 +707,14 @@
       (status === "SENT" || status === "PENDING")
     ) {
       return "/lienzoJcorazon.html";
+    }
+
+    if (rank === "Q" && suit === "CLUB" && isTarget && (status === "SENT" || status === "PENDING")) {
+      return "/qs.html";
+    }
+
+    if (rank === "Q" && suit === "CLUB" && isSource && ["APPROVED", "REJECTED", "CANCELLED"].includes(status)) {
+      return "/lienzoQtrebol.html";
     }
 
     if (
@@ -753,6 +775,10 @@
 
     if (rank === "Q" && suit === "SPADE" && finalStates.includes(status)) {
       return "/amsterdam.html";
+    }
+
+    if (rank === "Q" && suit === "CLUB" && finalStates.includes(status)) {
+      return "/lienzoQtrebol.html";
     }
 
     if ((rank === "K" || rank === "A") && finalStates.includes(status)) {

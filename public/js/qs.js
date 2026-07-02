@@ -41,7 +41,7 @@
             return config.allowedSuits.map((suit) => String(suit || "").toUpperCase());
         }
 
-        return ["SPADE", "DIAMOND"];
+        return ["SPADE", "DIAMOND", "CLUB"];
     }
 
     async function fetchQs() {
@@ -113,8 +113,64 @@
 
         if (suit === "SPADE") return "tablero-row--qpike";
         if (suit === "DIAMOND") return "tablero-row--qdiamante";
+        if (suit === "CLUB") return "tablero-row--qtrebol";
 
         return "";
+    }
+
+    function canActOnQClub(play) {
+        const currentUserId = getCurrentUserIdFromToken();
+        const targetId = Number(play?.target_user_id || 0);
+        const status = String(play?.play_status || play?.status || "").trim().toUpperCase();
+        const suit = normalizeSuit(play?.card_suit || play?.suit);
+
+        return (
+            suit === "CLUB" &&
+            currentUserId &&
+            targetId === currentUserId &&
+            ["SENT", "PENDING"].includes(status)
+        );
+    }
+
+    function buildQClubActionsHTML(play) {
+        if (!canActOnQClub(play)) return "";
+
+        return `
+            <div class="tablero-row__actions">
+                <button type="button" data-action="approve-qclub" title="Aprobar Q♣">Aprobar</button>
+                <button type="button" data-action="reject-qclub" title="Rechazar Q♣">Rechazar</button>
+            </div>
+        `;
+    }
+
+    async function patchPlayStatus(playId, nextStatus) {
+        try {
+            const token = localStorage.getItem("cooptrackToken");
+            if (!token) {
+                alert("No estás logueado");
+                return false;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/plays/${playId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ play_status: nextStatus })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.ok) {
+                throw new Error(data?.error || "No se pudo actualizar la jugada");
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Error actualizando Q♣:", error);
+            alert(error?.message || "No se pudo actualizar la jugada");
+            return false;
+        }
     }
 
     function getQQPicaEconomicLabel(play) {
@@ -201,17 +257,19 @@
         const deckId = getDeckId(play);
         const deckName = String(play.deck_name || play.deckName || "").trim();
         const status = String(play.play_status || play.status || "").trim().toUpperCase();
+        const qClubActionsHtml = buildQClubActionsHTML(play);
+        const rowOpenAttr = normalizeSuit(play.card_suit || play.suit) === "CLUB" ? "" : 'data-open-lienzo="true"';
 
         return `
-      <button
-        type="button"
+            <article
         class="tablero-row tablero-row--bitacora ${getQCssClass(play)}"
         data-play-id="${playId || ""}"
         data-deck-id="${deckId || ""}"
         data-rank="${escapeHtml(normalizeRank(play.card_rank || play.rank))}"
         data-suit="${escapeHtml(normalizeSuit(play.card_suit || play.suit))}"
         data-has-qheart="${playHasQHeartAttachment(play) ? "1" : "0"}"
-                data-status="${escapeHtml(status)}"
+        data-status="${escapeHtml(status)}"
+        ${rowOpenAttr}
       >
         <div class="tablero-row__left">
                     <div class="tablero-row__card">
@@ -234,8 +292,11 @@
           </div>
         </div>
 
-                <div class="tablero-row__right">${rowStampsHtml}</div>
-      </button>
+                    <div class="tablero-row__right">
+                      ${rowStampsHtml}
+                      ${qClubActionsHtml}
+                    </div>
+            </article>
     `;
     }
 
@@ -284,22 +345,26 @@ function applyFilters(plays) {
         const playId = row.dataset.playId;
         const suit = String(row.dataset.suit || "").toUpperCase();
         const hasQHeart = row.dataset.hasQheart === "1" || row.dataset.hasQHeart === "1";
-                const status = String(row.dataset.status || "").toUpperCase();
+        const status = String(row.dataset.status || "").toUpperCase();
 
         if (!deckId || !playId) return null;
 
-if (suit === "SPADE") {
-    if (!hasQHeart) {
-        return `/amsterdam.html?situacion=QPICA_ENTRA&deckId=${deckId}&playId=${playId}`;
-    }
+        if (suit === "SPADE") {
+            if (!hasQHeart) {
+                return `/amsterdam.html?situacion=QPICA_ENTRA&deckId=${deckId}&playId=${playId}`;
+            }
 
-    const unansweredStatuses = ["SENT", "PENDING", "ACTIVE"];
-    const isUnanswered = unansweredStatuses.includes(status);
+            const unansweredStatuses = ["SENT", "PENDING", "ACTIVE"];
+            const isUnanswered = unansweredStatuses.includes(status);
 
-    return isUnanswered
-        ? `/amsterdam.html?situacion=QQPICA_ENTRA&deckId=${deckId}&playId=${playId}`
-        : `/payNow.html?deckId=${deckId}&playId=${playId}`;
-}
+            return isUnanswered
+                ? `/amsterdam.html?situacion=QQPICA_ENTRA&deckId=${deckId}&playId=${playId}`
+                : `/payNow.html?deckId=${deckId}&playId=${playId}`;
+        }
+
+        if (suit === "CLUB") {
+            return null;
+        }
 
         if (suit === "DIAMOND") {
             return `/lienzo.html?deckId=${deckId}&playId=${playId}`;
@@ -310,7 +375,33 @@ if (suit === "SPADE") {
 
     function bindRowEvents() {
         document.querySelectorAll(".tablero-row--bitacora").forEach((row) => {
-            row.addEventListener("click", () => {
+            row.addEventListener("click", async (event) => {
+                const actionBtn = event.target.closest("button[data-action]");
+                const playId = Number(row.dataset.playId || 0);
+
+                if (actionBtn && playId) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const action = String(actionBtn.dataset.action || "");
+
+                    if (action === "approve-qclub") {
+                        const ok = await patchPlayStatus(playId, "APPROVED");
+                        if (ok) window.location.href = "/qs.html";
+                        return;
+                    }
+
+                    if (action === "reject-qclub") {
+                        const ok = await patchPlayStatus(playId, "REJECTED");
+                        if (ok) window.location.href = "/qs.html";
+                        return;
+                    }
+                }
+
+                if (String(row.dataset.suit || "").toUpperCase() === "CLUB") {
+                    return;
+                }
+
                 const href = resolveQHref(row);
                 if (href) window.location.href = href;
             });
