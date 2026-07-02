@@ -8,6 +8,7 @@
   let allJotas = [];
   let activeSuitFilter = "";
   let activeSearchQuery = "";
+  let expandedDeckIds = new Set();
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -264,6 +265,16 @@
     return isBracketNegative ? -Math.abs(parsed) : parsed;
   }
 
+  function formatAmount(value) {
+    const numeric = Number(value || 0);
+    if (!Number.isFinite(numeric)) return "0";
+
+    return new Intl.NumberFormat("es-UY", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(numeric);
+  }
+
   function parsePaymentFromPlayCode(playCode) {
     const parts = String(playCode || "").split("§");
     const flow = String(parts[7] || "");
@@ -476,6 +487,67 @@
     return play.deck_id || play.deckId || null;
   }
 
+  function getEntryAmount(play) {
+    if (play.__entryType === "QQPICA") {
+      const payment = play.__payment || {};
+      return normalizeAmount(payment.amount);
+    }
+
+    return normalizeAmount(play.amount);
+  }
+
+  function getEntryCurrencySymbol(play) {
+    if (play.__entryType === "QQPICA") {
+      const payment = play.__payment || {};
+      const paymentCurrency = String(payment.currency || "").trim();
+      if (paymentCurrency) return paymentCurrency;
+    }
+
+    return String(
+      play.currency_symbol ||
+      play.deck_currency_symbol ||
+      play.currencySymbol ||
+      ""
+    ).trim();
+  }
+
+  function groupByDeck(plays = []) {
+    const map = new Map();
+
+    plays.forEach((play) => {
+      const deckId = Number(getDeckId(play) || 0);
+      const key = deckId > 0 ? `deck:${deckId}` : `deck:unknown`;
+
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          deckId,
+          deckName: String(play.deck_name || play.deckName || "Sin mazo").trim() || "Sin mazo",
+          deckImageUrl: String(play.deck_image_url || play.deckImageUrl || "/assets/icons/sinPicture.gif").trim() || "/assets/icons/sinPicture.gif",
+          currencySymbol: getEntryCurrencySymbol(play),
+          totalAmount: 0,
+          items: []
+        });
+      }
+
+      const group = map.get(key);
+      group.items.push(play);
+
+      const amount = getEntryAmount(play);
+      if (amount !== null) {
+        group.totalAmount += amount;
+      }
+
+      if (!group.currencySymbol) {
+        group.currencySymbol = getEntryCurrencySymbol(play);
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+      return a.deckName.localeCompare(b.deckName, "es", { sensitivity: "base" });
+    });
+  }
+
   function getJotaCssClass(play) {
     if (play.__entryType === "QQPICA") return "tablero-row--jpike";
 
@@ -540,7 +612,8 @@
     return "credit";
   }
 
-  function buildJotaRowHTML(play) {
+  function buildJotaRowHTML(play, options = {}) {
+    const hideDeckName = Boolean(options.hideDeckName);
     const playId = Number(play.id || 0);
     const cardLabel = getCardLabel(play);
     const description = getDescription(play);
@@ -580,7 +653,7 @@
         </div>
 
         <div class="tablero-row__center">
-          ${deckName
+          ${deckName && !hideDeckName
             ? `
               <div class="tablero-row__deck"><strong>${escapeHtml(deckName)}</strong></div>
             `
@@ -641,7 +714,7 @@
   }
 
   function bindRowEvents() {
-    document.querySelectorAll(".tablero-row--bitacora").forEach((row) => {
+    document.querySelectorAll(".tablero-row--bitacora[data-play-id]").forEach((row) => {
       row.addEventListener("click", () => {
         const playId = Number(row.dataset.playId || 0);
         const play = allJotas.find((item) => Number(item.id || 0) === playId);
@@ -651,6 +724,67 @@
         if (!href) return;
 
         window.location.href = href;
+      });
+    });
+  }
+
+  function buildContabilidadGroupHTML(group) {
+    const isExpanded = expandedDeckIds.has(group.key);
+    const totalLabel = `${group.currencySymbol ? `${escapeHtml(group.currencySymbol)} ` : ""}${escapeHtml(formatAmount(group.totalAmount))}`;
+
+    return `
+      <section class="conta-group" data-deck-key="${escapeHtml(group.key)}">
+        <button
+          type="button"
+          class="conta-group__toggle"
+          data-action="toggle-deck"
+          data-deck-key="${escapeHtml(group.key)}"
+          aria-expanded="${isExpanded ? "true" : "false"}"
+        >
+          <div class="conta-group__left">
+            <img
+              class="conta-group__photo"
+              src="${escapeHtml(group.deckImageUrl)}"
+              alt="${escapeHtml(group.deckName)}"
+              onerror="this.onerror=null;this.src='/assets/icons/sinPicture.gif';"
+            />
+
+            <div class="conta-group__name">${escapeHtml(group.deckName)}</div>
+          </div>
+
+          <div class="conta-group__right">
+            <span class="conta-group__total">${totalLabel}</span>
+            <span class="conta-group__caret">${isExpanded ? "▾" : "▸"}</span>
+          </div>
+        </button>
+
+        ${isExpanded
+          ? `
+            <div class="conta-group__children">
+              ${group.items
+                .map((play) => buildJotaRowHTML(play, { hideDeckName: true }))
+                .join("")}
+            </div>
+          `
+          : ""
+        }
+      </section>
+    `;
+  }
+
+  function bindContabilidadGroupEvents() {
+    document.querySelectorAll(".conta-group__toggle[data-action='toggle-deck']").forEach((button) => {
+      button.addEventListener("click", () => {
+        const deckKey = String(button.dataset.deckKey || "").trim();
+        if (!deckKey) return;
+
+        if (expandedDeckIds.has(deckKey)) {
+          expandedDeckIds.delete(deckKey);
+        } else {
+          expandedDeckIds.add(deckKey);
+        }
+
+        renderJotas();
       });
     });
   }
@@ -667,6 +801,18 @@
           No hay jugadas para mostrar.
         </div>
       `;
+      return;
+    }
+
+    if (isContabilidadMode) {
+      const groups = groupByDeck(visibleJotas);
+
+      container.innerHTML = groups
+        .map(buildContabilidadGroupHTML)
+        .join("");
+
+      bindContabilidadGroupEvents();
+      bindRowEvents();
       return;
     }
 
