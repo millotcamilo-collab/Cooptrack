@@ -132,13 +132,15 @@
 }
 
 .tablero-row--jpike .tablero-row__center {
-  flex-direction: row;
+  flex-direction: column;
+  justify-content: center;
   align-items: stretch;
   gap: 6px;
 }
 
 .tablero-row--jpike .tablero-row__jpike-readwrap {
   min-width: 0;
+  align-self: flex-start;
 }
 
 .tablero-row--jpike .tablero-row__mode-read {
@@ -192,6 +194,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.tablero-row--jpike .tablero-row__deck {
+  align-self: flex-start;
+  margin-left: 0;
+  line-height: 1.1;
 }
 
 @media (max-width: 980px) {

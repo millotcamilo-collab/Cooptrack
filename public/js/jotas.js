@@ -562,13 +562,11 @@
         </div>
 
         <div class="tablero-row__center">
-          ${
-            deckName
-              ? `
-                <div class="tablero-row__deck"><strong>${escapeHtml(deckName)}</strong></div>
-              `
-              : ""
-          }
+          ${deckName
+            ? `
+              <div class="tablero-row__deck"><strong>${escapeHtml(deckName)}</strong></div>
+            `
+            : ""}
 
           ${isJSpade
             ? `
