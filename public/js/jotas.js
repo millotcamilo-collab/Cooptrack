@@ -278,6 +278,17 @@
       return `/lienzoQQpica.html?deckId=${deckId}&playId=${playId}`;
     }
 
+    const rank = normalizeRank(play.card_rank || play.rank);
+    const suit = normalizeSuit(play.card_suit || play.suit);
+
+    if (rank === "J" && suit === "HEART") {
+      return `/lienzoJcorazon.html?deckId=${deckId}&playId=${playId}`;
+    }
+
+    if (rank === "J" && suit === "SPADE") {
+      return `/lienzoJpica.html?deckId=${deckId}&playId=${playId}`;
+    }
+
     return `/mazo.html?id=${deckId}`;
   }
 
