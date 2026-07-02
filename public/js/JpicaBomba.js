@@ -620,7 +620,8 @@
 
         dispatch("tablero:save-play", {
           ...payload,
-          play_status: userIsSpadeAceHolder ? "ACTIVE" : "SENT",
+          // J♠ bomba se guarda en borrador/edición como ACTIVE; SENT no aplica para este flujo.
+          play_status: "ACTIVE",
           issued_with: getIssuedWithForSpadeAction(),
           recurrence: recurrencePayload.recurrence_type ? recurrencePayload : null
         });
