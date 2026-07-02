@@ -3780,6 +3780,27 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
       }
 
       // -----------------------------------------
+      // CASO 1b: Q♣ = invitación
+      // -----------------------------------------
+      else if (currentRank === 'Q' && currentSuit === 'CLUB') {
+        const targetUserId = Number(current.target_user_id || 0);
+
+        if (!targetUserId || Number(userId) !== targetUserId) {
+          return res.status(403).json({
+            ok: false,
+            error: 'Solo el receptor puede aceptar esta Q♣'
+          });
+        }
+
+        if (currentStatus !== 'SENT' && currentStatus !== 'PENDING') {
+          return res.status(400).json({
+            ok: false,
+            error: 'Solo una Q♣ enviada puede aprobarse'
+          });
+        }
+      }
+
+      // -----------------------------------------
       // CASO 2: J♠ = actividad / cita / deadline
       // -----------------------------------------
       else if (currentRank === 'J' && currentSuit === 'SPADE') {
@@ -3892,11 +3913,12 @@ app.patch('/plays/:id', requireAuth, async (req, res) => {
 
     if (play_status === 'REJECTED') {
       const isQSpade = currentRank === 'Q' && currentSuit === 'SPADE';
+      const isQClub = currentRank === 'Q' && currentSuit === 'CLUB';
       const isKCard = currentRank === 'K';
       const isACard = currentRank === 'A';
       const isJHeart = currentRank === 'J' && currentSuit === 'HEART';
 
-      if (!isQSpade && !isKCard && !isACard && !isJHeart) {
+      if (!isQSpade && !isQClub && !isKCard && !isACard && !isJHeart) {
         return res.status(400).json({
           ok: false,
           error: 'Esta jugada no admite rechazo'
