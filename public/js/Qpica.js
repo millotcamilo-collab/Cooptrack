@@ -112,8 +112,8 @@
       playCodeUpper.includes("BOMB:DISABLED");
 
     const mainSuitSymbol = primarySuit === "CLUB" ? "♣" : "♠";
-    let qSuitsHtml = `<span class="qpike-row__suit qpike-row__suit--spade">${mainSuitSymbol}</span>`;
-    let proposalHtml = "";
+    const mainSuitHtml = `<span class="qpike-row__suit qpike-row__suit--spade">${mainSuitSymbol}</span>`;
+    let paymentHtml = "";
 
     function getEconomicSuit(statusValue) {
       const normalized = String(statusValue || "").toUpperCase();
@@ -123,18 +123,16 @@
 
     if (payment) {
       const economicSuit = getEconomicSuit(status);
-      qSuitsHtml += `<span class="qpike-row__suit qpike-row__suit--red">${economicSuit}</span>`;
-
       const currency = String(payment.currency || "").trim();
       const amount = String(payment.amount || "").trim();
+      const paymentValue = [escape(currency), escape(amount)].filter(Boolean).join(" ");
 
-      if (currency || amount) {
-        proposalHtml = `
-        <div class="qpike-row__proposal">
-          ${escape(currency)} ${escape(amount)}
-        </div>
+      paymentHtml = `
+        <span class="qpike-row__payment">
+          <span class="qpike-row__suit qpike-row__suit--red">${economicSuit}</span>
+          ${paymentValue ? `<span class="qpike-row__payment-value">${paymentValue}</span>` : ""}
+        </span>
       `;
-      }
     }
 
     const statusIconHtml = showMetaDisabledIcon
@@ -161,7 +159,7 @@
       <div class="tablero-row__left">
         <div class="tablero-row__card-wrap">
           <span class="tablero-row__card qpike-row__rank">Q</span>
-          ${qSuitsHtml}
+          ${mainSuitHtml}
         </div>
       </div>
 
@@ -171,10 +169,10 @@
           src="${escape(targetPhoto)}"
           alt="${escape(targetName)}"
         />
-        <div class="qpike-row__content">
-          <div class="qpike-row__nickname">${escape(targetName)}</div>
-          <div class="qpike-row__meta">${escape(statusLabel)}</div>
-          ${proposalHtml}
+        <div class="qpike-row__content qpike-row__content--inline">
+          <span class="qpike-row__nickname">${escape(targetName)}</span>
+          ${paymentHtml}
+          <span class="qpike-row__meta">${escape(statusLabel)}</span>
         </div>
       </div>
 

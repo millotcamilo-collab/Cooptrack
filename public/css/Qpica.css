@@ -99,6 +99,30 @@
   font-weight: 600;
 }
 
+.qpike-row__content--inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.qpike-row__payment {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.qpike-row__payment-value {
+  font-weight: 600;
+}
+
+.qpike-row__meta {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 .qpike-row__status-icon {
   width: 28px;
   height: auto;
