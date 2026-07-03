@@ -161,7 +161,7 @@
   display: grid;
   grid-template-columns: 78px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
   background: #fffdf8;
   border: 1px dotted #777;
   border-radius: 8px;
@@ -238,6 +238,11 @@
   font-weight: 700;
   line-height: 1;
   font-family: inherit;
+}
+
+.tablero-row--qpike .qpike-row__suit {
+  font-size: 28px;
+  line-height: 0.8;
 }
 
 .tablero-row--qpike .qpike-row__suit--spade {
