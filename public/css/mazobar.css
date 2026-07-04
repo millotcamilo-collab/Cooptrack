@@ -182,7 +182,7 @@
   font: inherit;
   line-height: 1;
   cursor: pointer;
-  padding: 7px 12px;
+  padding: 7px 8px;
   min-height: 36px;
   display: inline-flex;
   align-items: center;
@@ -204,7 +204,7 @@
   font-family: var(--font-text);
   font-weight: 700;
   font-size: 1.1rem;
-  padding: 7px 12px;
+  padding: 7px 8px;
   min-height: 36px;
   display: inline-flex;
   align-items: center;
@@ -410,11 +410,12 @@
   }
 
   .mazobar__commands {
-    gap: 8px;
+    gap: 2px;
   }
 
   .mazobar__cmd-btn--suit {
-    width: 48px;
+    width: 38px;
+    min-width: 38px;
     min-height: 44px;
     font-size: 1.7rem;
   }
