@@ -65,6 +65,13 @@
   function formatRecurrenceLabel(type, weekdays, months) {
     const normalizedType = String(type || "").toUpperCase();
 
+    function normalizeRecurrenceToken(value) {
+      return String(value || "")
+        .replace(/[\{\}\[\]"']/g, "")
+        .trim()
+        .toUpperCase();
+    }
+
     if (normalizedType === "WEEKLY") {
       const list = Array.isArray(weekdays) ? weekdays : [];
       if (!list.length) return "Semanal";
@@ -73,7 +80,7 @@
 
       return list
         .map((day) => {
-          const code = String(day || "").trim().toUpperCase();
+          const code = normalizeRecurrenceToken(day);
           const map = {
             MON: "LUN",
             TUE: "MAR",
@@ -114,7 +121,10 @@
       };
 
       return list
-        .map((month) => monthMap[Number(month)] || String(month).trim().toUpperCase())
+        .map((month) => {
+          const monthCode = normalizeRecurrenceToken(month);
+          return monthMap[Number(monthCode)] || monthCode;
+        })
         .filter(Boolean)
         .join(", ");
     }

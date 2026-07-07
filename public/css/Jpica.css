@@ -167,11 +167,9 @@
 .tablero-row--jpike .tablero-row__recurrence-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-height: 34px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.05);
+  padding: 0;
   box-sizing: border-box;
   font-size: 12px;
   font-weight: 700;
@@ -179,8 +177,8 @@
 }
 
 .tablero-row--jpike .tablero-row__recurrence-icon {
-  width: 18px;
-  height: 18px;
+  width: auto;
+  height: 24px;
   object-fit: contain;
   flex: 0 0 auto;
 }
