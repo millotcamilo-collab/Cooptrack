@@ -164,6 +164,33 @@
   font: inherit;
 }
 
+.tablero-row--jpike .tablero-row__recurrence-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tablero-row--jpike .tablero-row__recurrence-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.tablero-row--jpike .tablero-row__recurrence-text {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
 
 .tablero-row--jpike .tablero-row__right button[data-action="add-jclub-child"],
 .tablero-row--jpike .tablero-row__right button[data-action="add-qspade-child"] {

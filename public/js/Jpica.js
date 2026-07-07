@@ -6,6 +6,15 @@
     return date.getTime() > Date.now();
   }
 
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   function formatRecurrenceSuffix(type, weekdays, months) {
     const normalizedType = String(type || "").toUpperCase();
 
@@ -53,10 +62,87 @@
     return "";
   }
 
+  function formatRecurrenceLabel(type, weekdays, months) {
+    const normalizedType = String(type || "").toUpperCase();
+
+    if (normalizedType === "WEEKLY") {
+      const list = Array.isArray(weekdays) ? weekdays : [];
+      if (!list.length) return "Semanal";
+
+      if (list.length === 7) return "Semanal";
+
+      return list
+        .map((day) => {
+          const code = String(day || "").trim().toUpperCase();
+          const map = {
+            MON: "LUN",
+            TUE: "MAR",
+            WED: "MIÉ",
+            THU: "JUE",
+            FRI: "VIE",
+            SAT: "SÁB",
+            SUN: "DOM"
+          };
+
+          return map[code] || code;
+        })
+        .filter(Boolean)
+        .join(", ");
+    }
+
+    if (normalizedType === "MONTHLY") {
+      const list = Array.isArray(months) ? months : [];
+      if (!list.length) return "Mensual";
+
+      if (list.length === 12) return "Mensual";
+      if (list.length === 1) return "Anual";
+      if (list.length === 2) return "Semestral";
+
+      const monthMap = {
+        1: "ENE",
+        2: "FEB",
+        3: "MAR",
+        4: "ABR",
+        5: "MAY",
+        6: "JUN",
+        7: "JUL",
+        8: "AGO",
+        9: "SEP",
+        10: "OCT",
+        11: "NOV",
+        12: "DIC"
+      };
+
+      return list
+        .map((month) => monthMap[Number(month)] || String(month).trim().toUpperCase())
+        .filter(Boolean)
+        .join(", ");
+    }
+
+    return "";
+  }
+
   function appendRecurrenceLabel(baseLabel, recurrenceType, weekdays, months) {
     const suffix = formatRecurrenceSuffix(recurrenceType, weekdays, months);
     if (!suffix) return baseLabel;
     return `${baseLabel} · ${suffix}`;
+  }
+
+  function renderRecurrenceSummaryHtml(recurrenceType, weekdays, months) {
+    const normalizedType = String(recurrenceType || "").toUpperCase();
+    if (!normalizedType) return "";
+
+    const iconSrc = window.ICONS?.animations?.ActividadIterativa40 || "/assets/animations/ActividadIterativa40.gif";
+    const label = formatRecurrenceLabel(normalizedType, weekdays, months);
+
+    if (!label) return "";
+
+    return `
+      <span class="tablero-row__recurrence-chip">
+        <img src="${iconSrc}" alt="Rutina" class="tablero-row__recurrence-icon" />
+        <span class="tablero-row__recurrence-text">${escapeHtml(label)}</span>
+      </span>
+    `;
   }
 
   function formatShortDateTime(value) {
@@ -322,11 +408,11 @@
       if (!recurrenceTypeValue) return "";
 
       if (recurrenceTypeValue === "WEEKLY") {
-        return `Rutina semanal: ${recurrenceWeekdaysValue.join(", ") || "—"}`;
+        return formatRecurrenceLabel(recurrenceTypeValue, recurrenceWeekdaysValue, recurrenceMonthsValue);
       }
 
       if (recurrenceTypeValue === "MONTHLY") {
-        return `Rutina mensual: ${recurrenceMonthsValue.join(", ") || "—"}`;
+        return formatRecurrenceLabel(recurrenceTypeValue, recurrenceWeekdaysValue, recurrenceMonthsValue);
       }
 
       return "Sin rutina";
@@ -520,7 +606,11 @@
         }
 
         if (recurrenceRead) {
-          recurrenceRead.textContent = getRecurrenceSummary();
+          recurrenceRead.innerHTML = renderRecurrenceSummaryHtml(
+            recurrenceTypeValue,
+            recurrenceWeekdaysValue,
+            recurrenceMonthsValue
+          );
         }
       }
 
