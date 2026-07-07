@@ -2218,6 +2218,27 @@ async function listMazosHandler(req, res) {
 
           const plays = Array.isArray(playsResult.rows) ? playsResult.rows : [];
           const membership = getDeckMembershipStatusFromPlays(plays, userId);
+          const ownerUserId = Number(
+            deck.owner_user_id ||
+            deck.created_by_user_id ||
+            deck.user_id ||
+            0
+          );
+
+          const ownerHasSentQorK = plays.some((play) => {
+            const rank = String(play.card_rank || '').toUpperCase();
+            const status = String(play.play_status || '').toUpperCase();
+            const createdBy = Number(play.created_by_user_id || 0);
+            const playCode = String(play.play_code || '');
+            const action = String(playCode.split('§')[5] || '').trim().toLowerCase();
+
+            if (!['Q', 'K'].includes(rank)) return false;
+            if (createdBy !== ownerUserId) return false;
+            if (status === 'DELETED') return false;
+
+            // Ignorar líneas ACL/seed que no representan envíos de gestión.
+            return action !== 'puedejugar';
+          });
 
           const hasActiveBlueJoker = plays.some((play) => {
             const rank = String(play.card_rank || '').toUpperCase();
@@ -2307,6 +2328,12 @@ async function listMazosHandler(req, res) {
             joker_type,
             current_user_cards,
             has_k_access: hasKAccess,
+            owner_user_id: ownerUserId,
+            owner_has_sent_qk: ownerHasSentQorK,
+            can_delete_deck:
+              !wantsArchived &&
+              ownerUserId === Number(userId) &&
+              !ownerHasSentQorK,
             membership_status: membership.status,
             is_active_member: Boolean(deck.is_active_member)
           };
@@ -3373,6 +3400,124 @@ app.patch('/decks/:id', requireAuth, async (req, res) => {
     return res.status(500).json({
       ok: false,
       error: 'No se pudo actualizar el mazo'
+    });
+  } finally {
+    client.release();
+  }
+});
+
+app.delete('/decks/:id', requireAuth, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const deckId = Number(req.params.id);
+    const userId = Number(req.auth.userId || 0);
+
+    if (!deckId) {
+      return res.status(400).json({
+        ok: false,
+        error: 'deckId inválido'
+      });
+    }
+
+    await client.query('BEGIN');
+
+    const deckResult = await client.query(
+      `SELECT * FROM decks WHERE id = $1 LIMIT 1`,
+      [deckId]
+    );
+
+    if (!deckResult.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        ok: false,
+        error: 'Mazo no encontrado'
+      });
+    }
+
+    const deck = deckResult.rows[0];
+    const ownerUserId = Number(
+      deck.owner_user_id ||
+      deck.created_by_user_id ||
+      deck.user_id ||
+      0
+    );
+
+    if (!ownerUserId || ownerUserId !== userId) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({
+        ok: false,
+        error: 'Solo el propietario del mazo puede borrarlo'
+      });
+    }
+
+    const qkResult = await client.query(
+      `
+      SELECT 1
+      FROM plays
+      WHERE deck_id = $1
+        AND created_by_user_id = $2
+        AND UPPER(COALESCE(card_rank, '')) IN ('Q', 'K')
+        AND UPPER(COALESCE(play_status, '')) <> 'DELETED'
+        AND LOWER(COALESCE(split_part(play_code, '§', 6), '')) <> 'puedejugar'
+      LIMIT 1
+      `,
+      [deckId, userId]
+    );
+
+    if (qkResult.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({
+        ok: false,
+        error: 'No se puede borrar el mazo: el propietario ya envió Q o K'
+      });
+    }
+
+    await client.query(
+      `DELETE FROM plays WHERE deck_id = $1`,
+      [deckId]
+    );
+
+    await client.query(
+      `DELETE FROM deck_members WHERE deck_id = $1`,
+      [deckId]
+    );
+
+    await client.query(
+      `DELETE FROM ex_deck_members WHERE deck_id = $1`,
+      [deckId]
+    );
+
+    const deletedResult = await client.query(
+      `DELETE FROM decks WHERE id = $1 RETURNING id`,
+      [deckId]
+    );
+
+    if (!deletedResult.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(500).json({
+        ok: false,
+        error: 'No se pudo borrar el mazo'
+      });
+    }
+
+    await client.query('COMMIT');
+
+    return res.json({
+      ok: true,
+      deletedDeckId: deckId
+    });
+  } catch (error) {
+    try {
+      await client.query('ROLLBACK');
+    } catch (_) {
+      // noop
+    }
+
+    console.error('Error borrando deck:', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'No se pudo borrar el mazo'
     });
   } finally {
     client.release();

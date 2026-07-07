@@ -48,6 +48,10 @@ function getJokerAlt(jokerType) {
     : "Joker rojo";
 }
 
+function getDeleteIconSrc() {
+  return "/assets/icons/papelera80.gif";
+}
+
 function renderCardsStack(cards) {
   const safeCards = Array.isArray(cards) ? cards.slice(0, 4) : [];
 
@@ -96,6 +100,7 @@ function renderDeckRow(deck) {
 
   const jokerType = String(deck.joker || deck.joker_type || "RED").toUpperCase();
   const membershipStatus = String(deck.membershipStatus || deck.membership_status || "ACTIVE").toUpperCase();
+  const canDeleteDeck = Boolean(deck.canDeleteDeck ?? deck.can_delete_deck);
 
   const currentUserCards = Array.isArray(deck.currentUserCards)
     ? deck.currentUserCards
@@ -145,6 +150,22 @@ function renderDeckRow(deck) {
       ? `<div class="deck-row__status">Archivado</div>`
       : ""}
 
+          <button
+            type="button"
+            class="deck-row__delete-btn"
+            data-deck-delete="true"
+            data-deck-id="${deckId}"
+            ${canDeleteDeck && !isArchived ? "" : "disabled"}
+            title="${canDeleteDeck && !isArchived ? "Eliminar mazo" : "No disponible"}"
+            aria-label="Eliminar mazo"
+          >
+            <img
+              src="${getDeleteIconSrc()}"
+              class="deck-row__delete-icon"
+              alt="Eliminar mazo"
+            />
+          </button>
+
           <div class="deck-row__joker-wrap">
             <img
               src="${jokerSrc}"
@@ -171,6 +192,68 @@ function renderDeckRow(deck) {
 }
 
 function attachDeckRowEvents() {
+  document.querySelectorAll(".deck-row__cards").forEach((cards) => {
+    cards.addEventListener("click", (event) => {
+      event.stopPropagation();
+
+      const row = cards.closest(".deck-row");
+      if (!row) return;
+
+      const deckId = row.dataset.deckId;
+      const membershipStatus = String(row.dataset.membershipStatus || "").toUpperCase();
+      const isArchived = membershipStatus === "ARCHIVED";
+
+      if (!deckId || isArchived) return;
+      window.location.href = `/mazo.html?id=${deckId}`;
+    });
+  });
+
+  document.querySelectorAll("[data-deck-delete='true']").forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      event.stopPropagation();
+
+      if (button.disabled) return;
+
+      const deckId = String(button.dataset.deckId || "").trim();
+      if (!deckId) return;
+
+      const confirmed = window.confirm("Eliminar este mazo? Esta accion no se puede deshacer.");
+      if (!confirmed) return;
+
+      const token = localStorage.getItem("cooptrackToken");
+
+      try {
+        const response = await fetch(`/decks/${deckId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "No se pudo borrar el mazo");
+        }
+
+        const rowWrap = button.closest(".deck-row-wrap");
+        if (rowWrap) {
+          rowWrap.remove();
+        }
+
+        const list = document.querySelector(".decks-view__list");
+        if (list && !list.querySelector(".deck-row-wrap")) {
+          if (typeof window.renderDecksView === "function") {
+            window.renderDecksView();
+          }
+        }
+      } catch (error) {
+        console.error("Error borrando mazo", error);
+        window.alert(error.message || "No se pudo borrar el mazo.");
+      }
+    });
+  });
+
   document.querySelectorAll(".deck-row").forEach((row) => {
     const deckId = row.dataset.deckId;
     const membershipStatus = String(row.dataset.membershipStatus || "").toUpperCase();
@@ -180,7 +263,6 @@ function attachDeckRowEvents() {
       if (!deckId) return;
 
       if (!isArchived) {
-        window.location.href = `/mazo.html?id=${deckId}`;
         return;
       }
 

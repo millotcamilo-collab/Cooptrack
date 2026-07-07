@@ -75,6 +75,9 @@ function buildDeckRowViewModel(deck) {
     name: deck.name || "Mazo sin nombre",
     photoUrl,
     joker: String(deck.joker_type || "RED").toUpperCase(),
+    ownerUserId: Number(deck.owner_user_id || deck.created_by_user_id || deck.user_id || 0),
+    ownerHasSentQK: Boolean(deck.owner_has_sent_qk),
+    canDeleteDeck: Boolean(deck.can_delete_deck),
     currentUserCards: Array.isArray(deck.current_user_cards)
       ? deck.current_user_cards
       : [],

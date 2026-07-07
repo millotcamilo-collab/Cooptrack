@@ -19,7 +19,6 @@
   border: 1px dotted #7a7a7a;
   border-radius: 10px;
   background: #fffdf8;
-  cursor: pointer;
   transition:
     background-color 0.15s ease,
     border-color 0.15s ease,
@@ -60,6 +59,7 @@
   position: relative;
   height: 78px;
   width: 88px; /* en vez de min-width */
+  cursor: pointer;
 }
 
 .deck-row__cards--empty {
@@ -119,6 +119,31 @@
   min-width: 0;
   display: flex;
   align-items: center;
+  gap: 10px;
+}
+
+.deck-row__delete-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.deck-row__delete-btn:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.deck-row__delete-icon {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  display: block;
 }
 
 .deck-row__name {
