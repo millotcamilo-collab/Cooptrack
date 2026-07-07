@@ -321,6 +321,9 @@ function getBombMinidayIcon(play) {
 function renderColombes(play) {
   const spadeMode = String(play?.spade_mode || "").trim().toUpperCase();
   const isDeadline = spadeMode === "DEADLINE";
+  const status = String(play?.play_status || play?.status || "").toUpperCase();
+  const isFinalStatus = ["APPROVED", "REJECTED", "CANCELLED", "DONE", "QUIT", "FIRED"].includes(status);
+  const showApprove = !isFinalStatus && userIsSpadeAceHolder();
 
   const mainDate = isDeadline
     ? play.end_date
