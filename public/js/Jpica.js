@@ -549,6 +549,10 @@
         return (limit.getTime() + margen) > Date.now();
       }
 
+      function setVisualMode(mode) {
+        row.dataset.mode = mode;
+      }
+
 
       function renderMode() {
         const visualMode = row.dataset.mode || "read";
