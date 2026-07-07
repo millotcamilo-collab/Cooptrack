@@ -139,10 +139,38 @@
       ? `${startLabel} - ${durationLabel}`
       : startLabel;
 
-    const recurrenceLabel = getRecurrenceSummary(recurrenceType, weekdays, months);
-    return recurrenceLabel && recurrenceLabel !== "Sin rutina"
-      ? `${baseLabel} · ${recurrenceLabel}`
-      : baseLabel;
+    return baseLabel;
+  }
+
+  function normalizeRecurrenceList(value) {
+    if (Array.isArray(value)) {
+      return value
+        .map((item) => String(item || "").replace(/[\{\}\[\]"']/g, "").trim())
+        .filter(Boolean);
+    }
+
+    if (typeof value === "string") {
+      return value
+        .split(",")
+        .map((item) => item.replace(/[\{\}\[\]"']/g, "").trim())
+        .filter(Boolean);
+    }
+
+    return [];
+  }
+
+  function renderRecurrenceSummaryHtml(type, weekdays, months) {
+    const label = getRecurrenceSummary(type, weekdays, months);
+    if (!label) return "";
+
+    const iconSrc = window.ICONS?.actions?.routine || "/assets/icons/ActividadIterativa80.gif";
+
+    return `
+      <span class="tablero-row__recurrence-chip">
+        <img src="${escapeHtml(iconSrc)}" alt="Rutina" class="tablero-row__recurrence-icon" />
+        <span class="tablero-row__recurrence-text">${escapeHtml(label)}</span>
+      </span>
+    `;
   }
 
   function getJpicaReadModeIconography(play) {
@@ -153,15 +181,12 @@
     const location = String(play?.location || "").trim();
     const hasRecurrence = Boolean(play?.has_recurrence);
     const recurrenceType = String(play?.recurrence_type || "").trim().toUpperCase();
-    const recurrenceWeekdays = Array.isArray(play?.recurrence_weekdays)
-      ? play.recurrence_weekdays
-      : [];
-    const recurrenceMonths = Array.isArray(play?.recurrence_months)
-      ? play.recurrence_months
-      : [];
-    const recurrenceLabel = hasRecurrence
-      ? getRecurrenceSummary(recurrenceType, recurrenceWeekdays, recurrenceMonths)
-      : "";
+    const recurrenceWeekdays = normalizeRecurrenceList(play?.recurrence_weekdays);
+    const recurrenceMonths = normalizeRecurrenceList(play?.recurrence_months);
+    const recurrenceLabel =
+      hasRecurrence || recurrenceType || recurrenceWeekdays.length || recurrenceMonths.length
+        ? getRecurrenceSummary(recurrenceType, recurrenceWeekdays, recurrenceMonths)
+        : "";
 
     const ICONS = window.ICONS || {};
     const ACTIONS = ICONS.actions || {};
@@ -187,7 +212,7 @@
           </div>
 
           ${recurrenceLabel
-            ? `<div class="tablero-row__fields tablero-row__fields--recurrence" data-role="recurrence-read">${escapeHtml(recurrenceLabel)}</div>`
+            ? `<div class="tablero-row__fields tablero-row__fields--recurrence" data-role="recurrence-read">${renderRecurrenceSummaryHtml(recurrenceType, recurrenceWeekdays, recurrenceMonths)}</div>`
             : ""}
         </div>
       `;
@@ -212,7 +237,7 @@
         </div>
 
         ${recurrenceLabel
-          ? `<div class="tablero-row__fields tablero-row__fields--recurrence" data-role="recurrence-read">${escapeHtml(recurrenceLabel)}</div>`
+          ? `<div class="tablero-row__fields tablero-row__fields--recurrence" data-role="recurrence-read">${renderRecurrenceSummaryHtml(recurrenceType, recurrenceWeekdays, recurrenceMonths)}</div>`
           : ""}
       </div>
     `;
@@ -228,17 +253,53 @@
   function getRecurrenceSummary(type, weekdays, months) {
     const normalizedType = String(type || "").trim().toUpperCase();
 
-    if (!normalizedType) return "Sin rutina";
+    if (!normalizedType) return "";
 
     if (normalizedType === "WEEKLY") {
-      return `Rutina semanal: ${Array.isArray(weekdays) && weekdays.length ? weekdays.join(", ") : "—"}`;
+      const list = normalizeRecurrenceList(weekdays)
+        .map((day) => String(day || "").toUpperCase());
+
+      if (!list.length || list.length === 7) return "Semanal";
+
+      const map = {
+        MON: "LUN",
+        TUE: "MAR",
+        WED: "MIE",
+        THU: "JUE",
+        FRI: "VIE",
+        SAT: "SAB",
+        SUN: "DOM"
+      };
+
+      return list.map((day) => map[day] || day).join(", ");
     }
 
     if (normalizedType === "MONTHLY") {
-      return `Rutina mensual: ${Array.isArray(months) && months.length ? months.join(", ") : "—"}`;
+      const list = normalizeRecurrenceList(months).map((month) => Number(month)).filter(Boolean);
+
+      if (!list.length || list.length === 12) return "Mensual";
+      if (list.length === 1) return "Anual";
+      if (list.length === 2) return "Semestral";
+
+      const monthMap = {
+        1: "ENE",
+        2: "FEB",
+        3: "MAR",
+        4: "ABR",
+        5: "MAY",
+        6: "JUN",
+        7: "JUL",
+        8: "AGO",
+        9: "SEP",
+        10: "OCT",
+        11: "NOV",
+        12: "DIC"
+      };
+
+      return list.map((month) => monthMap[month] || String(month)).join(", ");
     }
 
-    return "Sin rutina";
+    return "";
   }
 
   function normalizeAmount(value) {

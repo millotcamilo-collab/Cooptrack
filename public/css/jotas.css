@@ -195,6 +195,23 @@
   text-overflow: ellipsis;
 }
 
+.tablero-row--jpike .tablero-row__recurrence-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tablero-row--jpike .tablero-row__recurrence-icon {
+  width: auto;
+  height: 20px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.tablero-row--jpike .tablero-row__recurrence-text {
+  white-space: nowrap;
+}
+
 .tablero-row--jpike .tablero-row__deck {
   align-self: center;
   display: inline-flex;
