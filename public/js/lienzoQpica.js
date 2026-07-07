@@ -131,10 +131,25 @@
         return `
       <span class="lv2-mini-day__recurrence">
         <img src="${iconSrc}" alt="Rutina" class="lv2-mini-day__recurrence-icon" />
-        <span class="lv2-mini-day__recurrence-label">${escapeHtml(label)}</span>
+                <span class="lv2-mini-day__recurrence-text">${escapeHtml(label)}</span>
       </span>
     `;
     }
+
+        function getPlayRecurrenceSource(play) {
+                if (!play) return null;
+
+                if (String(play?.recurrence_type || "").trim()) {
+                        return play;
+                }
+
+                const parentPlay = getPlayByIdWithRecurrence(play?.parent_play_id);
+                if (parentPlay && String(parentPlay?.recurrence_type || "").trim()) {
+                        return parentPlay;
+                }
+
+                return play;
+        }
 
     async function loadPlayRecurrence(playId) {
         const id = Number(playId || 0);
@@ -1330,7 +1345,7 @@ if (isTarget && status === "APPROVED" && isDeadlineFromParent(play)) {
                     }
                     : null
             ].filter(Boolean),
-            miniDayFooterHtml: buildRecurrenceFooterHtml(play),
+            miniDayFooterHtml: buildRecurrenceFooterHtml(getPlayRecurrenceSource(play)),
             actionsHtml: renderPlayCardActions(play)
         });
     }
