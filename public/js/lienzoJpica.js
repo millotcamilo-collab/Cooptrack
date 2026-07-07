@@ -219,6 +219,126 @@ function getBombMinidayIcon(play) {
     return String(value || "").trim().toUpperCase();
   }
 
+  function normalizeRecurrenceList(value) {
+    if (Array.isArray(value)) {
+      return value.map((item) => String(item || "").trim()).filter(Boolean);
+    }
+
+    if (typeof value === "string") {
+      return value
+        .split(",")
+        .map((item) => item.replace(/[\{\}\[\]"']/g, "").trim())
+        .filter(Boolean);
+    }
+
+    return [];
+  }
+
+  function formatRecurrenceLabel(type, weekdays, months) {
+    const normalizedType = String(type || "").toUpperCase();
+
+    if (normalizedType === "WEEKLY") {
+      const map = {
+        MON: "LUN",
+        TUE: "MAR",
+        WED: "MIÉ",
+        THU: "JUE",
+        FRI: "VIE",
+        SAT: "SÁB",
+        SUN: "DOM"
+      };
+
+      const labels = (Array.isArray(weekdays) ? weekdays : [])
+        .map((day) => map[String(day || "").toUpperCase()] || String(day || "").toUpperCase())
+        .filter(Boolean);
+
+      if (!labels.length || labels.length === 7) return "Semanal";
+      return labels.join(", ");
+    }
+
+    if (normalizedType === "MONTHLY") {
+      const list = Array.isArray(months) ? months : [];
+      if (!list.length || list.length === 12) return "Mensual";
+      if (list.length === 1) return "Anual";
+      if (list.length === 2) return "Semestral";
+
+      const monthMap = {
+        1: "ENE",
+        2: "FEB",
+        3: "MAR",
+        4: "ABR",
+        5: "MAY",
+        6: "JUN",
+        7: "JUL",
+        8: "AGO",
+        9: "SEP",
+        10: "OCT",
+        11: "NOV",
+        12: "DIC"
+      };
+
+      return list
+        .map((month) => monthMap[Number(month)] || String(month || "").toUpperCase())
+        .filter(Boolean)
+        .join(", ");
+    }
+
+    return "";
+  }
+
+  function buildRecurrenceFooterHtml(play) {
+    const type = String(play?.recurrence_type || "").toUpperCase();
+    if (!type) return "";
+
+    const weekdays = normalizeRecurrenceList(play?.recurrence_weekdays);
+    const months = normalizeRecurrenceList(play?.recurrence_months);
+    const label = formatRecurrenceLabel(type, weekdays, months);
+
+    if (!label) return "";
+
+    const iconSrc = window.ICONS?.actions?.routine || "/assets/icons/ActividadIterativa80.gif";
+
+    return `
+      <span class="lv2-mini-day__recurrence">
+        <img src="${escapeHtml(iconSrc)}" alt="Rutina" class="lv2-mini-day__recurrence-icon" />
+        <span>${escapeHtml(label)}</span>
+      </span>
+    `;
+  }
+
+  async function loadPlayRecurrence(play) {
+    const playId = Number(play?.id || 0);
+    if (!playId) return play;
+
+    const token = localStorage.getItem("cooptrackToken");
+    if (!token) return play;
+
+    try {
+      const response = await fetch(`/plays/${playId}/recurrence`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data?.ok || !data?.recurrence) return play;
+
+      const recurrence = data.recurrence;
+
+      return {
+        ...play,
+        recurrence_type: String(recurrence.recurrence_type || "").toUpperCase(),
+        recurrence_weekdays: normalizeRecurrenceList(recurrence.weekdays),
+        recurrence_months: normalizeRecurrenceList(recurrence.months),
+        recurrence_until_date: recurrence.until_date ? String(recurrence.until_date).slice(0, 10) : "",
+        has_recurrence: true
+      };
+    } catch (error) {
+      console.warn("No se pudo cargar recurrencia de J♠", error);
+      return play;
+    }
+  }
+
   function compareCorporateCards(a, b) {
     const order = {
       A_HEART: 1,
@@ -334,6 +454,7 @@ function renderColombes(play) {
     : "/assets/icons/reloj60.gif";
 
   const showBombActions = canResolveBomb(play);
+  const recurrenceFooterHtml = buildRecurrenceFooterHtml(play);
 
   return `
     <section class="lienzo-tribune lienzo-tribune--source">
@@ -355,6 +476,7 @@ function renderColombes(play) {
             ownerCards: getCardsOwnedByUser(getPlayOwnerUser(play).id),
             showActions: true,
             miniDayActivityIcon: mainIcon,
+            miniDayFooterHtml: recurrenceFooterHtml,
             metas: [
               mainDate
                 ? {
@@ -1210,7 +1332,7 @@ ${showCancel ? `
     bindJtrebolEventsInLienzo();
   }
 
-  window.openLienzoJpicaByPlayId = function (playId) {
+  window.openLienzoJpicaByPlayId = async function (playId) {
     const play = getPlayById(playId);
     const container = getLienzoContainer();
 
@@ -1225,6 +1347,7 @@ ${showCancel ? `
       return;
     }
 
-    renderLienzoJpica(play);
+    const playWithRecurrence = await loadPlayRecurrence(play);
+    renderLienzoJpica(playWithRecurrence);
   };
 })();

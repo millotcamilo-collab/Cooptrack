@@ -323,7 +323,8 @@ ${dayHeader ? `
     showActions = true,
     figureOverrideSrc = "",
     hideInnerSuit = false,
-    miniDayActivityIcon = ""
+    miniDayActivityIcon = "",
+    miniDayFooterHtml = ""
   }) {
     try {
       console.log("[CartaTipo.renderPlayCardBox] incoming:", {
@@ -439,15 +440,18 @@ ${dayHeader ? `
     });
 
     const bodyHtml = useMiniDay
-      ? renderMiniDay({
-        play_text,
-        start_date,
-        end_date,
-        location,
-        spade_mode,
-        dayItems,
-        activityIconOverride: miniDayActivityIcon
-      })
+      ? `
+        ${renderMiniDay({
+          play_text,
+          start_date,
+          end_date,
+          location,
+          spade_mode,
+          dayItems,
+          activityIconOverride: miniDayActivityIcon
+        })}
+        ${miniDayFooterHtml ? `<div class="lv2-mini-day__footer">${miniDayFooterHtml}</div>` : ""}
+      `
       : metas.map((meta) => `
       <div class="lv2-play-card__meta">
         ${meta.icon ? `
