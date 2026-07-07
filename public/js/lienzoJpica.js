@@ -397,6 +397,7 @@ function renderColombes(play) {
                 <img src="${window.ICONS.actions.cancel}" alt="Cancelar" />
               </button>
               ` : ""}
+            `,
           })}
         </div>
       </div>
