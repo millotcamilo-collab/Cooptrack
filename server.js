@@ -1686,6 +1686,92 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
             (regexp_match(vp.flow_chunk, 'pay:QHEART[^;]*\\|payDate:([0-9]{4}-[0-9]{2}-[0-9]{2})'))[1],
             'YYYY-MM-DD'
           ) BETWEEN $3::date AND $4::date
+      ),
+
+      recurrence_rows AS (
+        SELECT
+          vp.*,
+          gs.calendar_day::timestamp AS calendar_date,
+          'RECURRENCE'::text AS calendar_entry_type,
+          NULL::text AS calendar_suit_override,
+          NULL::text AS payment_concept,
+          NULL::text AS payment_amount
+        FROM visible_plays vp
+        INNER JOIN play_recurrences pr
+          ON pr.play_id = vp.id
+        INNER JOIN LATERAL generate_series($3::date, $4::date, '1 day'::interval) gs(calendar_day)
+          ON true
+        WHERE
+          UPPER(COALESCE(vp.card_rank, '')) = 'J'
+          AND UPPER(COALESCE(vp.card_suit, '')) = 'SPADE'
+          AND UPPER(COALESCE(vp.play_status, '')) = 'APPROVED'
+          AND (
+            pr.until_date IS NULL
+            OR gs.calendar_day::date <= pr.until_date::date
+          )
+          AND gs.calendar_day::date <> COALESCE(
+            vp.start_date::date,
+            vp.parent_start_date::date,
+            vp.created_at::date
+          )
+          AND (
+            (
+              UPPER(COALESCE(pr.recurrence_type, '')) = 'WEEKLY'
+              AND (
+                (
+                  NULLIF(regexp_replace(COALESCE(pr.weekdays::text, ''), '[^A-Za-z,]', '', 'g'), '') IS NULL
+                  AND EXTRACT(ISODOW FROM gs.calendar_day)::int = EXTRACT(
+                    ISODOW FROM COALESCE(vp.start_date, vp.parent_start_date, vp.created_at)
+                  )::int
+                )
+                OR
+                (
+                  NULLIF(regexp_replace(COALESCE(pr.weekdays::text, ''), '[^A-Za-z,]', '', 'g'), '')
+                    ~ (
+                      '(^|,)' ||
+                      (
+                        CASE EXTRACT(ISODOW FROM gs.calendar_day)::int
+                          WHEN 1 THEN 'MON'
+                          WHEN 2 THEN 'TUE'
+                          WHEN 3 THEN 'WED'
+                          WHEN 4 THEN 'THU'
+                          WHEN 5 THEN 'FRI'
+                          WHEN 6 THEN 'SAT'
+                          WHEN 7 THEN 'SUN'
+                        END
+                      ) ||
+                      '(,|$)'
+                    )
+                )
+              )
+            )
+            OR
+            (
+              UPPER(COALESCE(pr.recurrence_type, '')) = 'MONTHLY'
+              AND EXTRACT(DAY FROM gs.calendar_day)::int = LEAST(
+                GREATEST(
+                  COALESCE(
+                    pr.day_of_month,
+                    EXTRACT(DAY FROM COALESCE(vp.start_date, vp.parent_start_date, vp.created_at))::int,
+                    1
+                  ),
+                  1
+                ),
+                EXTRACT(
+                  DAY FROM (
+                    date_trunc('month', gs.calendar_day)::date + INTERVAL '1 month - 1 day'
+                  )
+                )::int
+              )
+              AND (
+                NULLIF(regexp_replace(COALESCE(pr.months::text, ''), '[^0-9,]', '', 'g'), '') IS NULL
+                OR NULLIF(regexp_replace(COALESCE(pr.months::text, ''), '[^0-9,]', '', 'g'), '')
+                  ~ (
+                    '(^|,)' || EXTRACT(MONTH FROM gs.calendar_day)::int::text || '(,|$)'
+                  )
+              )
+            )
+          )
       )
 
       SELECT *
@@ -1693,6 +1779,8 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
         SELECT * FROM base_rows
         UNION ALL
         SELECT * FROM payment_rows
+        UNION ALL
+        SELECT * FROM recurrence_rows
       ) rows
       ORDER BY
         calendar_date ASC,
