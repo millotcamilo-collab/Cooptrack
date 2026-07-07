@@ -173,12 +173,48 @@
     let endDateValue = play?.end_date ? toInputDateTimeValue(play.end_date) : "";
     let locationValue = String(play?.location || "");
 
-    const hasRecurrence = !!play?.has_recurrence;
+    const recurrenceSource = play?.recurrence || {};
 
-    let recurrenceTypeValue = "";
-    let recurrenceWeekdaysValue = [];
-    let recurrenceMonthsValue = [];
-    let recurrenceUntilDateValue = "";
+    function normalizeRecurrenceList(value) {
+      if (Array.isArray(value)) {
+        return value.map((item) => String(item || "").trim()).filter(Boolean);
+      }
+
+      if (typeof value === "string") {
+        return value
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+
+      return [];
+    }
+
+    const initialRecurrenceType = String(
+      play?.recurrence_type || recurrenceSource.recurrence_type || ""
+    ).trim().toUpperCase();
+    const initialRecurrenceWeekdays = normalizeRecurrenceList(
+      play?.recurrence_weekdays || recurrenceSource.weekdays
+    );
+    const initialRecurrenceMonths = normalizeRecurrenceList(
+      play?.recurrence_months || recurrenceSource.months
+    );
+    const initialRecurrenceUntilDate = String(
+      play?.recurrence_until_date || recurrenceSource.until_date || ""
+    ).trim();
+
+    const hasRecurrence = Boolean(
+      play?.has_recurrence ||
+      initialRecurrenceType ||
+      initialRecurrenceWeekdays.length ||
+      initialRecurrenceMonths.length ||
+      initialRecurrenceUntilDate
+    );
+
+    let recurrenceTypeValue = initialRecurrenceType;
+    let recurrenceWeekdaysValue = initialRecurrenceWeekdays;
+    let recurrenceMonthsValue = initialRecurrenceMonths;
+    let recurrenceUntilDateValue = initialRecurrenceUntilDate;
     let recurrenceLoaded = false;
     let recurrenceAutoApplied = false;
 
