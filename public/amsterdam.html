@@ -229,6 +229,141 @@
                 return String(value || "").trim().toUpperCase();
             }
 
+            function normalizeRecurrenceList(value) {
+                if (Array.isArray(value)) {
+                    return value.map((item) => String(item || "").trim()).filter(Boolean);
+                }
+
+                if (typeof value === "string") {
+                    return value
+                        .split(",")
+                        .map((item) => item.replace(/[\{\}\[\]"']/g, "").trim())
+                        .filter(Boolean);
+                }
+
+                return [];
+            }
+
+            function formatRecurrenceLabel(type, weekdays, months) {
+                const normalizedType = String(type || "").toUpperCase();
+
+                if (normalizedType === "WEEKLY") {
+                    const map = {
+                        MON: "LUN",
+                        TUE: "MAR",
+                        WED: "MIÉ",
+                        THU: "JUE",
+                        FRI: "VIE",
+                        SAT: "SÁB",
+                        SUN: "DOM"
+                    };
+
+                    const labels = (Array.isArray(weekdays) ? weekdays : [])
+                        .map((day) => map[String(day || "").toUpperCase()] || String(day || "").toUpperCase())
+                        .filter(Boolean);
+
+                    if (!labels.length || labels.length === 7) return "Semanal";
+                    return labels.join(", ");
+                }
+
+                if (normalizedType === "MONTHLY") {
+                    const list = Array.isArray(months) ? months : [];
+                    if (!list.length || list.length === 12) return "Mensual";
+                    if (list.length === 1) return "Anual";
+                    if (list.length === 2) return "Semestral";
+
+                    const monthMap = {
+                        1: "ENE",
+                        2: "FEB",
+                        3: "MAR",
+                        4: "ABR",
+                        5: "MAY",
+                        6: "JUN",
+                        7: "JUL",
+                        8: "AGO",
+                        9: "SEP",
+                        10: "OCT",
+                        11: "NOV",
+                        12: "DIC"
+                    };
+
+                    return list
+                        .map((month) => monthMap[Number(month)] || String(month || "").toUpperCase())
+                        .filter(Boolean)
+                        .join(", ");
+                }
+
+                return "";
+            }
+
+            function buildRecurrenceFooterHtml(play) {
+                const type = String(play?.recurrence_type || "").toUpperCase();
+                if (!type) return "";
+
+                const weekdays = normalizeRecurrenceList(play?.recurrence_weekdays);
+                const months = normalizeRecurrenceList(play?.recurrence_months);
+                const label = formatRecurrenceLabel(type, weekdays, months);
+
+                if (!label) return "";
+
+                const iconSrc = window.ICONS?.actions?.routine || "/assets/icons/ActividadIterativa80.gif";
+
+                return `
+      <span class="lv2-mini-day__recurrence">
+        <img src="${iconSrc}" alt="Rutina" class="lv2-mini-day__recurrence-icon" />
+        <span class="lv2-mini-day__recurrence-text">${escapeHtml(label)}</span>
+      </span>
+    `;
+            }
+
+            function getRecurrenceSourceForCard(play) {
+                if (!play) return null;
+
+                if (String(play?.recurrence_type || "").trim()) {
+                    return play;
+                }
+
+                const parent = play?.parent_play || play?.parent || null;
+                if (parent && String(parent?.recurrence_type || "").trim()) {
+                    return parent;
+                }
+
+                return play;
+            }
+
+            function applyRecurrenceToPlay(play, recurrence) {
+                if (!play) return play;
+                if (!recurrence) return play;
+
+                return {
+                    ...play,
+                    recurrence_type: String(recurrence.recurrence_type || "").toUpperCase(),
+                    recurrence_weekdays: normalizeRecurrenceList(recurrence.weekdays),
+                    recurrence_months: normalizeRecurrenceList(recurrence.months)
+                };
+            }
+
+            async function loadPlayRecurrence(playId) {
+                const id = Number(playId || 0);
+                if (!id) return null;
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/plays/${id}/recurrence`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+
+                    const data = await response.json().catch(() => null);
+                    if (!response.ok || !data?.ok) return null;
+
+                    return data.recurrence || null;
+                } catch (error) {
+                    console.warn("No se pudo cargar recurrencia", { playId: id, error });
+                    return null;
+                }
+            }
+
             function formatTimeLabel(value) {
                 if (!value) return "";
                 const date = new Date(value);
@@ -312,6 +447,8 @@
                     showActions: play.showActions ?? true,
 
                     figureOverrideSrc: play.figureOverrideSrc || ""
+                    ,
+                    miniDayFooterHtml: buildRecurrenceFooterHtml(getRecurrenceSourceForCard(play))
                 });
 
                 return `
@@ -577,6 +714,18 @@ function getPlayCalendarYmd(play) {
                     console.log("DECK STATE", deckState);
                     console.log("DECK USERS", deckState?.users);
                 }
+
+                const playRecurrence = await loadPlayRecurrence(play.id);
+                play = applyRecurrenceToPlay(play, playRecurrence);
+
+                if (play.parent_play) {
+                    const parentRecurrence = await loadPlayRecurrence(play.parent_play.id);
+                    play = {
+                        ...play,
+                        parent_play: applyRecurrenceToPlay(play.parent_play, parentRecurrence)
+                    };
+                }
+
                 console.log("QPICA_ENTRA cargado:", window.QPICA_ENTRA);
                 const playRank = normalizeText(play?.card_rank || play?.rank);
                 const playSuit = normalizeText(play?.card_suit || play?.suit);

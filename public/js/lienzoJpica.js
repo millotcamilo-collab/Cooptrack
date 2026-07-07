@@ -602,10 +602,19 @@ function renderColombes(play) {
 
   function isUnansweredQSpade(play) {
     const status = String(play?.play_status || play?.status || "").trim().toUpperCase();
-    return ["ACTIVE", "SENT", "PENDING"].includes(status);
+    return ["SENT", "PENDING"].includes(status);
+  }
+
+  function isSentOrLaterQSpade(play) {
+    const status = String(play?.play_status || play?.status || "").trim().toUpperCase();
+    return ["SENT", "PENDING", "APPROVED", "REJECTED", "CANCELLED", "DONE", "QUIT", "FIRED"].includes(status);
   }
 
   function resolveQSpadeChildHref(play, deckId, playId) {
+    if (!isSentOrLaterQSpade(play)) {
+      return `/lienzoQpica.html?deckId=${encodeURIComponent(deckId)}&playId=${encodeURIComponent(playId)}`;
+    }
+
     const hasQHeart = qspadeHasPayment(play);
 
     if (!hasQHeart) {
