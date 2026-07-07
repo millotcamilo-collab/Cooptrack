@@ -545,8 +545,8 @@
           const recurrence = data.recurrence;
 
           recurrenceTypeValue = String(recurrence.recurrence_type || "").toUpperCase();
-          recurrenceWeekdaysValue = Array.isArray(recurrence.weekdays) ? recurrence.weekdays : [];
-          recurrenceMonthsValue = Array.isArray(recurrence.months) ? recurrence.months : [];
+          recurrenceWeekdaysValue = normalizeRecurrenceList(recurrence.weekdays);
+          recurrenceMonthsValue = normalizeRecurrenceList(recurrence.months);
           recurrenceUntilDateValue = recurrence.until_date
             ? String(recurrence.until_date).slice(0, 10)
             : "";
@@ -622,7 +622,7 @@
         }
 
         if (btnRoutine) {
-          btnRoutine.style.display = routineAvailable ? "inline-flex" : "none";
+          btnRoutine.style.display = isEdit && routineAvailable ? "inline-flex" : "none";
         }
 
         if (isCancelled) {
@@ -917,6 +917,10 @@
       });
 
       renderMode();
+
+      if (hasRecurrence) {
+        loadRecurrenceIfNeeded();
+      }
     }, 0);
 
     return `
