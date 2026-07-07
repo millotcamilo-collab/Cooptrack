@@ -853,17 +853,16 @@ function renderColombes(play) {
   <button type="button" id="jpica-create-jclub-btn" class="jpica-child-btn">J♣</button>
   <button type="button" id="jpica-create-jheart-btn" class="jpica-child-btn jpica-child-btn--heart">J♥</button>
 
-  ${showApprove ? `
-<button
-  type="button"
-  id="jpica-approve-btn"
-  class="jpica-child-btn"
-  title="Aprobar"
->
-  <img src="${window.ICONS.actions.approve}" alt="Aprobar" />
-</button>
-
-` : ""}
+    ${showApprove ? `
+    <button
+      type="button"
+      id="jpica-approve-btn"
+      class="icon-btn"
+      title="Aprobar"
+    >
+      <img src="${window.ICONS.actions.approve}" alt="Aprobar" />
+    </button>
+    ` : ""}
 
 ${showCancel ? `
 <button
