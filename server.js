@@ -1697,12 +1697,18 @@ app.get('/plays/almanaque', requireAuth, async (req, res) => {
           NULL::text AS payment_concept,
           NULL::text AS payment_amount
         FROM visible_plays vp
-        INNER JOIN play_recurrences pr
-          ON pr.play_id = vp.id
+        INNER JOIN LATERAL (
+          SELECT pr0.*
+          FROM play_recurrences pr0
+          WHERE pr0.play_id IN (vp.id, vp.parent_play_id)
+          ORDER BY CASE WHEN pr0.play_id = vp.id THEN 0 ELSE 1 END
+          LIMIT 1
+        ) pr
+          ON true
         INNER JOIN LATERAL generate_series($3::date, $4::date, '1 day'::interval) gs(calendar_day)
           ON true
         WHERE
-          UPPER(COALESCE(vp.card_rank, '')) = 'J'
+          UPPER(COALESCE(vp.card_rank, '')) IN ('J', 'Q')
           AND UPPER(COALESCE(vp.card_suit, '')) = 'SPADE'
           AND UPPER(COALESCE(vp.play_status, '')) = 'APPROVED'
           AND (
