@@ -132,7 +132,7 @@
     const normalizedType = String(recurrenceType || "").toUpperCase();
     if (!normalizedType) return "";
 
-    const iconSrc = window.ICONS?.animations?.ActividadIterativa40 || "/assets/animations/ActividadIterativa40.gif";
+    const iconSrc = window.ICONS?.actions?.routine || "/assets/icons/ActividadIterativa80.gif";
     const label = formatRecurrenceLabel(normalizedType, weekdays, months);
 
     if (!label) return "";
