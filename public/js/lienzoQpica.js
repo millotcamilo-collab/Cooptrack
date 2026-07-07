@@ -48,6 +48,155 @@
         return Number(getCurrentUser()?.id || 0);
     }
 
+    const recurrenceByPlayId = new Map();
+
+    function normalizeRecurrenceList(value) {
+        if (Array.isArray(value)) {
+            return value.map((item) => String(item || "").trim()).filter(Boolean);
+        }
+
+        if (typeof value === "string") {
+            return value
+                .split(",")
+                .map((item) => item.replace(/[\{\}\[\]"']/g, "").trim())
+                .filter(Boolean);
+        }
+
+        return [];
+    }
+
+    function formatRecurrenceLabel(type, weekdays, months) {
+        const normalizedType = String(type || "").toUpperCase();
+
+        if (normalizedType === "WEEKLY") {
+            const map = {
+                MON: "LUN",
+                TUE: "MAR",
+                WED: "MIÉ",
+                THU: "JUE",
+                FRI: "VIE",
+                SAT: "SÁB",
+                SUN: "DOM"
+            };
+
+            const labels = (Array.isArray(weekdays) ? weekdays : [])
+                .map((day) => map[String(day || "").toUpperCase()] || String(day || "").toUpperCase())
+                .filter(Boolean);
+
+            if (!labels.length || labels.length === 7) return "Semanal";
+            return labels.join(", ");
+        }
+
+        if (normalizedType === "MONTHLY") {
+            const list = Array.isArray(months) ? months : [];
+            if (!list.length || list.length === 12) return "Mensual";
+            if (list.length === 1) return "Anual";
+            if (list.length === 2) return "Semestral";
+
+            const monthMap = {
+                1: "ENE",
+                2: "FEB",
+                3: "MAR",
+                4: "ABR",
+                5: "MAY",
+                6: "JUN",
+                7: "JUL",
+                8: "AGO",
+                9: "SEP",
+                10: "OCT",
+                11: "NOV",
+                12: "DIC"
+            };
+
+            return list
+                .map((month) => monthMap[Number(month)] || String(month || "").toUpperCase())
+                .filter(Boolean)
+                .join(", ");
+        }
+
+        return "";
+    }
+
+    function buildRecurrenceFooterHtml(play) {
+        const type = String(play?.recurrence_type || "").toUpperCase();
+        if (!type) return "";
+
+        const weekdays = normalizeRecurrenceList(play?.recurrence_weekdays);
+        const months = normalizeRecurrenceList(play?.recurrence_months);
+        const label = formatRecurrenceLabel(type, weekdays, months);
+        if (!label) return "";
+
+        const iconSrc = window.ICONS?.actions?.routine || "/assets/icons/ActividadIterativa80.gif";
+
+        return `
+      <span class="lv2-mini-day__recurrence">
+        <img src="${iconSrc}" alt="Rutina" class="lv2-mini-day__recurrence-icon" />
+        <span class="lv2-mini-day__recurrence-label">${escapeHtml(label)}</span>
+      </span>
+    `;
+    }
+
+    async function loadPlayRecurrence(playId) {
+        const id = Number(playId || 0);
+        if (!id) return null;
+
+        if (recurrenceByPlayId.has(id)) {
+            return recurrenceByPlayId.get(id);
+        }
+
+        const token = localStorage.getItem("cooptrackToken");
+
+        try {
+            const response = await fetch(`/plays/${id}/recurrence`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                recurrenceByPlayId.set(id, null);
+                return null;
+            }
+
+            const data = await response.json();
+            const recurrence = data?.ok ? data.recurrence || null : null;
+            recurrenceByPlayId.set(id, recurrence);
+            return recurrence;
+        } catch (error) {
+            console.warn("No se pudo cargar recurrencia", { playId: id, error });
+            recurrenceByPlayId.set(id, null);
+            return null;
+        }
+    }
+
+    function applyRecurrenceToPlay(play, recurrence) {
+        if (!play) return null;
+        if (!recurrence) return play;
+
+        return {
+            ...play,
+            recurrence_type: String(recurrence.recurrence_type || "").toUpperCase(),
+            recurrence_weekdays: normalizeRecurrenceList(recurrence.weekdays),
+            recurrence_months: normalizeRecurrenceList(recurrence.months)
+        };
+    }
+
+    async function hydratePlayWithRecurrence(play) {
+        if (!play?.id) return play;
+
+        const recurrence = await loadPlayRecurrence(play.id);
+        return applyRecurrenceToPlay(play, recurrence);
+    }
+
+    function getPlayByIdWithRecurrence(playId) {
+        const basePlay = getPlayById(playId);
+        if (!basePlay) return null;
+
+        const recurrence = recurrenceByPlayId.get(Number(playId || 0)) || null;
+        return applyRecurrenceToPlay(basePlay, recurrence);
+    }
+
     function getPlayDayKey(value) {
         if (!value) return null;
         const date = new Date(value);
@@ -1120,7 +1269,7 @@ if (isTarget && status === "APPROVED" && isDeadlineFromParent(play)) {
 
 
     function renderPlayCardBox(play) {
-        const parentPlay = getPlayById(play?.parent_play_id);
+        const parentPlay = getPlayByIdWithRecurrence(play?.parent_play_id);
 
         const rank = normalizeRank(play?.card_rank || play?.rank);
         const suit = normalizeSuit(play?.card_suit || play?.suit);
@@ -1181,6 +1330,7 @@ if (isTarget && status === "APPROVED" && isDeadlineFromParent(play)) {
                     }
                     : null
             ].filter(Boolean),
+            miniDayFooterHtml: buildRecurrenceFooterHtml(play),
             actionsHtml: renderPlayCardActions(play)
         });
     }
@@ -1188,7 +1338,7 @@ if (isTarget && status === "APPROVED" && isDeadlineFromParent(play)) {
     function renderSourceSessionDia(play) {
         if (!play || typeof window.renderDia !== "function") return "";
 
-        const parentPlay = getPlayById(play?.parent_play_id);
+        const parentPlay = getPlayByIdWithRecurrence(play?.parent_play_id);
         const sessionPlay = parentPlay || play;
 
         const suit = normalizeSuit(sessionPlay?.card_suit || sessionPlay?.suit);
@@ -1852,6 +2002,8 @@ return `
                             }
                             : null
                     ].filter(Boolean)
+                                        ,
+                                        miniDayFooterHtml: buildRecurrenceFooterHtml(parentPlay)
                 })}
     </button>
   `
@@ -2994,7 +3146,8 @@ if (quitBtn) {
     }
 
     async function openLienzoByPlayId(playId) {
-        const play = getPlayById(playId);
+        const basePlay = getPlayById(playId);
+        const play = await hydratePlayWithRecurrence(basePlay);
 
         if (!play) {
             const container = getLienzoContainer();
@@ -3020,6 +3173,11 @@ if (quitBtn) {
 
             window.location.href = `/lienzoQQpica.html?deckId=${deckId}&playId=${play.id}`;
             return;
+        }
+
+        const parentPlayId = Number(play?.parent_play_id || 0);
+        if (parentPlayId) {
+            await loadPlayRecurrence(parentPlayId);
         }
 
         setLienzoDropSelection(null);
